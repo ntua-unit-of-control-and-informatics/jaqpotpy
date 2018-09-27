@@ -7,5 +7,8 @@ setup(name='jaqpotpy',
       author='Pantelis Karatzas, Angleos Valsamis',
       author_email='pantelispanka@gmail.com',
       license='GNU General Public License v3.0',
-      packages=['jaqpotpy'],
+      packages=['jaqpotpy', 'jaqpotpy.login'],
+      install_requires=[
+            'tornado'
+      ],
       zip_safe=False)
