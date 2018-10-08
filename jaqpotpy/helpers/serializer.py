@@ -1,0 +1,44 @@
+import json
+import jaqpotpy.helpers.helpers as hel
+
+
+class JaqpotSerializer(json.JSONEncoder):
+
+    # def __init__(self, *args, **kwargs):
+    #     json.JSONEncoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+
+    def default(self, o):
+        delete = []
+        for key in o.__dict__:
+            if getattr(o, key) is None or "":
+                delete.append(key)
+        for keytod in delete:
+            delattr(o, keytod)
+        return o.__dict__
+
+
+# class JaqpotDeserializer(json.JSONDecoder):
+#
+#     def __init__(self, *args, **kwargs):
+#         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+#
+#     def object_hook(self, obj):
+#         print("From des " + str(obj))
+#         # id = obj["_id"]
+#         # print(id)
+#         # print(getattr(obj, "_id"))
+#         # setattr()
+#         return obj
+
+
+
+
+# fe = hel.create_feature("sadf", "adf")
+
+# fe1 = hel.clear_entity(fe.__dict__)
+# print(fe1)
+
+# print(fe.__dict__)
+# print(json.dumps(fe.__dict__))
+# print(json.dumps(fe, cls=JaqpotSerializer))
+# print(json.dumps(fe.__dict__, cls=JaqpotSerializer))
