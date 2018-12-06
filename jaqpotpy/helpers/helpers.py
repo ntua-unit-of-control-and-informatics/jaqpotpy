@@ -1,4 +1,5 @@
 from jaqpotpy.entities.feature import Feature
+import math
 from jaqpotpy.helpers.builders import FeatureBuilder,\
     FeatureDirector, DataEntryBuilder, DataEntryDirector,\
     PretrainedNeedsDirector, PretrainedNeedsBuilder
@@ -27,26 +28,29 @@ def clear_entity(o):
 def create_data_entry(df, feat_map, owner_uuid):
     data_entry = []
     for dataid in df.index:
-        data_entry_all = {}
+        # data_entry_all = {}
         values_from_dataframe = df.loc[dataid]
+
+        values_from_dataframe = values_from_dataframe.to_frame()
+        values_from_dataframe_j = values_from_dataframe.to_json()
+        # print(values_from_dataframe_j)
+        # print(dataid)
+        # print(values_from_dataframe)
+
         de_director = DataEntryDirector()
         de_builder = DataEntryBuilder()
         de_builder.set_name(dataid)
         de_builder.set_owneruuid(owner_uuid)
         values = {}
-        # print(feat_map)
         for key in feat_map:
-            # print(key)
-            # print(feat_map[key])
-            # print(values_from_dataframe[key])
-            values[feat_map[key]] = values_from_dataframe[key]
+            values[feat_map[key]] = values_from_dataframe[dataid][key]
         de_builder.set_values(values)
         de = de_director.construct(de_builder)
         data_entry.append(de.__dict__)
     return data_entry
 
 
-def create_pretrain_req(model, X, y, title, description, algorithm, implementedWith, implementedIn, additionalInfo):
+def create_pretrain_req(model, X, y, title, description, algorithm, implementedWith, runtime, additionalInfo):
     pnb = PretrainedNeedsBuilder()
     independentFeatures = []
     dependendFeatures = []
@@ -64,7 +68,7 @@ def create_pretrain_req(model, X, y, title, description, algorithm, implementedW
     pnb.setIndependentFeatures(independentFeatures)
     pnb.setDescription(description)
     pnb.setTitle(title)
-    pnb.setImplementedIn(implementedIn)
+    pnb.setRuntime(runtime)
     pnb.setImplementedWith(implementedWith)
     director = PretrainedNeedsDirector()
     return director.construct(pnb)

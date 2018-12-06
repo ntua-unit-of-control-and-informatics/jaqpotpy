@@ -18,7 +18,7 @@ def authenticate_sync(baseurl, username, password):
     }
     body = urllib.parse.urlencode(data)
     try:
-        response = jclient .fetch(uri, method='POST', headers=h, body=body, validate_cert=False)
+        response = jclient.fetch(uri, method='POST', headers=h, body=body, validate_cert=False)
         au_req = decode.decode_auth(response.body)
         return au_req
     except httpclient.HTTPError as e:

@@ -1,3 +1,5 @@
 tornado
 pandas
 pyjwt
+simplejson
+pydotplus

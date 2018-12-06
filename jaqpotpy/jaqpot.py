@@ -5,6 +5,7 @@ import jaqpotpy.api.models_api as models_api
 import jaqpotpy.helpers.jwt as jwtok
 import jaqpotpy.helpers.helpers as help
 import json
+# import simplejson as json
 import jaqpotpy.api.feature_api as featapi
 from jaqpotpy.helpers.serializer import JaqpotSerializer
 from tornado.ioloop import IOLoop
@@ -12,6 +13,7 @@ from jaqpotpy.entities.dataset import Dataset
 from jaqpotpy.entities.meta import MetaInfo
 from jaqpotpy.entities.featureinfo import FeatureInfo
 import pandas as pd
+import numpy as np
 
 ENCODING = 'utf-8'
 
@@ -71,6 +73,15 @@ class Jaqpot:
             print("Error:" + str(e))
 
     def upload_dataset(self, df=None, id=None, title=None):
+        # print(df.to_json())
+        df_titles = list(df)
+        for t in df_titles:
+            type_to_c = df[t].dtypes
+            if type_to_c == 'int64':
+                # print(type_to_c)
+                df[t] = df[t].astype(float)
+        # print(df.dtypes)
+        df = df.replace(np.nan, '', regex=True)
         if type(df).__name__ is not 'DataFrame':
             raise Exception("Cannot form a Jaqpot Dataset. Please provide a Dataframe")
         if id is not None:
@@ -80,12 +91,14 @@ class Jaqpot:
             for f_t in feat_titles:
                 fe = help.create_feature(f_t, self.user_id)
                 jsonmi = json.dumps(fe, cls=JaqpotSerializer)
+                # jsonmi = json.dumps(fe.__dict__)
                 feats.append(jsonmi)
         else:
             feat_titles = list(df)
             feats = []
             for f_t in feat_titles:
                 fe = help.create_feature(f_t, self.user_id)
+                # jsonmi = json.dumps(fe.__dict__)
                 jsonmi = json.dumps(fe, cls=JaqpotSerializer)
                 feats.append(jsonmi)
         feat_map = {}
@@ -110,29 +123,78 @@ class Jaqpot:
         data_entry = help.create_data_entry(df, feat_map, self.user_id)
         dataset.dataEntry = data_entry
         dataset.features = featutes
+        # jsondataset = json.dumps(dataset)
         jsondataset = json.dumps(dataset, cls=JaqpotSerializer)
+        print(jsondataset)
         dataset_n = data_api.create_dataset_sync(self.base_url, self.api_key, jsondataset)
         print("Dataset created with id: " + dataset_n["_id"])
 
-    def deploy_glm(self, model, X, y, title, description, algorithm):
+    def deploy_linear_model(self, model, X, y, title, description, algorithm):
         if isinstance(X, pd.DataFrame) is False:
             raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
         if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
             raise Exception('Function deploy_glm supports pandas dataframe or series. Y is not one')
-        coef_df = pd.DataFrame(list(zip(list(X), model.coef_)), columns=['Features', 'coeff'])
-        intercept = pd.DataFrame([["(intercept)", model.intercept_]], columns=['Features', 'coeff'])
+        coef_flatten = model.coef_.flatten()
+        intercept_flatten = model.intercept_.flatten()
+        coef_df = pd.DataFrame(list(zip(list(X), coef_flatten)), columns=['Features', 'coeff'])
+        intercept = pd.DataFrame([('(intercept)', intercept_flatten[0])], columns=['Features', 'coeff'])
         coefs_all = intercept.append(coef_df, ignore_index=True)
         coefs = {}
         additionalInfo = {}
         for key in coefs_all.values:
             coefs[key[0]] = key[1]
         additionalInfo['coefficients'] = coefs
+        additionalInfo['inputSeries'] = list(X)
         pretrained = help.create_pretrain_req(model, X, y, title, description,
-                                              algorithm, "Regression Scikit learn", "scikit-learn-regression",
+                                              algorithm, "Linear model Scikit learn", "scikit-learn-linear-model",
+                                              additionalInfo)
+        # j = json.dumps(pretrained)
+        j = json.dumps(pretrained, cls=JaqpotSerializer)
+        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
+        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+
+    def deploy_tree(self, model, X, y, title, description, algorithm):
+        if isinstance(X, pd.DataFrame) is False:
+            raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
+        if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
+            raise Exception('Function deploy_glm supports pandas dataframe or series. Y is not one')
+        additionalInfo = {}
+        additionalInfo['inputSeries'] = list(X)
+        pretrained = help.create_pretrain_req(model, X, y, title, description,
+                                              algorithm, "Decision tree Scikit learn", "scikit-learn-tree-model",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
         response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
         print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+
+    def deploy_ensemble(self, model, X, y, title, description, algorithm):
+        if isinstance(X, pd.DataFrame) is False:
+            raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
+        if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
+            raise Exception('Function deploy_glm supports pandas dataframe or series. Y is not one')
+        additionalInfo = {}
+        additionalInfo['inputSeries'] = list(X)
+        pretrained = help.create_pretrain_req(model, X, y, title, description,
+                                              algorithm, "Ensemble Scikit learn", "scikit-learn-ensemble-model",
+                                              additionalInfo)
+        j = json.dumps(pretrained, cls=JaqpotSerializer)
+        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
+        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+
+    def deploy_svm(self, model, X, y, title, description, algorithm):
+        if isinstance(X, pd.DataFrame) is False:
+            raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
+        if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
+            raise Exception('Function deploy_glm supports pandas dataframe or series. Y is not one')
+        additionalInfo = {}
+        additionalInfo['inputSeries'] = list(X)
+        pretrained = help.create_pretrain_req(model, X, y, title, description,
+                                              algorithm, "Svm Scikit learn", "scikit-learn-svm-model",
+                                              additionalInfo)
+        j = json.dumps(pretrained, cls=JaqpotSerializer)
+        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
+        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+
 
     def api_key(self):
         return self.api_key

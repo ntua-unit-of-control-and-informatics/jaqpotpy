@@ -231,7 +231,7 @@ class PretrainedNeedsDirector:
         pretrained_needs.implementedWith = self._builder.getImplementedWith()
         pretrained_needs.additionalInfo = self._builder.getAdditionalInfo()
         pretrained_needs.algorithm = self._builder.getAlgorithm()
-        pretrained_needs.implementedIn = self._builder.getImplementedIn()
+        pretrained_needs.runtime = self._builder.getRuntime()
         pretrained_needs.description = self._builder.getDescription()
         pretrained_needs.title = self._builder.getTitle()
         return pretrained_needs
@@ -239,21 +239,23 @@ class PretrainedNeedsDirector:
 
 class PretrainedNeedsBuilder:
     ENCODING = 'utf-8'
-    rawModel = None
     independendFeatures = None
     dependendFeatures = None
     implementedWith = []
     additionalInfo = None
     algorithm = []
-    implementedIn = []
+    runtime = []
     description = []
     title = []
+    rawModel = []
 
     def setRawModel(self, model):
+        self.rawModel.clear()
         p_mod = pickle.dumps(model)
         raw = b64encode(p_mod)
         raw_model = raw.decode(self.ENCODING)
-        self.rawModel = raw_model
+        # self.rawModel = raw_model
+        self.rawModel.append(raw_model)
 
     def setIndependentFeatures(self, ind_f):
         self.independendFeatures = ind_f
@@ -279,9 +281,9 @@ class PretrainedNeedsBuilder:
        #     :param implementedIn: The runtime of this Model.
        #     """
 
-    def setImplementedIn(self, implementedIn):
-        self.implementedIn.clear()
-        self.implementedIn.append(implementedIn)
+    def setRuntime(self, runtime):
+        self.runtime.clear()
+        self.runtime.append(runtime)
 
     def setDescription(self, descr):
         self.description.clear()
@@ -309,8 +311,8 @@ class PretrainedNeedsBuilder:
     def getAlgorithm(self):
         return self.algorithm
 
-    def getImplementedIn(self):
-        return self.implementedIn
+    def getRuntime(self):
+        return self.runtime
 
     def getDescription(self):
         return self.description

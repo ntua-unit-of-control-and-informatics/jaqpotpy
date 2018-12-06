@@ -1,5 +1,6 @@
 import json
 import jaqpotpy.helpers.helpers as hel
+import numpy as np
 
 
 class JaqpotSerializer(json.JSONEncoder):
@@ -8,6 +9,14 @@ class JaqpotSerializer(json.JSONEncoder):
     #     json.JSONEncoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
     def default(self, o):
+        # if isinstance(o, np.ndarray):
+        #     if o.flags['C_CONTIGUOUS']:
+        #         obj_data = o.data
+        #     else:
+        #         cont_obj = np.ascontiguousarray(o)
+        #         assert (cont_obj.flags['C_CONTIGUOUS'])
+        #         obj_data = cont_obj.data
+        #     return o.tolist()
         delete = []
         for key in o.__dict__:
             if getattr(o, key) is None or "":
@@ -15,6 +24,7 @@ class JaqpotSerializer(json.JSONEncoder):
         for keytod in delete:
             delattr(o, keytod)
         return o.__dict__
+
 
 
 # class JaqpotDeserializer(json.JSONDecoder):
