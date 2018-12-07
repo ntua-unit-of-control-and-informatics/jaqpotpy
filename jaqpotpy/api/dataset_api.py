@@ -7,7 +7,7 @@ dataset_path = "dataset"
 
 def create_dataset_sync(baseurl, api_key, json_dataset):
     uri = baseurl + dataset_path
-    h = {'Content-Type': 'application/x-www-form-urlencoded',
+    h = {'Content-Type': 'application/json',
          'Accept': 'application/json',
          'Authorization': "Bearer " + api_key}
     try:
