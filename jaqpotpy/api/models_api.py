@@ -2,11 +2,11 @@ from tornado import gen, httpclient
 from tornado.httputil import HTTPHeaders
 from jaqpotpy.mappers import decode
 
-dataset_path = "model"
+model_path = "model"
 
 
 def post_pretrained_model(baseurl, api_key, json_request):
-    uri = baseurl + dataset_path
+    uri = baseurl + model_path
     jclient = httpclient.HTTPClient()
     h = HTTPHeaders({'Content-Type': 'application/json'})
     h.add('Accept', 'application/json')
