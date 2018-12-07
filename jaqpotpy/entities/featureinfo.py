@@ -6,7 +6,7 @@ class FeatureInfo(object):
         self.units = None
         self.conditions = None
         self.category = None
-        self.ont = None
+        # self.ont = None
         self.uri = None
 
         if name is not None:
@@ -17,8 +17,8 @@ class FeatureInfo(object):
             self.conditions = conditions
         if category is not None:
             self.category = category
-        if ont is not None:
-            self.ont = ont
+        # if ont is not None:
+        #     self.ont = ont
         if uri is not None:
             self.uri = uri
 
