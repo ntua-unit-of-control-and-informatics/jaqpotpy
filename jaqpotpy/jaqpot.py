@@ -130,6 +130,32 @@ class Jaqpot:
         print("Dataset created with id: " + dataset_n["_id"])
 
     def deploy_linear_model(self, model, X, y, title, description, algorithm):
+        """
+        Deploys sklearn linear_model to Jaqpot.
+
+        Extended description of function.
+
+        Parameters
+        ----------
+        model : sklearn trained model
+            model is a trained model that occurs from the sklearn.linear_model family of algorithms
+        X : pandas dataframe
+            The dataframe that is used to train the model (X variables).
+        y : pandas dataframe
+            The dataframe that is used to train the model (y variables).
+        title: String
+            The title of the model
+        description: String
+            The description of the model
+        algorithm: String
+            The algorithm that the model implements
+
+        Returns
+        -------
+        string
+            The id of the model that uploaded
+
+        """
         if isinstance(X, pd.DataFrame) is False:
             raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
         if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
@@ -154,6 +180,32 @@ class Jaqpot:
         print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
 
     def deploy_tree(self, model, X, y, title, description, algorithm):
+        """
+        Deploys sklearn tree to Jaqpot.
+
+        Extended description of function.
+
+        Parameters
+        ----------
+        model : sklearn trained model
+            model is a trained model that occurs from the sklearn.tree family of algorithms
+        X : pandas dataframe
+            The dataframe that is used to train the model (X variables).
+        y : pandas dataframe
+            The dataframe that is used to train the model (y variables).
+        title: String
+            The title of the model
+        description: String
+            The description of the model
+        algorithm: String
+            The algorithm that the model implements
+
+        Returns
+        -------
+        string
+            The id of the model that uploaded
+
+        """
         if isinstance(X, pd.DataFrame) is False:
             raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
         if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
@@ -168,6 +220,32 @@ class Jaqpot:
         print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
 
     def deploy_ensemble(self, model, X, y, title, description, algorithm):
+        """
+        Deploys sklearn ensemble to Jaqpot.
+
+        Extended description of function.
+
+        Parameters
+        ----------
+        model : sklearn trained model
+            model is a trained model that occurs from the sklearn.ensemble family of algorithms
+        X : pandas dataframe
+            The dataframe that is used to train the model (X variables).
+        y : pandas dataframe
+            The dataframe that is used to train the model (y variables).
+        title: String
+            The title of the model
+        description: String
+            The description of the model
+        algorithm: String
+            The algorithm that the model implements
+
+        Returns
+        -------
+        string
+            The id of the model that uploaded
+
+        """
         if isinstance(X, pd.DataFrame) is False:
             raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
         if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
@@ -182,6 +260,32 @@ class Jaqpot:
         print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
 
     def deploy_svm(self, model, X, y, title, description, algorithm):
+        """
+        Deploys sklearn svm to Jaqpot.
+
+        Extended description of function.
+
+        Parameters
+        ----------
+        model : sklearn trained model
+            model is a trained model that occurs from the sklearn.svm family of algorithms
+        X : pandas dataframe
+            The dataframe that is used to train the model (X variables).
+        y : pandas dataframe
+            The dataframe that is used to train the model (y variables).
+        title: String
+            The title of the model
+        description: String
+            The description of the model
+        algorithm: String
+            The algorithm that the model implements
+
+        Returns
+        -------
+        string
+            The id of the model that uploaded
+
+        """
         if isinstance(X, pd.DataFrame) is False:
             raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
         if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
@@ -194,7 +298,6 @@ class Jaqpot:
         j = json.dumps(pretrained, cls=JaqpotSerializer)
         response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
         print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
-
 
     def api_key(self):
         return self.api_key
