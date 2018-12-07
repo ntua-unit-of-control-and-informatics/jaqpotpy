@@ -44,7 +44,7 @@ df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
 # jaqpot.upload_dataset(df=df, id='country')
 
 
-# jaqpot.upload_dataset(df=df2, id='PassengerId', title="Titanic from kaggle!", description="The Fame titanic Dataset")
+jaqpot.upload_dataset(df=df2, id='PassengerId', title="Titanic from kaggle!", description="The Fame titanic Dataset")
 
 
 
@@ -66,21 +66,21 @@ df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
 
 # print(list(df2))
 #
-X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]
-y2 = df2['Survived']
+# X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]
+# y2 = df2['Survived']
 #
-clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
+# clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
 
 # print(clf.predict(X2))
 
-jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn logistic", description="Logistic pretrained from python",
-                  algorithm="logistic regression")
+# jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn logistic", description="Logistic pretrained from python",
+#                   algorithm="logistic regression")
 
 
-estimator = DecisionTreeClassifier(random_state=0).fit(X2, y2)
+# estimator = DecisionTreeClassifier(random_state=0).fit(X2, y2)
 
-jaqpot.deploy_tree(estimator, X2, y2, title="Sklearn tree", description="Decision tree pretrained from python",
-                  algorithm="Decision tree")
+# jaqpot.deploy_tree(estimator, X2, y2, title="Sklearn tree", description="Decision tree pretrained from python",
+#                   algorithm="Decision tree")
 
 
 # ensemble = BaggingClassifier().fit(X2, y2)

@@ -31,8 +31,9 @@ def create_data_entry(df, feat_map, owner_uuid):
         # data_entry_all = {}
         values_from_dataframe = df.loc[dataid]
 
-        values_from_dataframe = values_from_dataframe.to_frame()
-        values_from_dataframe_j = values_from_dataframe.to_json()
+        if type(values_from_dataframe).__name__ is not 'DataFrame':
+            values_from_dataframe = values_from_dataframe.to_frame()
+        # values_from_dataframe = values_from_dataframe.to_json()
         # print(values_from_dataframe_j)
         # print(dataid)
         # print(values_from_dataframe)
