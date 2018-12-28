@@ -56,10 +56,10 @@ jaqpot.upload_dataset(df=df2, id='PassengerId', title="Titanic from kaggle!", de
 # X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
 #
 # model = lm.fit(X=X, y=y)
-
+#
 # pred = model.predict(X)
-
-
+#
+#
 # jaqpot.deploy_linear_model(model, X, y, title="Sklearn linear", description="First pretrained from python",
 #                   algorithm="linear_model")
 
