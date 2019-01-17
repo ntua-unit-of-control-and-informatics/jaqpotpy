@@ -3,3 +3,4 @@ pandas
 pyjwt
 simplejson
 pydotplus
+requests
