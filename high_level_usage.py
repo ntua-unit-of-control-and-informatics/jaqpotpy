@@ -19,13 +19,14 @@ from subprocess import call
 import pydotplus
 
 
-# jaqp = jap.Jaqpot("https://api.jaqpot.org/jaqpot/services/")
+# jaqp = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 
 jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
 jaqpot.request_key("pantelispanka", "kapan1")
 
-# jaqp.request_key_safe()
 
+# jaqpot.request_key_safe()
+# jaqpot.set_api_key("eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJqdGkiOiJjNjU0YmVjMS1kYzU3LTQ1ZmMtYmZkYi01OTdmMjM2MTM1ODkiLCJleHAiOjE1NDgwODQzMzEsIm5iZiI6MCwiaWF0IjoxNTQ4MDc3MTMxLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aSIsIm5vbmNlIjoiTjAuNDA3MTAxMzAwMzcwNDkwNDE1NDgwNzcxMDI4NTYiLCJhdXRoX3RpbWUiOjE1NDgwNzcxMzEsInNlc3Npb25fc3RhdGUiOiJlMzQzYzlkNS01NThmLTQ5ZGItYTBlNS0xOGExMDMyMDk0NmUiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIlwiKlwiIiwiKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib3BlbmlkIGVtYWlsIHByb2ZpbGUiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJQYW50ZWxpcyBLYXJhdHphcyIsImdyb3VwcyI6WyIvQWRtaW5pc3RyYXRvciJdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.HTQayOhwmTChx8sGwucnyGD58ZJuGUpjR0h7b3wTmG3W5P-iIE3babMm9XX-VIv1awQcOrcbZaojWZt4ADN4-CXu1Q7c2BkK2dWSrnCqtLstyIEjf4OmN5gg5P_ZqihakkBHWEHBPU-qChx4vz-2bpm31UMIHUXujKxuYTjXnjG7A8KDUXMkbY0NT8Qj8loftSrUTVl4l0ovUKeIVuoHPlvb4EGgwvJ4IuQn2UDr6n3nHjRbxUdHnxS4WZHvnbvuApWDkosbObU2bBtYqJpnwuyhA9y9aah2gHQt_vWAkt71fWfbYIW6l21X9QPnO0EDrrxSxH-Stzfop1SuAF1sng")
 # jaqpot.my_info()
 # algos = jaqpot.get_algorithms()
 
@@ -44,7 +45,7 @@ df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
 # jaqpot.upload_dataset(df=df, id='country')
 
 
-jaqpot.upload_dataset(df=df2, id='PassengerId', title="Titanic from kaggle!", description="The Fame titanic Dataset")
+# jaqpot.upload_dataset(df=df2, id='PassengerId', title="Titanic from kaggle!", description="The Fame titanic Dataset")
 
 
 
@@ -66,15 +67,14 @@ jaqpot.upload_dataset(df=df2, id='PassengerId', title="Titanic from kaggle!", de
 
 # print(list(df2))
 #
-# X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]
-# y2 = df2['Survived']
-#
-# clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
+X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]
+y2 = df2['Survived']
+
+clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
 
 # print(clf.predict(X2))
-
-# jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn logistic", description="Logistic pretrained from python",
-#                   algorithm="logistic regression")
+jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn 2", description="Logistic pretrained from python with lab",
+                  algorithm="logistic regression")
 
 
 # estimator = DecisionTreeClassifier(random_state=0).fit(X2, y2)
