@@ -62,7 +62,7 @@ These keys have short life and should be updated on each login.
 
 **Contact and let us know for any mistakes**
 
-### Deploy liner_model
+## Deploy liner_model
 
 * `jaqpot.deploy_linear_model()`
 
@@ -132,7 +132,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-#### Example usage
+### Example usage
 
 
 `df2 = pd.read_csv('/path/train.csv')`
@@ -156,7 +156,7 @@ For this example we used the Fame [Titanic dataset](https://www.kaggle.com/c/tit
 **The models should be trained with pandas dataframe!**
 
 
-### Deploy deploy_cluster
+## Deploy deploy_cluster
 
 
 Let's you deploy cluster models that are created from scikit-learn
@@ -189,7 +189,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-### Deploy ensemble
+## Deploy ensemble
 
 Let's you deploy cluster models that are created from scikit-learn
 
@@ -230,7 +230,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-### Deploy deploy_naive_bayess
+## Deploy deploy_naive_bayess
 
 Let's you deploy naive_bayess models that are created from scikit-learn
 
@@ -262,7 +262,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-### Deploy nearest_neighbors
+## Deploy nearest_neighbors
 
 Let's you deploy nearest_neighbors models that are created from scikit-learn
 
@@ -301,7 +301,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-### Deploy deploy_neural_network
+## Deploy deploy_neural_network
 
 Let's you deploy neural_network models that are created from scikit-learn
 
@@ -334,7 +334,7 @@ The id of the model is returned. The model can be found on the home page of the 
 
 
 
-### Deploy deploy_svm
+## Deploy deploy_svm
 
 Let's you deploy svm models that are created from scikit-learn
 
@@ -373,7 +373,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-### Deploy deploy_tree
+## Deploy deploy_tree
 
 Let's you deploy tree models that are created from scikit-learn
 
@@ -405,3 +405,26 @@ string
 
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
+
+## Example usage
+
+
+`df2 = pd.read_csv('/path/train.csv')`
+`X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]`
+`y2 = df2['Survived']`
+
+`clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)`
+
+
+`jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn 2", description="Logistic regression model from python for the titanic dataset",
+                  algorithm="logistic regression")`
+
+
+On the above example a liner  model (in our case a logistic regression) is created and deployed on jaqpot.
+
+The dataset is read with pandas and we created the X and y dataframes on which we trained the algorithm and created the model
+
+For this example we used the Fame [Titanic dataset](https://www.kaggle.com/c/titanic). Any dataset could be used
+
+
+**The models should be trained with pandas dataframe!**
