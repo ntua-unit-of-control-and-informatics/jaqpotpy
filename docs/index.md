@@ -1,5 +1,15 @@
 # Welcome to jaqpotpy documentation
 
+### About
+
+jaqpotpy is a library that lets you deploy and share seemingless easy machine learning and statistal models over the web
+It is created by the [Unit of Process Control and Informatics in the School of Chemical Engineering](https://www.chemeng.ntua.gr/labs/control_lab/) at the National Technical University of Athens.
+
+### Contact
+
+pantelispanka@gmail.com
+
+
 #### The application can be found at https://app.jaqpot.org
 
 
@@ -11,7 +21,7 @@ Jaqpotpy can be installed as a pypi package.
 * `pip install jaqpotpy` 
 
 
-## Usage
+## Usage and initialization
 
 ### Import Jaqpot
 
@@ -62,7 +72,7 @@ These keys have short life and should be updated on each login.
 
 **Contact and let us know for any mistakes**
 
-## Deploy liner_model
+## deploy_liner_model()
 
 * `jaqpot.deploy_linear_model()`
 
@@ -156,7 +166,7 @@ For this example we used the Fame [Titanic dataset](https://www.kaggle.com/c/tit
 **The models should be trained with pandas dataframe!**
 
 
-## Deploy deploy_cluster
+## deploy_cluster()
 
 
 Let's you deploy cluster models that are created from scikit-learn
@@ -189,7 +199,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-## Deploy ensemble
+## deploy_ensemble()
 
 Let's you deploy cluster models that are created from scikit-learn
 
@@ -230,7 +240,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-## Deploy deploy_naive_bayess
+## deploy_naive_bayess()
 
 Let's you deploy naive_bayess models that are created from scikit-learn
 
@@ -262,7 +272,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-## Deploy nearest_neighbors
+## nearest_neighbors()
 
 Let's you deploy nearest_neighbors models that are created from scikit-learn
 
@@ -301,7 +311,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-## Deploy deploy_neural_network
+## deploy_neural_network()
 
 Let's you deploy neural_network models that are created from scikit-learn
 
@@ -334,7 +344,7 @@ The id of the model is returned. The model can be found on the home page of the 
 
 
 
-## Deploy deploy_svm
+## deploy_svm()
 
 Let's you deploy svm models that are created from scikit-learn
 
@@ -373,7 +383,7 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
-## Deploy deploy_tree
+## deploy_tree()
 
 Let's you deploy tree models that are created from scikit-learn
 
