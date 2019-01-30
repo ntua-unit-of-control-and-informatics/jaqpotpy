@@ -40,7 +40,7 @@ jaqpot.request_key("pantelispanka", "kapan1")
 # df = pd.read_csv('/Users/pantelispanka/Desktop/gdp-countries.csv')
 # print(df.dtypes)
 
-df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
+
 # print(df2.dtypes)
 # jaqpot.upload_dataset(df=df, id='country')
 
@@ -67,14 +67,18 @@ df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
 
 # print(list(df2))
 #
+
+df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
 X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]
 y2 = df2['Survived']
 
 clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
 
-# print(clf.predict(X2))
+
 jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn 2", description="Logistic pretrained from python with lab",
                   algorithm="logistic regression")
+# print(clf.predict(X2))
+
 
 
 # estimator = DecisionTreeClassifier(random_state=0).fit(X2, y2)
