@@ -24,6 +24,16 @@ ENCODING = 'utf-8'
 
 
 class Jaqpot:
+    """
+    Deploys sklearn models on Jaqpot.
+
+    Extended description of function.
+
+    Parameters
+    ----------
+    base_url : The url on which Jaqpot services are deployed
+
+    """
 
     def __init__(self, base_url):
         self.base_url = base_url
@@ -32,13 +42,44 @@ class Jaqpot:
         self.http_client = http_client
 
     def login(self, username, password):
-        jaqlogin.authenticate_sync(username=username, password=password)
+        """
+        Logins on Jaqpot.
+
+        Parameters
+        ----------
+        username : username
+        password : password
+
+        """
+        try:
+            au_req = jaqlogin.authenticate_sync(self.base_url, username, password)
+            self.api_key = au_req['authToken']
+            self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
+        except Exception as e:
+            print("Error: " + str(e))
 
     def set_api_key(self, api_key):
+        """
+        Set's api key for authentication on Jaqpot.
+
+        Parameters
+        ----------
+        api_key : api_key can be retireved from the application after logged in
+
+        """
         self.api_key = api_key
         print("api key is set")
 
     def request_key(self, username, password):
+        """
+        Logins on Jaqpot.
+
+        Parameters
+        ----------
+        username : username
+        password : password
+
+        """
         try:
             au_req = jaqlogin.authenticate_sync(self.base_url, username, password)
             self.api_key = au_req['authToken']
@@ -47,6 +88,15 @@ class Jaqpot:
             print("Error: " + str(e))
 
     def request_key_safe(self):
+        """
+        Logins on Jaqpot by hiding the users password.
+
+        Parameters
+        ----------
+        username : username
+        password : password
+
+        """
         try:
             username = input("Username: ")
             password = getpass.getpass("Password: ")
@@ -57,6 +107,10 @@ class Jaqpot:
             print("Error: " + str(e))
 
     def my_info(self):
+        """
+        Prints user's info
+
+        """
         print(jwtok.decode_jwt(self.api_key))
         return jwtok.decode_jwt(self.api_key)
 
