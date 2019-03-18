@@ -621,6 +621,46 @@ class Jaqpot:
         response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
         print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
 
+    def deploy_pipeline(self, pipeline, X, y, title, description, algorithm):
+        """
+        Deploys sklearn pipeline to Jaqpot.
+
+        Extended description of function.
+
+        Parameters
+        ----------
+        pipeline : sklearn pipeline
+            model is a trained model that occurs from the sklearn.svm family of algorithms
+        X : pandas dataframe
+            The dataframe that is used to train the model (X variables).
+        y : pandas dataframe
+            The dataframe that is used to train the model (y variables).
+        title: String
+            The title of the model
+        description: String
+            The description of the model
+        algorithm: String
+            The algorithm that the model implements
+
+        Returns
+        -------
+        string
+            The id of the pipeline that uploaded
+
+        """
+        if isinstance(X, pd.DataFrame) is False:
+            raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
+        if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
+            raise Exception('Function deploy_glm supports pandas dataframe or series. Y is not one')
+        additionalInfo = {}
+        additionalInfo['inputSeries'] = list(X)
+        pretrained = help.create_pretrain_req(pipeline, X, y, title, description,
+                                              algorithm, "Svm Scikit learn", "scikit-learn-neural-network-model",
+                                              additionalInfo)
+        j = json.dumps(pretrained, cls=JaqpotSerializer)
+        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
+        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+
     def api_key(self):
         return self.api_key
 

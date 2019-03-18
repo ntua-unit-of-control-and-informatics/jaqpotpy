@@ -19,9 +19,9 @@ from subprocess import call
 import pydotplus
 
 
-# jaqp = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
+jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 
-jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+# jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
 jaqpot.request_key("pantelispanka", "kapan1")
 
 
@@ -75,7 +75,7 @@ y2 = df2['Survived']
 clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
 
 
-jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn 2", description="Logistic pretrained from python with lab",
+jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn ORN", description="Logistic pretrained from python with lab",
                   algorithm="logistic regression")
 # print(clf.predict(X2))
 
