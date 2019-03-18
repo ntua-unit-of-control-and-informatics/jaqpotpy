@@ -72,7 +72,7 @@ These keys have short life and should be updated on each login.
 
 **Contact and let us know for any mistakes**
 
-## deploy_liner_model()
+## deploy_linear_model()
 
 * `jaqpot.deploy_linear_model()`
 
@@ -144,19 +144,26 @@ The id of the model is returned. The model can be found on the home page of the 
 
 ### Example usage
 
-
-`df2 = pd.read_csv('/path/train.csv')`
-`X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]`
-`y2 = df2['Survived']`
-
-`clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)`
+````
+from jaqpotpy import Jaqpot
+import pandas as pd
+from sklearn import linear_model
 
 
-`jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn 2", description="Logistic regression model from python for the titanic dataset",
-                  algorithm="logistic regression")`
+
+df2 = pd.read_csv('/path/train.csv')
+X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]
+y2 = df2['Survived']
+
+clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
 
 
-On the above example a liner  model (in our case a logistic regression) is created and deployed on jaqpot.
+jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn 2", description="Logistic regression model from python for the titanic dataset",
+                  algorithm="logistic regression")
+````
+
+
+On the above example a linear  model (in our case a logistic regression) is created and deployed on jaqpot.
 
 The dataset is read with pandas and we created the X and y dataframes on which we trained the algorithm and created the model
 
@@ -416,21 +423,61 @@ string
 The id of the model is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
 
 
+
+## deploy_pipeline()
+
+Let's you deploy pipelined models that are created from scikit-learn
+	
+
+
+**jaqpot.deploy_pipeline() parameters are:**
+
+- pipeline : sklearn pipeline
+model is a trained model that occurs from the sklearn.linear_model family of algorithms
+- X : pandas dataframe
+The dataframe that is used to train the model (X variables).
+- y : pandas dataframe
+The dataframe that is used to train the model (y variables).
+- title: String
+The title of the model
+- description: String
+The description of the model
+- algorithm: String
+The algorithm that the model implements
+string
+
+
+The id of the model / pipeline is returned. The model can be found on the home page of the user for editing / sharing / execution (create predictions)
+
+
+
+
+
 ## Example usage
 
 
-`df2 = pd.read_csv('/path/train.csv')`
-`X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]`
-`y2 = df2['Survived']`
-
-`clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)`
-
-
-`jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn 2", description="Logistic regression model from python for the titanic dataset",
-                  algorithm="logistic regression")`
+````
+from jaqpotpy import Jaqpot
+import pandas as pd
+from sklearn import linear_model
 
 
-On the above example a liner  model (in our case a logistic regression) is created and deployed on jaqpot.
+
+
+
+df2 = pd.read_csv('/path/train.csv')
+X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]
+y2 = df2['Survived']
+
+clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
+
+
+jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn 2", description="Logistic regression model from python for the titanic dataset",
+                  algorithm="logistic regression")
+````
+
+
+On the above example a linear  model (in our case a logistic regression) is created and deployed on jaqpot.
 
 The dataset is read with pandas and we created the X and y dataframes on which we trained the algorithm and created the model
 
