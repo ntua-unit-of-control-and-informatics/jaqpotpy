@@ -655,7 +655,7 @@ class Jaqpot:
         additionalInfo = {}
         additionalInfo['inputSeries'] = list(X)
         pretrained = help.create_pretrain_req(pipeline, X, y, title, description,
-                                              algorithm, "Svm Scikit learn", "scikit-learn-neural-network-model",
+                                              algorithm, "Svm Scikit learn", "scikit-learn-pipeline",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
         response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
