@@ -37,7 +37,9 @@ jaqpot.request_key("pantelispanka", "kapan1")
 # for algo in algos_classes:
 #     print(algo.meta)
 
-# df = pd.read_csv('/Users/pantelispanka/Desktop/gdp-countries.csv')
+df = pd.read_csv('/Users/pantelispanka/Desktop/gdp-countries.csv')
+
+# df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
 # print(df.dtypes)
 
 
@@ -50,7 +52,7 @@ jaqpot.request_key("pantelispanka", "kapan1")
 
 
 
-
+#
 # lm = LinearRegression()
 #
 # y = df['GDP']
@@ -66,9 +68,10 @@ jaqpot.request_key("pantelispanka", "kapan1")
 
 
 # print(list(df2))
+# #
 #
-
 df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
+
 X2 = df2[['Pclass',  'SibSp', 'Parch', 'Fare']]
 y2 = df2['Survived']
 
@@ -78,6 +81,10 @@ clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomia
 jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn ORN", description="Logistic pretrained from python with lab",
                   algorithm="logistic regression")
 # print(clf.predict(X2))
+
+
+# print(df2.to_json())
+# df, predicts = jaqpot.predict(df2, id='PassengerId', modelId="eZeZ7KwAz45dLdYzgihe")
 
 
 

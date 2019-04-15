@@ -12,7 +12,32 @@ def create_dataset_sync(baseurl, api_key, json_dataset):
          'Authorization': "Bearer " + api_key}
     try:
         r = requests.post(uri, headers=h, data=json_dataset, verify=False)
-        return r.json()
+        if r.status_code < 300:
+            return r.json()
+        else:
+            print("Error with code " + str(r.status_code))
+            print(r.json())
+    except Exception as e:
+        print("Error http: " + str(e))
+
+
+def get_dataset(baseurl, api_key, datasetid):
+    uri = baseurl + dataset_path + "/" + datasetid
+    h = {'Content-Type': 'application/json',
+         'Accept': 'application/json',
+         'Authorization': "Bearer " + api_key}
+    params = {
+        'dataEntries': "true",
+        'rowStart': "0",
+        'rowMax': '1000'
+    }
+    try:
+        r = requests.get(uri, headers=h, params=params, verify=False)
+        if r.status_code < 300:
+            return r.json()
+        else:
+            print("Error with code " + str(r.status_code))
+            print(r.json())
     except Exception as e:
         print("Error http: " + str(e))
 

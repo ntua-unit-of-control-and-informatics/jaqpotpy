@@ -1,11 +1,12 @@
 class FeatureInfo(object):
 
-    def __init__(self, name=None, units=None, conditions=None, category=None, ont=None, uri=None):
+    def __init__(self, name=None, units=None, conditions=None, category=None, ont=None, uri=None, key=None):
 
         self.name = None
         self.units = None
         self.conditions = None
         self.category = None
+        self.key = None
         # self.ont = None
         self.uri = None
 
@@ -17,6 +18,8 @@ class FeatureInfo(object):
             self.conditions = conditions
         if category is not None:
             self.category = category
+        if key is not None:
+            self.key = key
         # if ont is not None:
         #     self.ont = ont
         if uri is not None:
