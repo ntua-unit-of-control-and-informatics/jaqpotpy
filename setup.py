@@ -9,6 +9,6 @@ setup(name='jaqpotpy',
       license='GNU General Public License v3.0',
       packages=['jaqpotpy', 'jaqpotpy.api', 'jaqpotpy.mappers', 'jaqpotpy.entities', 'jaqpotpy.dto', 'jaqpotpy.helpers'],
       install_requires=[
-            'tornado==4.5.3', 'pandas', 'pyjwt', 'requests'
+            'pandas', 'pyjwt', 'requests'
       ],
       zip_safe=False)

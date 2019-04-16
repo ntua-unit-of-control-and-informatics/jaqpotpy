@@ -77,8 +77,7 @@ y2 = df2['Survived']
 
 clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X2, y2)
 
-
-jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn ORN", description="Logistic pretrained from python with lab",
+jaqpot.deploy_linear_model(clf, X2, y2, title="Sklearn ORN titanic", description="Logistic pretrained from python fot the titanic dataset",
                   algorithm="logistic regression")
 # print(clf.predict(X2))
 
