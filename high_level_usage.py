@@ -92,13 +92,13 @@ jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 
 # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
 
-jaqpot.request_key("pantelispanka", "kapan1")
+# jaqpot.request_key("pantelispanka", "kapan1")
 # jaqpot.request_key("guest", "guest")
 # jaqpot.request_key_safe()
 
 
-jaqpot.deploy_linear_model(model, X, y, title="Model with Pantelis", description="Demonstration",
-                  algorithm="linear_model")
+# jaqpot.deploy_linear_model(model, X, y, title="Model with Pantelis", description="Demonstration",
+#                   algorithm="linear_model")
 
 
 # jaqpot.deploy_linear_model(model, X, y, title="Deploy test", description="Test",
