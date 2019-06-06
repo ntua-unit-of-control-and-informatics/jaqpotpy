@@ -7,7 +7,9 @@ setup(name='jaqpotpy',
       author='Pantelis Karatzas, Angleos Valsamis, Pantelis Sopasakis',
       author_email='pantelispanka@gmail.com',
       license='GNU General Public License v3.0',
-      packages=['jaqpotpy', 'jaqpotpy.api', 'jaqpotpy.mappers', 'jaqpotpy.entities', 'jaqpotpy.dto', 'jaqpotpy.helpers'],
+      packages=['jaqpotpy', 'jaqpotpy.api', 'jaqpotpy.mappers'
+            , 'jaqpotpy.entities', 'jaqpotpy.dto'
+            , 'jaqpotpy.helpers', 'jaqpotpy.colorlog'],
       install_requires=[
             'pandas', 'pyjwt', 'requests'
       ],
