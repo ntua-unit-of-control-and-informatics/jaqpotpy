@@ -2,7 +2,7 @@ from jaqpotpy.entities.feature import Feature
 import math
 from jaqpotpy.helpers.builders import FeatureBuilder,\
     FeatureDirector, DataEntryBuilder, DataEntryDirector,\
-    PretrainedNeedsDirector, PretrainedNeedsBuilder
+    PretrainedNeedsDirector, PretrainedNeedsBuilder, DoaDirector, DoaBuilder
 
 
 def create_feature(feat_title, creator):
@@ -73,3 +73,12 @@ def create_pretrain_req(model, X, y, title, description, algorithm, implementedW
     pnb.setImplementedWith(implementedWith)
     director = PretrainedNeedsDirector()
     return director.construct(pnb)
+
+
+def create_doa(inv_m, a, modelid):
+    doaB = DoaBuilder()
+    doaB.set_aValue(a)
+    doaB.set_doa_matrix(inv_m)
+    doaB.set_modelid(modelid)
+    director = DoaDirector()
+    return director.construct(doaB)

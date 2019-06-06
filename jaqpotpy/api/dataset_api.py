@@ -5,7 +5,7 @@ import requests
 dataset_path = "dataset"
 
 
-def create_dataset_sync(baseurl, api_key, json_dataset):
+def create_dataset_sync(baseurl, api_key, json_dataset, logger):
     uri = baseurl + dataset_path
     h = {'Content-Type': 'application/json',
          'Accept': 'application/json',
@@ -15,13 +15,13 @@ def create_dataset_sync(baseurl, api_key, json_dataset):
         if r.status_code < 300:
             return r.json()
         else:
-            print("Error with code " + str(r.status_code))
-            print(r.json())
+            logger.error("Error with code " + str(r.status_code))
+            logger.error(r.json())
     except Exception as e:
-        print("Error http: " + str(e))
+        logger.error("Error http: " + str(e))
 
 
-def get_dataset(baseurl, api_key, datasetid):
+def get_dataset(baseurl, api_key, datasetid, logger):
     uri = baseurl + dataset_path + "/" + datasetid
     h = {'Content-Type': 'application/json',
          'Accept': 'application/json',
@@ -36,10 +36,10 @@ def get_dataset(baseurl, api_key, datasetid):
         if r.status_code < 300:
             return r.json()
         else:
-            print("Error with code " + str(r.status_code))
-            print(r.json())
+            logger.error("Error with code " + str(r.status_code))
+            logger.error(r.json())
     except Exception as e:
-        print("Error http: " + str(e))
+        logger.error("Error http: " + str(e))
 
 
 # def create_dataset_sync(baseurl, api_key, json_dataset):

@@ -3,9 +3,12 @@ import jaqpotpy.api.algorithms_api as alapi
 import jaqpotpy.api.dataset_api as data_api
 import jaqpotpy.api.models_api as models_api
 import jaqpotpy.api.task_api as task_api
+import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.helpers.jwt as jwtok
 import jaqpotpy.helpers.helpers as help
 import jaqpotpy.helpers.dataset_deserializer as ds
+# from jaqpotpy.helpers.logging import ColoredFormatter
+from jaqpotpy.helpers.logging import init_logger
 import json
 import jaqpotpy.api.feature_api as featapi
 from jaqpotpy.helpers.serializer import JaqpotSerializer
@@ -18,8 +21,10 @@ import numpy as np
 import http.client as http_client
 import getpass
 import time
+import asyncio
+import jaqpotpy.helpers.doa as jha
 from collections import namedtuple
-
+import logging
 
 ENCODING = 'utf-8'
 
@@ -40,7 +45,9 @@ class Jaqpot:
 
     """
 
-    def __init__(self, base_url):
+    def __init__(self, base_url, create_logs=False):
+        # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+        self.log = init_logger(__name__, testing_mode=False, output_log_file=create_logs)
         self.base_url = base_url
         self.api_key = None
         self.user_id = None
@@ -61,7 +68,8 @@ class Jaqpot:
             self.api_key = au_req['authToken']
             self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
         except Exception as e:
-            print("Error: " + str(e))
+            self.log.error("Error: " + str(e))
+            # print("Error: " + str(e))
 
     def set_api_key(self, api_key):
         """
@@ -73,7 +81,7 @@ class Jaqpot:
 
         """
         self.api_key = api_key
-        print("api key is set")
+        self.log.info("api key is set")
 
     def request_key(self, username, password):
         """
@@ -90,16 +98,11 @@ class Jaqpot:
             self.api_key = au_req['authToken']
             self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
         except Exception as e:
-            print("Error: " + str(e))
+            self.log.error("Error: " + str(e))
 
     def request_key_safe(self):
         """
         Logins on Jaqpot by hiding the users password.
-
-        Parameters
-        ----------
-        username : username
-        password : password
 
         """
         try:
@@ -109,14 +112,14 @@ class Jaqpot:
             self.api_key = au_req['authToken']
             self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
         except Exception as e:
-            print("Error: " + str(e))
+            self.log.error("Error: " + str(e))
 
     def my_info(self):
         """
         Prints user's info
 
         """
-        print(jwtok.decode_jwt(self.api_key))
+        self.log.info(jwtok.decode_jwt(self.api_key))
         return jwtok.decode_jwt(self.api_key)
 
     def get_algorithms(self, start=None, max=None):
@@ -125,7 +128,7 @@ class Jaqpot:
             algos = alapi.get_allgorithms_sync(self.base_url, self.api_key, start, max)
             return algos
         except Exception as e:
-            print("Error:" + str(e))
+            self.log.error("Error:" + str(e))
 
     def get_algorithms_classes(self, start=None, max=None):
         self.check_key()
@@ -133,7 +136,7 @@ class Jaqpot:
             algos = alapi.get_allgorithms_classes(self.base_url, self.api_key, start, max)
             return algos
         except Exception as e:
-            print("Error:" + str(e))
+            self.log.error("Error:" + str(e))
 
     def upload_dataset(self, df=None, id=None, title=None, description=None):
         if title is None:
@@ -194,8 +197,9 @@ class Jaqpot:
         dataset.dataEntry = data_entry
         dataset.features = featutes
         jsondataset = json.dumps(dataset, cls=JaqpotSerializer)
-        dataset_n = data_api.create_dataset_sync(self.base_url, self.api_key, jsondataset)
-        print("Dataset created with id: " + dataset_n["_id"])
+        dataset_n = data_api.create_dataset_sync(self.base_url, self.api_key, jsondataset, self.log)
+        self.log.info("Dataset created with id: " + dataset_n["_id"])
+        return dataset_n["_id"]
 
     def predict(self, df=None, id=None, modelId=None):
         df_titles = list(df)
@@ -208,7 +212,7 @@ class Jaqpot:
         df = df.replace(np.nan, '', regex=True)
         if type(df).__name__ is not 'DataFrame':
             raise Exception("Cannot form a Jaqpot Dataset. Please provide a Dataframe")
-        model = models_api.get_model(self.base_url, self.api_key, modelId)
+        model = models_api.get_model(self.base_url, self.api_key, modelId, self.log)
         feats = []
         for featUri in model['independentFeatures']:
             featar = featUri.split("/")
@@ -243,10 +247,10 @@ class Jaqpot:
         dataset.dataEntry = data_entry
         dataset.features = featutes
         jsondataset = json.dumps(dataset, cls=JaqpotSerializer)
-        dataset_n = data_api.create_dataset_sync(self.base_url, self.api_key, jsondataset)
+        dataset_n = data_api.create_dataset_sync(self.base_url, self.api_key, jsondataset, self.log)
         datasetId = dataset_n["_id"]
         datasetUri = self.base_url + "dataset/" + datasetId
-        task = models_api.predict(self.base_url, self.api_key, dataseturi=datasetUri, modelid=modelId)
+        task = models_api.predict(self.base_url, self.api_key, dataseturi=datasetUri, modelid=modelId, logger=self.log)
         percentange = 0
         taskid = task['_id']
         while percentange < 100:
@@ -256,10 +260,10 @@ class Jaqpot:
                 percentange = task['percentageCompleted']
             except KeyError:
                 percentange = 0
-            print("completed " + str(percentange))
+            self.log.info("completed " + str(percentange))
         predictedDataset = task['resultUri']
         dar = predictedDataset.split("/")
-        dataset = data_api.get_dataset(self.base_url, self.api_key, dar[len(dar)-1])
+        dataset = data_api.get_dataset(self.base_url, self.api_key, dar[len(dar)-1], self.log)
         df, predicts = ds.decode_predicted(dataset)
         return df, predicts
 
@@ -322,7 +326,7 @@ class Jaqpot:
     #     dataset_n = data_api.create_dataset_sync(self.base_url, self.api_key, jsondataset)
     #     print("Dataset created with id: " + dataset_n["_id"])
 
-    def deploy_linear_model(self, model, X, y, title, description, algorithm):
+    def deploy_linear_model(self, model, X, y, title, description, algorithm, doa=None):
         """
         Deploys sklearn linear_model to Jaqpot.
 
@@ -342,6 +346,8 @@ class Jaqpot:
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -369,10 +375,39 @@ class Jaqpot:
                                               additionalInfo)
         # j = json.dumps(pretrained)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
-    def deploy_tree(self, model, X, y, title, description, algorithm):
+    def deploy_tree(self, model, X, y, title, description, algorithm,  doa=None):
         """
         Deploys sklearn tree to Jaqpot.
 
@@ -392,6 +427,8 @@ class Jaqpot:
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -409,10 +446,39 @@ class Jaqpot:
                                               algorithm, "Decision tree Scikit learn", "scikit-learn-tree-model",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
-    def deploy_ensemble(self, model, X, y, title, description, algorithm):
+    def deploy_ensemble(self, model, X, y, title, description, algorithm, doa=None):
         """
         Deploys sklearn ensemble to Jaqpot.
 
@@ -432,6 +498,8 @@ class Jaqpot:
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -449,10 +517,39 @@ class Jaqpot:
                                               algorithm, "Ensemble Scikit learn", "scikit-learn-ensemble-model",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
-    def deploy_svm(self, model, X, y, title, description, algorithm):
+    def deploy_svm(self, model, X, y, title, description, algorithm, doa=None):
         """
         Deploys sklearn svm to Jaqpot.
 
@@ -472,6 +569,8 @@ class Jaqpot:
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -489,10 +588,39 @@ class Jaqpot:
                                               algorithm, "Svm Scikit learn", "scikit-learn-svm-model",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
-    def deploy_cluster(self, model, X, title, description, algorithm):
+    def deploy_cluster(self, model, X, title, description, algorithm,  doa=None):
         """
         Deploys sklearn clustering to Jaqpot.
 
@@ -504,14 +632,16 @@ class Jaqpot:
             model is a trained model that occurs from the sklearn.svm family of algorithms
         X : pandas dataframe
             The dataframe that is used to train the model (X variables).
-        y : pandas dataframe
-            The dataframe that is used to train the model (y variables).
+        # y : pandas dataframe
+        #     The dataframe that is used to train the model (y variables).
         title: String
             The title of the model
         description: String
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -531,8 +661,37 @@ class Jaqpot:
                                               algorithm, "Svm Scikit learn", "scikit-learn-clustering-model",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
     # def deploy_biclustering(self, model, X, y, title, description, algorithm):
     #     """
@@ -574,7 +733,7 @@ class Jaqpot:
     #     response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
     #     print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
 
-    def deploy_naive_bayess(self, model, X, y, title, description, algorithm):
+    def deploy_naive_bayess(self, model, X, y, title, description, algorithm,  doa=None):
         """
         Deploys sklearn naive_bayess to Jaqpot.
 
@@ -594,6 +753,8 @@ class Jaqpot:
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -611,10 +772,40 @@ class Jaqpot:
                                               algorithm, "Svm Scikit learn", "scikit-learn-naive-bayess-model",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
-    def deploy_nearest_neighbors(self, model, X, y, title, description, algorithm):
+
+    def deploy_nearest_neighbors(self, model, X, y, title, description, algorithm, doa=None):
         """
         Deploys sklearn naive_neighbours to Jaqpot.
 
@@ -634,6 +825,8 @@ class Jaqpot:
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -651,10 +844,39 @@ class Jaqpot:
                                               algorithm, "Svm Scikit learn", "scikit-learn-nearest-neighbours-model",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
-    def deploy_neural_network(self, model, X, y, title, description, algorithm):
+    def deploy_neural_network(self, model, X, y, title, description, algorithm, doa=None):
         """
         Deploys sklearn neural_network to Jaqpot.
 
@@ -674,6 +896,8 @@ class Jaqpot:
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -691,10 +915,39 @@ class Jaqpot:
                                               algorithm, "Svm Scikit learn", "scikit-learn-neural-network-model",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
-    def deploy_pipeline(self, pipeline, X, y, title, description, algorithm):
+    def deploy_pipeline(self, pipeline, X, y, title, description, algorithm, doa=None):
         """
         Deploys sklearn pipeline to Jaqpot.
 
@@ -714,6 +967,8 @@ class Jaqpot:
             The description of the model
         algorithm: String
             The algorithm that the model implements
+        doa: pandas dataframe
+            The dataset used to create the domain of applicability of the model
 
         Returns
         -------
@@ -731,8 +986,37 @@ class Jaqpot:
                                               algorithm, "Svm Scikit learn", "scikit-learn-pipeline",
                                               additionalInfo)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
-        response = models_api.post_pretrained_model(self.base_url, self.api_key, j)
-        print("Model with id: " + response['modelId'] + " created. Please visit https://app.jaqpot.org/")
+        if doa is None:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                modid = resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+            loop = asyncio.get_event_loop()
+            a = loop.create_task(jha.calculate_a(X))
+            b = loop.create_task(jha.calculate_doa_matrix(X))
+            all_groups = asyncio.gather(a, b)
+            results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            j = json.dumps(doa, cls=JaqpotSerializer)
+            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+            if resp is 201:
+                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                return modid
 
     def api_key(self):
         return self.api_key

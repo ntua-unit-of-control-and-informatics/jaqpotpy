@@ -4,6 +4,7 @@ from jaqpotpy.entities.meta import MetaInfo
 from jaqpotpy.entities.entryid import EntryId
 from jaqpotpy.entities.dataentry import DataEntry
 from jaqpotpy.dto.pretrained_requirements import PretrainedRequirements
+from jaqpotpy.entities.doa import Doa
 from base64 import b64encode
 import pickle
 
@@ -319,6 +320,74 @@ class PretrainedNeedsBuilder:
 
     def getTitle(self):
         return self.title
+
+
+class DOABuilder(metaclass=abc.ABCMeta):
+
+    def __init__(self):
+        self.doa = Doa()
+
+    @abc.abstractmethod
+    def set_modelid(self, modelid):
+        pass
+
+    @abc.abstractmethod
+    def set_doa_matrix(self, owner_uuid):
+        pass
+
+    @abc.abstractmethod
+    def set_aValue(self, a):
+        pass
+
+    @abc.abstractmethod
+    def get_modelid(self):
+        pass
+
+    @abc.abstractmethod
+    def get_doa_matrix(self):
+        pass
+
+    @abc.abstractmethod
+    def get_aValue(self):
+        pass
+
+
+class DoaBuilder(DOABuilder):
+    modelId = None
+    doaMatrix = None
+    aValue = None
+
+    def set_modelid(self, modelid):
+        self.modelId = modelid
+
+    def set_doa_matrix(self, doa_matrix):
+        self.doaMatrix = doa_matrix
+
+    def set_aValue(self, aValue):
+        self.aValue = aValue
+
+    def get_modelid(self):
+        return self.modelId
+
+    def get_doa_matrix(self):
+        return self.doiMatrix
+
+    def get_aValue(self):
+        return self.aValue
+
+
+class DoaDirector:
+    def __init__(self):
+        self._builder = None
+
+    def construct(self, builder):
+        doa = Doa()
+        self._builder = builder
+        doa.modelId = self._builder.get_modelid()
+        doa.doaMatrix = self._builder.get_doa_matrix()
+        doa.aValue = self._builder.get_aValue()
+        return doa
+
 
 # mb = MetaFeatureBuilder()
 # mb.add_comments("Comments")

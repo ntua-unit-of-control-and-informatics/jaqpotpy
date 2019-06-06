@@ -8,19 +8,19 @@ import urllib.parse
 model_path = "model"
 
 
-def post_pretrained_model(baseurl, api_key, json_request):
+def post_pretrained_model(baseurl, api_key, json_request, logger):
     uri = baseurl + model_path
     h = {'Content-Type': 'application/json',
          'Accept': 'application/json',
          'Authorization': "Bearer " + api_key}
     try:
         r = requests.post(uri, headers=h, data=json_request, verify=False)
-        return r.json()
+        return r
     except Exception as e:
-        print("Error http: " + str(e))
+        logger.error("Error http: " + str(e))
 
 
-def get_model(baseurl, api_key, modelid):
+def get_model(baseurl, api_key, modelid, logger):
     uri = baseurl + model_path + "/" + modelid
     h = {'Content-Type': 'application/json',
          'Accept': 'application/json',
@@ -29,10 +29,10 @@ def get_model(baseurl, api_key, modelid):
         r = requests.get(uri, headers=h, verify=False)
         return r.json()
     except Exception as e:
-        print("Error http: " + str(e))
+        logger.error("Error http: " + str(e))
 
 
-def predict(baseurl, api_key, modelid, dataseturi):
+def predict(baseurl, api_key, modelid, dataseturi, logger):
     uri = baseurl + model_path + "/" + modelid
     h = {"Content-type": "application/x-www-form-urlencoded",
          "Accept": "application/json",
@@ -46,10 +46,10 @@ def predict(baseurl, api_key, modelid, dataseturi):
         if r.status_code < 300:
             return r.json()
         else:
-            print("Error with code " + str(r.status_code))
-            print(r.json())
+            logger.error("Error with code " + str(r.status_code))
+            logger.error(r.json())
     except Exception as e:
-        print("Error http: " + str(e))
+        logger.error("Error http: " + str(e))
 
 
 # def post_pretrained_model(baseurl, api_key, json_request):
