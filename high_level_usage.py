@@ -37,7 +37,7 @@ import pydotplus
 # for algo in algos_classes:
 #     print(algo.meta)
 
-df = pd.read_csv('/Users/pantelispanka/Desktop/gdp-countries.csv')
+# df = pd.read_csv('/Users/pantelispanka/Desktop/gdp-countries.csv')
 # print(df)
 
 # df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
@@ -51,10 +51,10 @@ df = pd.read_csv('/Users/pantelispanka/Desktop/gdp-countries.csv')
 # jaqpot.upload_dataset(df=df2, id='PassengerId', title="Titanic from kaggle!", description="The Fame titanic Dataset")
 
 
-lm = LinearRegression()
+# lm = LinearRegression()
 
-y = df['GDP']
-X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
+# y = df['GDP']
+# X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
 
 
 # x_T = X.transpose()
@@ -83,11 +83,11 @@ X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
 # lev = X_t.dot(X)
 # print(lev)
 
-model = lm.fit(X=X, y=y)
+# model = lm.fit(X=X, y=y)
 
 # pred = model.predict(X)
 
-jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
+# jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 
 
 # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
@@ -96,8 +96,8 @@ jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 # jaqpot.request_key("guest", "guest")
 # jaqpot.request_key_safe()
 
-
-# jaqpot.deploy_linear_model(model, X, y, title="Model with Pantelis", description="Demonstration",
+#
+# jaqpot.deploy_linear_model(model, X, y, title="Model with TZIG!", description="HURRAY!!!",
 #                   algorithm="linear_model")
 
 
@@ -252,3 +252,15 @@ jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 # plt.xticks(())
 # plt.yticks(())
 # plt.show()
+
+
+#
+# X = pd.read_csv('/Users/pantelispanka/Python/jaqpotpy-test/Xall.csv')
+# y2 = pd.read_csv('/Users/pantelispanka/Python/jaqpotpy-test/Yall.csv')
+#
+#
+# clf = LogisticRegression(random_state=0, solver='lbfgs',
+#                           multi_class='multinomial', max_iter=10000 ).fit(X, y2)
+#
+# jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
+# jaqpot.deploy_linear_model(clf, X, y2, title="Logi test", description="Test to see feat", algorithm="Logistic")
