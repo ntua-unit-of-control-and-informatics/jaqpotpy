@@ -19,7 +19,7 @@ def authenticate_sync(baseurl, username, password):
     h = {"Content-type": "application/x-www-form-urlencoded",
          "Accept": "application/json"}
     try:
-        r = requests.post(uri, data=body, headers=h, verify=False)
+        r = requests.post(uri, data=body, headers=h)
         # resp = decode.decode_auth(r.text)
         return r.json()
     except Exception as e:

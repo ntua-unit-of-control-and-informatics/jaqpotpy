@@ -14,7 +14,7 @@ def post_pretrained_model(baseurl, api_key, json_request, logger):
          'Accept': 'application/json',
          'Authorization': "Bearer " + api_key}
     try:
-        r = requests.post(uri, headers=h, data=json_request, verify=False)
+        r = requests.post(uri, headers=h, data=json_request)
         return r
     except Exception as e:
         logger.error("Error http: " + str(e))
@@ -26,7 +26,7 @@ def get_model(baseurl, api_key, modelid, logger):
          'Accept': 'application/json',
          'Authorization': "Bearer " + api_key}
     try:
-        r = requests.get(uri, headers=h, verify=False)
+        r = requests.get(uri, headers=h)
         return r.json()
     except Exception as e:
         logger.error("Error http: " + str(e))
@@ -42,7 +42,7 @@ def predict(baseurl, api_key, modelid, dataseturi, logger):
     }
     body = urllib.parse.urlencode(data)
     try:
-        r = requests.post(uri, data=body, headers=h, verify=False)
+        r = requests.post(uri, data=body, headers=h)
         if r.status_code < 300:
             return r.json()
         else:

@@ -13,7 +13,7 @@ def create_feature_sync(baseurl, api_key, json_feat):
          "Accept": "application/json",
          'Authorization': token}
     try:
-        r = requests.post(uri, data=json_feat, headers=h, verify=False)
+        r = requests.post(uri, data=json_feat, headers=h)
         return r.json()
     except Exception as e:
         print("Error 1: " + str(e))
@@ -26,7 +26,7 @@ def get_feature(baseurl, api_key, featid):
          "Accept": "application/json",
          'Authorization': token}
     try:
-        r = requests.get(uri, headers=h, verify=False)
+        r = requests.get(uri, headers=h)
         return r.json()
     except Exception as e:
         print("Error 1: " + str(e))

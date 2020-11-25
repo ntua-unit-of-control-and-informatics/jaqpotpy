@@ -11,7 +11,7 @@ def create_dataset_sync(baseurl, api_key, json_dataset, logger):
          'Accept': 'application/json',
          'Authorization': "Bearer " + api_key}
     try:
-        r = requests.post(uri, headers=h, data=json_dataset, verify=False)
+        r = requests.post(uri, headers=h, data=json_dataset)
         if r.status_code < 300:
             return r.json()
         else:
@@ -32,7 +32,7 @@ def get_dataset(baseurl, api_key, datasetid, logger):
         'rowMax': '1000'
     }
     try:
-        r = requests.get(uri, headers=h, params=params, verify=False)
+        r = requests.get(uri, headers=h, params=params)
         if r.status_code < 300:
             return r.json()
         else:

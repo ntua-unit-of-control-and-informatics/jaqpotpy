@@ -19,7 +19,7 @@ from subprocess import call
 import pydotplus
 
 
-# jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
+jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 #
 # # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
 # jaqpot.request_key("pantelispanka", "kapan1")
@@ -121,7 +121,7 @@ import pydotplus
 
 
 # print(df2.to_json())
-# df, predicts = jaqpot.predict(df2, id='PassengerId', modelId="eZeZ7KwAz45dLdYzgihe")
+df, predicts = jaqpot.predict(df2, id='PassengerId', modelId="eZeZ7KwAz45dLdYzgihe")
 
 
 

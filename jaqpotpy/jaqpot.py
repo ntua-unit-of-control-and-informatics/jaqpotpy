@@ -45,10 +45,13 @@ class Jaqpot:
 
     """
 
-    def __init__(self, base_url, create_logs=False):
+    def __init__(self, base_url=None, create_logs=False):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(__name__, testing_mode=False, output_log_file=create_logs)
-        self.base_url = base_url
+        if base_url:
+            self.base_url = base_url
+        else:
+            self.base_url = ''
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
@@ -214,15 +217,15 @@ class Jaqpot:
             raise Exception("Cannot form a Jaqpot Dataset. Please provide a Dataframe")
         model = models_api.get_model(self.base_url, self.api_key, modelId, self.log)
         feats = []
-        for featUri in model['independentFeatures']:
-            featar = featUri.split("/")
-            feat = featapi.get_feature(self.base_url, self.api_key, featar[len(featar)-1])
-            feats.append(feat)
-        # feat_map = {}
-        # fk = 0
-        # for f in feats:
-        #     feat_map[f["meta"]["titles"][0]] = fk
-        #     fk += 1
+        # for featUri in model['independentFeatures']:
+        #     featar = featUri.split("/")
+        #     feat = featapi.get_feature(self.base_url, self.api_key, featar[len(featar)-1])
+        #     feats.append(feat)
+        for featUri in model['additionalInfo']['independentFeatures']:
+            print(featUri)
+            # featar = featUri.split("/")
+            # feat = featapi.get_feature(self.base_url, self.api_key, featar[len(featar)-1])
+            # feats.append(feat)
         feat_map = {}
         featutes = []
         keyi = 0
