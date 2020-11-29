@@ -2,17 +2,15 @@ from jaqpotpy import Jaqpot
 import pandas as pd
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
-import matplotlib
+# import matplotlib
 from sklearn.ensemble import BaggingClassifier
 from sklearn.svm import SVR
 import numpy as np
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-import seaborn as sns
+# matplotlib.use('TkAgg')
+#import matplotlib.pyplot as plt
+#import seaborn as sns
 import pickle
 from base64 import b64encode, b64decode
-from sklearn.tree import export_graphviz
-from sklearn.externals.six import StringIO
 import tempfile
 import base64
 from subprocess import call
@@ -20,9 +18,25 @@ import pydotplus
 
 
 jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
-#
-# # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
-# jaqpot.request_key("pantelispanka", "kapan1")
+
+
+
+
+df = pd.read_csv('/Users/pantelispanka/Desktop/every-day/datasets/gdp-countries.csv')
+
+lm = LinearRegression()
+
+y = df['GDP']
+X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
+
+model = lm.fit(X=X, y=y)
+
+
+#jaqpot = Jaqpot()
+jaqpot.request_key("pantelispanka", "kapan2")
+
+jaqpot.deploy_linear_model(model, X, y, title="Deploy!!!", description="Descripton!",
+                 algorithm="linear_model")
 
 
 # jaqpot.request_key_safe()
@@ -37,7 +51,7 @@ jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 # for algo in algos_classes:
 #     print(algo.meta)
 
-# df = pd.read_csv('/Users/pantelispanka/Desktop/gdp-countries.csv')
+
 # print(df)
 
 # df2 = pd.read_csv('/Users/pantelispanka/Desktop/train.csv')
@@ -121,7 +135,7 @@ jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 
 
 # print(df2.to_json())
-df, predicts = jaqpot.predict(df2, id='PassengerId', modelId="eZeZ7KwAz45dLdYzgihe")
+# df, predicts = jaqpot.predict(df2, id='PassengerId', modelId="eZeZ7KwAz45dLdYzgihe")
 
 
 

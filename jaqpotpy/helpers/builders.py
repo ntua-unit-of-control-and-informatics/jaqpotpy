@@ -8,6 +8,7 @@ from jaqpotpy.entities.doa import Doa
 from base64 import b64encode
 import pickle
 
+
 class FeatureDirector:
 
     def __init__(self):
@@ -370,7 +371,7 @@ class DoaBuilder(DOABuilder):
         return self.modelId
 
     def get_doa_matrix(self):
-        return self.doiMatrix
+        return self.doaMatrix
 
     def get_aValue(self):
         return self.aValue
