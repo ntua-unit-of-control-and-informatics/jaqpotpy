@@ -32,6 +32,90 @@ def get_model(baseurl, api_key, modelid, logger):
         logger.error("Error http: " + str(e))
 
 
+def get_my_models(baseurl, api_key, minimum, maximum, logger):
+    uri = baseurl + model_path
+    h = {'Content-Type': 'application/json',
+         'Accept': 'application/json',
+         'Authorization': "Bearer " + api_key}
+
+    d = {'min' : minimum,
+         'max' : maximum}
+    try:
+        r = requests.get(uri, headers=h, params=d)
+    except Exception as e:
+        logger.error("Error http: " + str(e))
+    else:
+        retJson = {}
+        r = r.json()
+        retJson["total"] = int(r.headers["total"])
+        retJson["models"] = r
+
+    return retJson
+
+def get_orgs_models(baseurl, api_key, orgId, minimum, maximum, logger):
+    uri = baseurl + model_path
+    h = {'Content-Type': 'application/json',
+         'Accept': 'application/json',
+         'Authorization': "Bearer " + api_key}
+
+    d = {'organization' : orgId,
+         'min' : minimum,
+         'max' : maximum}
+    try:
+        r = requests.get(uri, headers=h, params=d)
+    except Exception as e:
+        logger.error("Error http: " + str(e))
+    else:
+        retJson = {}
+        r = r.json()
+        retJson["total"] = int(r.headers["total"])
+        retJson["models"] = r
+    
+    return retJson
+
+def get_models_by_tag(baseurl, api_key, tag, minimum, maximum, logger):
+    uri = baseurl + model_path
+    h = {'Content-Type': 'application/json',
+         'Accept': 'application/json',
+         'Authorization': "Bearer " + api_key}
+
+    d = {'tag' : tag,
+         'min' : minimum,
+         'max' : maximum}
+    try:
+        r = requests.get(uri, headers=h, params=d)
+    except Exception as e:
+        logger.error("Error http: " + str(e))
+    else:
+        retJson = {}
+        r = r.json()
+        retJson["total"] = int(r.headers["total"])
+        retJson["models"] = r
+    
+    return retJson
+
+def get_models_by_tag_and_org(baseurl, api_key, organization, tag, minimum, maximum, logger):
+    uri = baseurl + model_path
+    h = {'Content-Type': 'application/json',
+         'Accept': 'application/json',
+         'Authorization': "Bearer " + api_key}
+
+    d = {'organization' : organization,
+         'tag' : tag,
+         'min' : minimum,
+         'max' : maximum}
+    try:
+        r = requests.get(uri, headers=h, params=d)
+    except Exception as e:
+        logger.error("Error http: " + str(e))
+    else:
+        retJson = {}
+        r = r.json()
+        retJson["total"] = int(r.headers["total"])
+        retJson["models"] = r
+    
+    return retJson
+
 def predict(baseurl, api_key, modelid, dataseturi, logger):
     uri = baseurl + model_path + "/" + modelid
     h = {"Content-type": "application/x-www-form-urlencoded",
