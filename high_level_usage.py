@@ -18,12 +18,34 @@ import pydotplus
 
 df = pd.read_csv('/Users/pantelispanka/Desktop/every-day/datasets/gdp-countries.csv')
 
-lm = LinearRegression()
 
-y = df['GDP']
-X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
+jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
 
-model = lm.fit(X=X, y=y)
+# JASON'S TEST - START - 17/12/2020
+token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDgyMjAyMzEsImlhdCI6MTYwODIxMzAzMSwiYXV0aF90aW1lIjoxNjA4MjEzMDMxLCJqdGkiOiI2NDQyZDZkNi1mMWQwLTQzZGYtYTI3ZC1kYjQ4Y2QxYjA1YTEiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJhMjhjNzhiZjIwNjUwZmYzNGExNDc2MmNmMDc0NGFjOTNhTFE4ZUlGbSIsInNlc3Npb25fc3RhdGUiOiJmZWYyOGVlZi0yZGI2LTQ3MTQtOTBiMS1hMTg0NjQ3ZDcxYWIiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.IiVotcB1PHTGrOliEseaW88vnQUzES-FStlF6t7H1oJGLU96vUXIDapF-G3Fq-SQlhZEVTeO-a4tC0oCZZQoLRa8Wrt1ZNStvVLFnfmafa-Qh4qQcK_kiVRt8Dm-QomIvf9bnpKyGzfcVm0P0VCtL8FgPSgGKOdhtFSCjrdSKmJ7gAsE5zMFeH_7CahlcTA8B9M1t7DDikZAgU2VJBVC-lFxR2tt4kicSykAFpooMuDoidzaC8MJC-aJlYTp_ezYxATCWOSGKm6pUFtsNXB80IAcOtJVH-JtH6T0sbBml_sqFeu84ql-4V5vqChnTZlh4E33tDzZQNtca9-6s-6sAg"
+jaqpot.set_api_key(token)
+
+# Test get_my_models
+models = jaqpot.get_my_models(0,10)
+print(models)
+print('\n\n\n', len(models))
+
+
+# Test DOA
+# doa = jaqpot.get_doa("JqjN8N3orvJgvo610W3X")
+# print(doa)
+
+# JASON'S TEST - END - 17/12/2020
+
+
+# df = pd.read_csv('/Users/pantelispanka/Desktop/every-day/datasets/gdp-countries.csv')
+
+# lm = LinearRegression()
+
+# y = df['GDP']
+# X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
+
+# model = lm.fit(X=X, y=y)
 
 # print(model.predict(X))
 
@@ -42,6 +64,9 @@ jaqpot.deploy_linear_model(model, X, y, title="For Marios!!", description="With 
 #jaqpot = Jaqpot()
 # jaqpot.request_key("pantelispanka", "kapan2")
 
+
+# jaqpot.deploy_linear_model(model, X, y, title="Deploy!!!", description="Descripton!",
+#                  algorithm="linear_model")
 
 
 

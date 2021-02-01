@@ -4,3 +4,4 @@ pyjwt
 simplejson
 pydotplus
 requests
+pydantic
