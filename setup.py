@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='jaqpotpy',
-      version='0.0.4',
+      version='0.0.6',
       description='Python client for Jaqpot',
       url='https://github.com/KinkyDesign/jaqpotpy',
       author='Pantelis Karatzas',
@@ -9,8 +9,8 @@ setup(name='jaqpotpy',
       license='GNU General Public License v3.0',
       packages=['jaqpotpy', 'jaqpotpy.api', 'jaqpotpy.mappers'
                 , 'jaqpotpy.entities', 'jaqpotpy.dto'
-                , 'jaqpotpy.helpers', 'jaqpotpy.colorlog'],
+                , 'jaqpotpy.helpers', 'jaqpotpy.colorlog', 'jaqpotpy.models'],
       install_requires=[
-            'pandas', 'pyjwt', 'requests'
+            'pandas', 'pyjwt', 'requests', 'pydantic'
       ],
       zip_safe=False)
