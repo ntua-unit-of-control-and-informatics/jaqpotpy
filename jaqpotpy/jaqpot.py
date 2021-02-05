@@ -1061,16 +1061,16 @@ class Jaqpot:
             raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
         if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
             raise Exception('Function deploy_glm supports pandas dataframe or series. Y is not one')
-        coef_flatten = model.coef_.flatten()
-        intercept_flatten = model.intercept_.flatten()
-        coef_df = pd.DataFrame(list(zip(list(X), coef_flatten)), columns=['Features', 'coeff'])
-        intercept = pd.DataFrame([('(intercept)', intercept_flatten[0])], columns=['Features', 'coeff'])
-        coefs_all = intercept.append(coef_df, ignore_index=True)
-        coefs = {}
+        # coef_flatten = model.coef_.flatten()
+        # intercept_flatten = model.intercept_.flatten()
+        # coef_df = pd.DataFrame(list(zip(list(X), coef_flatten)), columns=['Features', 'coeff'])
+        # intercept = pd.DataFrame([('(intercept)', intercept_flatten[0])], columns=['Features', 'coeff'])
+        # coefs_all = intercept.append(coef_df, ignore_index=True)
+        # coefs = {}
         additionalInfo = {}
-        for key in coefs_all.values:
-            coefs[key[0]] = key[1]
-        additionalInfo['coefficients'] = coefs
+        # for key in coefs_all.values:
+        #     coefs[key[0]] = key[1]
+        # additionalInfo['coefficients'] = coefs
         additionalInfo['inputSeries'] = list(X)
         pretrained = help.create_pretrain_req(model, X, y, title, description,
                                               algorithm, "XGBoost model", "XGBoost-model",

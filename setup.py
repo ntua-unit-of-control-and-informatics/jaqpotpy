@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='jaqpotpy',
-      version='0.0.6',
+      version='0.0.8',
       description='Python client for Jaqpot',
       url='https://github.com/KinkyDesign/jaqpotpy',
       author='Pantelis Karatzas',
