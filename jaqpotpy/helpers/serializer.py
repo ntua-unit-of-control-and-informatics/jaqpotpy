@@ -9,15 +9,15 @@ class JaqpotSerializer(json.JSONEncoder):
     #     json.JSONEncoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
 
     def default(self, o):
-        # if isinstance(o, np.ndarray):
-        #     if o.flags['C_CONTIGUOUS']:
-        #         obj_data = o.data
-        #     else:
-        #         cont_obj = np.ascontiguousarray(o)
-        #         assert (cont_obj.flags['C_CONTIGUOUS'])
-        #         obj_data = cont_obj.data
-        #     return o.tolist()
         delete = []
+        if isinstance(o, np.ndarray):
+            if o.flags['C_CONTIGUOUS']:
+                obj_data = o.data
+            else:
+                cont_obj = np.ascontiguousarray(o)
+                assert(cont_obj.flags['C_CONTIGUOUS'])
+                obj_data = cont_obj.data
+            return o.tolist()
         for key in o.__dict__:
             if getattr(o, key) is None or "":
                 delete.append(key)
