@@ -24,9 +24,13 @@ class JaqpotSerializer(json.JSONEncoder):
             return {'mappingproxy': " "}
         if type(o).__name__ == 'set':
             return {'set': " "}
-        for key in o.__dict__:
-            if getattr(o, key) is None or "":
-                delete.append(key)
+        try:
+            for key in o.__dict__:
+                if getattr(o, key) is None or "":
+                    delete.append(key)
+        except AttributeError:
+            return {type(o).__name__: " "}
+
         for keytod in delete:
             delattr(o, keytod)
         # except AttributeError:

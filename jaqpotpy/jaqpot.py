@@ -99,7 +99,8 @@ class Jaqpot:
         try:
             au_req = jaqlogin.authenticate_sync(self.base_url, username, password)
             self.api_key = au_req['authToken']
-            self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
+            self.log.info("api key is set")
+            # self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
         except Exception as e:
             self.log.error("Error: " + str(e))
 
@@ -113,7 +114,8 @@ class Jaqpot:
             password = getpass.getpass("Password: ")
             au_req = jaqlogin.authenticate_sync(self.base_url, username, password)
             self.api_key = au_req['authToken']
-            self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
+            self.log.info("api key is set")
+            # self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
         except Exception as e:
             self.log.error("Error: " + str(e))
 
@@ -216,29 +218,31 @@ class Jaqpot:
         if type(df).__name__ != 'DataFrame':
             raise Exception("Cannot form a Jaqpot Dataset. Please provide a Dataframe")
         model = models_api.get_model(self.base_url, self.api_key, modelId, self.log)
-        feats = []
+        # feats = []
         # for featUri in model['independentFeatures']:
         #     featar = featUri.split("/")
         #     feat = featapi.get_feature(self.base_url, self.api_key, featar[len(featar)-1])
         #     feats.append(feat)
-        for featUri in model['additionalInfo']['independentFeatures']:
-            print(featUri)
+        # for featUri in model['additionalInfo']['independentFeatures']:
+        #     print(featUri)
             # featar = featUri.split("/")
             # feat = featapi.get_feature(self.base_url, self.api_key, featar[len(featar)-1])
             # feats.append(feat)
         feat_map = {}
         featutes = []
         keyi = 0
-        for feat in feats:
+
+        for key,value in model['additionalInfo']['independentFeatures'].items():
             feat_info = FeatureInfo()
             # f = featapi.create_feature_sync(self.base_url, self.api_key, feat)
-            feat_uri = self.base_url + "feature/" + feat["_id"]
-            feat_map[feat["meta"]["titles"][0]] = keyi
+            feat_uri = key
+            feat_map[value] = keyi
             feat_info.uri = feat_uri
-            feat_info.name = feat["meta"]["titles"][0]
+            feat_info.name = value
             feat_info.key = keyi
             featutes.append(feat_info.__dict__)
             keyi += 1
+
         dataset = Dataset()
         meta = MetaInfo()
         meta.creators = [self.user_id]
@@ -352,12 +356,14 @@ class Jaqpot:
                 resp = response.json()
                 self.log.error("Some error occured: " + resp['message'])
                 return
-            loop = asyncio.get_event_loop()
-            a = loop.create_task(jha.calculate_a(X))
-            b = loop.create_task(jha.calculate_doa_matrix(X))
-            all_groups = asyncio.gather(a, b)
-            results = loop.run_until_complete(all_groups)
-            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            # loop = asyncio.get_event_loop()
+            # a = loop.create_task(jha.calculate_a(X))
+            # b = loop.create_task(jha.calculate_doa_matrix(X))
+            a = jha.calculate_a(X)
+            b = jha.calculate_doa_matrix(X)
+            # all_groups = asyncio.gather(a, b)
+            # results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
             j = json.dumps(doa, cls=JaqpotSerializer)
             resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
             if resp == 201:
@@ -446,12 +452,14 @@ class Jaqpot:
                 resp = response.json()
                 self.log.error("Some error occured: " + resp['message'])
                 return
-            loop = asyncio.get_event_loop()
-            a = loop.create_task(jha.calculate_a(X))
-            b = loop.create_task(jha.calculate_doa_matrix(X))
-            all_groups = asyncio.gather(a, b)
-            results = loop.run_until_complete(all_groups)
-            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            # loop = asyncio.get_event_loop()
+            # a = loop.create_task(jha.calculate_a(X))
+            # b = loop.create_task(jha.calculate_doa_matrix(X))
+            # all_groups = asyncio.gather(a, b)
+            # results = loop.run_until_complete(all_groups)
+            a = jha.calculate_a(X)
+            b = jha.calculate_doa_matrix(X)
+            doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
             j = json.dumps(doa, cls=JaqpotSerializer)
             resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
             if resp == 201:
@@ -534,12 +542,15 @@ class Jaqpot:
                 resp = response.json()
                 self.log.error("Some error occured: " + resp['message'])
                 return
-            loop = asyncio.get_event_loop()
-            a = loop.create_task(jha.calculate_a(X))
-            b = loop.create_task(jha.calculate_doa_matrix(X))
-            all_groups = asyncio.gather(a, b)
-            results = loop.run_until_complete(all_groups)
-            doa = help.create_doa(inv_m=results[1].values.tolist(), a=results[0], modelid=resp['modelId'])
+            # loop = asyncio.get_event_loop()
+            # a = loop.create_task(jha.calculate_a(X))
+            # b = loop.create_task(jha.calculate_doa_matrix(X))
+
+            a = jha.calculate_a(X)
+            b = jha.calculate_doa_matrix(X)
+            # all_groups = asyncio.gather(a, b)
+            # results = loop.run_until_complete(all_groups)
+            doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
             j = json.dumps(doa, cls=JaqpotSerializer)
             resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
             if resp == 201:

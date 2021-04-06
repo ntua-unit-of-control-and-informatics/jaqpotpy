@@ -107,3 +107,10 @@ bin/
 include/
 .idea/
 pip-selfcheck.json
+
+Scripts/
+
+.pyvenv.cfg
+pyvenv.cfg
+pyvenv.cfg
+pyvenv.cfg
