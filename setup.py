@@ -1,7 +1,10 @@
 from setuptools import setup
 
+# python setup.py bdist_wheel
+# twine upload dist/*
+
 setup(name='jaqpotpy',
-      version='0.0.8',
+      version='1.0.8',
       description='Python client for Jaqpot',
       url='https://github.com/KinkyDesign/jaqpotpy',
       author='Pantelis Karatzas',

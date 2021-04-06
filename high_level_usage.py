@@ -15,28 +15,17 @@ import tempfile
 import base64
 from subprocess import call
 import pydotplus
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.svm import SVC
+from sklearn.pipeline import make_pipeline
+
 
 df = pd.read_csv('/Users/pantelispanka/Desktop/every-day/datasets/gdp-countries.csv')
 
-
-# jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
-
-# JASON'S TEST - START - 17/12/2020
-# token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDgyMjAyMzEsImlhdCI6MTYwODIxMzAzMSwiYXV0aF90aW1lIjoxNjA4MjEzMDMxLCJqdGkiOiI2NDQyZDZkNi1mMWQwLTQzZGYtYTI3ZC1kYjQ4Y2QxYjA1YTEiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJhMjhjNzhiZjIwNjUwZmYzNGExNDc2MmNmMDc0NGFjOTNhTFE4ZUlGbSIsInNlc3Npb25fc3RhdGUiOiJmZWYyOGVlZi0yZGI2LTQ3MTQtOTBiMS1hMTg0NjQ3ZDcxYWIiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.IiVotcB1PHTGrOliEseaW88vnQUzES-FStlF6t7H1oJGLU96vUXIDapF-G3Fq-SQlhZEVTeO-a4tC0oCZZQoLRa8Wrt1ZNStvVLFnfmafa-Qh4qQcK_kiVRt8Dm-QomIvf9bnpKyGzfcVm0P0VCtL8FgPSgGKOdhtFSCjrdSKmJ7gAsE5zMFeH_7CahlcTA8B9M1t7DDikZAgU2VJBVC-lFxR2tt4kicSykAFpooMuDoidzaC8MJC-aJlYTp_ezYxATCWOSGKm6pUFtsNXB80IAcOtJVH-JtH6T0sbBml_sqFeu84ql-4V5vqChnTZlh4E33tDzZQNtca9-6s-6sAg"
-# jaqpot.set_api_key(token)
-
-# Test get_my_models
-# models = jaqpot.get_my_models(0,10)
-# print(models)
-# print('\n\n\n', len(models))
-
-
-# Test DOA
-# doa = jaqpot.get_doa("JqjN8N3orvJgvo610W3X")
-# print(doa)
-
-# JASON'S TEST - END - 17/12/2020
-
+dft = pd.read_table('/Users/pantelispanka/Downloads/smsspamcollection/SMSSpamCollection')
+print(dft)
 
 df = pd.read_csv('/Users/pantelispanka/Desktop/every-day/datasets/gdp-countries.csv')
 
@@ -47,14 +36,33 @@ X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
 
 model = lm.fit(X=X, y=y)
 
-# print(model.predict(X))
-
-# jaqpot = Jaqpot()
-jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
+jaqpot = Jaqpot()
 # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
-# jaqpot.request_key_safe()
-jaqpot.deploy_sklearn_model(model, X, y, title="v1.0", description="Tests!!")
+jaqpot.request_key_safe()
+jaqpot.deploy_sklearn(model, X, y, title="Model with Meta", description="Tests!!", doa=X, model_meta=True)
+
+
+# pipe = Pipeline([('scaler', StandardScaler()), ('linear', LinearRegression())])
+# pipeline = pipe.fit(X=X, y=y)
+# jaqpot.deploy_sklearn(pipeline, X, y, title="v1.0", description="Tests!!")
+
+
+# XT = dft['Text']
+# YT = dft['Class']
+# vectorizer = TfidfVectorizer()
+# X = vectorizer.fit_transform(XT)
+# clf = make_pipeline(TfidfVectorizer(), SVC(gamma='auto'))
+#
+# text_pipe = clf.fit(XT, YT)
+# jaqpot.deploy_sklearn(text_pipe, XT, YT, title="text!", description="Tests!!", model_meta=False)
+
+
+
 # jaqpot.
+
+# pipe = Pipeline([('scaler', TfidfVectorizer()), ('linear', LinearRegression())])
+
+
 
 # jaqpot.set_api_key("eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDgzMDM3MDAsImlhdCI6MTYwODI5NjUwMSwiYXV0aF90aW1lIjoxNjA4Mjk2NTAwLCJqdGkiOiIyMTFmMDI4YS1iM2ZkLTQ3NDYtYTIwNi02NGYwNDE2ZDAyM2QiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6ImE3YTE2YTU0LTgzZDMtNDAxZC05ZmMxLTI5NDU0ZGY4MzQwYyIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJiYzI2ODJlNTU1OTBiN2QzMjk2ZDIwYWJmNDcyMWNkZWZibXJCM1pzNCIsInNlc3Npb25fc3RhdGUiOiJkMjVkOWQwZi05NTlmLTQyYTYtYTRkZC0zNGI5MWI3MWZjNDQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiZ3Vlc3RVc2VyIGd1ZXN0VXNlciIsInByZWZlcnJlZF91c2VybmFtZSI6Imd1ZXN0dXNlciIsImdpdmVuX25hbWUiOiJndWVzdFVzZXIiLCJmYW1pbHlfbmFtZSI6Imd1ZXN0VXNlciIsImVtYWlsIjoiZ3Vlc3R1c2VyQGd1ZXN0dXNlci5jb20ifQ.ACqVRKe8_1tqUYXzV9TAdrVNQFp08bgWXaAKFSzP0b40gR0IzsuSDjxiNCKVWzb9Q_8ZMGbEF2t_ZNbttY93Z22iWQzpzXaHnMw-NJlu0fgR08VW8S5OKGEzlTEyCH42WgPl4YWNPSF06fCwGisaim543fJbxSro_y8SvuF_wXd8P3MI1vChMylseIemP13t-IuuZ5B6Y77KTE3MoVnqLx14dGci44N3uSwye4MehFH2Os3qzFE9GnMEa02elzemuM05gcjzNlhYyu-GyUxSxKdNJhsn8pjgILn73UD3PCn5n14AB7Hg3Fw9i3YDfzrKSVgbmq_3vXoZFpgJfwOELQ")
 # jaqpot.set_api_key("eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MDgyMzEzMjAsImlhdCI6MTYwODIyNDEyMSwiYXV0aF90aW1lIjoxNjA4MjI0MTIwLCJqdGkiOiIxZGJiZDliOS05MDg5LTRmZGItODM2Yi1mNzkxMzI2OTU0YzgiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJhZDU3MTcxMGMyZGFmMzk4ZjIyZGYwNWJlMjFlYTIxOGM0bGZPNzhpVyIsInNlc3Npb25fc3RhdGUiOiI1ZTBiYTQxYS1jMzYxLTRiODMtODM2Ni1kZTY1M2M2YzM2ODciLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.jf9Hmo0Lo7sE00TgpeDoB602wqNIC_iou4lxdOtYturQ_DtnYQlgTFYemT9cvxvW2U2_qFKCHjJK5UnPC-_9tA2yzlTvSfNML3XUwjNW5ngqYVRanDZN3KGEyaItXXFq6WWx8Cz7ATz0LqBZ8iB_DiWIg_XCKV9ecb2I8zfvpXh7r8x-RKi61tpeoWkfLVabdo8PaZRoAoeXrCxHrvkyHVHIyuymZ7gBcEoIxk_9a3mbvKHqD9_g1sIoY3fgC2wF1Ly1yMOXQ-yRMPtQCaJe-_xNRjv53gwm5F3UAVOpie7cxcryDzaG5dqDXqejic8_D72JM-mSE2-AkabzdiQvBw")

@@ -55,8 +55,11 @@ def create_pretrain_req(model, X, y, title, description, algorithm, implementedW
     pnb = PretrainedNeedsBuilder()
     independentFeatures = []
     dependendFeatures = []
-    for fe in list(X):
-        independentFeatures.append(fe)
+    if type(X).__name__ is 'DataFrame':
+        for xe in list(X):
+            independentFeatures.append(xe)
+    elif type(X).__name__ is 'Series':
+        independentFeatures.append(X.name)
     if type(y).__name__ is 'DataFrame':
         for fe in list(y):
             dependendFeatures.append(fe)

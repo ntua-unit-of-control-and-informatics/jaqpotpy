@@ -18,11 +18,20 @@ class JaqpotSerializer(json.JSONEncoder):
                 assert(cont_obj.flags['C_CONTIGUOUS'])
                 obj_data = cont_obj.data
             return o.tolist()
+        if isinstance(o, np.int64):
+            return int(o)
+        if type(o).__name__ == 'mappingproxy':
+            return {'mappingproxy': " "}
+        if type(o).__name__ == 'set':
+            return {'set': " "}
         for key in o.__dict__:
             if getattr(o, key) is None or "":
                 delete.append(key)
         for keytod in delete:
             delattr(o, keytod)
+        # except AttributeError:
+        #     delete.append(key)
+
         return o.__dict__
 
 
@@ -52,3 +61,4 @@ class JaqpotSerializer(json.JSONEncoder):
 # print(json.dumps(fe.__dict__))
 # print(json.dumps(fe, cls=JaqpotSerializer))
 # print(json.dumps(fe.__dict__, cls=JaqpotSerializer))
+''
