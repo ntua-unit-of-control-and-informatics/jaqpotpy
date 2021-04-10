@@ -28,80 +28,80 @@ from sklearn.pipeline import make_pipeline
 
 
 
-# df = pd.read_csv('/Users/pantelispanka/Desktop/every-day/datasets/gdp-countries.csv')
-#
+df = pd.read_csv('/Users/pantelispanka/Desktop/every-day/datasets/gdp-countries.csv')
+
 # dft = pd.read_table('/Users/pantelispanka/Downloads/smsspamcollection/SMSSpamCollection')
 # print(dft)
-#
+
 # df = pd.read_csv('/Users/pantelispanka/Desktop/every-day/datasets/gdp-countries.csv')
+
+lm = LinearRegression()
+
+y = df['GDP']
+X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
+
+model = lm.fit(X=X, y=y)
+
+jaqpot = Jaqpot()
+# jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+jaqpot.set_api_key("eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MTc5MDA1OTYsImlhdCI6MTYxNzg5MzM5NiwiYXV0aF90aW1lIjoxNjE3ODkzMzk2LCJqdGkiOiI4NjFhMTUwNy1iYmNhLTQxNzktOTU2MC0yYTE5NGQxOWNkYmYiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjpbImJyb2tlciIsImFjY291bnQiXSwic3ViIjoiNjJlNmMyMTktMTAzYy00N2YyLTk1NzgtNDc3YjM0ZDAxZDk1IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiamFxcG90LXVpLWNvZGUiLCJub25jZSI6ImYyMmM0NTQwMmFlNmFhMzBkYWYwZjI2MmRiZmIyNGY1NmIzUkRGSzBqIiwic2Vzc2lvbl9zdGF0ZSI6IjMzNDllYzUwLTQxNjgtNGIwYy04OGUzLTc2NDQ3ZWVkYTQyOSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiJyonIiwiKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImJyb2tlciI6eyJyb2xlcyI6WyJyZWFkLXRva2VuIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFxcG90IENvbnRhY3QiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqYXFwb3RAamFxcG90Lm9yZyIsImdpdmVuX25hbWUiOiJKYXFwb3QiLCJmYW1pbHlfbmFtZSI6IkNvbnRhY3QiLCJlbWFpbCI6ImphcXBvdEBqYXFwb3Qub3JnIn0.oGViEKABNuo9SYfBbz02pN5t_xUFNc9r35LFVouKEtXEkinREQEMB4hUpWwVo-Yh1OvdMtuQ4M77o4ZfZVRLmM6EKS-WHk57ygHR1cOEOenRysN-_r531R9b4eeei9NeYgx3Q-Oty6U51jo8nZ5-XOBZh1sZXjAiZy0rBH-4ZpPPL0qbNFAO4Ywk7kqyUPqAqKRa9UrAbiAqdY1Im_hDiJydi5AqTsl3tLpYZUwGBlBQf3aMzPeeY6aOk1ab5xq3e5UrbEftRftPPQUXwbar58UuIpBEVeRyHss8deUVYU-3GX7rYoob84gX_HmTSNAvlkKuxw6DFGhPHiO6bvXejw")
+jaqpot.deploy_sklearn(model, X, y, title="Model with Meta", description="Tests!!", doa=X, model_meta=True)
+
+
+pipe = Pipeline([('scaler', StandardScaler()), ('linear', LinearRegression())])
+pipeline = pipe.fit(X=X, y=y)
+jaqpot.deploy_sklearn(pipeline, X, y, title="v1.0", description="Tests!!")
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import pandas as pd
+# import numpy as np
+# from sklearn.ensemble import RandomForestClassifier
+# from jaqpotpy import Jaqpot
 #
-# lm = LinearRegression()
 #
-# y = df['GDP']
-# X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
+# df = pd.read_csv('Full dataset Cytox.csv')
+# rowIDs = df.pop('row ID')
+# y = df.pop('Toxicity')
 #
-# model = lm.fit(X=X, y=y)
+# trainIDs = pd.read_csv('Training Cytox.csv')['row ID']
 #
-# jaqpot = Jaqpot()
-# # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
-# jaqpot.request_key_safe()
-# jaqpot.deploy_sklearn(model, X, y, title="Model with Meta", description="Tests!!", doa=X, model_meta=True)
+# X_train = df[rowIDs.isin(trainIDs)]
+# y_train = y[rowIDs.isin(trainIDs)]
 #
-
-# pipe = Pipeline([('scaler', StandardScaler()), ('linear', LinearRegression())])
-# pipeline = pipe.fit(X=X, y=y)
-# jaqpot.deploy_sklearn(pipeline, X, y, title="v1.0", description="Tests!!")
-
-
-
-
-
-
-
-
-
-
-
-
-
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from jaqpotpy import Jaqpot
-
-
-df = pd.read_csv('Full dataset Cytox.csv')
-rowIDs = df.pop('row ID')
-y = df.pop('Toxicity')
-
-trainIDs = pd.read_csv('Training Cytox.csv')['row ID']
-
-X_train = df[rowIDs.isin(trainIDs)]
-y_train = y[rowIDs.isin(trainIDs)]
-
-
-all_columns = ['Ec (eV)',
- 'Exposure dose (ug/mL)',
- '704.0',
- '706.0',
- 'total surface area (m^2)']
-
-
-X_train = X_train[all_columns]
-
-
-cols = ['Ec (eV)', 'Exposure dose (ug/mL)', 'V∥ Me atoms all', 'V∥ Me atoms surface', 'Total surface area (m^2)']
-
-X_train.columns = cols
-
-j = Jaqpot()
-
-j.set_api_key('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MTc3Mjc4NTQsImlhdCI6MTYxNzcyMDY2MCwiYXV0aF90aW1lIjoxNjE3NzIwNjU0LCJqdGkiOiIwMTcxNGE4OS04YTZiLTRmZmItYjlhZS1hMjVhNjQ3ZTEzMGQiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJkZGU4MDg0YWUxMzE0YWYxODkzN2FiNTc4MmQ5OGNmMDIxZnhHc01YWiIsInNlc3Npb25fc3RhdGUiOiI0YzRkYzZiMy1kYzI5LTQ1NTAtOTFiOC0yYTE3ZWQyYTIyNDYiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.i6JW52oxWj8_LhPe5NW7StFubyHBhxS_-k6BrFij82JodTCuUSy2O-HyhlnIJgILi3K1pHQTOsyCpcJyKyvAiJec08nxPKYFflBkxJ8LyGErmfu4GQTD3UQXGlvUfci_x6GyoVuc7gpreDUTKrBxI1e32eiUPN_YRBMT488xpNrVIkHPkTHgiEZADoInA58vsiQhw5_9REvG3jW0pj1uXWn0mhTWWDXrWGZgZc3N7nVJu5eBEpMiny5JlZ0dZqfx_jP8pJ07EQ1XUSpTTOlnKuIg7CYWmECH3KC1cVFuxIg-t9qacYkgdFvM6b76PNv_gTXGHVj0p7CUfxSsltS7kg')
-
-
-preds,df = j.predict(X_train, 'TsIBjv8H4qtbURAOfcF6')
-print(preds)
-print(df)
+#
+# all_columns = ['Ec (eV)',
+#  'Exposure dose (ug/mL)',
+#  '704.0',
+#  '706.0',
+#  'total surface area (m^2)']
+#
+#
+# X_train = X_train[all_columns]
+#
+#
+# cols = ['Ec (eV)', 'Exposure dose (ug/mL)', 'V∥ Me atoms all', 'V∥ Me atoms surface', 'Total surface area (m^2)']
+#
+# X_train.columns = cols
+#
+# j = Jaqpot()
+#
+# j.set_api_key('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2MTc3Mjc4NTQsImlhdCI6MTYxNzcyMDY2MCwiYXV0aF90aW1lIjoxNjE3NzIwNjU0LCJqdGkiOiIwMTcxNGE4OS04YTZiLTRmZmItYjlhZS1hMjVhNjQ3ZTEzMGQiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6Ijc2NWYzZDIwLTc4YWUtNDdkZC05OTJmLTU3OTdiZGYxNWU5MCIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiJkZGU4MDg0YWUxMzE0YWYxODkzN2FiNTc4MmQ5OGNmMDIxZnhHc01YWiIsInNlc3Npb25fc3RhdGUiOiI0YzRkYzZiMy1kYzI5LTQ1NTAtOTFiOC0yYTE3ZWQyYTIyNDYiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiSmFzb24gU290aXJvcG91bG9zIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiamFzb25zb3RpMUBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiSmFzb24iLCJmYW1pbHlfbmFtZSI6IlNvdGlyb3BvdWxvcyIsImVtYWlsIjoiamFzb25zb3RpMUBnbWFpbC5jb20ifQ.i6JW52oxWj8_LhPe5NW7StFubyHBhxS_-k6BrFij82JodTCuUSy2O-HyhlnIJgILi3K1pHQTOsyCpcJyKyvAiJec08nxPKYFflBkxJ8LyGErmfu4GQTD3UQXGlvUfci_x6GyoVuc7gpreDUTKrBxI1e32eiUPN_YRBMT488xpNrVIkHPkTHgiEZADoInA58vsiQhw5_9REvG3jW0pj1uXWn0mhTWWDXrWGZgZc3N7nVJu5eBEpMiny5JlZ0dZqfx_jP8pJ07EQ1XUSpTTOlnKuIg7CYWmECH3KC1cVFuxIg-t9qacYkgdFvM6b76PNv_gTXGHVj0p7CUfxSsltS7kg')
+#
+#
+# preds,df = j.predict(X_train, 'TsIBjv8H4qtbURAOfcF6')
+# print(preds)
+# print(df)
 
 # j.deploy_sklearn(clf, X_train, y_train, 'Metal Oxides Cytotoxicity Classification', 'Random Forest model to classify cytotoxicity of metal oxides', model_meta=True, doa=X_train)
 
