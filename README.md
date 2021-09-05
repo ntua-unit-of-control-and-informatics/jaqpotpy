@@ -50,11 +50,10 @@ These keys have short life and should be updated on each login.
 An example code that demonstrates a model deployemnt.
 
 
-:::caution
 
-Warning! One of the things that may differ from simpler training and validation routes is that you need to train your model with a pandas dataframe as input and not with Numpy arrays!
 
-:::
+*  Warning! One of the things that may differ from simpler training and validation routes is that you need to train your model with a pandas dataframe as input and not with Numpy arrays!
+
 
 ```python
 from jaqpotpy import Jaqpot
@@ -76,12 +75,11 @@ jaqpot.deploy_sklearn(model, X, y, title="Title", description="Describe")
 The function will inform you about the model id that is created and is available through the user interface and the API.
 
 
-:::info Result
+* Result
 
 
 - INFO - Model with id: <model_id> created. Visit the application to proceed
 
-:::
 
 
 ### Continue furter through the jaqpot user interface
