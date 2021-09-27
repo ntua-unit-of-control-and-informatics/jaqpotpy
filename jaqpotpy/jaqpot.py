@@ -2,6 +2,7 @@ import jaqpotpy.api.login as jaqlogin
 import jaqpotpy.api.algorithms_api as alapi
 import jaqpotpy.api.dataset_api as data_api
 import jaqpotpy.api.models_api as models_api
+import jaqpotpy.api.chempot_api as chempot_api
 import jaqpotpy.api.task_api as task_api
 import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.helpers.jwt as jwtok
@@ -205,6 +206,46 @@ class Jaqpot:
         dataset_n = data_api.create_dataset_sync(self.base_url, self.api_key, jsondataset, self.log)
         self.log.info("Dataset created with id: " + dataset_n["_id"])
         return dataset_n["_id"]
+
+
+    def chempot_predict(self, model, smiles, descriptors = "mordred", doa = False):
+        """
+        Makes a prediction from a Chempot model
+
+        Parameters
+        ----------
+        model : string
+            model is the id of the chempot model
+        smiles : string
+            The input SMILES.
+        descriptors : string
+            The descriptors of the model.
+        doa : boolean
+            Whether the Domain of Applicability will be taken into account
+        
+        Returns
+        -------
+        tuple
+            The predicted dataset (first item) and the predicted feature (second item)
+        """
+        task = chempot_api.predict(self.base_url, self.api_key, model, smiles, descriptors, doa, self.log)
+        
+        percentange = 0
+        taskid = task['_id']
+        while percentange < 100:
+            time.sleep(1)
+            task = task_api.get_task(self.base_url, self.api_key, taskid)
+            try:
+                percentange = task['percentageCompleted']
+            except KeyError:
+                percentange = 0
+            self.log.info("completed " + str(percentange))
+        predictedDataset = task['resultUri']
+        dar = predictedDataset.split("/")
+        dataset = data_api.get_dataset(self.base_url, self.api_key, dar[len(dar)-1], self.log)
+        df, predicts = ds.decode_predicted(dataset)
+        return df, predicts
+
 
     def predict(self, df=None, modelId=None):
         df_titles = list(df)
@@ -574,6 +615,24 @@ class Jaqpot:
 
         """
         return models_api.get_model(self.base_url, self.api_key, model, self.log)
+
+    def get_feature_by_id(self, feature):
+        """
+        Retrieves a Jaqpot feature.
+
+        Parameters
+        ----------
+        feature : str
+            The feature's ID.
+        
+        
+        Returns
+        -------
+        Object
+            The particular feature.
+
+        """
+        return featapi.get_feature(self.base_url, self.api_key, feature)
 
     def get_my_models(self, minimum, maximum):
         """
