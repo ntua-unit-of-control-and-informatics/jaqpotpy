@@ -4,7 +4,7 @@ from setuptools import setup
 # twine upload dist/*
 
 setup(name='jaqpotpy',
-      version='1.0.11',
+      version='1.0.15',
       description='Python client for Jaqpot',
       url='https://github.com/KinkyDesign/jaqpotpy',
       author='Pantelis Karatzas',

@@ -346,7 +346,7 @@ class Jaqpot:
         sk_version = model.__getstate__()['_sklearn_version']
 
         splited = sk_version.split(".")
-        if int(splited[1]) < 21:
+        if int(splited[1]) < 21 and int(splited[0]) == 0:
             runtime = "scikit-learn-legacy"
         if int(splited[1]) == 22:
             runtime = "scikit-learn-0-22"
@@ -356,6 +356,8 @@ class Jaqpot:
             runtime = "scikit-learn-0-24"
         if int(splited[1]) > 24:
             runtime = "scikit-learn-0-24"
+        if int(splited[0]) == 1 and int(splited[1]) == 0:
+            runtime = "scikit-learn-1-0"
 
         if isinstance(X, pd.DataFrame) is False and isinstance(X, pd.Series) is False:
             raise Exception('Function deploy_sklearn supports pandas dataframe or series. X is not one')
@@ -747,7 +749,7 @@ class Jaqpot:
         for item in dataRetrieved['features']:
             feats[int(item['key'])] = item['name']
 
-        indices = [item['entryId']['name'] for item in dataRetrieved['dataEntry']]   
+        data = [[item['values'][str(feats.index(col))] for col in feats] for item in dataRetrieved['dataEntry']]
         
         data = [item['values'].values() for item in dataRetrieved['dataEntry']]
         
