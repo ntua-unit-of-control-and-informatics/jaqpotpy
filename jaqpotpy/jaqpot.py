@@ -749,10 +749,10 @@ class Jaqpot:
         for item in dataRetrieved['features']:
             feats[int(item['key'])] = item['name']
 
+        indices = [item['entryId']['name'] for item in dataRetrieved['dataEntry']]
+
         data = [[item['values'][str(feats.index(col))] for col in feats] for item in dataRetrieved['dataEntry']]
-        
-        data = [item['values'].values() for item in dataRetrieved['dataEntry']]
-        
+
         return pd.DataFrame(data,index=indices, columns=feats) 
 
     def get_doa(self,model):
