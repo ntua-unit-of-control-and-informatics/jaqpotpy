@@ -26,6 +26,9 @@ import asyncio
 import jaqpotpy.helpers.doa as jha
 from collections import namedtuple
 import logging
+from sys import getsizeof
+from tqdm import tqdm
+
 
 ENCODING = 'utf-8'
 
@@ -251,9 +254,9 @@ class Jaqpot:
         df_titles = list(df)
         for t in df_titles:
             type_to_c = df[t].dtypes
-            if type_to_c == 'int64':
+            # if type_to_c == 'int64':
                 # print(type_to_c)
-                df[t] = df[t].astype(float)
+                # df[t] = df[t].astype(float)
         # print(df.dtypes)
         df = df.replace(np.nan, '', regex=True)
         if type(df).__name__ != 'DataFrame':
@@ -378,40 +381,97 @@ class Jaqpot:
         pretrained = help.create_pretrain_req(model, X, y, title, description,
                                               algorithm, "Scikit learn model or pipeline", runtime,
                                               additionalInfo)
-        j = json.dumps(pretrained, cls=JaqpotSerializer)
-        if doa is None:
-            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-            if response.status_code < 300:
-                resp = response.json()
-                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
-                return resp['modelId']
+        size = getsizeof(pretrained.rawModel[0])
+        if size < 2000000:
+            j = json.dumps(pretrained, cls=JaqpotSerializer)
+            if doa is None:
+                response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+                if response.status_code < 300:
+                    resp = response.json()
+                    self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                    return resp['modelId']
+                else:
+                    resp = response.json()
+                    self.log.error("Some error occured: " + resp['message'])
+                    return
             else:
-                resp = response.json()
-                self.log.error("Some error occured: " + resp['message'])
-                return
+                response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+                if response.status_code < 300:
+                    resp = response.json()
+                    self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                    modid = resp['modelId']
+                else:
+                    resp = response.json()
+                    self.log.error("Some error occured: " + resp['message'])
+                    return
+                # loop = asyncio.get_event_loop()
+                # a = loop.create_task(jha.calculate_a(X))
+                # b = loop.create_task(jha.calculate_doa_matrix(X))
+                a = jha.calculate_a(X)
+                b = jha.calculate_doa_matrix(X)
+                # all_groups = asyncio.gather(a, b)
+                # results = loop.run_until_complete(all_groups)
+                doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
+                j = json.dumps(doa, cls=JaqpotSerializer)
+                resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+                if resp == 201:
+                    self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                    return modid
         else:
-            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-            if response.status_code < 300:
-                resp = response.json()
-                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
-                modid = resp['modelId']
+            rawModel = pretrained.rawModel[0]
+            rawModel = str(rawModel)
+            n = 1000000
+            chunks = [rawModel[i:i + n] for i in range(0, len(rawModel), n)]
+            del pretrained.rawModel
+            j = json.dumps(pretrained, cls=JaqpotSerializer)
+            if doa is None:
+                response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+                if response.status_code < 300:
+                    resp = response.json()
+                    model_id = resp['modelId']
+                    parts = []
+                    i = 0
+                    for c in chunks:
+                        part = {}
+                        part['modelId'] = model_id
+                        part['partNumber'] = i
+                        part['totalParts'] = len(chunks)
+                        part['part'] = c
+                        parts.append(part)
+                        i += 1
+                    for j in tqdm(range(len(chunks))):
+                        part = parts[j]
+                        json_r = json.dumps(part, cls=JaqpotSerializer)
+                        resp = models_api.post_model_part(self.base_url, self.api_key, model_id, json_r, self.log)
+                        # pass
+                    # resp = response.json()
+                    self.log.info("Model with id: " + model_id + " created. Please visit the application to proceed")
+                    return model_id
+                else:
+                    resp = response.json()
+                    self.log.error("Some error occured: " + resp['message'])
+                    return
             else:
+                response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
                 resp = response.json()
-                self.log.error("Some error occured: " + resp['message'])
-                return
-            # loop = asyncio.get_event_loop()
-            # a = loop.create_task(jha.calculate_a(X))
-            # b = loop.create_task(jha.calculate_doa_matrix(X))
-            a = jha.calculate_a(X)
-            b = jha.calculate_doa_matrix(X)
-            # all_groups = asyncio.gather(a, b)
-            # results = loop.run_until_complete(all_groups)
-            doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
-            j = json.dumps(doa, cls=JaqpotSerializer)
-            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
-            if resp == 201:
-                self.log.info("Stored Domain of applicability. Visit the application to proceed")
-                return modid
+                if response.status_code < 300:
+                    resp = response.json()
+                    model_id = resp['modelId']
+                    self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
+                    modid = resp['modelId']
+                else:
+                    resp = response.json()
+                    self.log.error("Some error occured: " + resp['message'])
+                    return
+                a = jha.calculate_a(X)
+                b = jha.calculate_doa_matrix(X)
+                doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
+                j = json.dumps(doa, cls=JaqpotSerializer)
+                resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
+                if resp == 201:
+                    self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                    return modid
+            # print("Not supported")
 
     def deploy_sklearn_unsupervised(self, model, X, title, description, model_meta=False, doa=None):
         """

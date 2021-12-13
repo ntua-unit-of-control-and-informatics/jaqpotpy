@@ -20,6 +20,8 @@ class JaqpotSerializer(json.JSONEncoder):
             return o.tolist()
         if isinstance(o, np.int64):
             return int(o)
+        if type(o).__name__ == 'bool_':
+            return bool(o)
         if type(o).__name__ == 'mappingproxy':
             return {'mappingproxy': " "}
         if type(o).__name__ == 'set':

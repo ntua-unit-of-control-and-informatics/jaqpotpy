@@ -8,6 +8,18 @@ import urllib.parse
 model_path = "model"
 
 
+def post_model_part(baseurl, api_key, modelid, json_request, logger):
+    uri = baseurl + model_path + "/" + modelid + "/" + "part"
+    h = {'Content-Type': 'application/json',
+         'Accept': 'application/json',
+         'Authorization': "Bearer " + api_key}
+    try:
+        r = requests.post(uri, headers=h, data=json_request)
+        return r
+    except Exception as e:
+        logger.error("Error http: " + str(e))
+
+
 def post_pretrained_model(baseurl, api_key, json_request, logger):
     uri = baseurl + model_path
     h = {'Content-Type': 'application/json',
@@ -46,11 +58,13 @@ def get_my_models(baseurl, api_key, minimum, maximum, logger):
         logger.error("Error http: " + str(e))
     else:
         retJson = {}
-        r = r.json()
         retJson["total"] = int(r.headers["total"])
+        r = r.json()
+        # print(r.headers)
         retJson["models"] = r
 
     return retJson
+
 
 def get_orgs_models(baseurl, api_key, orgId, minimum, maximum, logger):
     uri = baseurl + model_path
