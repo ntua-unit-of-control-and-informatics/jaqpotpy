@@ -14,6 +14,8 @@ setup(name='jaqpotpy',
                 , 'jaqpotpy.entities', 'jaqpotpy.dto'
                 , 'jaqpotpy.helpers', 'jaqpotpy.colorlog', 'jaqpotpy.models'],
       install_requires=[
-            'pandas', 'pyjwt', 'requests', 'pydantic'
+            'pandas', 'pyjwt', 'requests', 'pydantic', 'tornado', 'rdkit-pypi'
+            , 'mordred', 'scikit-learn', 'torch', 'torch-scatter', '', 'torch-sparse', 'torch-cluster'
+            , 'torch-spline-conv', 'torch-geometric', 'dgl', 'torch_sparse', 'kennard-stone'
       ],
       zip_safe=False)

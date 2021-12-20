@@ -9,6 +9,7 @@ def calculate_a(X):
     a = (3 * (shape[1] + 1)) / shape[0]
     return a
 
+
 def calculate_doa_matrix(X):
     x_T = X.transpose()
     x_out = x_T.dot(X)

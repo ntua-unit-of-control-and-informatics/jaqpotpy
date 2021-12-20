@@ -5,3 +5,13 @@ simplejson
 pydotplus
 requests
 pydantic
+rdkit-pypi
+mordred
+scikit-learn
+torch
+torch-scatter
+torch-sparse
+torch-cluster
+torch-spline-conv
+torch-geometric
+kennard-stone

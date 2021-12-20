@@ -1,0 +1,1 @@
+from jaqpotpy.descriptors.molecular.mordred import MordredDescriptors
