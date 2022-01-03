@@ -11,14 +11,19 @@ from torch_geometric.nn import global_mean_pool
 from torch_geometric.datasets import TUDataset, MoleculeNet
 import numpy as np
 
-df = pd.read_csv('/Users/pantelispanka/Downloads/ecoli_DNA_gyrase_subunit_B_reductase_ic50.csv')
+# df = pd.read_csv('/Users/pantelispanka/Downloads/ecoli_DNA_gyrase_subunit_B_reductase_ic50.csv')
+# smiles = df['canonical_smiles'].to_list()
+# y = df['standard_value'].to_list()
 
-smiles = df['canonical_smiles'].to_list()
-y = df['standard_value'].to_list()
+df = pd.read_csv('./data/postera_model.csv')
+
+smiles = df['SMILES'].to_list()
+y = df['*f_avg_IC50'].to_list()
+
 
 ys = []
 for i in y:
-  if i < 100:
+  if i < 10:
       ys.append(1)
   else:
       ys.append(0)
@@ -28,8 +33,8 @@ mol_graph = MolGraphConvFeaturizer(use_edges=True)
 mol_g_desc = mol_graph.featurize(smiles)
 graphs = ptu.to_torch_graph_data_array_and_class_y(mol_g_desc, ys)
 
-print(graphs[0])
-print(graphs[0].__dict__)
+# print(graphs[0])
+# print(graphs[0].__dict__)
 # for i in graphs:
 #     print(type(i))
 
@@ -69,9 +74,10 @@ class GCN(torch.nn.Module):
     def __init__(self):
         super(GCN, self).__init__()
         torch.manual_seed(12345)
-        self.conv1 = GCNConv(30, 16)
-        self.conv2 = GCNConv(16, 16)
-        self.lin = Linear(16, 2)
+        self.conv1 = GCNConv(30, 40)
+        self.conv2 = GCNConv(40, 40)
+        self.conv3 = GCNConv(40, 40)
+        self.lin = Linear(40, 2)
 
         # super(GCN, self).__init__()
         # torch.manual_seed(12345)
@@ -84,11 +90,13 @@ class GCN(torch.nn.Module):
         x, edge_index = data.x, data.edge_index
         x = self.conv1(x, edge_index)
         x = F.relu(x)
-        # x = F.dropout(x, training=self.training)
+        x = F.dropout(x, training=self.training)
         x = self.conv2(x, edge_index)
         x = F.relu(x)
+        x = self.conv3(x, edge_index)
+        x = F.relu(x)
         x = global_mean_pool(x, data.batch)
-        # x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin(x)
         return x
         # x, edge_index = data.x, data.edge_index
@@ -108,8 +116,8 @@ class GCN(torch.nn.Module):
         # return x
 
 
-train_dataset = graphs[39:]
-test_dataset = graphs[:39]
+train_dataset = graphs[:280]
+test_dataset = graphs[280:]
 print(f'Number of training graphs: {len(train_dataset)}')
 print(f'Number of test graphs: {len(test_dataset)}')
 
@@ -117,8 +125,8 @@ print(f'Number of test graphs: {len(test_dataset)}')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = GCN() #.to(device)
 # dataset = DataLoader(train_dataset, batch_size=1, shuffle=True) #.to(device)
-train_loader = DataLoader(train_dataset, batch_size=44, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=39, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=10, shuffle=True)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
 # optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 # criterion = torch.nn.MSELoss()

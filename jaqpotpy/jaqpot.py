@@ -22,10 +22,7 @@ import numpy as np
 import http.client as http_client
 import getpass
 import time
-import asyncio
-import jaqpotpy.helpers.doa as jha
-from collections import namedtuple
-import logging
+import jaqpotpy.doa.doa as jha
 from sys import getsizeof
 from tqdm import tqdm
 

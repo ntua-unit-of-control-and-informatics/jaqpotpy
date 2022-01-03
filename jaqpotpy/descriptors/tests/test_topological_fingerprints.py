@@ -42,7 +42,7 @@ class TestCircularFingerprint(unittest.TestCase):
         """
     featurizer = TopologicalFingerprint(sparse=True)
     rval = featurizer([self.mol, self.mol2])
-    assert rval.shape == (1,)
+    assert rval.shape == (2,)
     assert isinstance(rval[0], dict)
     assert len(rval[0])
 

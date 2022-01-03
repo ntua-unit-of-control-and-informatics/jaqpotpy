@@ -9,7 +9,7 @@ RDKitMol = Any
 
 
 class RDKitDescriptors(MolecularFeaturizer):
-  """RDKit descriptors.
+    """RDKit descriptors.
   This class computes a list of chemical descriptors like
   molecular weight, number of valence electrons, maximum and
   minimum partial charge, etc using RDKit.
@@ -32,8 +32,8 @@ class RDKitDescriptors(MolecularFeaturizer):
   (208,)
   """
 
-  def __init__(self, use_fragment=True, ipc_avg=True):
-    """Initialize this featurizer.
+    def __init__(self, use_fragment=True, ipc_avg=True):
+        """Initialize this featurizer.
     Parameters
     ----------
     use_fragment: bool, optional (default True)
@@ -42,13 +42,16 @@ class RDKitDescriptors(MolecularFeaturizer):
       If True, the IPC descriptor calculates with avg=True option.
       Please see this issue: https://github.com/rdkit/rdkit/issues/1527.
     """
-    self.use_fragment = use_fragment
-    self.ipc_avg = ipc_avg
-    self.descriptors = []
-    self.descList = []
+        self.use_fragment = use_fragment
+        self.ipc_avg = ipc_avg
+        self.descriptors = []
+        self.descList = []
 
-  def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
-    """
+    def __getitem__(self):
+        return self
+
+    def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
+        """
     Calculate RDKit descriptors.
     Parameters
     ----------
@@ -60,49 +63,49 @@ class RDKitDescriptors(MolecularFeaturizer):
       1D array of RDKit descriptors for `mol`.
       The length is `len(self.descriptors)`.
     """
-    if 'mol' in kwargs:
-      datapoint = kwargs.get("mol")
-      raise DeprecationWarning(
-          'Mol is being phased out as a parameter, please pass "datapoint" instead.'
-      )
-    # initialize
-    if len(self.descList) == 0:
-      try:
-        from rdkit.Chem import Descriptors
-        for descriptor, function in Descriptors.descList:
-          if self.use_fragment is False and descriptor.startswith('fr_'):
-            continue
-          self.descriptors.append(descriptor)
-          self.descList.append((descriptor, function))
-      except ModuleNotFoundError:
-        raise ImportError("This class requires RDKit to be installed.")
+        if 'mol' in kwargs:
+            datapoint = kwargs.get("mol")
+            raise DeprecationWarning(
+                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
+            )
+        # initialize
+        if len(self.descList) == 0:
+            try:
+                from rdkit.Chem import Descriptors
+                for descriptor, function in Descriptors.descList:
+                    if self.use_fragment is False and descriptor.startswith('fr_'):
+                        continue
+                    self.descriptors.append(descriptor)
+                    self.descList.append((descriptor, function))
+            except ModuleNotFoundError:
+                raise ImportError("This class requires RDKit to be installed.")
 
-    # check initialization
-    assert len(self.descriptors) == len(self.descList)
+        # check initialization
+        assert len(self.descriptors) == len(self.descList)
 
-    features = []
-    for desc_name, function in self.descList:
-      if desc_name == 'Ipc' and self.ipc_avg:
-        feature = function(datapoint, avg=True)
-      else:
-        feature = function(datapoint)
-      features.append(feature)
-    return np.asarray(features)
+        features = []
+        for desc_name, function in self.descList:
+            if desc_name == 'Ipc' and self.ipc_avg:
+                feature = function(datapoint, avg=True)
+            else:
+                feature = function(datapoint)
+            features.append(feature)
+        return np.asarray(features)
 
-  def _get_column_names(self, **kwargs) -> list:
-      descriptors = []
-      try:
-        from rdkit.Chem import Descriptors
-        for descriptor, function in Descriptors.descList:
-          if self.use_fragment is False and descriptor.startswith('fr_'):
-            continue
-          descriptors.append(descriptor)
-      except ModuleNotFoundError:
-        raise ImportError("This class requires RDKit to be installed.")
-      return descriptors
+    def _get_column_names(self, **kwargs) -> list:
+        descriptors = []
+        try:
+            from rdkit.Chem import Descriptors
+            for descriptor, function in Descriptors.descList:
+                if self.use_fragment is False and descriptor.startswith('fr_'):
+                    continue
+                descriptors.append(descriptor)
+        except ModuleNotFoundError:
+            raise ImportError("This class requires RDKit to be installed.")
+        return descriptors
 
-  def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
-    """
+    def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
+        """
     Calculate RDKit descriptors.
     Parameters
     ----------
@@ -114,31 +117,31 @@ class RDKitDescriptors(MolecularFeaturizer):
       1D array of RDKit descriptors for `mol`.
       The length is `len(self.descriptors)`.
     """
-    if 'mol' in kwargs:
-      datapoint = kwargs.get("mol")
-      raise DeprecationWarning(
-          'Mol is being phased out as a parameter, please pass "datapoint" instead.'
-      )
-    # initialize
-    if len(self.descList) == 0:
-      try:
-        from rdkit.Chem import Descriptors
-        for descriptor, function in Descriptors.descList:
-          if self.use_fragment is False and descriptor.startswith('fr_'):
-            continue
-          self.descriptors.append(descriptor)
-          self.descList.append((descriptor, function))
-      except ModuleNotFoundError:
-        raise ImportError("This class requires RDKit to be installed.")
+        if 'mol' in kwargs:
+            datapoint = kwargs.get("mol")
+            raise DeprecationWarning(
+                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
+            )
+        # initialize
+        if len(self.descList) == 0:
+            try:
+                from rdkit.Chem import Descriptors
+                for descriptor, function in Descriptors.descList:
+                    if self.use_fragment is False and descriptor.startswith('fr_'):
+                        continue
+                    self.descriptors.append(descriptor)
+                    self.descList.append((descriptor, function))
+            except ModuleNotFoundError:
+                raise ImportError("This class requires RDKit to be installed.")
 
-    # check initialization
-    assert len(self.descriptors) == len(self.descList)
+        # check initialization
+        assert len(self.descriptors) == len(self.descList)
 
-    features = []
-    for desc_name, function in self.descList:
-      if desc_name == 'Ipc' and self.ipc_avg:
-        feature = function(datapoint, avg=True)
-      else:
-        feature = function(datapoint)
-      features.append(feature)
-    return np.asarray(features)
+        features = []
+        for desc_name, function in self.descList:
+            if desc_name == 'Ipc' and self.ipc_avg:
+                feature = function(datapoint, avg=True)
+            else:
+                feature = function(datapoint)
+            features.append(feature)
+        return np.asarray(features)

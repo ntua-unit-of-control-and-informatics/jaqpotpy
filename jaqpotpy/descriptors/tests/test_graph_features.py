@@ -42,8 +42,8 @@ class TestConvMolFeaturizer(unittest.TestCase):
   def test_single_carbon(self):
     """Test that single carbon atom is featurized properly."""
     raw_smiles = ['C']
-    import rdkit
-    mols = [rdkit.Chem.MolFromSmiles(s) for s in raw_smiles]
+    from rdkit import Chem
+    mols = [Chem.MolFromSmiles(s) for s in raw_smiles]
     featurizer = ConvMolFeaturizer()
     mol_list = featurizer.featurize(mols)
     mol = mol_list[0]

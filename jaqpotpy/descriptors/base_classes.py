@@ -3,6 +3,8 @@ import logging
 import numpy as np
 from typing import Any, Dict, Iterable, Optional, Tuple, Union, cast
 import pandas as pd
+from tqdm import tqdm
+from jaqpotpy.cfg import config
 
 logger = logging.getLogger(__name__)
 _print_threshold = 10
@@ -43,9 +45,12 @@ class Featurizer(object):
     """
     datapoints = list(datapoints)
     features = []
-    for i, point in enumerate(datapoints):
-      if i % log_every_n == 0:
-        logger.info("Featurizing datapoint %i" % i)
+    if config.verbose is False:
+      disable_tq = True
+    else:
+      disable_tq = False
+    for i, point in enumerate(tqdm(datapoints, desc='Creating descriptrs', disable=disable_tq)):
+
       try:
         features.append(self._featurize(point, **kwargs))
       except:
@@ -188,7 +193,11 @@ class DataframeFeaturizer(object):
     """
     datapoints = list(datapoints)
     features = []
-    for i, point in enumerate(datapoints):
+    if config.verbose is False:
+      disable_tq = True
+    else:
+      disable_tq = False
+    for i, point in enumerate(tqdm(datapoints, desc='Creating descriptors', disable=disable_tq)):
       if i % log_every_n == 0:
         logger.info("Featurizing datapoint %i" % i)
       try:
@@ -343,7 +352,11 @@ class MolecularFeaturizer(Featurizer):
       datapoints = list(datapoints)
 
     features: list = []
-    for i, mol in enumerate(datapoints):
+    if config.verbose is False:
+      disable_tq = True
+    else:
+      disable_tq = False
+    for i, mol in enumerate(tqdm(datapoints, desc='Creating descriptors', disable=disable_tq)):
       if i % log_every_n == 0:
         logger.info("Featurizing datapoint %i" % i)
 
@@ -403,9 +416,11 @@ class MolecularFeaturizer(Featurizer):
       datapoints = list(datapoints)
 
     features: list = []
-    for i, mol in enumerate(datapoints):
-      if i % log_every_n == 0:
-        logger.info("Featurizing datapoint %i" % i)
+    if config.verbose is False:
+      disable_tq = True
+    else:
+      disable_tq = False
+    for i, mol in enumerate(tqdm(datapoints, desc='Creating descriptors', disable=disable_tq)):
 
       try:
         if isinstance(mol, str):

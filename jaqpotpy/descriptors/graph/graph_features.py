@@ -700,6 +700,9 @@ class ConvMolFeaturizer(MolecularFeaturizer):
         self.atom_properties = list(atom_properties)
         self.per_atom_fragmentation = per_atom_fragmentation
 
+    def __getitem__(self):
+        return self
+
     def featurize(
             self,
             datapoints: Union[RDKitMol, str, Iterable[RDKitMol], Iterable[str]],

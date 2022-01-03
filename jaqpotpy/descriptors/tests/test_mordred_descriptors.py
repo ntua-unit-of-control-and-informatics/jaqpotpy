@@ -2,7 +2,7 @@ import numpy as np
 import unittest
 
 from jaqpotpy.descriptors import MordredDescriptors
-
+from jaqpotpy.cfg import config
 
 class TestMordredDescriptors(unittest.TestCase):
     """
@@ -84,3 +84,26 @@ class TestMordredDescriptors(unittest.TestCase):
         # not zero values
         assert not np.allclose(descriptors[0][780:784],
                                np.array([0.0, 0.0, 0.0, 0.0]))
+
+    def test_base_mordred(self):
+        from rdkit import Chem
+
+        from mordred import Chi, ABCIndex
+
+        benzene = Chem.MolFromSmiles('c1ccccc1')
+
+        # create descriptor instance
+        abci = ABCIndex.ABCIndex()
+
+        # calculate descriptor value
+        result = abci(benzene)
+
+        assert result == 4.242640687119286
+
+        # create descriptor instance with parameter
+        chi_pc4 = Chi.Chi(type='path_cluster', order=4)
+
+        # calculate
+        result = chi_pc4(benzene)
+
+        assert result == 0.0
