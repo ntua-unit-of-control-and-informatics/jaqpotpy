@@ -9,6 +9,7 @@ from sklearn.linear_model import LinearRegression
 import asyncio
 # import pytest
 from jaqpotpy.doa.doa import Leverage
+import numpy as np
 
 
 def sync(coro):
