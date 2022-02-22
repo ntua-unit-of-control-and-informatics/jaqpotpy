@@ -13,6 +13,7 @@ import numpy as np
 import torch_geometric
 from jaqpotpy.cfg import config
 from PIL import Image
+import jaqpotpy
 
 
 class MolecularTorch(Model):

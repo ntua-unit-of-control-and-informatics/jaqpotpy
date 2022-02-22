@@ -22,6 +22,15 @@ class MolecularDataset(object):
         self.x_cols = x_cols
         self.y_cols = y_cols
         self.smiles_col = smiles_col
+        self._task = "regression"
+
+    @property
+    def task(self):
+        return self._task
+
+    @task.setter
+    def task(self, value):
+        self._task = value
 
     @property
     def dataset_name(self):

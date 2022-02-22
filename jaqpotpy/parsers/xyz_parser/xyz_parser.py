@@ -1,6 +1,6 @@
 from typing import List
 from jaqpotpy.parsers.base_classes import Parser
-from jaqpotpy.models.material_models import (
+from jaqpotpy.entities.material_models import (
     Xyz, Atoms
 )
 import pandas as pd

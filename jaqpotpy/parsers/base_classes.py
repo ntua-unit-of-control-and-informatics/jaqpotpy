@@ -3,10 +3,8 @@ import logging
 import numpy as np
 import pandas as pd
 from typing import Any, Iterable, Union, List, Generator
-from tqdm import tqdm
 import os
-from jaqpotpy.cfg import config
-from jaqpotpy.models.material_models import Atoms
+from jaqpotpy.entities.material_models import Atoms
 
 logger = logging.getLogger(__name__)
 _print_threshold = 10

@@ -81,10 +81,6 @@ class MolecularTabularDataset(MolecularDataset):
     def __get_Y__(self):
         return self.df[self.y].to_numpy()
 
-    @property
-    def task(self):
-        return self._task
-
     def __get__(self):
         return self.df
 
@@ -155,10 +151,6 @@ class TorchGraphDataset(MolecularDataset, Dataset):
         self.X = ['TorchMolGraph']
         self.y = ['Y']
         return self
-
-    @property
-    def task(self):
-        return self._task
 
     def __get__(self):
         return self.df
@@ -231,10 +223,6 @@ class SmilesDataset(MolecularDataset):
 
     def __get_Y__(self):
         return self.df[self.y].to_numpy()
-
-    @property
-    def task(self):
-        return self._task
 
     def __get__(self):
         return self.df

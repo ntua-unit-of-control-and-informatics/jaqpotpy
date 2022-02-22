@@ -1,7 +1,6 @@
 from typing import List
-import numpy as np
 from jaqpotpy.parsers.base_classes import Parser
-from jaqpotpy.models.material_models import (
+from jaqpotpy.entities.material_models import (
     Pdb, Atoms
 )
 import pandas as pd

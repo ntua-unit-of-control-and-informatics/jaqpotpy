@@ -9,6 +9,7 @@ from jaqpotpy.models import Evaluator, Preprocesses, MolecularModel
 import sklearn
 from jaqpotpy.cfg import config
 
+
 class MolecularSKLearn(Model):
 
     def __init__(self, dataset: MolecularTabularDataset, doa: DOA, model: Any
