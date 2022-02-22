@@ -1,9 +1,10 @@
 import inspect
 import logging
 import numpy as np
-from typing import Any, Dict, Iterable, Optional, Tuple, Union, cast
+from typing import Any, List, Iterable, Optional, Tuple, Union, cast
 import pandas as pd
 from tqdm import tqdm
+import os
 from jaqpotpy.cfg import config
 
 logger = logging.getLogger(__name__)
@@ -449,6 +450,194 @@ class MolecularFeaturizer(Featurizer):
     else:
       df = pd.DataFrame(features, columns=columns)
     return df
+
+
+class ParserFeaturizer(Featurizer):
+  """Abstract class for calculating a set of features for one or
+  a set of files. The defining feature of a `ParserFeaturizer`
+  is that it uses files to generate descriptors. All other
+  featurizers which are subclasses of this class
+  should plan to process input which comes as a parser of a file or
+  a folder with files. Child classes need to implement the
+  _featurize method for calculating features for a single instance.
+  """
+
+  def featurize(self, log_every_n=1000, **kwargs) -> np.ndarray:
+    """Calculate features for materials.
+    Parameters
+    ----------
+    material: string
+      Either the path of a pdb file or the path to the folder with many pdb files.
+    log_every_n: int, default 1000
+      Logging messages reported every `log_every_n` samples.
+    files: str
+      Extention of the files - Type of representation of materials
+    Returns
+    -------
+    features: np.ndarray
+      A numpy array containing a featurized representation of `datapoints`.
+    """
+
+    features: list = []
+    if config.verbose is False:
+      disable_tq = True
+    else:
+      disable_tq = False
+    for i, mat in enumerate(tqdm(self.parser.parse(), desc='Creating descriptors', disable=disable_tq)):
+      if i % log_every_n == 0:
+        logger.info("Featurizing datapoint %i" % i)
+
+      try:
+        features.append(self._featurize(mat, **kwargs))
+
+      except Exception as e:
+        logger.warning(
+            "Failed to featurize datapoint %d, %s. Appending empty array", i, mat)
+        logger.warning("Exception message: {}".format(e))
+        features.append(np.array([]))
+
+    return np.asarray(features)
+
+  def featurize_dataframe(self, log_every_n=1000, **kwargs) -> Any:
+    """Calculate features for materials.
+    Parameters
+    ----------
+    pdb: string
+      Either the path of a pdb file or the path to the folder with many pdb files.
+    log_every_n: int, default 1000
+      Logging messages reported every `log_every_n` samples.
+    files: str
+      Extention of the files - Type of representation of materials.
+
+    Returns
+    -------
+    features: pd.Dataframe()
+      A pandas Dataframe containing a featurized representation of `datapoints`.
+    """
+
+    features = pd.DataFrame()
+    if config.verbose is False:
+      disable_tq = True
+    else:
+      disable_tq = False
+    for i, mat in enumerate(tqdm(self.parser.parse(), desc='Creating descriptors', disable=disable_tq)):
+      if i % log_every_n == 0:
+        logger.info("Featurizing datapoint %i" % i)
+
+      try:
+        features = pd.concat([features, self._featurize_dataframe(mat, **kwargs)]).reset_index(drop=True).replace(np.nan, 0)
+
+      except Exception as e:
+        logger.warning(
+          "Failed to featurize datapoint %d, %s. Appending empty array", i)
+        logger.warning("Exception message: {}".format(e))
+        features = pd.concat([features, pd.DataFrame()]).reset_index(drop=True)
+
+    return features
+
+
+class MaterialFeaturizer(Featurizer):
+  """
+  Abstract class for calculating a set of features for an
+  inorganic crystal composition.
+  The defining feature of a `MaterialFeaturizer` is that it
+  operates on 3D crystal materials.
+  Inorganic crystal compositions are represented by Pymatgen composition
+  objects. Featurizers for inorganic crystal compositions that are
+  subclasses of this class should plan to process input which comes as
+  Pymatgen composition objects.
+  This class is abstract and cannot be invoked directly. You'll
+  likely only interact with this class if you're a developer. Child
+  classes need to implement the _featurize method for calculating
+  features for a single crystal composition.
+  Note
+  ----
+  Some subclasses of this class will require pymatgen and matminer to be
+  installed.
+  """
+
+  def featurize(self,
+                datapoints: Union[List, Iterable[str]],
+                log_every_n: int = 1000,
+                **kwargs) -> np.ndarray:
+    """Calculate features for crystal compositions.
+    Parameters
+    ----------
+    datapoints: Iterable[str]
+      Iterable sequence of composition strings, e.g. "MoS2".
+    log_every_n: int, default 1000
+      Logging messages reported every `log_every_n` samples.
+    Returns
+    -------
+    features: np.ndarray
+      A numpy array containing a featurized representation of
+      `compositions`.
+    """
+
+    if not isinstance(datapoints, List):
+      datapoints = [datapoints]
+
+    if config.verbose is False:
+      disable_tq = True
+    else:
+      disable_tq = False
+
+    features = []
+    for i, item in enumerate(tqdm(datapoints, desc='Creating descriptors', disable=disable_tq)):
+      if i % log_every_n == 0:
+        logger.info("Featurizing datapoint %i" % i)
+
+      try:
+        features.append(self._featurize(item, **kwargs))
+      except Exception as e:
+        logger.warning(
+            "Failed to featurize datapoint %i. Appending empty array" % i, e)
+        features.append(np.array([]))
+
+    return np.asarray(features)
+
+  def featurize_dataframe(self, datapoints: Union[List, Iterable[str]], log_every_n=1000, **kwargs) -> pd.DataFrame:
+    """Calculate features for materials.
+    Parameters
+    ----------
+    pdb: string
+      Either the path of a pdb file or the path to the folder with many pdb files.
+    log_every_n: int, default 1000
+      Logging messages reported every `log_every_n` samples.
+    files: str
+      Extention of the files - Type of representation of materials.
+
+    Returns
+    -------
+    features: pd.Dataframe()
+      A pandas Dataframe containing a featurized representation of `datapoints`.
+    """
+
+    if not isinstance(datapoints, List):
+      datapoints = [datapoints]
+
+    if config.verbose is False:
+      disable_tq = True
+    else:
+      disable_tq = False
+
+    datapoints = list(datapoints)
+    features = pd.DataFrame()
+    for i, item in enumerate(tqdm(datapoints, desc='Creating descriptors', disable=disable_tq)):
+      if i % log_every_n == 0:
+        logger.info("Featurizing datapoint %i" % i)
+
+      try:
+        features = pd.concat([features, self._featurize_dataframe(item, **kwargs)]).reset_index(drop=True)
+
+      except Exception as e:
+        logger.warning(
+          "Failed to featurize datapoint %d, %s. Appending empty array", i)
+        logger.warning("Exception message: {}".format(e))
+        features = pd.concat([features, pd.DataFrame()]).reset_index(drop=True)
+
+    return features
+
 
 
 def get_print_threshold() -> int:

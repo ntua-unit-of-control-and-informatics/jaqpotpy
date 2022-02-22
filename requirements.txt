@@ -16,3 +16,6 @@ torch-cluster
 torch-spline-conv
 torch-geometric
 kennard-stone
+mendeleev
+pymatgen
+ase
