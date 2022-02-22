@@ -28,6 +28,10 @@ class PubChemFingerprint(MolecularFeaturizer):
   (881,)
   """
 
+    @property
+    def __name__(self):
+        return 'PubChemFingerprint'
+
     def __init__(self):
         """Initialize this featurizer."""
         try:

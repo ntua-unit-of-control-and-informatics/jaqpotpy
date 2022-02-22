@@ -32,6 +32,10 @@ class RDKitDescriptors(MolecularFeaturizer):
   (208,)
   """
 
+    @property
+    def __name__(self):
+        return 'RDKitDescriptors'
+
     def __init__(self, use_fragment=True, ipc_avg=True):
         """Initialize this featurizer.
     Parameters

@@ -114,3 +114,7 @@ Scripts/
 pyvenv.cfg
 pyvenv.cfg
 pyvenv.cfg
+./share/
+share/
+man/
+./man/

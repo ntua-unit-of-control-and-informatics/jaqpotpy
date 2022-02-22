@@ -42,6 +42,10 @@ class TopologicalFingerprint(MolecularFeaturizer):
   <class 'dict'>
   """
 
+    @property
+    def __name__(self):
+        return 'TopologicalFingerprint'
+
     def __init__(self,
                  radius: int = 2,
                  size: int = 2048,

@@ -50,6 +50,7 @@ print(f'Number of test graphs: {len(test_dataset)}')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = GCN() #.to(device)
+model.to(device)
 # dataset = DataLoader(train_dataset, batch_size=1, shuffle=True) #.to(device)
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=29, shuffle=False)

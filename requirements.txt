@@ -8,6 +8,7 @@ pydantic
 rdkit-pypi
 mordred
 scikit-learn
+
 torch
 torch-scatter
 torch-sparse

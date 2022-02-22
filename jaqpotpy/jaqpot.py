@@ -207,7 +207,6 @@ class Jaqpot:
         self.log.info("Dataset created with id: " + dataset_n["_id"])
         return dataset_n["_id"]
 
-
     def chempot_predict(self, model, smiles, descriptors = "mordred", doa = False):
         """
         Makes a prediction from a Chempot model

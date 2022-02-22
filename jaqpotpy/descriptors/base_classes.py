@@ -440,7 +440,15 @@ class MolecularFeaturizer(Featurizer):
         logger.warning("Exception message: {}".format(e))
         features.append(np.array([]))
     columns = self._get_column_names()
-    return pd.DataFrame(features, columns=columns)
+    if columns == ['Sequence']:
+      df = pd.DataFrame({'Sequence': features})
+    elif columns == ['OneHotSequence']:
+      df = pd.DataFrame({'OneHotSequence': features})
+    elif columns == ['SmilesImage']:
+      df = pd.DataFrame({'SmilesImage': features})
+    else:
+      df = pd.DataFrame(features, columns=columns)
+    return df
 
 
 def get_print_threshold() -> int:

@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from typing import Iterable, Any
 import math
+from jaqpotpy.descriptors import RDKitDescriptors
+
 
 def calculate_a(X):
     shape = X.shape
@@ -44,7 +46,7 @@ class DOA(object):
     def fit(self, X: np.array):
         raise NotImplementedError
 
-    def predict(self, data):
+    def predict(self, data: Iterable[Any]) -> Iterable[Any]:
         raise NotImplementedError
 
 
@@ -54,6 +56,13 @@ class Leverage(DOA, ABC):
     Initialized upon training data and holds the doa matrix and the threshold 'A' value.
     Calculates the DOA for a new instance of data or array of data.
     """
+    _doa = []
+    _in = []
+
+    @property
+    def __name__(self):
+        return 'LeverageDoa'
+
     def __init__(self) -> None:
         # self._scaler: BaseEstimator = scaler
         self._data: np.array = None
@@ -62,6 +71,22 @@ class Leverage(DOA, ABC):
 
     def __getitem__(self):
         return self
+
+    @property
+    def doa_new(self):
+        return self._doa
+
+    @doa_new.setter
+    def doa_new(self, value):
+        self._doa = value
+
+    @property
+    def IN(self):
+        return self._in
+
+    @IN.setter
+    def IN(self, value):
+        self._in = value
 
     @property
     def data(self):
@@ -94,6 +119,10 @@ class Leverage(DOA, ABC):
 
     def calculate_matrix(self):
         x_T = self._data.transpose()
+        # for s in self._data:
+        #     print(s)
+        #     if isinstance(s, str):
+        #         print("STRING")
         x_out = x_T.dot(self._data)
         self._doa_matrix = np.linalg.pinv(x_out)
         # self.doa_matrix = x_out #pd.DataFrame(np.linalg.pinv(x_out.values), x_out.columns, x_out.index)
@@ -105,8 +134,10 @@ class Leverage(DOA, ABC):
         self.calculate_matrix()
         self.calculate_threshold()
 
-    def calculate(self, new_data: np.array) -> Iterable[Any]:
+    def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
+        self._doa = []
+        self._in = []
         # new_data = self._scaler.transform(new_data)
         for nd in new_data:
             d1 = np.dot(nd, self.doa_matrix)
@@ -116,6 +147,8 @@ class Leverage(DOA, ABC):
                 in_ad = True
             else:
                 in_ad = False
+            self._doa.append(d2)
+            self._in.append(in_ad)
             doa = {'DOA': d2, 'A': self._a, 'IN': in_ad}
             doaAll.append(doa)
         return doaAll
@@ -127,11 +160,34 @@ class MeanVar(DOA, ABC):
     Initialized upon training data and holds the doa mean and the variance of the data.
     Calculates the mean and variance for a new instance of data or array of data and decides if in AD.
     """
+    _doa = []
+    _in = []
+
+    @property
+    def __name__(self):
+        return 'MeanVar'
+
     def __init__(self) -> None:
         # self._scaler: BaseEstimator = scaler
         self._data: np.array = None
         self._doa_matrix = None
         self._a = None
+
+    @property
+    def doa_new(self):
+        return self._doa
+
+    @doa_new.setter
+    def doa_new(self, value):
+        self._doa = value
+
+    @property
+    def IN(self):
+        return self._in
+
+    @IN.setter
+    def IN(self, value):
+        self._in = value
 
     @property
     def doa_matrix(self):
@@ -172,6 +228,8 @@ class MeanVar(DOA, ABC):
 
     def calculate(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
+        self._doa = []
+        self._in = []
         # new_data = self._scaler.transform(new_data)
         in_doa = True
         for nd in new_data:
@@ -185,5 +243,140 @@ class MeanVar(DOA, ABC):
             # if len(new_data[0]) > 100 and many > 5:
             #     in_doa = False
             doa = {'IN': in_doa}
+            doaAll.append(doa)
+        return doaAll
+
+    def predict(self, new_data: np.array) -> Iterable[Any]:
+        doaAll = []
+        self._doa = []
+        self._in = []
+        # new_data = self._scaler.transform(new_data)
+        in_doa = True
+        for nd in new_data:
+            for index, row in enumerate(nd):
+                bounds = self._data[index]
+                bounds_data = [bounds[0]-4*bounds[1], bounds[0]+4*bounds[1]]
+                if row >= bounds_data[0] and row <= bounds_data[1]:
+                    continue
+                else:
+                    in_doa = False
+            # if len(new_data[0]) > 100 and many > 5:
+            #     in_doa = False
+            doa = {'IN': in_doa}
+            doaAll.append(doa)
+            self._doa.append(new_data)
+            self._in.append(in_doa)
+        return doaAll
+
+
+class SmilesLeverage(DOA, ABC):
+    """
+    Implements DOA method leverage given an array of smiles.
+    Descriptors and data matrix is calculated with rdkit descriptors
+    Initialized upon training data and holds the doa matrix and the threshold 'A' value.
+    Calculates the DOA for a new instance of data or array of data.
+    """
+    _doa = []
+    _in = []
+
+    @property
+    def __name__(self):
+        return 'SmilesLeverage'
+
+    def __init__(self) -> None:
+        # self._scaler: BaseEstimator = scaler
+        self._smiles = None
+        self._data: np.array = None
+        self._doa_matrix = None
+        self._a = None
+        self.featurizer = RDKitDescriptors(use_fragment=False, ipc_avg=False)
+
+    def __getitem__(self):
+        return self
+
+    @property
+    def doa_new(self):
+        return self._doa
+
+    @doa_new.setter
+    def doa_new(self, value):
+        self._doa = value
+
+    @property
+    def IN(self):
+        return self._in
+
+    @IN.setter
+    def IN(self, value):
+        self._in = value
+
+    @property
+    def smiles(self):
+        return self._smiles
+
+    @smiles.setter
+    def smiles(self, value):
+        self._smiles = value
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
+
+    @property
+    def doa_matrix(self):
+        return self._doa_matrix
+
+    @doa_matrix.setter
+    def doa_matrix(self, value):
+        self._doa_matrix = value
+
+    @property
+    def a(self):
+        return self._a
+
+    @a.setter
+    def a(self, value):
+        self._a = value
+
+    def calculate_threshold(self):
+        shape = self._data.shape
+        a = (3 * (shape[1] + 1)) / shape[0]
+        self._a = a
+
+    def calculate_matrix(self):
+        x_T = self._data.transpose()
+        x_out = x_T.dot(self._data)
+        self._doa_matrix = np.linalg.pinv(x_out)
+        # self.doa_matrix = x_out #pd.DataFrame(np.linalg.pinv(x_out.values), x_out.columns, x_out.index)
+
+    def fit(self, smiles: Iterable[str]):
+        # self._scaler.fit(X)
+        # self._data = self._scaler.transform(X)
+        self._smiles = smiles
+        self._data = self.featurizer.featurize(smiles)
+        self.calculate_matrix()
+        self.calculate_threshold()
+
+    def predict(self, smiles: Iterable[str]) -> Iterable[Any]:
+        doaAll = []
+        self._doa = []
+        self._in = []
+        # new_data = self._scaler.transform(new_data)
+        new_data = self.featurizer.featurize(smiles)
+        for nd in new_data:
+            d1 = np.dot(nd, self.doa_matrix)
+            ndt = np.transpose(nd)
+            d2 = np.dot(d1, ndt)
+            if d2 < self._a:
+                in_ad = True
+            else:
+                in_ad = False
+            self._doa.append(d2)
+            self._in.append(in_ad)
+            doa = {'DOA': d2, 'A': self._a, 'IN': in_ad}
             doaAll.append(doa)
         return doaAll
