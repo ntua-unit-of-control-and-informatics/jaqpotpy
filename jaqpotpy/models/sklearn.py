@@ -57,6 +57,19 @@ class MolecularSKLearn(Model):
                 preprocess_classes.append(pre_function)
             model.preprocessing = preprocess_classes
             model.preprocessor_names = preprocess_names
+
+            pre_y_keys = self.preprocess.classes_y.keys()
+            preprocess_names_y = []
+            preprocess_classes_y = []
+            for pre_y_key in pre_y_keys:
+                pre_y_function = self.preprocess.classes_y.get(pre_y_key)
+                y = pre_y_function.fit_transform(y)
+                self.preprocess.register_fitted_class_y(pre_y_key, pre_y_function)
+                preprocess_names_y.append(pre_y_key)
+                preprocess_classes_y.append(pre_y_function)
+            model.preprocessing_y = preprocess_classes_y
+            model.preprocessor_y_names = preprocess_names_y
+
         self.trained_model = self.model.fit(X, y)
         if self.evaluator:
             self.__eval__()

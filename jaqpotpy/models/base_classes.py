@@ -11,12 +11,15 @@ class Model(object):
     _descriptors: MolecularFeaturizer
     _preprocessors: []
     _preprocessor_names: []
+    _preprocessor_y_names: []
+    _preprocessors_y: []
     _X: Iterable[str]
     _Y: Iterable[str]
     _X_indices: Iterable[int]
     _prediction: Any
     _probability = None
     _external = None
+    _smiles = None
     _external_feats = None
     _model_title = None
     _modeling_task = None
@@ -24,10 +27,13 @@ class Model(object):
     _version = Iterable[str]
     _jaqpotpy_version = None
 
-
     @property
     def smiles(self):
         return self._smiles
+
+    @smiles.setter
+    def smiles(self, values):
+        self._smiles = values
 
     @property
     def external(self):
@@ -58,12 +64,28 @@ class Model(object):
         self._preprocessors = value
 
     @property
+    def preprocessing_y(self):
+        return self._preprocessors_y
+
+    @preprocessing_y.setter
+    def preprocessing_y(self, value):
+        self._preprocessors_y = value
+
+    @property
     def preprocessor_names(self):
         return self._preprocessor_names
 
     @preprocessor_names.setter
     def preprocessor_names(self, value):
         self._preprocessor_names = value
+
+    @property
+    def preprocessor_y_names(self):
+        return self._preprocessor_names
+
+    @preprocessor_y_names.setter
+    def preprocessor_y_names(self, value):
+        self._preprocessor_y_names = value
 
     @property
     def X(self):
@@ -110,7 +132,7 @@ class Model(object):
         return self._model_title
 
     @model_title.setter
-    def model_name(self, value):
+    def model_title(self, value):
         self._model_title = value
 
     @property
@@ -228,6 +250,12 @@ class MolecularModel(Model):
             if self.library == ['sklearn']:
                 preds = self.model.predict(data)
                 for p in preds:
+                    try:
+                        if self.preprocessing_y:
+                            for f in self.preprocessing_y:
+                                p = f.inverse_transform(data)
+                    except AttributeError as e:
+                        pass
                     self._prediction.append(p)
                 try:
                     probs = self.model.predict_proba(data)
@@ -249,6 +277,12 @@ class MolecularModel(Model):
                         pred = pred.argmax(dim=1)
                         preds = pred.detach().numpy()
                         for p in preds:
+                            try:
+                                if self.preprocessing_y:
+                                    for f in self.preprocessing_y:
+                                        p = f.inverse_transform(data)
+                            except AttributeError as e:
+                                pass
                             self._prediction.append([p.tolist()])
                     else:
                         preds = pred.detach().numpy()
@@ -268,6 +302,12 @@ class MolecularModel(Model):
                         pred = pred.argmax(dim=1)
                         preds = pred.detach().numpy()
                         for p in preds:
+                            try:
+                                if self.preprocessing_y:
+                                    for f in self.preprocessing_y:
+                                        p = f.inverse_transform(data)
+                            except AttributeError as e:
+                                pass
                             self._prediction.append([p.tolist()])
                     else:
                         preds = pred.detach().numpy()
