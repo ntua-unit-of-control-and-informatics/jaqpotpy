@@ -299,4 +299,5 @@ class SmilesToImage(MolecularFeaturizer):
       raise IndexError(
           "The molecule does not fit into the image. Consider increasing img_size or res of the SmilesToImage featurizer."
       )
+    # img = np.array(img)
     return img

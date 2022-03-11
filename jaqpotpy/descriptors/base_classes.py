@@ -441,6 +441,7 @@ class MolecularFeaturizer(Featurizer):
         logger.warning("Exception message: {}".format(e))
         features.append(np.array([]))
     columns = self._get_column_names()
+    # features = np.array(features)
     if columns == ['Sequence']:
       df = pd.DataFrame({'Sequence': features})
     elif columns == ['OneHotSequence']:

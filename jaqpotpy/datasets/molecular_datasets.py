@@ -1,6 +1,6 @@
 from jaqpotpy.datasets.dataset_base import MolecularDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.descriptors import MolGraphConvFeaturizer, TorchMolGraphConvFeaturizer
+from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer, TorchMolGraphConvFeaturizer
 from typing import Iterable, Any
 import pandas as pd
 import os
@@ -231,9 +231,13 @@ class SmilesDataset(MolecularDataset):
         if self.X == ['Sequence']:
             X = self.df[self.X].iloc[idx].values[0]
         elif self.X == ['OneHotSequence']:
+            # print(self.df[self.X].iloc[idx].values.shape)
+            # print(self.df[self.X].iloc[idx].values[0].shape)
             X = self.df[self.X].iloc[idx].values[0]
         elif self.X == ['SmilesImage']:
-            X = self.df[self.X].iloc[idx].values[0].transpose((2, 0, 1))
+            X = self.df[self.X].iloc[idx].values[0].transpose(2, 0, 1)
+            # print(X.shape)
+            # X = self.df[self.X].iloc[idx].values.transpose((2, 0, 1))
         else:
             X = self.df[self.X].iloc[idx].values
         y = self.df[self.y].iloc[idx].to_numpy()

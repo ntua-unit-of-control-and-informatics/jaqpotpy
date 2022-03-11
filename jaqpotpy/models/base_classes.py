@@ -3,6 +3,7 @@ from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Iterable
 import pandas as pd
 import pickle
+import numpy as np
 
 
 class Model(object):
@@ -217,9 +218,10 @@ class MolecularModel(Model):
         self._prediction = []
         self._probability = []
         if self._smiles:
-            ext = pd.DataFrame.from_dict(self.external)
             data = self._descriptors.featurize_dataframe(self._smiles)
-            data = pd.concat([data, ext], axis=1)
+            if self.external:
+                ext = pd.DataFrame.from_dict(self.external)
+                data = pd.concat([data, ext], axis=1)
             graph_data_list = []
             if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
                 graph_data = data['MoleculeGraph']
@@ -232,10 +234,18 @@ class MolecularModel(Model):
                                , num_nodes=g.num_nodes)
                     graph_data_list.append(dat)
                 self._prediction = []
-            if self._X != ['TorchMolGraph'] and self.X != ['OneHotSequence']:
+            if self._X != ['TorchMolGraph'] and self.X != ['OneHotSequence'] and self.X != ["SmilesImage"]:
                 data = data[self._X].to_numpy()
-            if self.X == ['OneHotSequence']:
-                data = data[self.X].values[0]
+            elif self._X == ['SmilesImage']:
+                datas = []
+                for v in data.values:
+                    datas.append(v[0].transpose(2, 0, 1))
+                data = np.array(datas)
+            elif self.X == ['OneHotSequence']:
+                data_list = []
+                for d in data.values:
+                    data_list.append(d[0])
+                data = np.array(data_list)
             if self.doa:
                 if self.doa.__name__ == 'SmilesLeverage':
                     self.doa.predict(self._smiles)
@@ -253,7 +263,7 @@ class MolecularModel(Model):
                     try:
                         if self.preprocessing_y:
                             for f in self.preprocessing_y:
-                                p = f.inverse_transform(data)
+                                p = f.inverse_transform(p)
                     except AttributeError as e:
                         pass
                     self._prediction.append(p)
@@ -280,10 +290,10 @@ class MolecularModel(Model):
                             try:
                                 if self.preprocessing_y:
                                     for f in self.preprocessing_y:
-                                        p = f.inverse_transform(data)
+                                        p = f.inverse_transform(p)
                             except AttributeError as e:
                                 pass
-                            self._prediction.append([p.tolist()])
+                            self._prediction.append(p)
                     else:
                         preds = pred.detach().numpy()
                         for p in preds:
@@ -305,14 +315,20 @@ class MolecularModel(Model):
                             try:
                                 if self.preprocessing_y:
                                     for f in self.preprocessing_y:
-                                        p = f.inverse_transform(data)
+                                        p = f.inverse_transform(p)
                             except AttributeError as e:
                                 pass
                             self._prediction.append([p.tolist()])
                     else:
                         preds = pred.detach().numpy()
                         for p in preds:
-                            self._prediction.append(p.tolist())
+                            try:
+                                if self.preprocessing_y:
+                                    for f in self.preprocessing_y:
+                                        p = f.inverse_transform(p)
+                            except AttributeError as e:
+                                pass
+                            self._prediction.append([p.tolist()])
             # else:
             #     preds = self.model.predict(data)
             # for p in preds:

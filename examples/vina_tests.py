@@ -19,5 +19,6 @@ print('Score after minimization : %.3f (kcal/mol)' % energy_minimized[0])
 v.write_pose('1iep_ligand_minimized.pdbqt', overwrite=True)
 
 # Dock the ligand
-v.dock(exhaustiveness=20, n_poses=20)
-v.write_poses('1iep_ligand_vina_out.pdbqt', n_poses=5, overwrite=True)
+v.dock(exhaustiveness=30, n_poses=10)
+
+v.write_poses('1iep_ligand_vina_out.pdbqt', n_poses=10, overwrite=True)

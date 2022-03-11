@@ -1,6 +1,6 @@
 # from tornado import gen, httpclient
 # from tornado.httputil import HTTPHeaders
-from jaqpotpy.mappers import decode
+# from jaqpotpy.mappers import decode
 import requests
 import json
 

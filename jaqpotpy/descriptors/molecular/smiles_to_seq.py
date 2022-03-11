@@ -4,7 +4,6 @@ SmilesToSeq featurizer for Smiles2Vec models taken from https://arxiv.org/abs/17
 """
 from typing import Dict, List, Iterable
 import numpy as np
-import pandas as pd
 
 from jaqpotpy.utils.types import RDKitMol
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer

@@ -3,7 +3,7 @@ Tests for Jaqpotpy Models.
 """
 import unittest
 from jaqpotpy.datasets import MolecularTabularDataset, TorchGraphDataset, SmilesDataset
-from jaqpotpy.descriptors import MordredDescriptors, create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage
+from jaqpotpy.descriptors.molecular import MordredDescriptors, create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage
 from jaqpotpy.models import MolecularModel, MolecularSKLearn
 from sklearn.linear_model import LinearRegression
 import asyncio
@@ -20,7 +20,7 @@ from torch_geometric.nn import global_mean_pool
 from torch.autograd import Variable
 from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
 import jaqpotpy.utils.pytorch_utils as ptu
-from jaqpotpy.descriptors import MolGraphConvFeaturizer
+from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
 from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -225,6 +225,7 @@ class TestModels(unittest.TestCase):
         val.register_scoring_function('R 2 score', r2_score)
         pre = Preprocesses()
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
+        pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
         model = LinearRegression()
         molecularModel_t6 = MolecularSKLearn(dataset=dataset
                                              , doa=Leverage()
@@ -240,6 +241,8 @@ class TestModels(unittest.TestCase):
         # print(molecularModel.doa.doa_new)
         # print(molecularModel.doa.a)
         # print(molecularModel.prediction)
+        print(molecularModel_t6.prediction[0][0])
+        print(molecularModel_t6.prediction.shape)
         assert int(molecularModel_t6.prediction[0][0]) == 1228766
 
     def test_model_save(self):
@@ -526,7 +529,7 @@ class TestModels(unittest.TestCase):
         model = MolecularTorch(dataset=dataset
                            , model_nn=model_rnn, eval=val
                            , train_batch=4, test_batch=4
-                           , epochs=630, optimizer=optimizer, criterion=criterion).fit()
+                           , epochs=230, optimizer=optimizer, criterion=criterion).fit()
         model.eval()
         molMod = model.create_molecular_model()
         smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
@@ -537,6 +540,9 @@ class TestModels(unittest.TestCase):
             , 'CC(C)(C)c1ccc(N(C(=O)c2ccco2)[C@H](C(=O)NCCc2cccc(F)c2)c2cccnc2)cc1'
             , 'OC[C@@H](O1)[C@@H](O)[C@H](O)[C@@H]2[C@@H]1c3c(O)c(OC)c(O)cc3C(=O)O2'
             , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1']
+
+        molMod(smiles_new)
+        print(molMod.prediction)
 
         for smile in smiles_new:
             molMod(smile)
@@ -572,6 +578,7 @@ class TestModels(unittest.TestCase):
 
         for smile in smiles_new:
             molMod(smile)
+            print(molMod.prediction)
 
 
     def test_cnn_class(self):
@@ -592,7 +599,7 @@ class TestModels(unittest.TestCase):
         model = MolecularTorch(dataset=dataset
                            , model_nn=model_cnn, eval=val
                            , train_batch=10, test_batch=10
-                           , epochs=150, optimizer=optimizer, criterion=criterion).fit()
+                           , epochs=30, optimizer=optimizer, criterion=criterion).fit()
         model.eval()
         molMod = model.create_molecular_model()
         smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
@@ -600,10 +607,12 @@ class TestModels(unittest.TestCase):
             , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
             , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
             , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
+        molMod(smiles_new)
+        print(molMod.prediction)
 
         for smile in smiles_new:
             molMod(smile)
-
+            print(molMod.prediction)
 
 
 class CNNNet_regression(torch.nn.Module):
@@ -646,6 +655,7 @@ class CNNNet_classification(torch.nn.Module):
         self.fc3 = torch.nn.Linear(84, 2)
 
     def forward(self, x):
+        torch.manual_seed(151)
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = torch.flatten(x, 1) # flatten all dimensions except batch

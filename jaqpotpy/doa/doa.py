@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import Iterable, Any
 import math
-from jaqpotpy.descriptors import RDKitDescriptors
+from jaqpotpy.descriptors.molecular import RDKitDescriptors
 
 
 def calculate_a(X):

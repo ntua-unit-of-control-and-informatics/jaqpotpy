@@ -1,5 +1,5 @@
-from tornado import gen, httpclient
-from tornado.httputil import HTTPHeaders
+#from tornado import gen, httpclient
+#from tornado.httputil import HTTPHeaders
 import getpass
 import urllib.parse
 from jaqpotpy.mappers import decode

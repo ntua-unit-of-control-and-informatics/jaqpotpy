@@ -54,12 +54,12 @@ class MolecularTorchGeometric(Model):
                 self.doa_m = self.doa.fit(self.dataset.smiles_strings)
             else:
                 print("Only SmilesLeverage is suported for graph models")
-        if self.dataset.df is not None:
+        if len(self.dataset.df) > 0:
             pass
         else:
             self.dataset.create()
         if self.evaluator is not None:
-            if self.evaluator.dataset.df is not None:
+            if len(self.evaluator.dataset.df) > 0:
                 pass
             else:
                 self.evaluator.dataset.create()
@@ -81,6 +81,7 @@ class MolecularTorchGeometric(Model):
                     if temp_loss is None:
                         temp_loss = test_loss[2]
                     if temp_loss < los:
+                        temp_loss = los
                         self.best_model = self.model_nn
                     print(f'Epoch: {epoch:03d}, Train Accuracy: {train_loss[2]}, Test Accuracy: {test_loss[2]}')
                 else:
@@ -88,6 +89,7 @@ class MolecularTorchGeometric(Model):
                     if temp_loss is None:
                         temp_loss = test_loss[1]
                     if temp_loss > los:
+                        temp_loss = los
                         self.best_model = self.model_nn
                     print(f'Epoch: {epoch:03d}, Train Loss: {train_loss[1]}, Test Loss: {test_loss[1]}')
         return self

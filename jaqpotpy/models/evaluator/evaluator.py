@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import Dict, Callable, TypedDict, Any
+from typing import Dict, Callable, Any
 from jaqpotpy.datasets.molecular_datasets import SmilesDataset
 
 

@@ -83,7 +83,9 @@ class MolecularTorch(Model):
                 los = test_loss[2]
                 if temp_loss is None:
                     temp_loss = test_loss[2]
-                if temp_loss < los and steps > epoch:
+                if temp_loss < los:
+                # if temp_loss < los and steps > epoch:
+                    temp_loss = los
                     self.best_model = self.model_nn
                 if epoch % self.log_steps == 0:
                     print(f'Epoch: {epoch:03d}, Train Accuracy: {train_loss[2]}, Test Accuracy: {test_loss[2]}')
@@ -91,7 +93,9 @@ class MolecularTorch(Model):
                 los = test_loss[1].item()
                 if temp_loss is None:
                     temp_loss = test_loss[1].item()
-                if temp_loss > los and steps > epoch:
+                if temp_loss < los:
+                # if temp_loss > los and steps > epoch:
+                    temp_loss = los
                     self.best_model = self.model_nn
                 if epoch % self.log_steps == 0:
                     print(f'Epoch: {epoch:03d}, Train Loss: {train_loss[1]}, Test Loss: {test_loss[1]}')
