@@ -44,6 +44,18 @@ def get_model(baseurl, api_key, modelid, logger):
         logger.error("Error http: " + str(e))
 
 
+def get_raw_model(baseurl, api_key, modelid, logger):
+    uri = baseurl + model_path + "/" + modelid + "/raw"
+    h = {'Content-Type': 'application/json',
+         'Accept': 'application/json',
+         'Authorization': "Bearer " + api_key}
+    try:
+        r = requests.get(uri, headers=h)
+        return r.json()
+    except Exception as e:
+        logger.error("Error http: " + str(e))
+
+
 def get_my_models(baseurl, api_key, minimum, maximum, logger):
     uri = baseurl + model_path
     h = {'Content-Type': 'application/json',

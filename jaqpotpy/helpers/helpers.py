@@ -1,5 +1,8 @@
 from jaqpotpy.entities.feature import Feature
 import math
+from jaqpotpy.models import MolecularModel
+import jaqpotpy
+
 from jaqpotpy.helpers.builders import FeatureBuilder,\
     FeatureDirector, DataEntryBuilder, DataEntryDirector,\
     PretrainedNeedsDirector, PretrainedNeedsBuilder, DoaDirector, DoaBuilder
@@ -74,6 +77,29 @@ def create_pretrain_req(model, X, y, title, description, algorithm, implementedW
     pnb.setTitle(title)
     pnb.setRuntime(runtime)
     pnb.setImplementedWith(implementedWith)
+    director = PretrainedNeedsDirector()
+    return director.construct(pnb)
+
+
+def create_molecular_req(model: MolecularModel, title, description, type):
+    pnb = PretrainedNeedsBuilder()
+    independentFeatures = []
+    independentFeatures.append("Smiles")
+    if model.external_feats:
+        independentFeatures.append(model.external_feats)
+    if isinstance(model.Y, list):
+        dependendFeatures = model.Y
+    else:
+        dependendFeatures = [model.Y]
+    pnb.setRawModel(model)
+    pnb.setJaqpotPyVersion(jaqpotpy.__version__)
+    pnb.setLibraries(model.library)
+    pnb.setVersions(model.version)
+    pnb.setDependendFeatures(dependendFeatures)
+    pnb.setIndependentFeatures(independentFeatures)
+    pnb.setDescription(description)
+    pnb.setTitle(title)
+    pnb.setType(type)
     director = PretrainedNeedsDirector()
     return director.construct(pnb)
 

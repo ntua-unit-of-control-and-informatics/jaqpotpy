@@ -93,7 +93,7 @@ class MolecularTorch(Model):
                 los = test_loss[1].item()
                 if temp_loss is None:
                     temp_loss = test_loss[1].item()
-                if temp_loss < los:
+                if temp_loss > los:
                 # if temp_loss > los and steps > epoch:
                     temp_loss = los
                     self.best_model = self.model_nn

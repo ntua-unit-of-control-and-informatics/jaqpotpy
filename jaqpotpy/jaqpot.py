@@ -25,7 +25,7 @@ import time
 import jaqpotpy.doa.doa as jha
 from sys import getsizeof
 from tqdm import tqdm
-
+from jaqpotpy.models import MolecularModel
 
 ENCODING = 'utf-8'
 
@@ -469,6 +469,56 @@ class Jaqpot:
                     return modid
             # print("Not supported")
 
+    def deploy_jaqpotpy_molecular_model(self, model: MolecularModel, description: str, title: str = None):
+        if model.model_title != None:
+            title = model.model_title
+        pretrained = help.create_molecular_req(model, title=title, description=description, type="MolecularModel")
+        size = getsizeof(pretrained.rawModel[0])
+        if size < 2000000:
+            j = json.dumps(pretrained, cls=JaqpotSerializer)
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
+                return resp['modelId']
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+        else:
+            rawModel = pretrained.rawModel[0]
+            rawModel = str(rawModel)
+            n = 1000000
+            chunks = [rawModel[i:i + n] for i in range(0, len(rawModel), n)]
+            del pretrained.rawModel
+            j = json.dumps(pretrained, cls=JaqpotSerializer)
+            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            if response.status_code < 300:
+                resp = response.json()
+                model_id = resp['modelId']
+                parts = []
+                i = 0
+                for c in chunks:
+                    part = {}
+                    part['modelId'] = model_id
+                    part['partNumber'] = i
+                    part['totalParts'] = len(chunks)
+                    part['part'] = c
+                    parts.append(part)
+                    i += 1
+                for j in tqdm(range(len(chunks))):
+                    part = parts[j]
+                    json_r = json.dumps(part, cls=JaqpotSerializer)
+                    resp = models_api.post_model_part(self.base_url, self.api_key, model_id, json_r, self.log)
+                    # pass
+                # resp = response.json()
+                self.log.info("Model with id: " + model_id + " created. Please visit the application to proceed")
+                return model_id
+            else:
+                resp = response.json()
+                self.log.error("Some error occured: " + resp['message'])
+                return
+
     def deploy_sklearn_unsupervised(self, model, X, title, description, model_meta=False, doa=None):
         """
         Deploys sklearn model or pipeline to Jaqpot.
@@ -675,6 +725,23 @@ class Jaqpot:
 
         """
         return models_api.get_model(self.base_url, self.api_key, model, self.log)
+
+    def get_raw_model_by_id(self, model):
+        """
+        Retrieves raw model by ID.
+
+        Parameters
+        ----------
+        model : str
+            The model's ID.
+
+        Returns
+        Returns
+        -------
+        Object
+            The particular model and the raw model.
+        """
+        return models_api.get_raw_model(self.base_url, self.api_key, model, self.log)
 
     def get_feature_by_id(self, feature):
         """

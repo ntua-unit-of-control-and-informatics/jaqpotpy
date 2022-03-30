@@ -4,6 +4,8 @@ from typing import Any, Iterable
 import pandas as pd
 import pickle
 import numpy as np
+import base64
+# from jaqpotpy import Jaqpot
 
 
 class Model(object):
@@ -213,6 +215,16 @@ class MolecularModel(Model):
     def load(cls, filename):
         with open(filename, 'rb') as f:
             return pickle.load(f)
+
+    def deploy_on_jaqpot(self, jaqpot, description, model_title: str = None):
+        jaqpot.deploy_jaqpotpy_molecular_model(self, description=description, title=model_title)
+
+    @classmethod
+    def load_from_jaqpot(cls, jaqpot, id: str):
+        model = jaqpot.get_raw_model_by_id(id)
+        raw_model = base64.b64decode(model['actualModel'][0])
+        model: MolecularModel = pickle.loads(raw_model)
+        return model
 
     def infer(self):
         self._prediction = []

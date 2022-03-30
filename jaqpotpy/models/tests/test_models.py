@@ -19,11 +19,15 @@ from torch.nn import Linear
 from torch_geometric.nn import global_mean_pool
 from torch.autograd import Variable
 from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
+from torch_geometric.nn.models import GCN as GCN_TORCH
 import jaqpotpy.utils.pytorch_utils as ptu
 from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
 from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+import torch_geometric
+from jaqpotpy.models.torch_models import GCN as GCN_J
+from jaqpotpy import Jaqpot
 
 # import pytest
 from jaqpotpy.doa.doa import Leverage
@@ -333,10 +337,15 @@ class TestModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model_nn, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=180, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
         m.eval()
         molMod = m.create_molecular_model()
         molMod.model_name = "test_classification"
+
+        jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+        jaqpot.request_key("pantelispanka", "kapan2")
+        molMod.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model 2", model_title="Test molecular")
+
         molMod.save()
         molMod.load("./test_regression.jmodel")
 
@@ -427,11 +436,14 @@ class TestModels(unittest.TestCase):
         m = MolecularTorch(dataset=dataset
                            , model_nn=model_nn, eval=val
                            , train_batch=4, test_batch=4
-                           , epochs=50, optimizer=optimizer, criterion=criterion).fit()
+                           , epochs=30, optimizer=optimizer, criterion=criterion).fit()
         m.eval()
         molMod = m.create_molecular_model()
         molMod.model_name = "test_regression"
         molMod.save()
+        jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+        jaqpot.request_key("pantelispanka", "kapan2")
+        molMod.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model", model_title="Test molecular")
         molMod.load("./test_regression.jmodel")
         # print(molMod.library)
         # print(molMod.version)
@@ -580,7 +592,6 @@ class TestModels(unittest.TestCase):
             molMod(smile)
             print(molMod.prediction)
 
-
     def test_cnn_class(self):
         feat = SmilesToImage(img_size=60)
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
@@ -613,6 +624,30 @@ class TestModels(unittest.TestCase):
         for smile in smiles_new:
             molMod(smile)
             print(molMod.prediction)
+
+    def test_torch_models(self):
+        dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification')
+        dataset.create()
+        val = Evaluator()
+        val.dataset = dataset
+        val.register_scoring_function('Max Error', max_error)
+        val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
+        val.register_scoring_function('R 2 score', r2_score)
+        model = GCN_J(30, 3, 40, 2)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+        criterion = torch.nn.CrossEntropyLoss()
+        m = MolecularTorchGeometric(dataset=dataset
+                                    , model_nn=model, eval=val
+                                    , train_batch=4, test_batch=4
+                                    , epochs=100, optimizer=optimizer, criterion=criterion).fit()
+        m.eval()
+
+    def test_load_from_jaqpot(self):
+        jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+        jaqpot.login("pantelispanka", "kapan2")
+        model = MolecularModel().load_from_jaqpot(jaqpot=jaqpot, id="XQ1JsTDwCXs4uxZqeUJi")
+        model('O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21')
+        print(model.prediction)
 
 
 class CNNNet_regression(torch.nn.Module):
