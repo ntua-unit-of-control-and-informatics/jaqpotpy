@@ -10,7 +10,7 @@ import asyncio
 from jaqpotpy.doa.doa import Leverage, SmilesLeverage
 from jaqpotpy.models.evaluator import Evaluator
 from jaqpotpy.models.preprocessing import Preprocesses
-from sklearn.metrics import max_error, mean_absolute_error, r2_score
+from sklearn.metrics import max_error, mean_absolute_error, r2_score, accuracy_score, f1_score, roc_auc_score
 from sklearn.preprocessing import StandardScaler
 import torch
 import torch.nn.functional as F
@@ -245,8 +245,8 @@ class TestModels(unittest.TestCase):
         # print(molecularModel.doa.doa_new)
         # print(molecularModel.doa.a)
         # print(molecularModel.prediction)
-        print(molecularModel_t6.prediction[0][0])
-        print(molecularModel_t6.prediction.shape)
+        print(molecularModel_t6.jaqpotpy_docker)
+        print(molecularModel_t6.prediction)
         assert int(molecularModel_t6.prediction[0][0]) == 1228766
 
     def test_model_save(self):
@@ -328,16 +328,16 @@ class TestModels(unittest.TestCase):
         dataset.y = 'activity'
         val = Evaluator()
         val.dataset = dataset
-        val.register_scoring_function('Max Error', max_error)
-        val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
-        val.register_scoring_function('R 2 score', r2_score)
+        val.register_scoring_function('Accuracy', accuracy_score)
+        val.register_scoring_function('AUC', roc_auc_score)
+        val.register_scoring_function('F1 score', f1_score)
         model_nn = GCN()
         optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model_nn, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=180, optimizer=optimizer, criterion=criterion).fit()
         m.eval()
         molMod = m.create_molecular_model()
         molMod.model_name = "test_classification"
@@ -346,8 +346,8 @@ class TestModels(unittest.TestCase):
         jaqpot.request_key("pantelispanka", "kapan2")
         molMod.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model 2", model_title="Test molecular")
 
-        molMod.save()
-        molMod.load("./test_regression.jmodel")
+        # molMod.save()
+        # molMod.load("./test_regression.jmodel")
 
         print(molMod.library)
         print(molMod.version)
@@ -391,8 +391,8 @@ class TestModels(unittest.TestCase):
         m.eval()
         molMod = m.create_molecular_model()
         molMod.model_name = "test_regression"
-        molMod.save()
-        molMod.load("./test_regression.jmodel")
+        # molMod.save()
+        # molMod.load("./test_regression.jmodel")
         print(molMod.library)
         print(molMod.version)
         print(molMod.jaqpotpy_version)
@@ -642,12 +642,14 @@ class TestModels(unittest.TestCase):
                                     , epochs=100, optimizer=optimizer, criterion=criterion).fit()
         m.eval()
 
+
     def test_load_from_jaqpot(self):
         jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
         jaqpot.login("pantelispanka", "kapan2")
         model = MolecularModel().load_from_jaqpot(jaqpot=jaqpot, id="XQ1JsTDwCXs4uxZqeUJi")
         model('O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21')
         print(model.prediction)
+
 
 
 class CNNNet_regression(torch.nn.Module):

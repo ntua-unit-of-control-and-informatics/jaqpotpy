@@ -8,7 +8,7 @@ from jaqpotpy.datasets.molecular_datasets import MolecularTabularDataset
 from jaqpotpy.models import Evaluator, Preprocesses, MolecularModel
 import sklearn
 from jaqpotpy.cfg import config
-
+import jaqpotpy
 
 class MolecularSKLearn(Model):
 
@@ -80,7 +80,8 @@ class MolecularSKLearn(Model):
         model.Y = self.dataset.y
         model.library = ['sklearn']
         model.version = [sklearn.__version__]
-        model.jaqpotpy_version = config.version
+        model.jaqpotpy_version = jaqpotpy.__version__
+        model.jaqpotpy_docker = config.jaqpotpy_docker
         model.external_feats = self.dataset.external
         return model
 
@@ -105,7 +106,25 @@ class MolecularSKLearn(Model):
                 pre_function = self.preprocess.fitted_classes.get(pre_key)
                 X = pre_function.transform(X)
         preds = self.trained_model.predict(X)
+        preds_t = []
+        for p in preds:
+            try:
+                if self.preprocessing_y:
+                    for f in self.preprocessing_y:
+                        p = f.inverse_transform(p.reshape(1, -1))
+                        preds_t.append(p)
+            except AttributeError as e:
+                pass
+            preds_t.append(p)
         eval_keys = self.evaluator.functions.keys()
         for eval_key in eval_keys:
             eval_function = self.evaluator.functions.get(eval_key)
-            print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
+            try:
+                if self.preprocessing_y:
+                    for f in self.preprocessing_y:
+                        truth = f.inverse_transform(self.evaluator.dataset.__get_Y__())
+                    print(eval_key + ": " + str(eval_function(truth, preds_t)))
+            except AttributeError as e:
+                print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
+                pass
+            # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))

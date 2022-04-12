@@ -2,6 +2,7 @@ from jaqpotpy.entities.feature import Feature
 import math
 from jaqpotpy.models import MolecularModel
 import jaqpotpy
+from jaqpotpy.cfg import config
 
 from jaqpotpy.helpers.builders import FeatureBuilder,\
     FeatureDirector, DataEntryBuilder, DataEntryDirector,\
@@ -93,6 +94,7 @@ def create_molecular_req(model: MolecularModel, title, description, type):
         dependendFeatures = [model.Y]
     pnb.setRawModel(model)
     pnb.setJaqpotPyVersion(jaqpotpy.__version__)
+    pnb.setJaqpotPyDockerVersion(config.jaqpotpy_docker)
     pnb.setLibraries(model.library)
     pnb.setVersions(model.version)
     pnb.setDependendFeatures(dependendFeatures)

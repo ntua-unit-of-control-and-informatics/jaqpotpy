@@ -3,16 +3,17 @@ from setuptools import setup, find_packages
 # python setup.py bdist_wheel
 # twine upload dist/*
 # twine upload --repository testpypi dist/jaqpotpy-2.0.0b0-py3-none-any.whl
+# twine upload dist/jaqpotpy-1.0.27-py3-none-any.whl
 
 
 setup(name='jaqpotpy',
       # version='2.0.5-beta0',
-      version='1.0.25',
+      version='1.0.27',
       description='Python client for Jaqpot',
       url='https://github.com/euclia/jaqpotpy',
       author='Pantelis Karatzas',
       author_email='pantelispanka@gmail.com',
-      license='Apache License Version 2.0',
+      license='MIT License',
       packages=find_packages(exclude=["*.tests"]),
       # packages=['jaqpotpy', 'jaqpotpy.api', 'jaqpotpy.mappers', 'jaqpotpy.utils'
       #           , 'jaqpotpy.entities', 'jaqpotpy.dto', 'jaqpotpy.doa'

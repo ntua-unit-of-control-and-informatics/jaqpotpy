@@ -1,10 +1,7 @@
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from typing import Any, Iterable
-import pandas as pd
-import pickle
-from jaqpotpy.datasets import MolecularTabularDataset, Dataset, TorchGraphDataset
+from typing import Any
+from jaqpotpy.datasets import TorchGraphDataset
 from jaqpotpy.models import Evaluator, Preprocesses
 from torch_geometric.loader import DataLoader
 import torch
@@ -12,6 +9,8 @@ from jaqpotpy.models import MolecularModel
 import numpy as np
 import torch_geometric
 from jaqpotpy.cfg import config
+import os
+import jaqpotpy
 
 
 class MolecularTorchGeometric(Model):
@@ -21,7 +20,7 @@ class MolecularTorchGeometric(Model):
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
-                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1):
+                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./"):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset: TorchGraphDataset = dataset
         self.model_nn = model_nn
@@ -38,17 +37,20 @@ class MolecularTorchGeometric(Model):
         self.criterion = criterion
         self.trained_model = None
         self.model_fitted: MolecularModel = None
-        self.optimizer = optimizer
+        self.optimizer_local = optimizer
         self.train_loader = None
         self.test_loader = None
         self.log_steps = log_steps
-        self.best_model = None
+        self.best_model = model_nn
+        self.path = None
+        self.model_dir = model_dir
         # torch.multiprocessing.freeze_support()
 
     def __call__(self, smiles):
         self
 
     def fit(self):
+        steps = self.epochs * 0.1
         if self.doa:
             if self.doa.__name__ == 'SmilesLeverage':
                 self.doa_m = self.doa.fit(self.dataset.smiles_strings)
@@ -82,7 +84,18 @@ class MolecularTorchGeometric(Model):
                         temp_loss = test_loss[2]
                     if temp_loss < los:
                         temp_loss = los
-                        self.best_model = self.model_nn
+                        temp_path = self.path
+                        self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
+                        torch.save({
+                            'epoch': epoch,
+                            'model_state_dict': self.model_nn.state_dict(),
+                            'optimizer_state_dict': self.optimizer_local.state_dict(),
+                            'loss': los,
+                        }, self.path)
+                        try:
+                            os.remove(temp_path)
+                        except TypeError as e:
+                            continue
                     print(f'Epoch: {epoch:03d}, Train Accuracy: {train_loss[2]}, Test Accuracy: {test_loss[2]}')
                 else:
                     los = test_loss[1]
@@ -90,7 +103,18 @@ class MolecularTorchGeometric(Model):
                         temp_loss = test_loss[1]
                     if temp_loss > los:
                         temp_loss = los
-                        self.best_model = self.model_nn
+                        temp_path = self.path
+                        self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
+                        torch.save({
+                            'epoch': epoch,
+                            'model_state_dict': self.model_nn.state_dict(),
+                            'optimizer_state_dict': self.optimizer.state_dict(),
+                            'loss': los,
+                        }, self.path)
+                        try:
+                            os.remove(temp_path)
+                        except TypeError as e:
+                            continue
                     print(f'Epoch: {epoch:03d}, Train Loss: {train_loss[1]}, Test Loss: {test_loss[1]}')
         return self
 
@@ -98,12 +122,10 @@ class MolecularTorchGeometric(Model):
         self.model_nn.train()
         for data in self.train_loader:
             out = self.model_nn(data)
-            # print(out.size())
-            # print(data.y.size())
             loss = self.criterion(out, data.y)
             loss.backward()
-            self.optimizer.step()
-            self.optimizer.zero_grad()
+            self.optimizer_local.step()
+            self.optimizer_local.zero_grad()
 
     def test(self, dataloader):
         self.model_nn.eval()
@@ -122,6 +144,9 @@ class MolecularTorchGeometric(Model):
             return out, loss
 
     def eval(self):
+        checkpoint = torch.load(self.path)
+        self.best_model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer_local.load_state_dict(checkpoint['optimizer_state_dict'])
         self.best_model.eval()
         if self.evaluator.functions:
             eval_keys = self.evaluator.functions.keys()
@@ -142,20 +167,25 @@ class MolecularTorchGeometric(Model):
             print("No eval functions passed")
 
     def create_molecular_model(self):
+        checkpoint = torch.load(self.path)
+        self.best_model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer_local.load_state_dict(checkpoint['optimizer_state_dict'])
         model = MolecularModel()
         model.descriptors = self.dataset.featurizer
         model.doa = self.doa
         model.model = self.best_model
+        model.optimizer = self.optimizer_local
         model.X = self.dataset.X
         model.Y = self.dataset.y
         model.library = ['torch_geometric', 'torch']
         model.version = [torch_geometric.__version__, torch.__version__]
-        model.jaqpotpy_version = config.version
+        model.jaqpotpy_version = jaqpotpy.__version__
+        model.jaqpotpy_docker = config.jaqpotpy_docker
         model.modeling_task = self.dataset.task
         # model.external_feats = self.dataset.external
         return model
 
-#
+
 # class MolecularTorch(Model):
 #
 #     def __init__(self, dataset: TorchGraphDataset, model_nn: torch.nn.Module

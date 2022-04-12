@@ -1,6 +1,6 @@
 import torch
 from jaqpotpy.cfg import config
-from torch_geometric.nn import GCNConv
+from torch_geometric.nn import GCNConv, ChebConv, SAGEConv, GraphConv
 import torch.nn.functional as F
 from torch_geometric.nn import global_mean_pool
 
@@ -42,6 +42,169 @@ class GCN(torch.nn.Module):
         x = global_mean_pool(x, data.batch)
         x = self.out(x)
         return x
+
+
+class GhebConv_V1(torch.nn.Module):
+
+    def __init__(self, in_channels
+                 , num_layers, hidden_channels, out_channels
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+        super(GhebConv_V1, self).__init__()
+        torch.manual_seed(config.global_seed)
+
+        self.act = activation
+        self.dropout = dropout
+        self.act_first = act_first
+        self.norm = norm
+
+        self.jaqpotpy_version = config.version
+
+        self.layers = torch.nn.ModuleList([ChebConv(in_channels, hidden_channels)])
+        for i in range(num_layers - 1):
+            self.layers.append(ChebConv(hidden_channels, hidden_channels))
+        self.out = torch.nn.Linear(hidden_channels, out_channels)
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        for layer in self.layers:
+            x = layer(x, edge_index)
+            if self.norm and self.act_first is True:
+                x = self.act(x)
+                x = self.norm(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            elif self.norm and self.act_first is False:
+                x = self.norm(x)
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            else:
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+        x = global_mean_pool(x, data.batch)
+        x = self.out(x)
+        return x
+
+
+class SAGEConv_V1(torch.nn.Module):
+
+    def __init__(self, in_channels
+                 , num_layers, hidden_channels, out_channels
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+        super(SAGEConv_V1, self).__init__()
+        torch.manual_seed(config.global_seed)
+
+        self.act = activation
+        self.dropout = dropout
+        self.act_first = act_first
+        self.norm = norm
+
+        self.jaqpotpy_version = config.version
+
+        self.layers = torch.nn.ModuleList([SAGEConv(in_channels, hidden_channels)])
+        for i in range(num_layers - 1):
+            self.layers.append(SAGEConv(hidden_channels, hidden_channels))
+        self.out = torch.nn.Linear(hidden_channels, out_channels)
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        for layer in self.layers:
+            x = layer(x, edge_index)
+            if self.norm and self.act_first is True:
+                x = self.act(x)
+                x = self.norm(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            elif self.norm and self.act_first is False:
+                x = self.norm(x)
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            else:
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+        x = global_mean_pool(x, data.batch)
+        x = self.out(x)
+        return x
+
+
+class GCN_V1(torch.nn.Module):
+
+    def __init__(self, in_channels
+                 , num_layers, hidden_channels, out_channels
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+        super(GCN_V1, self).__init__()
+        torch.manual_seed(config.global_seed)
+
+        self.act = activation
+        self.dropout = dropout
+        self.act_first = act_first
+        self.norm = norm
+
+        self.jaqpotpy_version = config.version
+
+        self.layers = torch.nn.ModuleList([GCNConv(in_channels, hidden_channels)])
+        for i in range(num_layers - 1):
+            self.layers.append(GCNConv(hidden_channels, hidden_channels))
+        self.out = torch.nn.Linear(hidden_channels, out_channels)
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        for layer in self.layers:
+            x = layer(x, edge_index)
+            if self.norm and self.act_first is True:
+                x = self.act(x)
+                x = self.norm(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            elif self.norm and self.act_first is False:
+                x = self.norm(x)
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            else:
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+        x = global_mean_pool(x, data.batch)
+        x = self.out(x)
+        return x
+
+
+class GraphConv_V1(torch.nn.Module):
+
+    def __init__(self, in_channels
+                 , num_layers, hidden_channels, out_channels
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+        super(GraphConv_V1, self).__init__()
+        torch.manual_seed(config.global_seed)
+
+        self.act = activation
+        self.dropout = dropout
+        self.act_first = act_first
+        self.norm = norm
+
+        self.jaqpotpy_version = config.version
+
+        self.layers = torch.nn.ModuleList([GraphConv(in_channels, hidden_channels)])
+        for i in range(num_layers - 1):
+            self.layers.append(GraphConv(hidden_channels, hidden_channels))
+        # self.layers.append(torch.nn.ModuleList(GCNConv(hidden_channels, hidden_channels) for i in range(num_layers - 1)))
+        self.out = torch.nn.Linear(hidden_channels, out_channels)
+        # self.layers.append(torch.nn.ModuleList([torch.nn.Linear(hidden_channels, out_channels)]))
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        for layer in self.layers:
+            x = layer(x, edge_index)
+            if self.norm and self.act_first is True:
+                x = self.act(x)
+                x = self.norm(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            elif self.norm and self.act_first is False:
+                x = self.norm(x)
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            else:
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+        x = global_mean_pool(x, data.batch)
+        x = self.out(x)
+        return x
+
 
 
 class GCN_t(torch.nn.Module):

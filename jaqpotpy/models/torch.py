@@ -10,9 +10,8 @@ import torch
 from torch.utils.data import DataLoader
 from jaqpotpy.models import MolecularModel
 import numpy as np
-import torch_geometric
 from jaqpotpy.cfg import config
-from PIL import Image
+import os
 import jaqpotpy
 
 
@@ -23,7 +22,7 @@ class MolecularTorch(Model):
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
-                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1):
+                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./"):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset: MolecularDataset = dataset
         self.model_nn = model_nn
@@ -40,11 +39,13 @@ class MolecularTorch(Model):
         self.criterion = criterion
         self.trained_model = None
         self.model_fitted: MolecularModel = None
-        self.optimizer = optimizer
+        self.optimizer_local = optimizer
         self.train_loader = None
         self.test_loader = None
         self.log_steps = log_steps
         self.best_model = None
+        self.path = None
+        self.model_dir = model_dir
         # torch.multiprocessing.freeze_support()
 
     def __call__(self, smiles):
@@ -86,7 +87,18 @@ class MolecularTorch(Model):
                 if temp_loss < los:
                 # if temp_loss < los and steps > epoch:
                     temp_loss = los
-                    self.best_model = self.model_nn
+                    temp_path = self.path
+                    self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
+                    torch.save({
+                        'epoch': epoch,
+                        'model_state_dict': self.model_nn.state_dict(),
+                        'optimizer_state_dict': self.optimizer_local.state_dict(),
+                        'loss': los,
+                    }, self.path)
+                    try:
+                        os.remove(temp_path)
+                    except TypeError as e:
+                        continue
                 if epoch % self.log_steps == 0:
                     print(f'Epoch: {epoch:03d}, Train Accuracy: {train_loss[2]}, Test Accuracy: {test_loss[2]}')
             else:
@@ -94,9 +106,19 @@ class MolecularTorch(Model):
                 if temp_loss is None:
                     temp_loss = test_loss[1].item()
                 if temp_loss > los:
-                # if temp_loss > los and steps > epoch:
                     temp_loss = los
-                    self.best_model = self.model_nn
+                    temp_path = self.path
+                    self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
+                    torch.save({
+                        'epoch': epoch,
+                        'model_state_dict': self.model_nn.state_dict(),
+                        'optimizer_state_dict': self.optimizer.state_dict(),
+                        'loss': los,
+                    }, self.path)
+                    try:
+                        os.remove(temp_path)
+                    except TypeError as e:
+                        continue
                 if epoch % self.log_steps == 0:
                     print(f'Epoch: {epoch:03d}, Train Loss: {train_loss[1]}, Test Loss: {test_loss[1]}')
         return self
@@ -139,6 +161,9 @@ class MolecularTorch(Model):
             return out, loss
 
     def eval(self):
+        checkpoint = torch.load(self.path)
+        self.best_model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer_local.load_state_dict(checkpoint['optimizer_state_dict'])
         self.best_model.eval()
         if self.evaluator.functions:
             eval_keys = self.evaluator.functions.keys()
@@ -146,16 +171,11 @@ class MolecularTorch(Model):
             truth = np.array([])
             preds = np.array([])
             for data in self.test_loader:
-                if self.dataset.task == 'classification':
-                    out = self.best_model(data[0].float())
-                    pred = out.argmax(dim=1)
-                    correct += int((pred == data[1].float()).sum())
-                    truth = np.append(truth, data[1].numpy())
-                    preds = np.append(preds, pred.numpy())
-                else:
-                    out = self.best_model(data[0].float())
-                    truth = np.append(truth, data[1].numpy())
-                    preds = np.append(preds, out.detach().numpy())
+                out = self.best_model(data)
+                pred = out.argmax(dim=1)
+                correct += int((pred == data.y).sum())
+                truth = np.append(truth, data.y.numpy())
+                preds = np.append(preds, pred.numpy())
             # return out, pred.numpy(), correct / len(dataloader.dataset)
             for eval_key in eval_keys:
                 eval_function = self.evaluator.functions.get(eval_key)
@@ -164,15 +184,20 @@ class MolecularTorch(Model):
             print("No eval functions passed")
 
     def create_molecular_model(self):
+        checkpoint = torch.load(self.path)
+        self.best_model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer_local.load_state_dict(checkpoint['optimizer_state_dict'])
         model = MolecularModel()
         model.descriptors = self.dataset.featurizer
         model.doa = self.doa
         model.model = self.best_model
+        model.optimizer = self.optimizer_local
         model.X = self.dataset.X
         model.Y = self.dataset.y
         model.library = ['torch']
         model.version = [torch.__version__]
-        model.jaqpotpy_version = config.version
+        model.jaqpotpy_version = jaqpotpy.__version__
+        model.jaqpotpy_docker = config.jaqpotpy_docker
         model.modeling_task = self.dataset.task
-        model.external_feats = self.dataset.external
+        # model.external_feats = self.dataset.external
         return model

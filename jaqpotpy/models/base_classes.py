@@ -5,6 +5,7 @@ import pandas as pd
 import pickle
 import numpy as np
 import base64
+import torch.nn.functional as nnf
 # from jaqpotpy import Jaqpot
 
 
@@ -29,6 +30,8 @@ class Model(object):
     _library = Iterable[str]
     _version = Iterable[str]
     _jaqpotpy_version = None
+    _jaqpotpy_docker = None
+    _optimizer = None
 
     @property
     def smiles(self):
@@ -163,6 +166,14 @@ class Model(object):
         self._library = value
 
     @property
+    def optimizer(self):
+        return self._optimizer
+
+    @optimizer.setter
+    def optimizer(self, value):
+        self._optimizer = value
+
+    @property
     def version(self):
         return self._version
 
@@ -185,6 +196,14 @@ class Model(object):
     @jaqpotpy_version.setter
     def jaqpotpy_version(self, value):
         self._jaqpotpy_version = value
+
+    @property
+    def jaqpotpy_docker(self):
+        return self._jaqpotpy_docker
+
+    @jaqpotpy_docker.setter
+    def jaqpotpy_docker(self, value):
+        self._jaqpotpy_docker = value
 
     def __train__(self):
         raise NotImplemented("Not implemented")
@@ -275,10 +294,10 @@ class MolecularModel(Model):
                     try:
                         if self.preprocessing_y:
                             for f in self.preprocessing_y:
-                                p = f.inverse_transform(p)
+                                p = f.inverse_transform(p.reshape(1, -1))
                     except AttributeError as e:
                         pass
-                    self._prediction.append(p)
+                    self._prediction.append(p.tolist())
                 try:
                     probs = self.model.predict_proba(data)
                     for prob in probs:
@@ -295,7 +314,9 @@ class MolecularModel(Model):
                     pred = self.model(g)
                     if self.modeling_task == "classification":
                         for p in pred:
-                            self._probability.append(p.detach().numpy().tolist())
+                            prob = nnf.softmax(p, dim=0)
+                            self._probability.append(prob.detach().numpy().tolist())
+                            # self._probability.append(p.detach().numpy().tolist())
                         pred = pred.argmax(dim=1)
                         preds = pred.detach().numpy()
                         for p in preds:
@@ -305,22 +326,22 @@ class MolecularModel(Model):
                                         p = f.inverse_transform(p)
                             except AttributeError as e:
                                 pass
-                            self._prediction.append(p)
+                            self._prediction.append(p.tolist())
                     else:
                         preds = pred.detach().numpy()
                         for p in preds:
                             self._prediction.append(p.tolist())
             if self.library == ['torch']:
                 self.model.eval()
-                # self.model.no_grad()
-                # torch.no_grad()
                 from torch.utils.data import DataLoader
                 data_loader = DataLoader(data, batch_size=len(data))
                 for g in data_loader:
                     pred = self.model(g.float())
                     if self.modeling_task == "classification":
                         for p in pred:
-                            self._probability.append(p.detach().numpy().tolist())
+                            prob = nnf.softmax(p, dim=0)
+                            self._probability.append(prob.detach().numpy().tolist())
+                            # self._probability.append(p.detach().numpy().tolist())
                         pred = pred.argmax(dim=1)
                         preds = pred.detach().numpy()
                         for p in preds:

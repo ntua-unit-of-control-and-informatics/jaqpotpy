@@ -5,7 +5,7 @@ class PretrainedRequirements:
                  title=None, implementedWith=None,
                  algorithm=None, implementedIn=None,
                  description=None, dependentFeatures=None
-                 , jaqpotpyVersion=None, type=None, libraries=None, versions=None):
+                 , jaqpotpyVersion=None, jaqpotpyDockerVersion=None, type=None, libraries=None, versions=None):
         self.rawModel = rawModel
         self.independentFeatures = independentFeatures
         self.predictedFeatures = predictedFeatures
@@ -17,6 +17,7 @@ class PretrainedRequirements:
         self.algorithm = algorithm
         self.description = description
         self.jaqpotpyVersion = jaqpotpyVersion
+        self.jaqpotpyDockerVersion = jaqpotpyDockerVersion
         self.type = type
         self.libraries = libraries
         self.versions = versions

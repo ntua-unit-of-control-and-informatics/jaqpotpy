@@ -237,6 +237,7 @@ class PretrainedNeedsDirector:
         pretrained_needs.description = self._builder.getDescription()
         pretrained_needs.title = self._builder.getTitle()
         pretrained_needs.jaqpotpyVersion = self._builder.getJaqpotPyVersion()
+        pretrained_needs.jaqpotpyDockerVersion = self._builder.getJaqpotpyDockerVersion()
         pretrained_needs.libraries = self._builder.getLibraries()
         pretrained_needs.versions = self._builder.getVersions()
         return pretrained_needs
@@ -269,6 +270,10 @@ class PretrainedNeedsBuilder:
     def setJaqpotPyVersion(self, jaqpotpy_version):
         # self.jaqpotpy_version.clear()
         self.jaqpotpy_version = jaqpotpy_version
+
+    def setJaqpotPyDockerVersion(self, jaqpotpy_docker_version):
+        # self.jaqpotpy_version.clear()
+        self.jaqpotpy_docker_version = jaqpotpy_docker_version
 
     def setType(self, type):
         # self.type.clear()
@@ -347,6 +352,9 @@ class PretrainedNeedsBuilder:
 
     def getJaqpotPyVersion(self):
         return self.jaqpotpy_version
+
+    def getJaqpotpyDockerVersion(self):
+        return self.jaqpotpy_docker_version
 
     def getLibraries(self):
         return self.libraries
