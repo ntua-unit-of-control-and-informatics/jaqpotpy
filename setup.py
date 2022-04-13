@@ -4,11 +4,11 @@ from setuptools import setup, find_packages
 # twine upload dist/*
 # twine upload --repository testpypi dist/jaqpotpy-2.0.0b0-py3-none-any.whl
 # twine upload dist/jaqpotpy-1.0.27-py3-none-any.whl
-
+# docker build -t euclia/jaqpotpy:1.0.3 --no-cache --build-arg tag=1.0.3 .
 
 setup(name='jaqpotpy',
       # version='2.0.5-beta0',
-      version='1.0.27',
+      version='1.0.28',
       description='Python client for Jaqpot',
       url='https://github.com/euclia/jaqpotpy',
       author='Pantelis Karatzas',
