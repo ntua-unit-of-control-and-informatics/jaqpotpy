@@ -1,5 +1,4 @@
 from jaqpotpy.descriptors.base_classes import MaterialFeaturizer
-from jaqpotpy.descriptors.material import GraphData
 from pymatgen.util.typing import CompositionLike, Composition
 import numpy as np
 import pandas as pd
@@ -89,7 +88,7 @@ class ElementNet(MaterialFeaturizer):
     Parameters
     ----------
     datapoint: pymatgen.utils.typing.CompositionLike object
-      Composition or an object that can be used to creaet a composition
+      Composition or an object that can be used to create a composition
 
     Returns
     -------

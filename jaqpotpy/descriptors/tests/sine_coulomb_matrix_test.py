@@ -2,6 +2,7 @@ from jaqpotpy.descriptors.material import SineCoulombMatrix
 from pymatgen.core import Structure, Lattice
 import unittest
 
+
 class test_SineCoulombMatrix(unittest.TestCase):
 
       def setUp(self) -> None:

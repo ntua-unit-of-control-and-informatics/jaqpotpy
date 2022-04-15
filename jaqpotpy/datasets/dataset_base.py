@@ -4,25 +4,26 @@ Dataset base classes
 from typing import Any
 import inspect
 from typing import Iterable
+import pickle
 
 
-class MolecularDataset(object):
+class BaseDataset(object):
     """
     Astract class for datasets
     """
-    def __init__(self, path=None, smiles_col=None, x_cols=None, y_cols=None, smiles=None) -> None:
+    def __init__(self, path=None, x_cols=None, y_cols=None) -> None:
         self._Y = None
         self._X = None
         self._dataset_name = None
         self._df = None
         self._x_cols_all = None
-        self.smiles = smiles
-        self._smiles_strings = None
         self.path = path
         self.x_cols = x_cols
         self.y_cols = y_cols
-        self.smiles_col = smiles_col
         self._task = "regression"
+        self.featurizer = None
+        self._featurizer_name = None
+        self._external = None
 
     @property
     def task(self):
@@ -77,14 +78,6 @@ class MolecularDataset(object):
         self._external = value
 
     @property
-    def smiles_strings(self) -> Iterable[str]:
-        return self._smiles_strings
-
-    @smiles_strings.setter
-    def smiles_strings(self, value):
-        self._smiles_strings = value
-
-    @property
     def df(self) -> Any:
         return self._df
 
@@ -100,21 +93,73 @@ class MolecularDataset(object):
         raise NotImplementedError("Need implementation")
 
     def __repr__(self) -> str:
-        args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
-        args_names = [arg for arg in args_spec.args if arg != 'self']
-        args_info = ''
-        for arg_name in args_names:
-          value = self.__dict__[arg_name]
-          # for str
-          if isinstance(value, str):
-            value = "'" + value + "'"
-          # for list
+        # args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
+        # args_names = [arg for arg in args_spec.args if arg != 'self']
+        # args_info = ''
+        # for arg_name in args_names:
+        #   value = self.__dict__[arg_name]
+        #   # for str
+        #   if isinstance(value, str):
+        #     value = "'" + value + "'"
+        #   # for list
         return self.__class__.__name__
 
-    # @x_cols.setter
-    # def x_cols(self, value):
-    #     self._x_cols = value
-    #
-    # @y_cols.setter
-    # def y_cols(self, value):
-    #     self._y_cols = value
+
+class MolecularDataset(BaseDataset):
+    def __init__(self, path=None, smiles_col=None, x_cols=None, y_cols=None, smiles=None) -> None:
+        self.smiles = smiles
+        self._smiles_strings = None
+        self.smiles_col = smiles_col
+        super().__init__(path, x_cols, y_cols)
+
+    @property
+    def smiles_strings(self) -> Iterable[str]:
+        return self._smiles_strings
+
+    @smiles_strings.setter
+    def smiles_strings(self, value):
+        self._smiles_strings = value
+
+    def save(self):
+        if self._dataset_name:
+            with open(self._dataset_name + ".jdata", 'wb') as f:
+                pickle.dump(self, f)
+        else:
+            with open("jaqpot_dataset" + ".jdata", 'wb') as f:
+                pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
+
+
+
+class MaterialDataset(BaseDataset):
+    def __init__(self, path=None, materials_col=None, x_cols=None, y_cols=None, materials=None) -> None:
+        self.materials = materials
+        self._materials_strings = None
+        self.materials_col = materials_col
+        super().__init__(path, x_cols, y_cols)
+
+
+    @property
+    def materials_strings(self) -> Iterable[str]:
+        return self._materials_strings
+
+    @materials_strings.setter
+    def materials_strings(self, value):
+        self._materials_strings = value
+
+    def save(self):
+        if self._dataset_name:
+            with open(self._dataset_name + ".jdata", 'wb') as f:
+                pickle.dump(self, f)
+        else:
+            with open("jaqpot_dataset" + ".jdata", 'wb') as f:
+                pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)

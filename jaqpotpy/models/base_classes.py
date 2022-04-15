@@ -1,6 +1,7 @@
 from jaqpotpy.doa.doa import DOA
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from typing import Any, Iterable
+from jaqpotpy.descriptors.base_classes import Featurizer #MolecularFeaturizer, MaterialFeaturizer,
+from typing import Any, Iterable, Union, Dict
+from pymatgen.core.structure import Lattice, Structure
 import pandas as pd
 import pickle
 import numpy as np
@@ -12,7 +13,7 @@ import torch.nn.functional as nnf
 class Model(object):
     _model: Any
     _doa: DOA
-    _descriptors: MolecularFeaturizer
+    _descriptors: Featurizer
     _preprocessors: []
     _preprocessor_names: []
     _preprocessor_y_names: []
@@ -255,7 +256,7 @@ class MolecularModel(Model):
                 data = pd.concat([data, ext], axis=1)
             graph_data_list = []
             if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
-                graph_data = data['MoleculeGraph']
+                # graph_data = data['MoleculeGraph']
                 for g in data['MoleculeGraph'].to_list():
                     import torch
                     from torch_geometric.data import Data
@@ -362,6 +363,136 @@ class MolecularModel(Model):
                             except AttributeError as e:
                                 pass
                             self._prediction.append([p.tolist()])
+            # else:
+            #     preds = self.model.predict(data)
+            # for p in preds:
+            #     self._prediction.append([p[0]])
+            return self
+        else:
+            pass
+
+class MaterialModel(Model):
+
+    def __call__(self, compositions: Iterable[str] = None, structures: Union[Iterable[Structure], Iterable[Dict]] = None, external=None):
+        if compositions:
+            if structures:
+                raise ValueError('Both compositions and structures were passed. Please provide one of them.')
+            else:
+                self.__type_mat__ = 'composition'
+                self._materials = compositions
+        else:
+            self.__type_mat__ = 'structure'
+            self._materials = structures
+        self._external = external
+        self.infer()
+
+    def save(self):
+        if self._model_title:
+            with open(self._model_title + ".jmodel", 'wb') as f:
+                pickle.dump(self, f)
+        else:
+            with open("jaqpot_model" + ".jmodel", 'wb') as f:
+                pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
+
+    def infer(self):
+        self._prediction = []
+        self._probability = []
+        if self._materials:
+            ext = pd.DataFrame.from_dict(self.external)
+            data = self._descriptors.featurize_dataframe(self._materials)
+            data = pd.concat([data, ext], axis=1)
+            graph_data_list = []
+            if self._descriptors.__name__ == 'CrystalGraphCNN':
+                for g in data['MaterialGraph'].to_list():
+                    import torch
+                    from torch_geometric.data import Data
+                    dat = Data(x=torch.FloatTensor(g.node_features)
+                               , edge_index=torch.LongTensor(g.edge_index)
+                               , edge_attr=g.edge_features
+                               , num_nodes=g.num_nodes)
+                    graph_data_list.append(dat)
+                self._prediction = []
+
+            # if self.doa:
+            #     self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+
+            try:
+                if self.preprocessing:
+                    for f in self.preprocessing:
+                        data = f.transform(data)
+            except AttributeError as e:
+                pass
+            if self.library == ['sklearn']:
+                preds = self.model.predict(data)
+                for p in preds:
+                    try:
+                        if self.preprocessing_y:
+                            for f in self.preprocessing_y:
+                                p = f.inverse_transform(data)
+                    except AttributeError as e:
+                        pass
+                    self._prediction.append(p)
+                try:
+                    probs = self.model.predict_proba(data)
+                    for prob in probs:
+                        self._probability.append(prob)
+                except AttributeError as e:
+                    pass
+            if self.library == ['torch_geometric', 'torch']:
+                self.model.eval()
+                # self.model.no_grad()
+                # torch.no_grad()
+                from torch_geometric.loader import DataLoader
+                data_loader = DataLoader(graph_data_list, batch_size=len(graph_data_list))
+                for g in data_loader:
+                    pred = self.model(g)
+                    if self.modeling_task == "classification":
+                        for p in pred:
+                            self._probability.append(p.detach().numpy().tolist())
+                        pred = pred.argmax(dim=1)
+                        preds = pred.detach().numpy()
+                        for p in preds:
+                            try:
+                                if self.preprocessing_y:
+                                    for f in self.preprocessing_y:
+                                        p = f.inverse_transform(data)
+                            except AttributeError as e:
+                                pass
+                            self._prediction.append([p.tolist()])
+                    else:
+                        preds = pred.detach().numpy()
+                        for p in preds:
+                            self._prediction.append(p.tolist())
+            if self.library == ['torch']:
+                self.model.eval()
+                # self.model.no_grad()
+                # torch.no_grad()
+                from torch.utils.data import DataLoader
+                data_loader = DataLoader(data, batch_size=len(data))
+                for g in data_loader:
+                    pred = self.model(g.float())
+                    if self.modeling_task == "classification":
+                        for p in pred:
+                            self._probability.append(p.detach().numpy().tolist())
+                        pred = pred.argmax(dim=1)
+                        preds = pred.detach().numpy()
+                        for p in preds:
+                            try:
+                                if self.preprocessing_y:
+                                    for f in self.preprocessing_y:
+                                        p = f.inverse_transform(data)
+                            except AttributeError as e:
+                                pass
+                            self._prediction.append([p.tolist()])
+                    else:
+                        preds = pred.detach().numpy()
+                        for p in preds:
+                            self._prediction.append(p.tolist())
             # else:
             #     preds = self.model.predict(data)
             # for p in preds:

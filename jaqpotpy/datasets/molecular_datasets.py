@@ -97,15 +97,15 @@ class MolecularTabularDataset(MolecularDataset):
         return len(self.df)
 
     def __repr__(self) -> str:
-        args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
-        args_names = [arg for arg in args_spec.args if arg != 'self']
-        args_info = ''
-        for arg_name in args_names:
-          value = self.__dict__[arg_name]
-          # for str
-          if isinstance(value, str):
-            value = "'" + value + "'"
-          # for list
+        # args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
+        # args_names = [arg for arg in args_spec.args if arg != 'self']
+        # args_info = ''
+        # for arg_name in args_names:
+        #   value = self.__dict__[arg_name]
+        #   # for str
+        #   if isinstance(value, str):
+        #     value = "'" + value + "'"
+        #   # for list
         return self.__class__.__name__
 
 
@@ -162,14 +162,14 @@ class TorchGraphDataset(MolecularDataset, Dataset):
         return len(self.df)
 
     def __repr__(self) -> str:
-        args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
-        args_names = [arg for arg in args_spec.args if arg != 'self']
-        args_info = ''
-        for arg_name in args_names:
-          value = self.__dict__[arg_name]
-          # for str
-          if isinstance(value, str):
-            value = "'" + value + "'"
+        # args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
+        # args_names = [arg for arg in args_spec.args if arg != 'self']
+        # args_info = ''
+        # for arg_name in args_names:
+        #   value = self.__dict__[arg_name]
+        #   # for str
+        #   if isinstance(value, str):
+        #     value = "'" + value + "'"
           # for list
         return self.__class__.__name__
 
@@ -194,6 +194,7 @@ class SmilesDataset(MolecularDataset):
         self.featurizer: MolecularFeaturizer = featurizer
         self.indices: [] = None
         self._task = task
+
         # self.create()
 
     def create(self):
@@ -249,13 +250,13 @@ class SmilesDataset(MolecularDataset):
         return len(self.df)
 
     def __repr__(self) -> str:
-        args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
-        args_names = [arg for arg in args_spec.args if arg != 'self']
-        args_info = ''
-        for arg_name in args_names:
-          value = self.__dict__[arg_name]
-          # for str
-          if isinstance(value, str):
-            value = "'" + value + "'"
-          # for list
+        # args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
+        # args_names = [arg for arg in args_spec.args if arg != 'self']
+        # args_info = ''
+        # for arg_name in args_names:
+        #   value = self.__dict__[arg_name]
+        #   # for str
+        #   if isinstance(value, str):
+        #     value = "'" + value + "'"
+        #   # for list
         return self.__class__.__name__
