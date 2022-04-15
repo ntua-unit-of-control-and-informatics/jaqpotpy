@@ -1,5 +1,4 @@
 from jaqpotpy.descriptors.base_classes import MaterialFeaturizer
-from jaqpotpy.descriptors.material import GraphData
 from pymatgen.core.structure import Structure, PeriodicSite
 from typing import Union, Tuple
 import numpy as np

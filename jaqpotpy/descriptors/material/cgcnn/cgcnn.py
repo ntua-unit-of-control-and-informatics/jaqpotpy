@@ -1,9 +1,10 @@
 from jaqpotpy.descriptors.base_classes import MaterialFeaturizer
-from jaqpotpy.descriptors.material import GraphData
+from jaqpotpy.descriptors.graph.graph_data import GraphData
 from pymatgen.core.structure import Structure
 import numpy as np
 import json
 from typing import Union, Tuple
+import pandas as pd
 
 
 class CrystalGraphCNN(MaterialFeaturizer):
@@ -107,6 +108,27 @@ class CrystalGraphCNN(MaterialFeaturizer):
     edge_index, edge_features = self._get_edge_features_and_index(struct)
     graph = GraphData(node_features, edge_index, edge_features)
     return graph
+
+
+  def _featurize_dataframe(self, datapoint: Union[str, Structure], **kwargs) -> pd.DataFrame:
+    """
+    Calculate crystal graph features from pymatgen structure.
+
+    Parameters
+    ----------
+    datapoint: str or pymatgen.core.structure object
+      Either the path of a file of a material (i.e. extxyz, cif etc.)
+      from wich the structure will be created, or the Structure itself.
+    Returns
+    -------
+    feats: np.ndarray
+      Vector of properties and statistics derived from chemical
+      stoichiometry. Some values may be NaN.
+    """
+
+    df = pd.DataFrame(index=[0], columns=['MaterialGraph'])
+    df.at[0, 'MaterialGraph'] = self._featurize(datapoint)
+    return df
 
   def _get_node_features(self, struct: Structure) -> np.ndarray:
       """

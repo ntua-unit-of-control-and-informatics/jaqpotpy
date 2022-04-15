@@ -1,16 +1,17 @@
 from typing import Union, List, Optional, Any
 import numpy as np
 from scipy.spatial import Delaunay
-from jaqpotpy.parsers import Parser
+from jaqpotpy.helpers.periodic_table.element import Element
 from mendeleev import element
 from tqdm import tqdm
 import warnings
 import pandas as pd
-from jaqpotpy.descriptors.base_classes import ParserFeaturizer
+from jaqpotpy.descriptors.base_classes import MaterialFeaturizer
 from jaqpotpy.cfg import config
+from jaqpotpy.entities.material_models import *
+from jaqpotpy.parsers import *
 
-
-class GeomDescriptors(ParserFeaturizer):
+class GeomDescriptors(MaterialFeaturizer):
     """Geometrical Descriptors.
       This class computes a list of of geometrical descriptors of materials based on the Delaunay tessellation and 14 physicochemical properties of the involved atoms.
         Namely:
@@ -31,11 +32,6 @@ class GeomDescriptors(ParserFeaturizer):
 
       Attributes
       ----------
-      parser: jaqpopy.parsers.Parser
-        A parser that reads files and returns pydantinc objects. Keep in mind that in case
-        of using a custom parser, the object returned MUST include a get_atoms() function
-        that returns a jaqpotpy.models.material_models.Atom structure.
-
       descriptors: Optional[list]
         List of descriptor names used in this class.
         Items of the list must be selected from the set:
@@ -58,7 +54,7 @@ class GeomDescriptors(ParserFeaturizer):
     def __name__(self):
         return 'GeomDescriptors'
 
-    def __init__(self, parser: Parser, descriptors: List[str] = None):
+    def __init__(self, descriptors: List[str] = None):
         if descriptors:
             for d in descriptors:
                 if d not in ["atomic_number", "atomic_radius", "atomic_weight", "atomic_volume", "boiling_point", "density", "dipole_polarizability",
@@ -69,13 +65,12 @@ class GeomDescriptors(ParserFeaturizer):
             self.descriptors = ["atomic_number", "atomic_radius", "atomic_weight", "atomic_volume", "boiling_point", "density", "dipole_polarizability",
                              "evaporation_heat", "fusion_heat", "is_radioactive", "lattice_constant", "thermal_conductivity", "specific_heat", "en_pauling"]
 
-        self.parser = parser
         self.data = pd.DataFrame()
 
     def __getitem__(self):
         return self
 
-    def _featurize(self, material, **kwargs) -> np.ndarray:
+    def _featurize(self, material: Union[str, Pdb, Xyz, Sdf], **kwargs) -> np.ndarray:
         """
         Calculate Geometrical Descriptors.
           This class computes a list of of geometrical descriptors of materials based on the Delaunay tessellation and 14 physicochemical properties of the involved atoms.
@@ -104,11 +99,25 @@ class GeomDescriptors(ParserFeaturizer):
         else:
             disable_tq = False
 
-        if not isinstance(material, list):
-            material = [material]
+        if isinstance(material, str):
+            file_ext = material.split('.')[-1].lower()
+            material_list = []
+            if file_ext in ['sdf', 'mol']:
+                parser = MolParser(material, file_ext)
+            elif file_ext in ['pdb']:
+                parser = PdbParser(material, file_ext)
+            elif file_ext in ['xyz', 'extxyz']:
+                parser = XyzParser(material, file_ext)
+            else:
+                raise ValueError(f'Files with extention {file_ext} are not supported. Supported file formats are "xyz","extxyz","pdb","sdf" and "mol".')
+
+            for mat in parser.parse():
+                material_list.append(mat)
+        else:
+            material_list = [material]
 
 
-        for i, item in enumerate(tqdm(material, desc='Parsing files', disable=disable_tq)):
+        for i, item in enumerate(tqdm(material_list, desc='Parsing files', disable=disable_tq)):
             obj = item.get_atoms()
 
             points = obj.coordinates
@@ -153,7 +162,8 @@ class GeomDescriptors(ParserFeaturizer):
 
                     # Loop through all atoms of the tetrahedron and add the according properties.
                     for i in lst:
-                        elmnt = element(correct_element_format(i))
+                        el = Element(correct_element_format(i))
+                        elmnt = el.parameters
                         an += elmnt.atomic_number
                         ar += elmnt.atomic_radius
                         aw += elmnt.atomic_weight
@@ -219,7 +229,7 @@ class GeomDescriptors(ParserFeaturizer):
         """
         return list(self.data.columns)
 
-    def _featurize_dataframe(self, material, **kwargs) -> np.ndarray:
+    def _featurize_dataframe(self, material, **kwargs) -> pd.DataFrame:
         """
         Calculate Mordred descriptors.
         Parameters

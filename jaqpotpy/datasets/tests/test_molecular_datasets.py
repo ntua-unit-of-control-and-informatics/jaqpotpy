@@ -3,7 +3,7 @@ Tests for Jaqpotpy Datasets.
 """
 import unittest
 from jaqpotpy.datasets import SmilesDataset, TorchGraphDataset, MolecularTabularDataset
-from jaqpotpy.descriptors import MordredDescriptors\
+from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , TopologicalFingerprint, MolGraphConvFeaturizer\
     , RDKitDescriptors, SmilesToSeq, create_char_to_idx, SmilesToImage
 from mordred import descriptors
@@ -11,7 +11,7 @@ from torch_geometric.loader import DataLoader
 from torch.utils.data import DataLoader as dl
 
 
-class TestDatasets(unittest.TestCase):
+class TestMolDatasets(unittest.TestCase):
 
     mols = ['O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         , 'O=C1CCc2cc(C(=O)N3CCC(C4CCNC4)CC3)ccc2N1'
@@ -96,6 +96,8 @@ class TestDatasets(unittest.TestCase):
     def test_smiles_dataset_rdkit(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=RDKitDescriptors())
         dataset.create()
+        print(dataset.__dict__.keys())
+        dataset.__repr__()
         assert dataset.featurizer_name == 'RDKitDescriptors'
         assert dataset.smiles_strings[
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
@@ -104,6 +106,7 @@ class TestDatasets(unittest.TestCase):
     def test_smiles_dataset_finger(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=TopologicalFingerprint())
         dataset.create()
+
         assert dataset.featurizer_name == 'TopologicalFingerprint'
         assert dataset.smiles_strings[
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
@@ -183,3 +186,7 @@ class TestDatasets(unittest.TestCase):
         for data in dataloader:
             from torch import Tensor
             assert type(data[0]) == Tensor
+
+
+if __name__ == '__main__':
+    unittest.main()
