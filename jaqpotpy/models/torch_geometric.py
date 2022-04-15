@@ -80,9 +80,7 @@ class MolecularTorchGeometric(Model):
             if epoch % self.log_steps == 0:
                 if self.dataset.task == "classification":
                     los = test_loss[2]
-                    if temp_loss is None:
-                        temp_loss = test_loss[2]
-                    if temp_loss < los:
+                    if temp_loss is None or temp_loss < los:
                         temp_loss = los
                         temp_path = self.path
                         self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
@@ -99,9 +97,7 @@ class MolecularTorchGeometric(Model):
                     print(f'Epoch: {epoch:03d}, Train Accuracy: {train_loss[2]}, Test Accuracy: {test_loss[2]}')
                 else:
                     los = test_loss[1]
-                    if temp_loss is None:
-                        temp_loss = test_loss[1]
-                    if temp_loss > los:
+                    if temp_loss is None or temp_loss > los:
                         temp_loss = los
                         temp_path = self.path
                         self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
