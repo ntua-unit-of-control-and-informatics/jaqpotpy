@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 setup(name='jaqpotpy',
       # version='2.0.5-beta0',
-      version='1.0.28',
+      version='1.0.32',
       description='Python client for Jaqpot',
       url='https://github.com/euclia/jaqpotpy',
       author='Pantelis Karatzas',

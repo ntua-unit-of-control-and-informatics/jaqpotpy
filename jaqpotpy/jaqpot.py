@@ -25,7 +25,7 @@ import time
 import jaqpotpy.doa.doa as jha
 from sys import getsizeof
 from tqdm import tqdm
-from jaqpotpy.models import MolecularModel
+
 
 ENCODING = 'utf-8'
 
@@ -70,9 +70,9 @@ class Jaqpot:
         try:
             au_req = jaqlogin.authenticate_sync(self.base_url, username, password)
             self.api_key = au_req['authToken']
-            self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
+            # self.user_id = jwtok.decode_jwt(self.api_key).get('sub')
         except Exception as e:
-            self.log.error("Error: " + str(e))
+            self.log.error("Could not login to jaqpot")
             # print("Error: " + str(e))
 
     def set_api_key(self, api_key):
@@ -469,7 +469,7 @@ class Jaqpot:
                     return modid
             # print("Not supported")
 
-    def deploy_jaqpotpy_molecular_model(self, model: MolecularModel, description: str, title: str = None):
+    def deploy_jaqpotpy_molecular_model(self, model, description: str, title: str = None):
         if model.model_title != None:
             title = model.model_title
         pretrained = help.create_molecular_req(model, title=title, description=description, type="MolecularModel")

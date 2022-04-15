@@ -112,7 +112,7 @@ class MolecularTorch(Model):
                     torch.save({
                         'epoch': epoch,
                         'model_state_dict': self.model_nn.state_dict(),
-                        'optimizer_state_dict': self.optimizer.state_dict(),
+                        'optimizer_state_dict': self.optimizer_local.state_dict(),
                         'loss': los,
                     }, self.path)
                     try:

@@ -1,6 +1,5 @@
 from jaqpotpy.entities.feature import Feature
 import math
-from jaqpotpy.models import MolecularModel
 import jaqpotpy
 from jaqpotpy.cfg import config
 
@@ -82,7 +81,7 @@ def create_pretrain_req(model, X, y, title, description, algorithm, implementedW
     return director.construct(pnb)
 
 
-def create_molecular_req(model: MolecularModel, title, description, type):
+def create_molecular_req(model, title, description, type):
     pnb = PretrainedNeedsBuilder()
     independentFeatures = []
     independentFeatures.append("Smiles")
