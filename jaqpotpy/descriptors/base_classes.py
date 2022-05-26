@@ -430,8 +430,8 @@ class MolecularFeaturizer(Featurizer):
           # SMILES is unique, so set a canonical order of atoms
           new_order = rdmolfiles.CanonicalRankAtoms(mol)
           mol = rdmolops.RenumberAtoms(mol, new_order)
-
-        features.append(self._featurize_dataframe(mol, **kwargs))
+          ar = self._featurize_dataframe(mol, **kwargs)
+        features.append(ar)
       except Exception as e:
         if isinstance(mol, Chem.rdchem.Mol):
           mol = Chem.MolToSmiles(mol)
@@ -440,6 +440,7 @@ class MolecularFeaturizer(Featurizer):
             mol)
         logger.warning("Exception message: {}".format(e))
         features.append(np.array([]))
+        # features.append(self._featurize_dataframe(mol, **kwargs))
     columns = self._get_column_names()
     # features = np.array(features)
     if columns == ['Sequence']:

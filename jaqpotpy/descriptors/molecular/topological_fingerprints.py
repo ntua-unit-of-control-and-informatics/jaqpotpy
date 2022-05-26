@@ -161,4 +161,54 @@ class TopologicalFingerprint(MolecularFeaturizer):
                self.smiles == other.smiles
 
     def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
-        self._featurize(datapoint, **kwargs)
+        """Calculate circular fingerprint.
+    Parameters
+    ----------
+    datapoint: rdkit.Chem.rdchem.Mol
+      RDKit Mol object
+    Returns
+    -------
+    np.ndarray
+      A numpy array of circular fingerprint.
+    """
+        try:
+            from rdkit import Chem
+            from rdkit.Chem import rdMolDescriptors
+        except ModuleNotFoundError:
+            raise ImportError("This class requires RDKit to be installed.")
+        if 'mol' in kwargs:
+            datapoint = kwargs.get("mol")
+            raise DeprecationWarning(
+                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
+            )
+        if self.sparse:
+            info: Dict = {}
+            fp = rdMolDescriptors.GetMorganFingerprint(
+                datapoint,
+                self.radius,
+                useChirality=self.chiral,
+                useBondTypes=self.bonds,
+                useFeatures=self.features,
+                bitInfo=info)
+            fp = fp.GetNonzeroElements()  # convert to a dict
+
+            # generate SMILES for fragments
+            if self.smiles:
+                fp_smiles = {}
+                for fragment_id, count in fp.items():
+                    root, radius = info[fragment_id][0]
+                    env = Chem.FindAtomEnvironmentOfRadiusN(datapoint, radius, root)
+                    frag = Chem.PathToSubmol(datapoint, env)
+                    smiles = Chem.MolToSmiles(frag)
+                    fp_smiles[fragment_id] = {'smiles': smiles, 'count': count}
+                fp = fp_smiles
+        else:
+            fp = rdMolDescriptors.GetMorganFingerprintAsBitVect(
+                datapoint,
+                self.radius,
+                nBits=self.size,
+                useChirality=self.chiral,
+                useBondTypes=self.bonds,
+                useFeatures=self.features)
+            fp = np.asarray(fp, dtype=float)
+        return fp

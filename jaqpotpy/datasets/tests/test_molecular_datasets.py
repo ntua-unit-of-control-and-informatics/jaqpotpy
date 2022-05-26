@@ -96,7 +96,6 @@ class TestMolDatasets(unittest.TestCase):
     def test_smiles_dataset_rdkit(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=RDKitDescriptors())
         dataset.create()
-        print(dataset.__dict__.keys())
         dataset.__repr__()
         assert dataset.featurizer_name == 'RDKitDescriptors'
         assert dataset.smiles_strings[
