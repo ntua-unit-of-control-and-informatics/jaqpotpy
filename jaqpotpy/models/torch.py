@@ -56,7 +56,7 @@ class MolecularTorch(Model):
         if self.doa:
             if self.doa:
                 if self.doa.__name__ == 'SmilesLeverage':
-                    self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+                    self.doa_m = self.doa.fit(self.dataset.smiles)
                 else:
                     self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
         if self.dataset.df is not None:
@@ -132,8 +132,8 @@ class MolecularTorch(Model):
             # loss = self.criterion(out, data[1].float())
             # print(loss)
             loss.backward(retain_graph=True)
-            self.optimizer.step()
-            self.optimizer.zero_grad()
+            self.optimizer_local.step()
+            self.optimizer_local.zero_grad()
 
     def test(self, dataloader):
         self.model_nn.eval()
@@ -184,7 +184,10 @@ class MolecularTorch(Model):
         self.best_model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer_local.load_state_dict(checkpoint['optimizer_state_dict'])
         model = MolecularModel()
-        model.descriptors = self.dataset.featurizer
+        if type(self.dataset.featurizer).__name__ == "RDKitDescriptors":
+            model.descriptors = "RDKitDescriptors"
+        else:
+            model.descriptors = self.dataset.featurizer
         model.doa = self.doa
         model.model = self.best_model
         model.optimizer = self.optimizer_local
@@ -223,7 +226,7 @@ class MaterialTorch(Model):
         self.criterion = criterion
         self.trained_model = None
         self.model_fitted: MolecularModel = None
-        self.optimizer = optimizer
+        self.optimizer_local = optimizer
         self.train_loader = None
         self.test_loader = None
         self.log_steps = log_steps
@@ -289,8 +292,8 @@ class MaterialTorch(Model):
             # loss = self.criterion(out, data[1].float())
             # print(loss)
             loss.backward(retain_graph=True)
-            self.optimizer.step()
-            self.optimizer.zero_grad()
+            self.optimizer_local.step()
+            self.optimizer_local.zero_grad()
 
     def test(self, dataloader):
         self.model_nn.eval()

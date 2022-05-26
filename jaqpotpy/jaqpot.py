@@ -488,7 +488,7 @@ class Jaqpot:
         else:
             rawModel = pretrained.rawModel[0]
             rawModel = str(rawModel)
-            n = 1000000
+            n = 2000000
             chunks = [rawModel[i:i + n] for i in range(0, len(rawModel), n)]
             del pretrained.rawModel
             j = json.dumps(pretrained, cls=JaqpotSerializer)
@@ -741,7 +741,14 @@ class Jaqpot:
         Object
             The particular model and the raw model.
         """
-        return models_api.get_raw_model(self.base_url, self.api_key, model, self.log)
+
+        # raw_model = models_api.get_raw_model(self.base_url, self.api_key, model, self.log)
+
+        validating = jaqlogin.validate_api_key(self.base_url, self.api_key)
+        if validating['httpStatus'] > 300:
+            self.log.error(validating)
+        else:
+            return models_api.get_raw_model(self.base_url, self.api_key, model, self.log)
 
     def get_feature_by_id(self, feature):
         """

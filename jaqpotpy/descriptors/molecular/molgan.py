@@ -34,6 +34,14 @@ class GraphMatrix:
   def __getitem__(self):
     return self
 
+  # @property
+  # def adjacency_matrix(self):
+  #   return self.adjacency_matrix
+  #
+  # @property
+  # def node_features(self):
+  #   return self.node_features
+
 
 class MolGanFeaturizer(MolecularFeaturizer):
   """
@@ -112,9 +120,11 @@ class MolGanFeaturizer(MolecularFeaturizer):
     else:
       self.bond_labels = bond_labels
 
+    self.SMILE_CHARSET = '["C", "N", "O", "F", "B",  "I", "H", "S", "P", "Cl", "Br"]'
+
     # atom labels
     if atom_labels is None:
-      self.atom_labels = [0, 6, 7, 8, 9]  # C,N,O,F
+      self.atom_labels = [0, 6, 7, 8, 9, 5, 53, 1, 16, 15, 17, 35]  # C,N,O,F,B, I, H, S, P, Cl, Br
     else:
       self.atom_labels = atom_labels
 
@@ -282,3 +292,9 @@ class MolGanFeaturizer(MolecularFeaturizer):
         molecules.append(np.array([]))
 
     return np.asarray(molecules)
+
+  def _get_column_names(self):
+    return ["MolGanGraphs"]
+
+  def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs):
+    return self._featurize(datapoint,  **kwargs)

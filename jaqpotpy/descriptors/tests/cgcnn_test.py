@@ -1,4 +1,5 @@
-from jaqpotpy.descriptors.material import CrystalGraphCNN, GraphData
+from jaqpotpy.descriptors.graph import GraphData
+from jaqpotpy.descriptors.material import CrystalGraphCNN
 import unittest
 from pymatgen.core import Structure, Lattice
 

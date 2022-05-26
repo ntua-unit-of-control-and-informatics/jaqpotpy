@@ -448,6 +448,10 @@ class MolecularFeaturizer(Featurizer):
       df = pd.DataFrame({'OneHotSequence': features})
     elif columns == ['SmilesImage']:
       df = pd.DataFrame({'SmilesImage': features})
+    elif columns == ['MACCSFingerprint']:
+      df = pd.DataFrame({'MACCSFingerprint': features})
+    elif columns == ['MolGanGraphs']:
+      df = pd.DataFrame({'MolGanGraphs': features})
     else:
       df = pd.DataFrame(features, columns=columns)
     return df

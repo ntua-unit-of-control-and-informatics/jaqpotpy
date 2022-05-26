@@ -2,6 +2,8 @@ import numpy as np
 
 from jaqpotpy.utils.types import RDKitMol
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from rdkit.Chem.AllChem import GetMACCSKeysFingerprint
+from rdkit.Chem import DataStructs
 
 
 class MACCSKeysFingerprint(MolecularFeaturizer):
@@ -58,15 +60,17 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
 
     if self.calculator is None:
       try:
-        from rdkit.Chem.AllChem import GetMACCSKeysFingerprint
         self.calculator = GetMACCSKeysFingerprint
       except ModuleNotFoundError:
         raise ImportError("This class requires RDKit to be installed.")
 
-    return self.calculator(datapoint)
+    fp = self.calculator(datapoint)
+    array = np.zeros((0,), dtype=np.int8)
+    DataStructs.ConvertToNumpyArray(fp, array)
+    return np.asarray(array)
 
   def _get_column_names(self, **kwargs) -> list:
-      return "MACCSFingerprint"
+      return ["MACCSFingerprint"]
 
   def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
     return self._featurize(datapoint, **kwargs)

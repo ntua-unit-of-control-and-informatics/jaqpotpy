@@ -3,8 +3,9 @@ import pandas as pd
 import numpy as np
 from typing import Iterable, Any
 import math
-from jaqpotpy.descriptors.molecular import RDKitDescriptors
-
+from jaqpotpy.descriptors.molecular import RDKitDescriptors, MordredDescriptors
+import pickle
+import dill
 
 def calculate_a(X):
     shape = X.shape
@@ -289,6 +290,7 @@ class SmilesLeverage(DOA, ABC):
         self._data: np.array = None
         self._doa_matrix = None
         self._a = None
+        # self.featurizer = MordredDescriptors(ignore_3D=True)
         self.featurizer = RDKitDescriptors(use_fragment=False, ipc_avg=False)
 
     def __getitem__(self):
@@ -357,7 +359,9 @@ class SmilesLeverage(DOA, ABC):
         # self._scaler.fit(X)
         # self._data = self._scaler.transform(X)
         self._smiles = smiles
-        self._data = self.featurizer.featurize(smiles)
+        from jaqpotpy.descriptors.molecular import RDKitDescriptors
+        featurizer = RDKitDescriptors(use_fragment=False, ipc_avg=False)
+        self._data = featurizer.featurize(smiles)
         self.calculate_matrix()
         self.calculate_threshold()
 
@@ -366,7 +370,10 @@ class SmilesLeverage(DOA, ABC):
         self._doa = []
         self._in = []
         # new_data = self._scaler.transform(new_data)
-        new_data = self.featurizer.featurize(smiles)
+        from jaqpotpy.descriptors.molecular import RDKitDescriptors
+        featurizer = RDKitDescriptors(use_fragment=False, ipc_avg=False)
+        new_data = featurizer.featurize(smiles)
+        # new_data = self.featurizer.featurize(smiles)
         for nd in new_data:
             d1 = np.dot(nd, self.doa_matrix)
             ndt = np.transpose(nd)

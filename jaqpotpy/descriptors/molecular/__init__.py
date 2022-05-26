@@ -13,7 +13,7 @@ try:
 except ModuleNotFoundError:
     pass
 from jaqpotpy.descriptors.molecular.smles_to_image import SmilesToImage
-from jaqpotpy.descriptors.molecular.molgan import MolGanFeaturizer
+from jaqpotpy.descriptors.molecular.molgan import MolGanFeaturizer, GraphMatrix
 from jaqpotpy.descriptors.molecular.maccs_keys_fingerprints import MACCSKeysFingerprint
 from jaqpotpy.descriptors.molecular.coulomb_matrices import CoulombMatrix, CoulombMatrixEig
 

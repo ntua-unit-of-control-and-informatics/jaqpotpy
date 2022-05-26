@@ -257,6 +257,7 @@ class PretrainedNeedsBuilder:
     libraries = []
     versions = []
     jaqpotpy_version: str = None
+    jaqpotpy_docker_version: str = None
     type: str = None
 
     def setLibraries(self, libraries):

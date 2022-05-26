@@ -11,6 +11,7 @@ import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
 
+
 class MolecularSKLearn(Model):
 
     def __init__(self, dataset: MolecularTabularDataset, doa: DOA, model: Any
@@ -41,7 +42,7 @@ class MolecularSKLearn(Model):
         #     pass
         if self.doa:
             if self.doa.__name__ == 'SmilesLeverage':
-                self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+                self.doa_m = self.doa.fit(self.dataset.smiles)
             else:
                 self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
         X = self.dataset.__get_X__()
@@ -74,7 +75,10 @@ class MolecularSKLearn(Model):
         self.trained_model = self.model.fit(X, y)
         if self.evaluator:
             self.__eval__()
-        model.descriptors = self.dataset.featurizer
+        if type(self.dataset.featurizer).__name__ == "RDKitDescriptors":
+            model.descriptors = "RDKitDescriptors"
+        else:
+            model.descriptors = self.dataset.featurizer
         model.doa = self.doa
         model.model = self.trained_model
         model.X = self.dataset.X

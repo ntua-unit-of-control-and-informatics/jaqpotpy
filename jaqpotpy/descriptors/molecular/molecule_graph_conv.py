@@ -90,48 +90,48 @@ def _construct_bond_feature(bond: RDKitBond) -> np.ndarray:
 
 class MolGraphConvFeaturizer(MolecularFeaturizer):
     """This class is a featurizer of general graph convolution networks for molecules.
-  The default node(atom) and edge(bond) representations are based on
-  `WeaveNet paper <https://arxiv.org/abs/1603.00856>`_. If you want to use your own representations,
-  you could use this class as a guide to define your original Featurizer. In many cases, it's enough
-  to modify return values of `construct_atom_feature` or `construct_bond_feature`.
-  The default node representation are constructed by concatenating the following values,
-  and the feature length is 30.
-  - Atom type: A one-hot vector of this atom, "C", "N", "O", "F", "P", "S", "Cl", "Br", "I", "other atoms".
-  - Formal charge: Integer electronic charge.
-  - Hybridization: A one-hot vector of "sp", "sp2", "sp3".
-  - Hydrogen bonding: A one-hot vector of whether this atom is a hydrogen bond donor or acceptor.
-  - Aromatic: A one-hot vector of whether the atom belongs to an aromatic ring.
-  - Degree: A one-hot vector of the degree (0-5) of this atom.
-  - Number of Hydrogens: A one-hot vector of the number of hydrogens (0-4) that this atom connected.
-  - Chirality: A one-hot vector of the chirality, "R" or "S". (Optional)
-  - Partial charge: Calculated partial charge. (Optional)
-  The default edge representation are constructed by concatenating the following values,
-  and the feature length is 11.
-  - Bond type: A one-hot vector of the bond type, "single", "double", "triple", or "aromatic".
-  - Same ring: A one-hot vector of whether the atoms in the pair are in the same ring.
-  - Conjugated: A one-hot vector of whether this bond is conjugated or not.
-  - Stereo: A one-hot vector of the stereo configuration of a bond.
-  If you want to know more details about features, please check the paper [1]_ and
-  utilities in deepchem.utils.molecule_feature_utils.py.
-  Examples
-  --------
-  >>> smiles = ["C1CCC1", "C1=CC=CN=C1"]
-  >>> featurizer = MolGraphConvFeaturizer(use_edges=True)
-  >>> out = featurizer.featurize(smiles)
-  >>> type(out[0])
-  <class 'deepchem.feat.graph_data.GraphData'>
-  >>> out[0].num_node_features
-  30
-  >>> out[0].num_edge_features
-  11
-  References
-  ----------
-  .. [1] Kearnes, Steven, et al. "Molecular graph convolutions: moving beyond fingerprints."
-     Journal of computer-aided molecular design 30.8 (2016):595-608.
-  Note
-  ----
-  This class requires RDKit to be installed.
-  """
+      The default node(atom) and edge(bond) representations are based on
+      `WeaveNet paper <https://arxiv.org/abs/1603.00856>`_. If you want to use your own representations,
+      you could use this class as a guide to define your original Featurizer. In many cases, it's enough
+      to modify return values of `construct_atom_feature` or `construct_bond_feature`.
+      The default node representation are constructed by concatenating the following values,
+      and the feature length is 30.
+      - Atom type: A one-hot vector of this atom, "C", "N", "O", "F", "P", "S", "Cl", "Br", "I", "other atoms".
+      - Formal charge: Integer electronic charge.
+      - Hybridization: A one-hot vector of "sp", "sp2", "sp3".
+      - Hydrogen bonding: A one-hot vector of whether this atom is a hydrogen bond donor or acceptor.
+      - Aromatic: A one-hot vector of whether the atom belongs to an aromatic ring.
+      - Degree: A one-hot vector of the degree (0-5) of this atom.
+      - Number of Hydrogens: A one-hot vector of the number of hydrogens (0-4) that this atom connected.
+      - Chirality: A one-hot vector of the chirality, "R" or "S". (Optional)
+      - Partial charge: Calculated partial charge. (Optional)
+      The default edge representation are constructed by concatenating the following values,
+      and the feature length is 11.
+      - Bond type: A one-hot vector of the bond type, "single", "double", "triple", or "aromatic".
+      - Same ring: A one-hot vector of whether the atoms in the pair are in the same ring.
+      - Conjugated: A one-hot vector of whether this bond is conjugated or not.
+      - Stereo: A one-hot vector of the stereo configuration of a bond.
+      If you want to know more details about features, please check the paper [1]_ and
+      utilities in deepchem.utils.molecule_feature_utils.py.
+      Examples
+      --------
+      >>> smiles = ["C1CCC1", "C1=CC=CN=C1"]
+      >>> featurizer = MolGraphConvFeaturizer(use_edges=True)
+      >>> out = featurizer.featurize(smiles)
+      >>> type(out[0])
+      <class 'jaqpotpy.descriptors.graph.GraphData'>
+      >>> out[0].num_node_features
+      30
+      >>> out[0].num_edge_features
+      11
+      References
+      ----------
+      .. [1] Kearnes, Steven, et al. "Molecular graph convolutions: moving beyond fingerprints."
+         Journal of computer-aided molecular design 30.8 (2016):595-608.
+      Note
+      ----
+      This class requires RDKit to be installed.
+      """
 
     @property
     def __name__(self):
@@ -324,7 +324,7 @@ class PagtnMolGraphFeaturizer(MolecularFeaturizer):
   - Distance: One hot encoding of the distance between pair of atoms.
   Examples
   --------
-  >>> from jaqpotpy.descriptors import PagtnMolGraphFeaturizer
+  >>> from jaqpotpy.descriptors.molecular import PagtnMolGraphFeaturizer
   >>> smiles = ["C1CCC1", "C1=CC=CN=C1"]
   >>> featurizer = PagtnMolGraphFeaturizer(max_length=5)
   >>> out = featurizer.featurize(smiles)
@@ -538,7 +538,7 @@ class TorchMolGraphConvFeaturizer(MolecularFeaturizer):
       >>> featurizer = TorchMolGraphConvFeaturizer(use_edges=True)
       >>> out = featurizer.featurize(smiles)
       >>> type(out[0])
-      <class 'deepchem.feat.graph_data.GraphData'>
+      <class 'jaqpotpy.descriptors.graph.GraphData'>
       >>> out[0].num_node_features
       30
       >>> out[0].num_edge_features

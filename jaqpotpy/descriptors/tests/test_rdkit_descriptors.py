@@ -4,7 +4,7 @@ Test basic molecular features.
 import numpy as np
 import unittest
 
-from jaqpotpy.descriptors import RDKitDescriptors
+from jaqpotpy.descriptors.molecular import RDKitDescriptors
 
 
 class TestRDKitDescriptors(unittest.TestCase):
@@ -56,6 +56,24 @@ class TestRDKitDescriptors(unittest.TestCase):
     descriptors = featurizer.featurize_dataframe(['CC(=O)OC1=CC=CC=C1C(=O)O','CC(=O)OC1=CC=CC=C1C(=O)O'])
     assert descriptors.shape == (2, 208)
 
+  def test_rdkit_descriptors_on_smiles_df(self):
+    """
+    Test invocation on raw smiles.
+    """
+    featurizer = RDKitDescriptors()
+    descriptors = featurizer.featurize_dataframe('CC(=O)OC1=CC=CC=C1C(=O)O')
+    assert descriptors.shape == (1, 208)
+    featurizer = RDKitDescriptors()
+    featurizer.pick()
+    descriptors = featurizer.featurize_dataframe(['CC(=O)OC1=CC=CC=C1C(=O)O','CC(=O)OC1=CC=CC=C1C(=O)O'])
+    assert descriptors.shape == (2, 208)
+
+  def test_load(self):
+    featurizer = RDKitDescriptors().unpick("./test.picl")
+    descriptors = featurizer.featurize_dataframe('CC(=O)OC1=CC=CC=C1C(=O)O')
+    assert descriptors.shape == (1, 208)
+
+
   def test_rdkit_descriptors_with_use_fragment(self):
     """
     Test with use_fragment
@@ -70,3 +88,7 @@ class TestRDKitDescriptors(unittest.TestCase):
         descriptors[0, featurizer.descriptors.index('ExactMolWt')],
         180,
         atol=0.1)
+
+  def test_rdkiy_pickl(self):
+      featurizer = RDKitDescriptors(use_fragment=False)
+      featurizer.pick()

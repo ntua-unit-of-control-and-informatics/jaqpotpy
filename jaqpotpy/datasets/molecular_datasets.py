@@ -199,11 +199,16 @@ class SmilesDataset(MolecularDataset):
 
     def create(self):
         descriptors = self.featurizer.featurize_dataframe(self.smiles)
-        ys = pd.DataFrame(self.ys, columns=['Y'])
-        self.df = pd.concat([descriptors, ys], axis=1)
-        self._smiles_strings = self.smiles
-        self.X = list(descriptors)
-        self.y = ['Y']
+        if self._task != "generation":
+            ys = pd.DataFrame(self.ys, columns=['Y'])
+            self.df = pd.concat([descriptors, ys], axis=1)
+            self._smiles_strings = self.smiles
+            self.X = list(descriptors)
+            self.y = ['Y']
+        else:
+            self.df = pd.concat([descriptors], axis=1)
+            self._smiles_strings = self.smiles
+            self.X = list(descriptors)
         return self
 
     def save(self):

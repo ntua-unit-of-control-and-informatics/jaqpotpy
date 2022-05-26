@@ -1,12 +1,17 @@
 from jaqpotpy.doa.doa import DOA
+from jaqpotpy.descriptors.molecular import RDKitDescriptors
 from jaqpotpy.descriptors.base_classes import Featurizer #MolecularFeaturizer, MaterialFeaturizer,
 from typing import Any, Iterable, Union, Dict
 from pymatgen.core.structure import Lattice, Structure
 import pandas as pd
-import pickle
+
 import numpy as np
 import base64
 import torch.nn.functional as nnf
+import dill
+import pickle
+# import dill as pickle
+# import cloudpickle as pickle
 # from jaqpotpy import Jaqpot
 
 
@@ -241,15 +246,20 @@ class MolecularModel(Model):
 
     @classmethod
     def load_from_jaqpot(cls, jaqpot, id: str):
-        model = jaqpot.get_raw_model_by_id(id)
-        raw_model = base64.b64decode(model['actualModel'][0])
-        model: MolecularModel = pickle.loads(raw_model)
-        return model
+        try:
+            model = jaqpot.get_raw_model_by_id(id)
+            raw_model = base64.b64decode(model['actualModel'][0])
+            model: MolecularModel = pickle.loads(raw_model)
+            return model
+        except Exception as e:
+            pass
 
     def infer(self):
         self._prediction = []
         self._probability = []
         if self._smiles:
+            if self._descriptors == "RDKitDescriptors":
+                self._descriptors = RDKitDescriptors()
             data = self._descriptors.featurize_dataframe(self._smiles)
             if self.external:
                 ext = pd.DataFrame.from_dict(self.external)
@@ -370,6 +380,7 @@ class MolecularModel(Model):
             return self
         else:
             pass
+
 
 class MaterialModel(Model):
 

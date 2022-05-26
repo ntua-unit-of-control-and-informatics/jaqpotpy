@@ -3,7 +3,9 @@ Tests for Jaqpotpy Models.
 """
 import unittest
 from jaqpotpy.datasets import MolecularTabularDataset, TorchGraphDataset, SmilesDataset
-from jaqpotpy.descriptors.molecular import MordredDescriptors, create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage
+from jaqpotpy.descriptors.molecular import MordredDescriptors\
+    , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
+    , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
 from jaqpotpy.models import MolecularModel, MolecularSKLearn
 from sklearn.linear_model import LinearRegression
 import asyncio
@@ -28,6 +30,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 import torch_geometric
 from jaqpotpy.models.torch_models import GCN as GCN_J
 from jaqpotpy import Jaqpot
+from sklearn import svm
 
 # import pytest
 from jaqpotpy.doa.doa import Leverage
@@ -123,21 +126,121 @@ class TestModels(unittest.TestCase):
         featurizer = MordredDescriptors(ignore_3D=True)
         path = '../../test_data/data.csv'
         dataset = MolecularTabularDataset(path=path
-                                          , x_cols=['molregno', 'organism']
+                                          # , x_cols=['molregno', 'organism']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           ,
-                                          X=['nBase', 'SpAbs_A', 'SpMax_A', 'SpDiam_A', 'SpAD_A', 'SpMAD_A', 'LogEE_A',
-                                             'VE1_A', 'VE2_A']
+                                          # X=['nBase', 'SpAbs_A', 'SpMax_A', 'SpDiam_A', 'SpAD_A', 'SpMAD_A', 'LogEE_A',
+                                          #    'VE1_A', 'VE2_A']
                                           )
         model = LinearRegression()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=None, model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
-        assert molecularModel_t1.doa is None
+        assert molecularModel_t1.doa is not None
         # assert molecularModel_t1.doa.IN == [False]
         # assert molecularModel_t1.doa.doa_new == [271083.32573286095]
-        assert int(molecularModel_t1.prediction[0]) == -2873819
+        # assert int(molecularModel_t1.prediction[0]) == -2873819
+
+    def test_model_rdkit_pickle_2(self):
+        featurizer = RDKitDescriptors()
+        path = '../../test_data/data.csv'
+        dataset = MolecularTabularDataset(path=path
+                                          , y_cols=['standard_value']
+                                          , smiles_col='canonical_smiles'
+                                          , featurizer=featurizer
+                                          )
+        model = svm.SVC()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1.save()
+        molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        molecularModel_t1.prediction
+
+    def test_model_rdkit_unpickle(self):
+        model = MolecularModel().load("./jaqpot_model.jmodel")
+        model('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        print(model.prediction)
+
+    def test_model_fingerprint_pickle(self):
+        featurizer = TopologicalFingerprint()
+        path = '../../test_data/data.csv'
+        dataset = MolecularTabularDataset(path=path
+                                          , y_cols=['standard_value']
+                                          , smiles_col='canonical_smiles'
+                                          , featurizer=featurizer
+                                          )
+        model = svm.SVC()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1.save()
+        molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        print(molecularModel_t1.prediction)
+        # assert molecularModel_t1.doa is None
+
+    def test_load_f_m(self):
+        model = MolecularModel().load("./jaqpot_model.jmodel")
+        model('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        model.prediction
+
+    def test_model_fingerprint_pickle_2(self):
+        featurizer = TopologicalFingerprint()
+        path = '../../test_data/data.csv'
+        dataset = MolecularTabularDataset(path=path
+                                          , y_cols=['standard_value']
+                                          , smiles_col='canonical_smiles'
+                                          , featurizer=featurizer
+                                          )
+        model = svm.SVC()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1.save()
+        molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        print(molecularModel_t1.prediction)
+        # assert molecularModel_t1.doa is None
+
+
+    def test_model_macs_fingerprint_pickle(self):
+        featurizer = MACCSKeysFingerprint()
+        path = '../../test_data/data.csv'
+        dataset = MolecularTabularDataset(path=path
+                                          , y_cols=['standard_value']
+                                          , smiles_col='canonical_smiles'
+                                          , featurizer=featurizer
+                                          )
+        model = svm.SVC()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1.save()
+        molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        assert molecularModel_t1.doa is None
+
+
+    def test_model_rdkit_pickle(self):
+        featurizer = RDKitDescriptors()
+        path = '../../test_data/data.csv'
+        dataset = MolecularTabularDataset(path=path
+                                          , y_cols=['standard_value']
+                                          , smiles_col='canonical_smiles'
+                                          , featurizer=featurizer
+                                          )
+        model = svm.SVC()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1.save()
+        molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        assert molecularModel_t1.doa is None
+
+    def test_model_maccs_pickle(self):
+        featurizer = MACCSKeysFingerprint()
+        path = '../../test_data/data.csv'
+        dataset = MolecularTabularDataset(path=path
+                                          , y_cols=['standard_value']
+                                          , smiles_col='canonical_smiles'
+                                          , featurizer=featurizer
+                                          )
+        model = svm.SVC()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1.save()
+        molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        assert molecularModel_t1.doa is None
+
 
     def test_model_smiles_doa(self):
         featurizer = MordredDescriptors(ignore_3D=True)

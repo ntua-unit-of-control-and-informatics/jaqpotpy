@@ -53,7 +53,7 @@ class MolecularTorchGeometric(Model):
         steps = self.epochs * 0.1
         if self.doa:
             if self.doa.__name__ == 'SmilesLeverage':
-                self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+                self.doa_m = self.doa.fit(self.dataset.smiles)
             else:
                 print("Only SmilesLeverage is suported for graph models")
         if len(self.dataset.df) > 0:
