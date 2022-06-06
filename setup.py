@@ -3,12 +3,12 @@ from setuptools import setup, find_packages
 # python setup.py bdist_wheel
 # twine upload dist/*
 # twine upload --repository testpypi dist/jaqpotpy-2.0.0b0-py3-none-any.whl
-# twine upload dist/jaqpotpy-1.0.33-py3-none-any.whl
+# twine upload dist/jaqpotpy-1.0.34-py3-none-any.whl
 # docker build -t euclia/jaqpotpy:1.0.3 --no-cache --build-arg tag=1.0.3 .
 
 setup(name='jaqpotpy',
       # version='2.0.5-beta0',
-      version='1.0.33',
+      version='1.0.34',
       description='Python client for Jaqpot',
       url='https://github.com/euclia/jaqpotpy',
       author='Pantelis Karatzas',

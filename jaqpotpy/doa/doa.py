@@ -5,7 +5,7 @@ from typing import Iterable, Any
 import math
 from jaqpotpy.descriptors.molecular import RDKitDescriptors, MordredDescriptors
 import pickle
-import dill
+# import dill
 
 def calculate_a(X):
     shape = X.shape

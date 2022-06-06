@@ -1,6 +1,9 @@
 from jaqpotpy.datasets.dataset_base import MolecularDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer, TorchMolGraphConvFeaturizer
+try:
+    from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer, TorchMolGraphConvFeaturizer
+except ModuleNotFoundError:
+    pass
 from typing import Iterable, Any
 import pandas as pd
 import os
