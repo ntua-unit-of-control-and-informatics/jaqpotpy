@@ -233,8 +233,8 @@ class MolecularModel(Model):
         self.infer()
 
     def save(self):
-        if self._model_title:
-            with open(self._model_title + ".jmodel", 'wb') as f:
+        if self.model_title:
+            with open(self.model_title + ".jmodel", 'wb') as f:
                 pickle.dump(self, f)
         else:
             with open("jaqpot_model" + ".jmodel", 'wb') as f:

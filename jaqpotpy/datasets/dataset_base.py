@@ -134,7 +134,6 @@ class MolecularDataset(BaseDataset):
             return pickle.load(f)
 
 
-
 class MaterialDataset(BaseDataset):
     def __init__(self, path=None, materials_col=None, x_cols=None, y_cols=None, materials=None) -> None:
         self.materials = materials

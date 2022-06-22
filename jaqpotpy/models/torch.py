@@ -43,7 +43,7 @@ class MolecularTorch(Model):
         self.train_loader = None
         self.test_loader = None
         self.log_steps = log_steps
-        self.best_model = None
+        self.best_model = model_nn
         self.path = None
         self.model_dir = model_dir
         # torch.multiprocessing.freeze_support()
@@ -149,10 +149,7 @@ class MolecularTorch(Model):
         else:
             self.model_nn.eval()
             for data in dataloader:
-                if self.best_model:
-                    self.best_model.eval()
                 out = self.model_nn(data[0].float())
-                # truth = torch.squeeze(data[1].float())
                 loss = self.criterion(out, data[1].float())
             return out, loss
 
@@ -167,10 +164,10 @@ class MolecularTorch(Model):
             truth = np.array([])
             preds = np.array([])
             for data in self.test_loader:
-                out = self.best_model(data)
+                out = self.best_model(data[0].float())
                 pred = out.argmax(dim=1)
-                correct += int((pred == data.y).sum())
-                truth = np.append(truth, data.y.numpy())
+                correct += int((pred == data[1].float()).sum())
+                truth = np.append(truth, data[1].float().numpy())
                 preds = np.append(preds, pred.numpy())
             # return out, pred.numpy(), correct / len(dataloader.dataset)
             for eval_key in eval_keys:
@@ -267,13 +264,15 @@ class MaterialTorch(Model):
             test_loss = self.test(self.test_loader)
             if self.dataset.task == "classification":
                 los = test_loss[2]
-                if temp_loss is None or temp_loss < los and steps > epoch:
+                # if temp_loss is None or temp_loss < los and steps > epoch:
+                if temp_loss is None or temp_loss < los:
                     self.best_model = self.model_nn
                 if epoch % self.log_steps == 0:
                     print(f'Epoch: {epoch:03d}, Train Accuracy: {train_loss[2]}, Test Accuracy: {test_loss[2]}')
             else:
                 los = test_loss[1].item()
-                if temp_loss is None or temp_loss > los and steps > epoch:
+                # if temp_loss is None or temp_loss < los and steps > epoch:
+                if temp_loss is None or temp_loss > los:
                     self.best_model = self.model_nn
                 if epoch % self.log_steps == 0:
                     print(f'Epoch: {epoch:03d}, Train Loss: {train_loss[1]}, Test Loss: {test_loss[1]}')
