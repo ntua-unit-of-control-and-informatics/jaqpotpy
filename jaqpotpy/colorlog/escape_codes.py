@@ -9,7 +9,10 @@ try:
 except ImportError:
     pass
 else:
-    colorama.init()
+    try:
+        colorama.init()
+    except AttributeError:
+        pass
 
 __all__ = ('escape_codes', 'parse_colors')
 

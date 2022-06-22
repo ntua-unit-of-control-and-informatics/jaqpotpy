@@ -436,14 +436,14 @@ class TestModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model_nn, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=180, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
         m.eval()
         molMod = m.create_molecular_model()
         molMod.model_name = "test_classification"
 
-        # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
-        # jaqpot.request_key("pantelispanka", "kapan2")
-        # molMod.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model 2", model_title="Test molecular")
+        jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+        jaqpot.request_key("pantelispanka", "kapan2")
+        molMod.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model 2", model_title="Test molecular")
         # molMod.save()
         # molMod.load("./test_regression.jmodel")
         print(molMod.library)

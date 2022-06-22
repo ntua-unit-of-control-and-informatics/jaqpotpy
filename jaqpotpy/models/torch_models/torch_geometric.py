@@ -246,7 +246,6 @@ class GraphConv_V1(torch.nn.Module):
         return x
 
 
-
 class GCN_t(torch.nn.Module):
     def __init__(self, graph_layers, linear_layers):
         super(GCN_t, self).__init__()

@@ -240,6 +240,7 @@ class PretrainedNeedsDirector:
         pretrained_needs.jaqpotpyDockerVersion = self._builder.getJaqpotpyDockerVersion()
         pretrained_needs.libraries = self._builder.getLibraries()
         pretrained_needs.versions = self._builder.getVersions()
+        pretrained_needs.type = self._builder.getType()
         return pretrained_needs
 
 
@@ -279,6 +280,10 @@ class PretrainedNeedsBuilder:
     def setType(self, type):
         # self.type.clear()
         self.type = type
+
+    def getType(self):
+        # self.type.clear()
+        return self.type
 
     def setRawModel(self, model):
         self.rawModel.clear()
