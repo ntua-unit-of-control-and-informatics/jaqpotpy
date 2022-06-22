@@ -6,7 +6,6 @@ import json
 from typing import Union, Tuple
 import pandas as pd
 
-
 class CrystalGraphCNN(MaterialFeaturizer):
   """
   Calculate structure graph features for crystals.
@@ -57,9 +56,11 @@ class CrystalGraphCNN(MaterialFeaturizer):
     self.radius = radius
     self.max_neighbors = int(max_neighbors)
     self.step = step
+    from jaqpotpy.descriptors.material.datafiles.atom_init import atom_init_json
 
-    with open('jaqpotpy/descriptors/material/cgcnn/atom_init.json', 'r') as f:
-        atom_init_json = json.load(f)
+    # print(atom_init_json)
+    # with open('jaqpotpy/descriptors/material/datafiles/atom_init.json', 'r') as f:
+    #     atom_init_json = json.load(f)
 
     self.atom_features = {
         int(key): np.array(value, dtype=np.float32)

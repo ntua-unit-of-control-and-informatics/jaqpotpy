@@ -1,4 +1,4 @@
-from jaqpotpy.descriptors.material import ElementPropertyFingerprint
+afrom jaqpotpy.descriptors.material import ElementPropertyFingerprint
 import unittest
 import pandas as pd
 

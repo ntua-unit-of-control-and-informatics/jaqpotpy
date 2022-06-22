@@ -85,7 +85,7 @@ class MolecularSKLearn(Model):
         model.Y = self.dataset.y
         model.library = ['sklearn']
         model.version = [sklearn.__version__]
-        model.jaqpotpy_version = jaqpotpy.__version__
+        # model.jaqpotpy_version = jaqpotpy.__version__
         model.jaqpotpy_docker = config.jaqpotpy_docker
         model.external_feats = self.dataset.external
         return model

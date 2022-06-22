@@ -1,7 +1,12 @@
 from jaqpotpy.datasets.dataset_base import MaterialDataset
-from pymatgen.core.composition import Composition
-from pymatgen.core.structure import Lattice, Structure
-from pymatgen.util.typing import CompositionLike
+try:
+    from pymatgen.core.composition import Composition
+    from pymatgen.core.structure import Lattice, Structure
+    from pymatgen.util.typing import CompositionLike
+except ModuleNotFoundError:
+    Lattice = Structure = CompositionLike = Composition = None
+
+    pass
 from jaqpotpy.descriptors.base_classes import MaterialFeaturizer
 # from jaqpotpy.descriptors import MolGraphConvFeaturizer, TorchMolGraphConvFeaturizer
 from typing import Iterable, Any, Union, Dict

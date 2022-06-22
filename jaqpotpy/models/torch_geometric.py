@@ -3,11 +3,15 @@ from jaqpotpy.doa.doa import DOA
 from typing import Any
 from jaqpotpy.datasets import TorchGraphDataset
 from jaqpotpy.models import Evaluator, Preprocesses
-from torch_geometric.loader import DataLoader
+try:
+    from torch_geometric.loader import DataLoader
+    import torch_geometric
+except ModuleNotFoundError:
+    DataLoader = None
+    pass
 import torch
 from jaqpotpy.models import MolecularModel
 import numpy as np
-import torch_geometric
 from jaqpotpy.cfg import config
 import os
 import jaqpotpy

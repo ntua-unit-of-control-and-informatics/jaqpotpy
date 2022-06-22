@@ -2,7 +2,6 @@ from typing import Union, List, Optional, Any
 import numpy as np
 from scipy.spatial import Delaunay
 from jaqpotpy.helpers.periodic_table.element import Element
-from mendeleev import element
 from tqdm import tqdm
 import warnings
 import pandas as pd

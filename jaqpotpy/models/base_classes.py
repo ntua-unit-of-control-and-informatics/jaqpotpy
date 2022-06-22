@@ -2,7 +2,11 @@ from jaqpotpy.doa.doa import DOA
 from jaqpotpy.descriptors.molecular import RDKitDescriptors
 from jaqpotpy.descriptors.base_classes import Featurizer #MolecularFeaturizer, MaterialFeaturizer,
 from typing import Any, Iterable, Union, Dict
-from pymatgen.core.structure import Lattice, Structure
+try:
+    from pymatgen.core.structure import Lattice, Structure
+except ModuleNotFoundError:
+    Lattice = Structure = None
+    pass
 import pandas as pd
 
 import numpy as np
