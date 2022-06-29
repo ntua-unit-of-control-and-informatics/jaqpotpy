@@ -6,6 +6,7 @@ import json
 from typing import Union, Tuple
 import pandas as pd
 
+
 class CrystalGraphCNN(MaterialFeaturizer):
   """
   Calculate structure graph features for crystals.

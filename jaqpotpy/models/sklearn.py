@@ -4,7 +4,7 @@ from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Union
 import pandas as pd
 import pickle
-from jaqpotpy.datasets import Dataset
+from jaqpotpy.datasets import MolecularDataset
 from jaqpotpy.datasets.material_datasets import CompositionDataset, StructureDataset
 from jaqpotpy.models import Evaluator, Preprocesses, MolecularModel, MaterialModel
 import sklearn
@@ -14,7 +14,7 @@ import jaqpotpy
 
 class MolecularSKLearn(Model):
 
-    def __init__(self, dataset: Dataset, doa: DOA, model: Any
+    def __init__(self, dataset: MolecularDataset, doa: DOA, model: Any
                  , eval: Evaluator = None, preprocess: Preprocesses = None):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset = dataset

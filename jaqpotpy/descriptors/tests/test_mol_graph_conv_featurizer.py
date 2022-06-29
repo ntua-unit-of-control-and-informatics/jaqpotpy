@@ -1,6 +1,8 @@
 import unittest
 
-from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeaturizer, PagtnMolGraphFeaturizer
+from rdkit import Chem
+from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeaturizer\
+  , PagtnMolGraphFeaturizer, TorchMolGraphConvFeaturizer
 
 
 class TestMolGraphConvFeaturizer(unittest.TestCase):
@@ -70,6 +72,14 @@ class TestMolGraphConvFeaturizer(unittest.TestCase):
     assert graph_feat[1].num_nodes == 22
     assert graph_feat[1].num_node_features == 31
     assert graph_feat[1].num_edges == 44
+
+
+  def test_torch_molgan_graph(self):
+    smiles = ["C1=CC=CN=C1", "O=C(NCc1cc(OC)c(O)cc1)CCCC/C=C/C(C)C"]
+    featurizer = TorchMolGraphConvFeaturizer()
+    for smil in smiles:
+      mol = Chem.MolFromSmiles(smil)
+      data = featurizer.featurize(smil)
 
 
 class TestPagtnMolGraphConvFeaturizer(unittest.TestCase):

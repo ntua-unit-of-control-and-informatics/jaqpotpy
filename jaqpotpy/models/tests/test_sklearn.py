@@ -1,14 +1,15 @@
 """
-Tests for Jaqpotpy SKLearn Models.
+Tests for Jaqpotpy Models.
 """
 import unittest
 import asyncio
 import warnings
-from jaqpotpy.descriptors.molecular import TopologicalFingerprint, RDKitDescriptors
-from jaqpotpy.datasets import SmilesDataset
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint, RDKitDescriptors, MordredDescriptors
+from jaqpotpy.datasets import SmilesDataset, MolecularTabularDataset
 from jaqpotpy.models import MolecularSKLearn
 from jaqpotpy.doa.doa import Leverage
 from sklearn.svm import SVC, SVR
+from sklearn.linear_model import LinearRegression
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
@@ -56,8 +57,7 @@ class TestModels(unittest.TestCase):
 
     def test_SVR(self):
         featurizer = RDKitDescriptors()
-        path = '../../test_data/data.csv'
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression')
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
         model = SVR()
         molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
@@ -67,7 +67,7 @@ class TestModels(unittest.TestCase):
 
     def test_SVM(self):
         featurizer = MordredDescriptors(ignore_3D=True)
-        path = '../../test_data/data.csv'
+        path = './test_data/data.csv'
         dataset = MolecularTabularDataset(path=path
                                           , x_cols=['molregno', 'organism']
                                           , y_cols=['standard_value']

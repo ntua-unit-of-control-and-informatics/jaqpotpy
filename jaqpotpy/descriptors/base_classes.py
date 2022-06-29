@@ -431,6 +431,8 @@ class MolecularFeaturizer(Featurizer):
           new_order = rdmolfiles.CanonicalRankAtoms(mol)
           mol = rdmolops.RenumberAtoms(mol, new_order)
           ar = self._featurize_dataframe(mol, **kwargs)
+        else:
+          ar = self._featurize_dataframe(mol, **kwargs)
         features.append(ar)
       except Exception as e:
         if isinstance(mol, Chem.rdchem.Mol):

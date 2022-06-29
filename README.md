@@ -1,2 +1,3 @@
-# jaqpotpy
-Jaqpot client for python
+# Jaqpotpy
+## _Standardizing molecular modeling_
+

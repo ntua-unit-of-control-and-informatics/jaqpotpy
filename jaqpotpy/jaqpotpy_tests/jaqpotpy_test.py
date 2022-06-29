@@ -21,7 +21,7 @@ class TestModels(unittest.TestCase):
 
     def test_load_mol_mod(self):
         jaqpot = Jaqpot()
-        jaqpot.set_api_key("api_key_error")
+        jaqpot.set_api_key("..TBKGvyRK8VbwCKYEd06tbpV-Z3VhiTTBwsKOkcB9nB-ZFM31J6nEYALqi-PYO7rPX4bHeRiC83dbMGs9_OdtsiApz_ayi8QLA006CvRkuaag4SXNQqiFQ")
         model = MolecularModel().load_from_jaqpot(jaqpot, "id")
 
     def test_predict(self):

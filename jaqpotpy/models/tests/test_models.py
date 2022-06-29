@@ -31,7 +31,7 @@ import torch_geometric
 from jaqpotpy.models.torch_models import GCN as GCN_J
 from jaqpotpy import Jaqpot
 from sklearn import svm
-
+from rdkit import Chem
 # import pytest
 from jaqpotpy.doa.doa import Leverage
 import numpy as np
@@ -738,7 +738,12 @@ class TestModels(unittest.TestCase):
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
                                     , epochs=100, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
         m.eval()
+        for smil in self.mols:
+            mol = Chem.MolFromSmiles(smil)
+            model(mol)
+            model.prediction
 
 
     # def test_load_from_jaqpot(self):

@@ -745,7 +745,7 @@ class Jaqpot:
         # raw_model = models_api.get_raw_model(self.base_url, self.api_key, model, self.log)
 
         validating = jaqlogin.validate_api_key(self.base_url, self.api_key)
-        if validating['httpStatus'] > 300:
+        if validating is not True:
             self.log.error(validating)
         else:
             return models_api.get_raw_model(self.base_url, self.api_key, model, self.log)

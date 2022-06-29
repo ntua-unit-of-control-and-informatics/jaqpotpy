@@ -83,10 +83,8 @@ class TestModels(unittest.TestCase):
 
         model = LinearRegression()
         material_model = MaterialSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
-
         material_model('FeO')
-
-        print(material_model.prediction)
+        material_model.prediction
 
     def test_sklearn_struct(self):
         import warnings
@@ -105,7 +103,7 @@ class TestModels(unittest.TestCase):
         material_model = MaterialSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
 
         material_model(structs[0])
-        print(material_model.prediction)
+        material_model.prediction
         # print(material_model.prediction)
 
     # def test_torch(self):
