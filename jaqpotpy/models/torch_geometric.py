@@ -24,7 +24,7 @@ class MolecularTorchGeometric(Model):
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
-                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./"):
+                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu'):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset: TorchGraphDataset = dataset
         self.model_nn = model_nn
@@ -48,6 +48,7 @@ class MolecularTorchGeometric(Model):
         self.best_model = model_nn
         self.path = None
         self.model_dir = model_dir
+        self.device = torch.device(device)
         # torch.multiprocessing.freeze_support()
 
     def __call__(self, smiles):
@@ -69,9 +70,8 @@ class MolecularTorchGeometric(Model):
                 pass
             else:
                 self.evaluator.dataset.create()
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_fitted = MolecularModel()
-        self.model_nn.to(device)
+        self.model_nn.to(self.device)
         # self.train_loader = DataLoader(dataset=self.dataset.df, **self.trainDataLoaderParams)
         # self.test_loader = DataLoader(dataset=self.evaluator.dataset.df, **self.testDataLoaderParams)
         self.train_loader = DataLoader(dataset=self.dataset, **self.trainDataLoaderParams)

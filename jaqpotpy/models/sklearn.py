@@ -1,7 +1,7 @@
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from typing import Any, Union
+from typing import Any, Union, Dict, Optional
 import pandas as pd
 import pickle
 from jaqpotpy.datasets import MolecularDataset
@@ -85,7 +85,7 @@ class MolecularSKLearn(Model):
         model.Y = self.dataset.y
         model.library = ['sklearn']
         model.version = [sklearn.__version__]
-        # model.jaqpotpy_version = jaqpotpy.__version__
+        model.jaqpotpy_version = jaqpotpy.__version__
         model.jaqpotpy_docker = config.jaqpotpy_docker
         model.external_feats = self.dataset.external
         return model
@@ -139,7 +139,7 @@ class MolecularSKLearn(Model):
 
 class MaterialSKLearn(Model):
 
-    def __init__(self, dataset: Union[StructureDataset, CompositionDataset], doa: DOA, model: Any
+    def __init__(self, dataset: Union[StructureDataset, CompositionDataset], doa: DOA, model: Any, fillna: Optional[Union[Dict, float, int]] = None
                  , eval: Evaluator = None, preprocess: Preprocesses = None):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset = dataset
@@ -150,6 +150,7 @@ class MaterialSKLearn(Model):
         self.evaluator: Evaluator = eval
         self.preprocess: Preprocesses = preprocess
         self.trained_model = None
+        self.fillna = fillna
         # self.trained_model = None
 
     def __call__(self, smiles):
@@ -161,6 +162,8 @@ class MaterialSKLearn(Model):
             pass
         else:
             self.dataset.create()
+
+        self.dataset.df.fillna(self.fillna, inplace=True)
 
         if self.doa:
             self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
@@ -202,7 +205,7 @@ class MaterialSKLearn(Model):
         model.Y = self.dataset.y
         model.library = ['sklearn']
         model.version = [sklearn.__version__]
-        model.jaqpotpy_version = config.version
+        model.jaqpotpy_version = jaqpotpy.__version__
         model.external_feats = self.dataset.external
         return model
 
@@ -212,6 +215,7 @@ class MaterialSKLearn(Model):
             pre_function = self.preprocess.fitted_classes.get(pre_key)
             X = pre_function.transform(X)
         data = self.dataset.featurizer.featurize_dataframe(X)
+        data.df.fillna(self.fillna, inplace=True)
         data = data[self.dataset.X].to_numpy()
         return self.model.predict(data)
 
@@ -220,6 +224,7 @@ class MaterialSKLearn(Model):
             pass
         else:
             self.evaluator.dataset.create()
+        self.evaluator.dataset.df.fillna(self.fillna, inplace=True)
         X = self.evaluator.dataset.__get_X__()
         if self.preprocess:
             pre_keys = self.preprocess.classes.keys()

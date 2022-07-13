@@ -65,6 +65,14 @@ class TestModels(unittest.TestCase):
         assert int(molecularModel_t1.doa.doa_new[0]) == 271083
         assert int(molecularModel_t1.prediction[0][0]) == -2873819
 
+    def test_predict_proba(self):
+        featurizer = RDKitDescriptors()
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='regression', featurizer=featurizer)
+        model = SVC(probability=True)
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        print(molecularModel_t1.probability)
+
     def test_SVM(self):
         featurizer = MordredDescriptors(ignore_3D=True)
         path = './test_data/data.csv'

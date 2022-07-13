@@ -91,6 +91,7 @@ def create_molecular_req(model, title, description, type):
         dependendFeatures = model.Y
     else:
         dependendFeatures = [model.Y]
+    dependendFeatures.extend(['DOA', 'Probabilities'])
     pnb.setRawModel(model)
     pnb.setJaqpotPyVersion(jaqpotpy.__version__)
     pnb.setJaqpotPyDockerVersion(config.jaqpotpy_docker)

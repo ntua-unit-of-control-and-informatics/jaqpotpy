@@ -315,8 +315,8 @@ class MolecularModel(Model):
                     self._prediction.append(p.tolist())
                 try:
                     probs = self.model.predict_proba(data)
-                    for prob in probs:
-                        self._probability.append(prob)
+                    self._probability = [prob.tolist() for prob in probs]
+
                 except AttributeError as e:
                     pass
             if self.library == ['torch_geometric', 'torch']:

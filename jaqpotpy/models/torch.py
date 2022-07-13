@@ -22,7 +22,7 @@ class MolecularTorch(Model):
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
-                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./"):
+                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu'):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset: MolecularDataset = dataset
         self.model_nn = model_nn
@@ -46,6 +46,8 @@ class MolecularTorch(Model):
         self.best_model = model_nn
         self.path = None
         self.model_dir = model_dir
+        self.device = torch.device(device)
+
         # torch.multiprocessing.freeze_support()
 
     def __call__(self, smiles):
@@ -70,7 +72,7 @@ class MolecularTorch(Model):
                 self.evaluator.dataset.create()
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_fitted = MolecularModel()
-        self.model_nn.to(device)
+        self.model_nn.to(self.device)
         # self.train_loader = DataLoader(dataset=self.dataset.df, **self.trainDataLoaderParams)
         # self.test_loader = DataLoader(dataset=self.evaluator.dataset.df, **self.testDataLoaderParams)
         self.train_loader = DataLoader(dataset=self.dataset, **self.trainDataLoaderParams)
@@ -206,7 +208,7 @@ class MaterialTorch(Model):
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
-                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1):
+                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, device: str = 'cpu'):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset: MolecularDataset = dataset
         self.model_nn = model_nn
@@ -228,6 +230,8 @@ class MaterialTorch(Model):
         self.test_loader = None
         self.log_steps = log_steps
         self.best_model = None
+        self.device = torch.device(device)
+
         # torch.multiprocessing.freeze_support()
 
     def __call__(self, smiles):
@@ -250,9 +254,8 @@ class MaterialTorch(Model):
                 pass
             else:
                 self.evaluator.dataset.create()
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_fitted = MolecularModel()
-        self.model_nn.to(device)
+        self.model_nn.to(self.device)
         # self.train_loader = DataLoader(dataset=self.dataset.df, **self.trainDataLoaderParams)
         # self.test_loader = DataLoader(dataset=self.evaluator.dataset.df, **self.testDataLoaderParams)
         self.train_loader = DataLoader(dataset=self.dataset, **self.trainDataLoaderParams)
@@ -349,7 +352,7 @@ class MaterialTorch(Model):
         model.Y = self.dataset.y
         model.library = ['torch']
         model.version = [torch.__version__]
-        model.jaqpotpy_version = config.version
+        model.jaqpotpy_version = jaqpotpy.__version__
         model.modeling_task = self.dataset.task
         model.external_feats = self.dataset.external
         return model
