@@ -78,7 +78,7 @@ class TestModels(unittest.TestCase):
         , 'O=C(Cc1cc(Cl)cc(Cc2ccn[nH]2)c1)Nc1cncc2ccccc12'
         , 'CN(C)c1ccc(N(Cc2ccsc2)C(=O)Cc2cncc3ccccc23)cc1'
         , 'C[C@H]1COc2ccc(Cl)cc2[C@@H]1C(=O)Nc1cncc2ccccc12'
-            ]
+    ]
 
     ys = [
         0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1
@@ -375,7 +375,7 @@ class TestModels(unittest.TestCase):
         # print(molecularModel_t7.doa.IN)
         # print(molecularModel_t7.doa.doa_new)
         # print(molecularModel_t7.doa.a)
-        # print(molecularModel_t7.prediction)
+        print(molecularModel_t7.prediction)
         molecularModel_t7.model_name = "TestModel"
         molecularModel_t7.save()
         # assert int(molecularModel_t7.prediction[0][0]) == 1228766
@@ -446,6 +446,20 @@ class TestModels(unittest.TestCase):
         molMod.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model 2", model_title="Test molecular")
         # molMod.save()
         # molMod.load("./test_regression.jmodel")
+        molMod.model_title
+        molMod.modeling_task
+        molMod.descriptors
+        molMod.doa
+        molMod.jaqpotpy_version
+        molMod.library
+        molMod.version
+        molMod.X
+        molMod.Y
+        molMod.prediction
+        molMod.probability
+        molMod.doa.IN
+        molMod.doa
+
         print(molMod.library)
         print(molMod.version)
         print(molMod.jaqpotpy_version)

@@ -11,6 +11,9 @@ from jaqpotpy.doa.doa import Leverage
 from sklearn.svm import SVC, SVR
 from sklearn.linear_model import LinearRegression
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+from jaqpotpy.models import Evaluator
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, matthews_corrcoef\
+    , precision_score, recall_score, confusion_matrix
 
 
 def sync(coro):
@@ -70,6 +73,26 @@ class TestModels(unittest.TestCase):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='regression', featurizer=featurizer)
         model = SVC(probability=True)
         molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
+        print(molecularModel_t1.probability)
+
+    def test_eval(self):
+        featurizer = RDKitDescriptors()
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='regression', featurizer=featurizer)
+        model = SVC(probability=True)
+
+        val = Evaluator()
+        val.dataset = dataset
+
+        val.register_scoring_function('Accuracy', accuracy_score)
+        val.register_scoring_function('Binary f1', f1_score)
+        val.register_scoring_function('Roc Auc', roc_auc_score)
+        val.register_scoring_function("MCC", matthews_corrcoef)
+        val.register_scoring_function("Precision", precision_score)
+        val.register_scoring_function("Recall", recall_score)
+        val.register_scoring_function("Confusion Matrix", confusion_matrix)
+
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         print(molecularModel_t1.probability)
 

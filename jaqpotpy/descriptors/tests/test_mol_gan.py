@@ -15,7 +15,7 @@ class TestMolGan(unittest.TestCase):
 
         featurizer = MolGanFeaturizer(max_atom_count=20)
         valid_data = featurizer.featurize(smiles)
-        print(valid_data[0])
+        print(valid_data[0].__dict__)
 
     def test_mol_gan_df(self):
         smiles = [

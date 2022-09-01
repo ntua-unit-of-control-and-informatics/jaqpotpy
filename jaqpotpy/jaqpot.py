@@ -357,6 +357,8 @@ class Jaqpot:
             runtime = "scikit-learn-0-24"
         if int(splited[0]) == 1 and int(splited[1]) == 0:
             runtime = "scikit-learn-1-0"
+        if int(splited[0]) == 1 and int(splited[1]) == 1:
+            runtime = "scikit-learn-1-1"
 
         if isinstance(X, pd.DataFrame) is False and isinstance(X, pd.Series) is False:
             raise Exception('Function deploy_sklearn supports pandas dataframe or series. X is not one')
@@ -560,6 +562,8 @@ class Jaqpot:
             runtime = "scikit-learn-0-24"
         if int(splited[0]) == 1 and int(splited[1]) == 0:
             runtime = "scikit-learn-1-0"
+        if int(splited[0]) == 1 and int(splited[1]) == 1:
+            runtime = "scikit-learn-1-1"
 
         if isinstance(X, pd.DataFrame) is False:
             raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')

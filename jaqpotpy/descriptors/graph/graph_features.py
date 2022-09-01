@@ -8,7 +8,6 @@ import logging
 from typing import Optional, List, Union, Iterable
 from jaqpotpy.utils.types import RDKitMol, RDKitAtom
 
-
 def one_of_k_encoding(x, allowable_set):
     """Encodes elements of a provided set as integers.
     Parameters

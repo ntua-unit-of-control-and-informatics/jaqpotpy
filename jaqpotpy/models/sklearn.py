@@ -133,7 +133,7 @@ class MolecularSKLearn(Model):
                 print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
                 pass
             # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
-            print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
+            #print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
 
 
 

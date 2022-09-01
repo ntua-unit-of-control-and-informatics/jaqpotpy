@@ -237,20 +237,30 @@ class SmilesDataset(MolecularDataset):
         return self.df
 
     def __getitem__(self, idx):
-        if self.X == ['Sequence']:
-            X = self.df[self.X].iloc[idx].values[0]
-        elif self.X == ['OneHotSequence']:
-            # print(self.df[self.X].iloc[idx].values.shape)
-            # print(self.df[self.X].iloc[idx].values[0].shape)
-            X = self.df[self.X].iloc[idx].values[0]
-        elif self.X == ['SmilesImage']:
-            X = self.df[self.X].iloc[idx].values[0].transpose(2, 0, 1)
-            # print(X.shape)
-            # X = self.df[self.X].iloc[idx].values.transpose((2, 0, 1))
+        if self._task != "generation":
+            if self.X == ['Sequence']:
+                X = self.df[self.X].iloc[idx].values[0]
+            elif self.X == ['OneHotSequence']:
+                # print(self.df[self.X].iloc[idx].values.shape)
+                # print(self.df[self.X].iloc[idx].values[0].shape)
+                X = self.df[self.X].iloc[idx].values[0]
+            elif self.X == ['SmilesImage']:
+                X = self.df[self.X].iloc[idx].values[0].transpose(2, 0, 1)
+                # print(X.shape)
+                # X = self.df[self.X].iloc[idx].values.transpose((2, 0, 1))
+            else:
+                X = self.df[self.X].iloc[idx].values
+            y = self.df[self.y].iloc[idx].to_numpy()
+            return X, y
         else:
-            X = self.df[self.X].iloc[idx].values
-        y = self.df[self.y].iloc[idx].to_numpy()
-        return X, y
+            # X = np.asarray(self.df[self.X].iloc[idx].values)
+            node_features = self.df[self.X].iloc[idx].values[0].node_features
+            adjacency_matrix = self.df[self.X].iloc[idx].values[0].adjacency_matrix
+            import torch
+            X = torch.matmul(torch.Tensor(node_features), torch.Tensor(adjacency_matrix))
+            X = torch.Tensor(node_features), torch.Tensor(adjacency_matrix)
+            # y = None
+            return X, idx, (torch.Tensor(node_features), torch.Tensor(adjacency_matrix))
 
     def __len__(self):
         if self.df is None:

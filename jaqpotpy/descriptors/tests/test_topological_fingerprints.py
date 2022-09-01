@@ -2,7 +2,7 @@
 Test topological fingerprints.
 """
 import unittest
-from jaqpotpy.descriptors import TopologicalFingerprint
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint
 
 
 class TestCircularFingerprint(unittest.TestCase):

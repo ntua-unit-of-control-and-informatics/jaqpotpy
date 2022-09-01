@@ -5,7 +5,7 @@ import unittest
 from jaqpotpy.datasets import SmilesDataset, TorchGraphDataset, MolecularTabularDataset
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , TopologicalFingerprint, MolGraphConvFeaturizer\
-    , RDKitDescriptors, SmilesToSeq, create_char_to_idx, SmilesToImage
+    , RDKitDescriptors, SmilesToSeq, create_char_to_idx, SmilesToImage, MolGanFeaturizer
 from mordred import descriptors
 from torch_geometric.loader import DataLoader
 from torch.utils.data import DataLoader as dl
@@ -185,6 +185,12 @@ class TestMolDatasets(unittest.TestCase):
         for data in dataloader:
             from torch import Tensor
             assert type(data[0]) == Tensor
+
+    def test_generative_datasets(self):
+        feat = MolGanFeaturizer(max_atom_count=60)
+        dataset = SmilesDataset(smiles=self.mols, task="generation", featurizer=feat)
+        dataset.create()
+        df = dataset.__getitem__(10)
 
 
 if __name__ == '__main__':
