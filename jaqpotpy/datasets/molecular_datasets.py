@@ -257,7 +257,7 @@ class SmilesDataset(MolecularDataset):
             node_features = self.df[self.X].iloc[idx].values[0].node_features
             adjacency_matrix = self.df[self.X].iloc[idx].values[0].adjacency_matrix
             import torch
-            X = torch.matmul(torch.Tensor(node_features), torch.Tensor(adjacency_matrix))
+            # X = torch.matmul(torch.Tensor(node_features), torch.Tensor(adjacency_matrix))
             X = torch.Tensor(node_features), torch.Tensor(adjacency_matrix)
             # y = None
             return X, idx, (torch.Tensor(node_features), torch.Tensor(adjacency_matrix))

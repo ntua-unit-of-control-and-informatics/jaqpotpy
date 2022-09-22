@@ -50,7 +50,7 @@ class Featurizer(object):
       disable_tq = True
     else:
       disable_tq = False
-    for i, point in enumerate(tqdm(datapoints, desc='Creating descriptrs', disable=disable_tq)):
+    for i, point in enumerate(tqdm(datapoints, desc='Creating descriptors', disable=disable_tq)):
 
       try:
         features.append(self._featurize(point, **kwargs))

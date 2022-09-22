@@ -120,7 +120,7 @@ class MolGanFeaturizer(MolecularFeaturizer):
     else:
       self.bond_labels = bond_labels
 
-    self.SMILE_CHARSET = '["C", "N", "O", "F", "B",  "I", "H", "S", "P", "Cl", "Br"]'
+    self.SMILE_CHARSET = '["C", "N", "O", "F", "B", "I", "H", "S", "P", "Cl", "Br"]'
 
     # atom labels
     if atom_labels is None:
@@ -162,18 +162,19 @@ class MolGanFeaturizer(MolecularFeaturizer):
     if self.kekulize:
       Chem.Kekulize(datapoint)
 
+    adjacency = np.zeros((len(self.bond_labels), self.max_atom_count, self.max_atom_count), "float32")
+    features = np.zeros((self.max_atom_count, len(self.atom_labels)), "int32")
     A = np.zeros(
         shape=(self.max_atom_count, self.max_atom_count), dtype=np.float32)
     bonds = datapoint.GetBonds()
-
     begin, end = [b.GetBeginAtomIdx() for b in bonds], [
         b.GetEndAtomIdx() for b in bonds
     ]
     bond_type = [self.bond_encoder[b.GetBondType()] for b in bonds]
-
     A[begin, end] = bond_type
     A[end, begin] = bond_type
-
+    adjacency[bond_type, [begin, end], [end, begin]] = 1
+    adjacency[-1, np.sum(adjacency, axis=0) == 0] = 1
     degree = np.sum(
         A[:datapoint.GetNumAtoms(), :datapoint.GetNumAtoms()], axis=-1)
     X = np.array(
@@ -183,8 +184,13 @@ class MolGanFeaturizer(MolecularFeaturizer):
         ] + [0] * (self.max_atom_count - datapoint.GetNumAtoms()),
         dtype=np.int32,
     )
-    graph = GraphMatrix(A, X)
 
+    x_d = np.eye(len(self.atom_labels))[X]
+    # features[np.where(np.sum(x_d, axis=1) == 0)[0], -1] = 1
+    # features[i] = np.eye(ATOM_DIM)[atom_type]
+    # graph = GraphMatrix(A, X)
+    graph = GraphMatrix(adjacency, x_d)
+    # features[np.where(np.sum(X, axis=1) == 0)[0], -1] = 1
     return graph if (degree > 0).all() else None
 
   def _defeaturize(self,
@@ -225,13 +231,36 @@ class MolGanFeaturizer(MolecularFeaturizer):
 
     mol = Chem.RWMol()
 
-    for node_label in node_labels:
-      mol.AddAtom(Chem.Atom(self.atom_decoder[node_label]))
+    # Remove "no atoms" & atoms with no bonds
+    keep_idx = np.where(
+        (np.argmax(node_labels, axis=1) != len(self.atom_labels) - 1)
+        & (np.sum(edge_labels[:-1], axis=(0, 1)) != 0)
+    )[0]
+    features = node_labels[keep_idx]
+    adjacency = edge_labels[:, keep_idx, :][:, :, keep_idx]
 
-    for start, end in zip(*np.nonzero(edge_labels)):
-      if start > end:
-        mol.AddBond(
-            int(start), int(end), self.bond_decoder[edge_labels[start, end]])
+    # Add atoms to molecule
+    for atom_type_idx in np.argmax(features, axis=1):
+        atom = Chem.Atom(self.atom_decoder[atom_type_idx])
+        _ = mol.AddAtom(atom)
+
+    # Add bonds between atoms in molecule; based on the upper triangles
+    # of the [symmetric] adjacency tensor
+    (bonds_ij, atoms_i, atoms_j) = np.where(np.triu(adjacency) == 1)
+    for (bond_ij, atom_i, atom_j) in zip(bonds_ij, atoms_i, atoms_j):
+        if atom_i == atom_j or bond_ij == len(self.bond_labels) - 1:
+            continue
+        bond_type = self.bond_decoder[bond_ij]
+        mol.AddBond(int(atom_i), int(atom_j), bond_type)
+
+    # for node_label in node_labels:
+    #   print(Chem.Atom(self.atom_decoder[np.argmax(node_label)]).GetAtomicNum())
+    #   mol.AddAtom(Chem.Atom(self.atom_decoder[np.argmax(node_label)]))
+    #
+    # for start, end in zip(*np.nonzero(edge_labels)):
+    #   if start > end:
+    #     mol.AddBond(
+    #         int(start), int(end), self.bond_decoder[edge_labels[start, end]])
 
     if sanitize:
       try:
