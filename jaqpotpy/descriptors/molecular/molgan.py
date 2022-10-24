@@ -2,8 +2,12 @@ import logging
 import numpy as np
 from jaqpotpy.utils.types import RDKitBond, RDKitMol, List, OneOrMany
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-
+from jaqpotpy.cfg import config
 from typing import Optional
+
+from rdkit import RDLogger
+
+RDLogger.DisableLog('rdApp.*')
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +81,7 @@ class MolGanFeaturizer(MolecularFeaturizer):
       self,
       max_atom_count: int = 9,
       kekulize: bool = True,
+      sanitize: bool = False,
       bond_labels: List[RDKitBond] = None,
       atom_labels: List[int] = None,
   ):
@@ -102,6 +107,7 @@ class MolGanFeaturizer(MolecularFeaturizer):
 
     self.max_atom_count = max_atom_count
     self.kekulize = kekulize
+    self.sanitize = sanitize
 
     try:
       from rdkit import Chem
@@ -120,7 +126,7 @@ class MolGanFeaturizer(MolecularFeaturizer):
     else:
       self.bond_labels = bond_labels
 
-    self.SMILE_CHARSET = '["C", "N", "O", "F", "B", "I", "H", "S", "P", "Cl", "Br"]'
+    self.SMILE_CHARSET = ["C", "N", "O", "F", "B", "I", "H", "S", "P", "Cl", "Br"]
 
     # atom labels
     if atom_labels is None:
@@ -191,7 +197,8 @@ class MolGanFeaturizer(MolecularFeaturizer):
     # graph = GraphMatrix(A, X)
     graph = GraphMatrix(adjacency, x_d)
     # features[np.where(np.sum(X, axis=1) == 0)[0], -1] = 1
-    return graph if (degree > 0).all() else None
+    return graph
+    # return graph if (degree > 0).all() else None
 
   def _defeaturize(self,
                    graph_matrix: GraphMatrix,
@@ -242,7 +249,7 @@ class MolGanFeaturizer(MolecularFeaturizer):
     # Add atoms to molecule
     for atom_type_idx in np.argmax(features, axis=1):
         atom = Chem.Atom(self.atom_decoder[atom_type_idx])
-        _ = mol.AddAtom(atom)
+        mol.AddAtom(atom)
 
     # Add bonds between atoms in molecule; based on the upper triangles
     # of the [symmetric] adjacency tensor
@@ -262,7 +269,7 @@ class MolGanFeaturizer(MolecularFeaturizer):
     #     mol.AddBond(
     #         int(start), int(end), self.bond_decoder[edge_labels[start, end]])
 
-    if sanitize:
+    if self.sanitize:
       try:
         Chem.SanitizeMol(mol)
       except Exception:
@@ -308,16 +315,18 @@ class MolGanFeaturizer(MolecularFeaturizer):
     for i, gr in enumerate(graphs):
       if i % log_every_n == 0:
         logger.info("Featurizing datapoint %i" % i)
-
       try:
         molecules.append(self._defeaturize(gr))
       except Exception as e:
-        logger.warning(
-            "Failed to defeaturize datapoint %d, %s. Appending empty array",
-            i,
-            gr,
-        )
-        logger.warning("Exception message: {}".format(e))
+        if config.verbose is True:
+          logger.warning(
+              "Failed to defeaturize datapoint %d, %s. Appending empty array",
+              i,
+              gr,
+          )
+          logger.warning("Exception message: {}".format(e))
+        else:
+          continue
         molecules.append(np.array([]))
 
     return np.asarray(molecules)

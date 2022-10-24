@@ -167,12 +167,45 @@ class GanGeneratorModel(object):
     def infer(self):
         raise NotImplemented("Not implemented")
 
-
-
 class GanMoleculeGenerator(nn.Module, GanGeneratorModel):
     """Generator network."""
-    def __init__(self, conv_dims, z_dim, vertexes, edges, nodes, dropout):
+    def __init__(self, conv_dims, z_dim, vertexes, edges, nodes, dropout_rate):
         super(GanMoleculeGenerator, self).__init__()
+        self.activation_f = torch.nn.Tanh()
+        self.multi_dense_layer = MultiDenseLayer(z_dim, conv_dims, self.activation_f)
+
+        self.z_dim = z_dim
+        self.vertexes = vertexes
+        self.edges = edges
+        self.nodes = nodes
+
+        self.edges_layer = nn.Linear(conv_dims[-1], edges * vertexes * vertexes)
+        self.nodes_layer = nn.Linear(conv_dims[-1], vertexes * nodes)
+
+        self.dropoout = nn.Dropout(p=dropout_rate)
+
+    def forward(self, x):
+        output = self.multi_dense_layer(x)
+        edges_logits = self.edges_layer(output).view(-1, self.edges, self.vertexes, self.vertexes)
+        edges_logits = (edges_logits + edges_logits.permute(0, 1, 3, 2)) / 2
+        edges_logits = self.dropoout(edges_logits.permute(0, 2, 3, 1))
+
+        nodes_logits = self.nodes_layer(output)
+        nodes_logits = self.dropoout(nodes_logits.view(-1, self.vertexes, self.nodes))
+
+        return edges_logits, nodes_logits
+
+    def sample_generator(self, batch_size):
+        return torch.Tensor(np.random.normal(0, 1, size=(batch_size, self.z_dim)))
+
+    def sample(self, batch_size):
+        return torch.Tensor(np.random.normal(0, 1, size=(batch_size, self.z_dim)))
+
+
+class _GanMoleculeGenerator(nn.Module, GanGeneratorModel):
+    """Generator network."""
+    def __init__(self, conv_dims, z_dim, vertexes, edges, nodes, dropout):
+        super(_GanMoleculeGenerator, self).__init__()
 
         self.z_dim = z_dim
         self.vertexes = vertexes
@@ -246,45 +279,6 @@ class GanMoleculeDiscriminator(nn.Module):
         return output, h
 
 
-# class Discriminator(nn.Module):
-#     """Discriminator network with PatchGAN."""
-#     def __init__(self, conv_dim, m_dim, b_dim, dropout):
-#         super(Discriminator, self).__init__()
-#
-#         graph_conv_dim, aux_dim, linear_dim = conv_dim
-#         # discriminator
-#         self.gcn_layer = GraphConvolution(m_dim, graph_conv_dim, b_dim, dropout)
-#         self.agg_layer = GraphAggregation(graph_conv_dim[-1], aux_dim, b_dim, dropout)
-#
-#         # multi dense layer
-#         layers = []
-#         for c0, c1 in zip([aux_dim]+linear_dim[:-1], linear_dim):
-#             layers.append(nn.Linear(c0, c1))
-#             layers.append(nn.Dropout(dropout))
-#         self.linear_layer = nn.Sequential(*layers)
-#
-#         self.output_layer = nn.Linear(linear_dim[-1], 1)
-#
-#     def forward(self, adj, hidden, node, activatation=None):
-#         adj = adj[:,:,:,1:].permute(0,3,1,2)
-#         annotations = torch.cat((hidden, node), -1) if hidden is not None else node
-#         h = self.gcn_layer(annotations, adj)
-#         print(h.size())
-#         annotations = torch.cat((h, hidden, node) if hidden is not None\
-#                                  else (h, node), -1)
-#         print(annotations.size())
-#         h = self.agg_layer(annotations, torch.tanh)
-#         h = self.linear_layer(h)
-#
-#         # Need to implemente batch discriminator #
-#         ##########################################
-#
-#         output = self.output_layer(h)
-#         output = activatation(output) if activatation is not None else output
-#
-#         return output, h
-
-
 class Discriminator2(nn.Module):
     """Discriminator network with PatchGAN."""
 
@@ -337,7 +331,6 @@ class MoleculeDiscriminator(nn.Module):
         output = activation(output) if activation is not None else output
 
         return output, h
-
 
 
 class MultiDenseLayer(nn.Module):

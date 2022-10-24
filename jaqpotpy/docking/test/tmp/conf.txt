@@ -1,0 +1,14 @@
+receptor = ./tmp/7zb6.pdbqt
+ligand = ./tmp/aspirin.pdbqt
+
+center_x = 34.558598
+center_y = -0.309561
+center_z = 10.693773
+
+size_x = 81.289000
+size_y = 75.900000
+size_z = 74.561000
+
+num_modes = 1
+
+exhaustiveness = 1

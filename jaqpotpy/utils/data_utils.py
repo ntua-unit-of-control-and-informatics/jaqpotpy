@@ -1,5 +1,15 @@
 import numpy as np
 from typing import Union, Tuple
+import joblib
+import gzip
+import pickle
+import os
+import tempfile
+import tarfile
+import zipfile
+import logging
+from urllib.request import urlretrieve
+from typing import Any, Iterator, List, Optional, Tuple, Union, cast, IO
 
 
 def pad_array(x: np.ndarray,
@@ -40,3 +50,82 @@ def pad_array(x: np.ndarray,
   pad = tuple(pad)  # type: ignore
   x = np.pad(x, pad, mode='constant', constant_values=fill)
   return x
+
+
+def get_data_dir() -> str:
+  """Get the DeepChem data directory.
+  Returns
+  -------
+  str
+    The default path to store DeepChem data. If you want to
+    change this path, please set your own path to `DEEPCHEM_DATA_DIR`
+    as an environment variable.
+  """
+  if 'DEEPCHEM_DATA_DIR' in os.environ:
+    return os.environ['DEEPCHEM_DATA_DIR']
+  return tempfile.gettempdir()
+
+
+def download_url(url: str,
+                 dest_dir: str = get_data_dir(),
+                 name: Optional[str] = None):
+  """Download a file to disk.
+  Parameters
+  ----------
+  url: str
+    The URL to download from
+  dest_dir: str
+    The directory to save the file in
+  name: str
+    The file name to save it as.  If omitted, it will try to extract a file name from the URL
+  """
+  if name is None:
+    name = url
+    if '?' in name:
+      name = name[:name.find('?')]
+    if '/' in name:
+      name = name[name.rfind('/') + 1:]
+  if not os.path.exists(dest_dir):
+    os.makedirs(dest_dir)
+  urlretrieve(url, os.path.join(dest_dir, name))
+
+
+def untargz_file(file: str,
+                 dest_dir: str = get_data_dir(),
+                 name: Optional[str] = None):
+  """Untar and unzip a .tar.gz file to disk.
+  Parameters
+  ----------
+  file: str
+    The filepath to decompress
+  dest_dir: str
+    The directory to save the file in
+  name: str
+    The file name to save it as.  If omitted, it will use the file name
+  """
+  if name is None:
+    name = file
+  tar = tarfile.open(name)
+  tar.extractall(path=dest_dir)
+  tar.close()
+
+
+def unzip_file(file: str,
+               dest_dir: str = get_data_dir(),
+               name: Optional[str] = None):
+  """Unzip a .zip file to disk.
+  Parameters
+  ----------
+  file: str
+    The filepath to decompress
+  dest_dir: str
+    The directory to save the file in
+  name: str
+    The directory name to unzip it to.  If omitted, it will use the file name
+  """
+  if name is None:
+    name = file
+  if dest_dir is None:
+    dest_dir = os.path.join(get_data_dir, name)
+  with zipfile.ZipFile(file, "r") as zip_ref:
+    zip_ref.extractall(dest_dir)

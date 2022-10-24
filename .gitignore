@@ -118,3 +118,16 @@ pyvenv.cfg
 share/
 man/
 ./man/
+examples/data/gdb9.sdf
+examples/gdb9.sdf
+examples/gdb9.sdf.csv
+examples/data/gdb9.sdf
+examples/data/gdb9.sdf
+/Users/pantelispanka/Jaqpot/jaqpotpy/jaqpotpy/models/tests/data/gdb9.sdf
+models/tests/data/gdb9.sdf
+jaqpotpy/models/tests/data/gdb9.sdf
+jaqpotpy/models/tests/data/gdb9.sdf
+jaqpotpy/models/generative/.DS_Store
+jaqpotpy/models/tests/.DS_Store
+jaqpotpy/models/tests/.DS_Store
+jaqpotpy/models/tests/data/gdb9.sdf
