@@ -475,6 +475,7 @@ class TestModels(unittest.TestCase):
         val.register_scoring_function('Accuracy', accuracy_score)
         val.register_scoring_function('AUC', roc_auc_score)
         val.register_scoring_function('F1 score', f1_score)
+
         model_nn = GCN()
         optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()

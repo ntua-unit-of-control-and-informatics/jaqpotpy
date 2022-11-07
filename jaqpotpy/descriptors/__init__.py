@@ -11,3 +11,4 @@
 # from jaqpotpy.descriptors.graph.mol_graphs import *
 # from jaqpotpy.descriptors.molecular.smles_to_image import SmilesToImage
 # from jaqpotpy.descriptors.molecular.molgan import MolGanFeaturizer
+from jaqpotpy.descriptors.base_classes import ComplexFeaturizer

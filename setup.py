@@ -29,6 +29,7 @@ setup(name='jaqpotpy',
       author_email='pantelispanka@gmail.com',
       license='MIT License',
       packages=find_packages(exclude=["*.tests"]),
+      package_data={find_packages(exclude=["*.tests"]): ['data/*.gz']},
       # packages=['jaqpotpy', 'jaqpotpy.api', 'jaqpotpy.mappers', 'jaqpotpy.utils'
       #           , 'jaqpotpy.entities', 'jaqpotpy.dto', 'jaqpotpy.doa'
       #           , 'jaqpotpy.helpers', 'jaqpotpy.colorlog', 'jaqpotpy.models', 'jaqpotpy.cfg'

@@ -50,13 +50,14 @@ class Featurizer(object):
       disable_tq = True
     else:
       disable_tq = False
-    for i, point in enumerate(tqdm(datapoints, desc='Creating descriptrs', disable=disable_tq)):
+    for i, point in enumerate(tqdm(datapoints, desc='Creating descriptors', disable=disable_tq)):
 
       try:
         features.append(self._featurize(point, **kwargs))
       except:
-        logger.warning(
-            "Failed to featurize datapoint %d. Appending empty array")
+        if config.verbose is True:
+          logger.warning(
+              "Failed to featurize datapoint %d. Appending empty array")
         features.append(np.array([]))
 
     return np.asarray(features)
@@ -157,6 +158,73 @@ class Featurizer(object):
           override_args_info += '_' + arg_name + '_' + str(arg_value)
     return self.__class__.__name__ + override_args_info
 
+class ComplexFeaturizer(Featurizer):
+  """"
+  Abstract class for calculating features for mol/protein complexes.
+  """
+
+  def featurize(self,
+                datapoints: Optional[Iterable[Tuple[str, str]]] = None,
+                log_every_n: int = 100,
+                **kwargs) -> np.ndarray:
+    """
+    Calculate features for mol/protein complexes.
+    Parameters
+    ----------
+    datapoints: Iterable[Tuple[str, str]]
+      List of filenames (PDB, SDF, etc.) for ligand molecules and proteins.
+      Each element should be a tuple of the form (ligand_filename,
+      protein_filename).
+    Returns
+    -------
+    features: np.ndarray
+      Array of features
+    """
+
+    if 'complexes' in kwargs:
+      datapoints = kwargs.get("complexes")
+      raise DeprecationWarning(
+          'Complexes is being phased out as a parameter, please pass "datapoints" instead.'
+      )
+    if not isinstance(datapoints, Iterable):
+      datapoints = [cast(Tuple[str, str], datapoints)]
+    features, failures, successes = [], [], []
+    for idx, point in enumerate(datapoints):
+      if idx % log_every_n == 0:
+        logger.info("Featurizing datapoint %i" % idx)
+      try:
+        features.append(self._featurize(point, **kwargs))
+        successes.append(idx)
+      except:
+        logger.warning(
+            "Failed to featurize datapoint %i. Appending empty array." % idx)
+        features.append(np.zeros(1))
+        failures.append(idx)
+
+    # Find a successful featurization
+    try:
+      i = np.argmax([f.shape[0] for f in features])
+      dtype = features[i].dtype
+      shape = features[i].shape
+      dummy_array = np.zeros(shape, dtype=dtype)
+    except AttributeError:
+      dummy_array = features[successes[0]]
+
+    # Replace failed featurizations with appropriate array
+    for idx in failures:
+      features[idx] = dummy_array
+
+    return np.asarray(features)
+
+  def _featurize(self, datapoint: Optional[Tuple[str, str]] = None, **kwargs):
+    """
+    Calculate features for single mol/protein complex.
+    Parameters
+    ----------
+    complex: Tuple[str, str]
+      Filenames for molecule and protein.
+    """
+    raise NotImplementedError('Featurizer is not defined.')
 
 
 class DataframeFeaturizer(object):
@@ -204,8 +272,9 @@ class DataframeFeaturizer(object):
       try:
         features.append(self._featurize(point, **kwargs))
       except:
-        logger.warning(
-            "Failed to featurize datapoint %d. Appending empty array")
+        if config.verbose is True:
+          logger.warning(
+              "Failed to featurize datapoint %d. Appending empty array")
         features.append(np.array([]))
 
     return np.asarray(features)
@@ -373,10 +442,11 @@ class MolecularFeaturizer(Featurizer):
       except Exception as e:
         if isinstance(mol, Chem.rdchem.Mol):
           mol = Chem.MolToSmiles(mol)
-        logger.warning(
-            "Failed to featurize datapoint %d, %s. Appending empty array", i,
-            mol)
-        logger.warning("Exception message: {}".format(e))
+        if config.verbose is True:
+          logger.warning(
+              "Failed to featurize datapoint %d, %s. Appending empty array", i,
+              mol)
+          logger.warning("Exception message: {}".format(e))
         features.append(np.array([]))
 
     return np.asarray(features)
@@ -437,10 +507,11 @@ class MolecularFeaturizer(Featurizer):
       except Exception as e:
         if isinstance(mol, Chem.rdchem.Mol):
           mol = Chem.MolToSmiles(mol)
-        logger.warning(
-            "Failed to featurize datapoint %d, %s. Appending empty array", i,
-            mol)
-        logger.warning("Exception message: {}".format(e))
+        if config.verbose is True:
+          logger.warning(
+              "Failed to featurize datapoint %d, %s. Appending empty array", i,
+              mol)
+          logger.warning("Exception message: {}".format(e))
         features.append(np.array([]))
         # features.append(self._featurize_dataframe(mol, **kwargs))
     columns = self._get_column_names()
@@ -499,11 +570,11 @@ class ParserFeaturizer(Featurizer):
         features.append(self._featurize(mat, **kwargs))
 
       except Exception as e:
-        logger.warning(
-            "Failed to featurize datapoint %d, %s. Appending empty array", i, mat)
-        logger.warning("Exception message: {}".format(e))
+        if config.verbose is True:
+          logger.warning(
+              "Failed to featurize datapoint %d, %s. Appending empty array", i, mat)
+          logger.warning("Exception message: {}".format(e))
         features.append(np.array([]))
-
     return np.asarray(features)
 
   def featurize_dataframe(self, log_every_n=1000, **kwargs) -> Any:
@@ -536,9 +607,10 @@ class ParserFeaturizer(Featurizer):
         features = pd.concat([features, self._featurize_dataframe(mat, **kwargs)]).reset_index(drop=True).replace(np.nan, 0)
 
       except Exception as e:
-        logger.warning(
-          "Failed to featurize datapoint %d, %s. Appending empty array", i)
-        logger.warning("Exception message: {}".format(e))
+        if config.verbose is True:
+          logger.warning(
+            "Failed to featurize datapoint %d, %s. Appending empty array", i)
+          logger.warning("Exception message: {}".format(e))
         features = pd.concat([features, pd.DataFrame()]).reset_index(drop=True)
 
     return features
@@ -598,8 +670,9 @@ class MaterialFeaturizer(Featurizer):
       try:
         features.append(self._featurize(item, **kwargs))
       except Exception as e:
-        logger.warning(
-            "Failed to featurize datapoint %i. Appending empty array" % i, e)
+        if config.verbose is True:
+          logger.warning(
+              "Failed to featurize datapoint %i. Appending empty array" % i, e)
         features.append(np.array([]))
 
     return np.asarray(features)
@@ -639,9 +712,10 @@ class MaterialFeaturizer(Featurizer):
         features = pd.concat([features, self._featurize_dataframe(item, **kwargs)]).reset_index(drop=True)
 
       except Exception as e:
-        logger.warning(
-          "Failed to featurize datapoint %d, %s. Appending empty array", i)
-        logger.warning("Exception message: {}".format(e))
+        if config.verbose is True:
+          logger.warning(
+            "Failed to featurize datapoint %d, %s. Appending empty array", i)
+          logger.warning("Exception message: {}".format(e))
         features = pd.concat([features, pd.DataFrame()]).reset_index(drop=True)
 
     return features
