@@ -51,6 +51,8 @@ def novel_mean_score(mols, data):
     return valid.mean()
 
 
+
+
 class MolecularMetrics(object):
 
     @staticmethod

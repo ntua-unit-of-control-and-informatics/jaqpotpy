@@ -1,5 +1,5 @@
 receptor = ./tmp/7zb6.pdbqt
-ligand = ./tmp/aspirin.pdbqt
+ligand = ./tmp/mulno.pdbqt
 
 center_x = 34.558598
 center_y = -0.309561
@@ -9,6 +9,6 @@ size_x = 81.289000
 size_y = 75.900000
 size_z = 74.561000
 
-num_modes = 1
+num_modes = 4
 
-exhaustiveness = 1
+exhaustiveness = 4

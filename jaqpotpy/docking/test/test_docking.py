@@ -24,7 +24,7 @@ class TestDocking(unittest.TestCase):
     current_dir = os.path.dirname(os.path.realpath(__file__))
     # self.protein_file = os.path.join(current_dir, "1jld_protein.pdb")
     self.protein_file = os.path.join(current_dir, "7zb6.pdb")
-    self.ligand_file = os.path.join(current_dir, "aspirin.sdf")
+    self.ligand_file = os.path.join(current_dir, "mulno.sdf")
     # self.ligand_file = os.path.join(current_dir, "1jld_ligand.sdf")
 
   @pytest.mark.slow
@@ -57,8 +57,8 @@ class TestDocking(unittest.TestCase):
     vpg = jp.docking.VinaPoseGenerator()
     docker = jp.docking.Docker(vpg)
     docked_outputs = docker.dock((self.protein_file, self.ligand_file),
-                                 exhaustiveness=1,
-                                 num_modes=1,
+                                 exhaustiveness=4,
+                                 num_modes=4,
                                  out_dir="./tmp",
                                  use_pose_generator_scores=True)
 
