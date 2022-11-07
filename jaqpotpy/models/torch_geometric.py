@@ -104,7 +104,9 @@ class MolecularTorchGeometric(Model):
                     if temp_loss is None or temp_loss > los:
                         temp_loss = los
                         temp_path = self.path
-                        self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
+                        # print(temp_loss.item())
+                        # print(str(temp_loss))
+                        self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(temp_loss.item()) + ".pt"
                         torch.save({
                             'epoch': epoch,
                             'model_state_dict': self.model_nn.state_dict(),

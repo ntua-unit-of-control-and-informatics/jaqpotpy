@@ -94,5 +94,5 @@ class TestJaqpotIntegration(unittest.TestCase):
         jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
         jaqpot.request_key("jasonsoti1@gmail.com", "PX-E850E")
         df = pd.DataFrame(self.mols, columns=['Smiles'])
-        predictions = jaqpot.predict(df, '54TXPmIfZXPgH3biRuT3')
+        predictions = jaqpot.predict(df, 'PU0ZVenjQrkvs2i6L1Pm')
         print(predictions[0].head(), '\n\n\n\n\n', predictions[1])

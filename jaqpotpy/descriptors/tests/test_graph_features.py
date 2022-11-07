@@ -3,7 +3,7 @@ Tests for ConvMolFeaturizer.
 """
 import unittest
 import numpy as np
-from jaqpotpy.descriptors.graph.graph_features import ConvMolFeaturizer
+from jaqpotpy.descriptors.graph.graph_features import ConvMolFeaturizer, WeaveFeaturizer
 
 
 class TestConvMolFeaturizer(unittest.TestCase):
@@ -95,3 +95,14 @@ class TestConvMolFeaturizer(unittest.TestCase):
     feat = featurizer.featurize(mols)
     for i, j in zip(feat, mols):
       assert len(i) == j.GetNumHeavyAtoms()
+
+  def test_Weave(self):
+    import rdkit.Chem
+    raw_smiles = ['CC(CO)Cc1ccccc1', 'CC']
+    mols = [rdkit.Chem.MolFromSmiles(m) for m in raw_smiles]
+    featurizer = WeaveFeaturizer()
+    feat = featurizer.featurize(mols)
+    print(mols)
+
+if __name__ == '__main__':
+    unittest.main()

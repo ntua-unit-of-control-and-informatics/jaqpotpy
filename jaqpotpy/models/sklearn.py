@@ -1,18 +1,25 @@
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Union, Dict, Optional
-import pandas as pd
-import pickle
 from jaqpotpy.datasets import MolecularDataset
 from jaqpotpy.datasets.material_datasets import CompositionDataset, StructureDataset
 from jaqpotpy.models import Evaluator, Preprocesses, MolecularModel, MaterialModel
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import FloatTensorType
 
 
 class MolecularSKLearn(Model):
+
+    @property
+    def initial_types(self):
+        return self._initial_types
+
+    @initial_types.setter
+    def initial_types(self, item):
+        self._initial_types = item
 
     def __init__(self, dataset: MolecularDataset, doa: DOA, model: Any
                  , eval: Evaluator = None, preprocess: Preprocesses = None):
@@ -25,7 +32,7 @@ class MolecularSKLearn(Model):
         self.evaluator: Evaluator = eval
         self.preprocess: Preprocesses = preprocess
         self.trained_model = None
-        # self.trained_model = None
+        self._initial_types = None
 
     def __call__(self, smiles):
         self
@@ -72,6 +79,7 @@ class MolecularSKLearn(Model):
             model.preprocessing_y = preprocess_classes_y
             model.preprocessor_y_names = preprocess_names_y
 
+        X = X.astype(float).copy()
         self.trained_model = self.model.fit(X, y)
         if self.evaluator:
             self.__eval__()
@@ -88,7 +96,17 @@ class MolecularSKLearn(Model):
         model.jaqpotpy_version = jaqpotpy.__version__
         model.jaqpotpy_docker = config.jaqpotpy_docker
         model.external_feats = self.dataset.external
+        model.inference_model = self.__convert_to_onnx__(X.shape[1])
         return model
+
+    def __convert_to_onnx__(self, num_columns):
+
+        name = self.model.__class__.__name__ + "_ONNX"
+        initial_types = [('float_input',FloatTensorType([None, num_columns]))]
+        res = convert_sklearn(self.model, initial_types=initial_types, name=name, target_opset=None,
+                              options=None, black_op=None, white_op=None, final_types=None,
+                              verbose=0)
+        return res
 
     def __predict__(self, X):
         pre_keys = self.preprocess.fitted_classes.keys()

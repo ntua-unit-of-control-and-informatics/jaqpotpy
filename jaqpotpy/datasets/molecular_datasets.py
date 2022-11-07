@@ -117,7 +117,7 @@ class TorchGraphDataset(MolecularDataset, Dataset):
     Init with smiles and y array
     """
     def __init__(self, smiles=Iterable[str]
-                 , y: Iterable[Any] = Iterable[Any], task=str) -> None:
+                 , y: Iterable[Any] = Iterable[Any], featurizer: MolecularFeaturizer = MolGraphConvFeaturizer(), task=str) -> None:
         super(TorchGraphDataset, self).__init__()
         self._y = y
         self._dataset_name = None
@@ -127,25 +127,25 @@ class TorchGraphDataset(MolecularDataset, Dataset):
         self._smiles_strings = None
         self.ys = y
         self._task = task
-        self.featurizer: MolecularFeaturizer = MolGraphConvFeaturizer(use_edges=True)
+        self.featurizer: MolecularFeaturizer = featurizer
         self.indices: [] = None
         # self.create()
 
     def create(self):
         import torch
         from torch_geometric.data import Data
-        descriptors = self.featurizer.featurize(self.smiles)
+        descriptors = self.featurizer.featurize(datapoints = self.smiles)
         for i, g in enumerate(descriptors):
             if self._task == 'regression':
                 dato = Data(x=torch.FloatTensor(g.node_features)
                             , edge_index=torch.LongTensor(g.edge_index)
-                            , edge_attr=g.edge_features
+                            , edge_attr= torch.LongTensor(g.edge_features) if g.edge_features is not None else g.edge_features
                             , num_nodes=g.num_nodes, y=torch.Tensor([self.y[i]]))
                 self._df.append(dato)
             elif self._task == 'classification':
                 dato = Data(x=torch.FloatTensor(g.node_features)
                             , edge_index=torch.LongTensor(g.edge_index)
-                            , edge_attr=g.edge_features
+                            , edge_attr=torch.LongTensor(g.edge_features) if g.edge_features is not None else g.edge_features
                             , num_nodes=g.num_nodes, y=torch.LongTensor([self.y[i]]))
                 self._df.append(dato)
             else:

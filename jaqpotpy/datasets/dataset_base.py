@@ -162,3 +162,20 @@ class MaterialDataset(BaseDataset):
     def load(cls, filename):
         with open(filename, 'rb') as f:
             return pickle.load(f)
+
+class ImageDataset(BaseDataset):
+    def __init__(self, path=None,  x_cols=None, y_cols=None) -> None:
+        super().__init__(path=path, x_cols=x_cols, y_cols=y_cols)
+
+    def save(self):
+        if self._dataset_name:
+            with open(self._dataset_name + ".jdata", 'wb') as f:
+                pickle.dump(self, f)
+        else:
+            with open("jaqpot_dataset" + ".jdata", 'wb') as f:
+                pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)

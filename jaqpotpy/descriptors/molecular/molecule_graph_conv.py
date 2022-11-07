@@ -1,20 +1,25 @@
 from typing import List, Tuple
 import numpy as np
+import itertools
+from functools import partial
 
 from jaqpotpy.utils.types import RDKitAtom, RDKitBond, RDKitMol
 from jaqpotpy.descriptors.graph.graph_data import GraphData
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.utils.molecule_feature_utils import one_hot_encode
 from jaqpotpy.utils.molecule_feature_utils import get_atom_type_one_hot
+from jaqpotpy.utils.molecule_feature_utils import get_atom_num_radical_electrons
 from jaqpotpy.utils.molecule_feature_utils import construct_hydrogen_bonding_info
 from jaqpotpy.utils.molecule_feature_utils import get_atom_hydrogen_bonding_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_atom_hybridization_one_hot
+from jaqpotpy.utils.molecule_feature_utils import get_atom_is_aromatic
 from jaqpotpy.utils.molecule_feature_utils import get_atom_total_num_Hs_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_atom_is_in_aromatic_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_atom_chirality_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_atom_formal_charge
 from jaqpotpy.utils.molecule_feature_utils import get_atom_partial_charge
 from jaqpotpy.utils.molecule_feature_utils import get_atom_total_degree_one_hot
+from jaqpotpy.utils.molecule_feature_utils import get_atom_degree_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_bond_type_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_bond_is_in_same_ring_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_bond_is_conjugated_one_hot
@@ -22,6 +27,7 @@ from jaqpotpy.utils.molecule_feature_utils import get_bond_stereo_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_atom_formal_charge_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_atom_implicit_valence_one_hot
 from jaqpotpy.utils.molecule_feature_utils import get_atom_explicit_valence_one_hot
+from jaqpotpy.utils.molecule_feature_utils import get_atom_is_chiral_center
 from jaqpotpy.utils.rdkit_utils import compute_all_pairs_shortest_path
 from jaqpotpy.utils.rdkit_utils import compute_pairwise_ring_info
 
@@ -655,3 +661,181 @@ class TorchMolGraphConvFeaturizer(MolecularFeaturizer):
 
     def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> Data:
         return self._featurize(datapoint, **kwargs)
+
+
+class AttentiveFPFeaturizer(MolecularFeaturizer):
+    """
+    This class is a featurizer that is introduced in the publication of Xiong et. al. [1]
+    for Attentive FP GNNs. It uses a specific a specific fingerprint for the nodes and a different one
+    for the edges. In more details, the node features are:
+    - One hot encoding of the atom type. The supported atom types include:
+        "B", "C", "N", "O", "F", "Si", "P", "S", "Cl", "As", "Se", "Br", "Te", "I", "At", and "other"
+    - One hot encoding of the atom degree. The supported possibilities include "0 - 5"
+    - The formal charge of the atom in the node
+    - The number of the radical electrons of the atom
+    - One hot ecoding of the atom's hybridization. Supported hybridizations are "SP", "SP2",
+      "SP3", "SP3D", "SP3D2", and "other"
+    - Indication on whether the atom is aromatic or not
+    - One hot encoding of the number f total hydrogens on the atom. Supported possibilities are 0 - 4.
+    - Indication on whether the atom is chiral center or not
+    - One hot encoding of the atom chirality type. The supported possibilities include "R", and "S".
+
+    The edge features include:
+    - One hote encoding of the bond type. The supported types are "SINGLE", "DOUBLE", "TRIPLE", "AROMATIC"
+    - Indication on whether the bond is conjugated or not
+    - Indication on whether the bond is a ring or not
+    - One hote encoding of the bond stereo configuration. The supported types are "STEREONONE", "STEREOANY", "STEREOZ", "STEREOE"
+
+    Examples
+    --------
+    >>> smiles = ["C1CCC1", "C1=CC=CN=C1"]
+    >>> featurizer = AttentiveFPFeaturizer(use_edges=True)
+    >>> out = featurizer.featurize(smiles)
+    >>> type(out[0])
+    <class 'jaqpotpy.descriptors.graph.GraphData'>
+    >>> out[0].num_node_features
+    30
+    >>> out[0].num_edge_features
+    11
+    References
+    ----------
+    .. [1] Xiong Z, Wang D, Liu X, Zhong F, Wan X, Li X, Li Z, Luo X, Chen K, Jiang H, Zheng M. Pushing the Boundaries
+           of Molecular Representation for Drug Discovery with the Graph Attention Mechanism. J Med Chem. 2020 Aug 27;63(16):8749-8760.
+           doi: 10.1021/acs.jmedchem.9b00959. Epub 2019 Aug 27. PMID: 31408336.
+    Note
+    ----
+    This class requires RDKit to be installed.
+    """
+    from torch_geometric.data import Data
+
+    @property
+    def __name__(self):
+        return 'AttentiveFPFeaturizer'
+
+    def __init__(self, use_loops: bool = False):
+        """
+        Parameters
+        ----------
+        use_loops: bool, (default False)
+          Whether self loops will be added.
+        """
+        self.use_loops = use_loops
+
+    def __getitem__(self):
+        return self
+
+    def _featurize_node(self, atom):
+        from rdkit import Chem
+        feature_funcs = [
+            partial(get_atom_type_one_hot, allowable_set=[
+                'B', 'C', 'N', 'O', 'F', 'Si', 'P', 'S',
+                'Cl', 'As', 'Se', 'Br', 'Te', 'I', 'At'], include_unknown_set=True),
+            partial(get_atom_degree_one_hot, allowable_set=list(range(6)), include_unknown_set=False),
+            get_atom_formal_charge,
+            get_atom_num_radical_electrons,
+            partial(get_atom_hybridization_one_hot,
+                    allowable_set = ['SP', 'SP2', 'SP3', 'SP3D', 'SP3D2'],
+                    include_unknown_set=True),
+            get_atom_is_aromatic,
+            partial(get_atom_total_num_Hs_one_hot, include_unknown_set=False),
+            get_atom_is_chiral_center,
+            get_atom_chirality_one_hot
+        ]
+
+        features = []
+        for func in feature_funcs:
+            features.extend(func(atom))
+
+        return np.array(features)
+
+
+    def _featurize_edge(self, bond, mol):
+        from rdkit import Chem
+        feature_funcs = [
+            get_bond_type_one_hot,
+            get_bond_is_conjugated_one_hot,
+            get_bond_is_in_same_ring_one_hot,
+            partial(get_bond_stereo_one_hot, allowable_set=['STEREONONE', 'STEREOANY', 'STEREOZ', 'STEREOE'],
+                    include_unknown_set = False)
+        ]
+
+        features = []
+        for func in feature_funcs:
+            features.extend(func(bond))
+
+        features = np.array(features)
+        features = np.stack((features, features.copy()))
+
+        if self.use_loops and mol.GetNumBonds() > 0:
+            import torch
+            num_atoms = mol.GetNumAtoms()
+            feats = torch.cat([features, torch.zeros(features.shape[0], 1)], dim=1)
+            self_loop_feats = torch.zeros(num_atoms, feats.shape[1])
+            self_loop_feats[:, -1] = 1
+            feats = torch.cat([feats, self_loop_feats], dim=0)
+            features = feats
+
+        if self.use_loops and mol.GetNumBonds() == 0:
+            import torch
+            num_atoms = mol.GetNumAtoms()
+            dummy = Chem.MolFromSmiles('CO')
+            features = self._featurize_edge(dummy.GetBonds()[0], dummy)
+            feats = torch.zeros(num_atoms, features.shape[1])
+            feats[:, -1] = 1
+            features = feats
+
+        return features
+
+    def _featurize(self, datapoint: RDKitMol, **kwargs) -> GraphData:
+        """Calculate molecule graph features from RDKit mol object.
+        Parameters
+        ----------
+        datapoint: rdkit.Chem.rdchem.Mol
+          RDKit mol object.
+        Returns
+        -------
+        graph: GraphData
+          A molecule graph with some features.
+        """
+        assert datapoint.GetNumAtoms(
+        ) > 1, "More than one atom should be present in the molecule for this featurizer to work."
+        if 'mol' in kwargs:
+            datapoint = kwargs.get("mol")
+            raise DeprecationWarning(
+                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
+            )
+
+
+        # construct atom (node) feature
+        node_features = np.asarray([self._featurize_node(atom) for atom in datapoint.GetAtoms()], dtype=float)
+
+        # construct edge (bond) index
+        src, dest = [], []
+        for bond in datapoint.GetBonds():
+            # add edge list considering a directed graph
+            start, end = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
+            src += [start, end]
+            dest += [end, start]
+
+        # construct edge (bond) feature
+        bond_features = np.asarray([self._featurize_edge(bond, datapoint) for bond in datapoint.GetBonds()], dtype=float)  # deafult None
+        bond_features = bond_features.reshape(bond_features.shape[0] * bond_features.shape[1], bond_features.shape[2])
+        # bond_features = torch.LongTensor(bond_features)
+
+        import torch
+        return GraphData(
+            node_features= node_features,
+            edge_index= np.asarray([src, dest], dtype=int),
+            edge_features= bond_features)
+
+    def _get_column_names(self, **kwargs) -> list:
+        """
+        Return the column names
+        """
+        names = ['AttentiveFP']
+        return names
+
+    def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> GraphData:
+        return self._featurize(datapoint, **kwargs)
+
+

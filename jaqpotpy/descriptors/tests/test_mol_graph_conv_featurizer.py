@@ -2,7 +2,9 @@ import unittest
 
 from rdkit import Chem
 from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeaturizer\
-  , PagtnMolGraphFeaturizer, TorchMolGraphConvFeaturizer
+  , PagtnMolGraphFeaturizer, TorchMolGraphConvFeaturizer, AttentiveFPFeaturizer
+import torch
+import numpy as np
 
 
 class TestMolGraphConvFeaturizer(unittest.TestCase):
@@ -101,3 +103,39 @@ class TestPagtnMolGraphConvFeaturizer(unittest.TestCase):
     assert graph_feat[1].num_node_features == 94
     assert graph_feat[1].num_edges == 484
     assert graph_feat[0].num_edge_features == 42
+
+
+class TestAttentiveFPFeaturizer(unittest.TestCase):
+
+  def test_default_featurizer(self):
+    smiles = ["CCO"]
+    featurizer = AttentiveFPFeaturizer(use_loops=False)
+    graph_feat = featurizer.featurize(smiles)
+    assert len(graph_feat) == len(smiles)
+
+    res_as_dict = {
+      'edge_index': torch.LongTensor([[0, 2, 2, 1], [2, 0, 1, 2]]),
+      'node_features': torch.FloatTensor([
+        [0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1.,
+         0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1., 0.,
+         0., 0., 0.],
+        [0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1.,
+         0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 1., 0., 0., 0.,
+         0., 0., 0.],
+        [0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         1., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 1., 0., 0.,
+         0., 0., 0.]
+      ]),
+       'edge_features': torch.FloatTensor([[1., 0., 0., 0., 0., 0., 1., 0., 0., 0.],
+       [1., 0., 0., 0., 0., 0., 1., 0., 0., 0.],
+       [1., 0., 0., 0., 0., 0., 1., 0., 0., 0.],
+       [1., 0., 0., 0., 0., 0., 1., 0., 0., 0.]])
+    }
+
+    # assert Node features
+    assert np.array(res_as_dict['node_features'] == graph_feat[0][1][1]).flatten().all()
+
+    # assert Edge features
+    assert np.array(res_as_dict['edge_features'] == graph_feat[0][2][1]).flatten().all()
+
+    print(type(graph_feat[0]))

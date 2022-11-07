@@ -2,6 +2,7 @@ from jaqpotpy.doa.doa import DOA
 from jaqpotpy.descriptors.molecular import RDKitDescriptors
 from jaqpotpy.descriptors.base_classes import Featurizer #MolecularFeaturizer, MaterialFeaturizer,
 from typing import Any, Iterable, Union, Dict
+from jaqpotpy.datasets.image_datasets import default_loader
 try:
     from pymatgen.core.structure import Lattice, Structure
 except ModuleNotFoundError:
@@ -42,6 +43,7 @@ class Model(object):
     _jaqpotpy_version = None
     _jaqpotpy_docker = None
     _optimizer = None
+    _inference_model = None
 
     @property
     def smiles(self):
@@ -134,6 +136,14 @@ class Model(object):
     @external_feats.setter
     def external_feats(self, value):
         self._external_feats = value
+
+    @property
+    def inference_model(self):
+        return self._inference_model
+
+    @inference_model.setter
+    def inference_model(self, value):
+        self._inference_model = value
 
     @property
     def model(self):
@@ -264,7 +274,13 @@ class MolecularModel(Model):
         if self._smiles:
             if self._descriptors == "RDKitDescriptors":
                 self._descriptors = RDKitDescriptors()
-            data = self._descriptors.featurize_dataframe(self._smiles)
+                data = self._descriptors.featurize_dataframe(self._smiles)
+            elif type(self._descriptors).__name__ == "Compose":
+                self._descriptors.__name__ = "Compose"
+                data = [self._descriptors(default_loader(image)) for image in self._smiles]
+            else:
+                data = self._descriptors.featurize_dataframe(self._smiles)
+
             if self.external:
                 ext = pd.DataFrame.from_dict(self.external)
                 data = pd.concat([data, ext], axis=1)
@@ -276,11 +292,24 @@ class MolecularModel(Model):
                     from torch_geometric.data import Data
                     dat = Data(x=torch.FloatTensor(g.node_features)
                                , edge_index=torch.LongTensor(g.edge_index)
-                               , edge_attr=g.edge_features
+                               , edge_attr=torch.LongTensor(g.edge_features)
                                , num_nodes=g.num_nodes)
                     graph_data_list.append(dat)
                 self._prediction = []
-            if self._X != ['TorchMolGraph'] and self.X != ['OneHotSequence'] and self.X != ["SmilesImage"]:
+            if self._descriptors.__name__ == 'AttentiveFPFeaturizer':
+                # graph_data = data['MoleculeGraph']
+                for g in data.values:
+                    import torch
+                    from torch_geometric.data import Data
+                    dat = Data(x=torch.FloatTensor(g[0].node_features)
+                                , edge_index=torch.LongTensor(g[0].edge_index)
+                                , edge_attr=torch.LongTensor(g[0].edge_features)
+                                , num_nodes=g[0].num_nodes)
+                    graph_data_list.append(dat)
+                self._prediction = []
+            if self._X == 'ImagePath':
+                pass
+            elif self._X != ['TorchMolGraph'] and self.X != ['OneHotSequence'] and self.X != ["SmilesImage"]:
                 data = data[self._X].to_numpy()
             elif self._X == ['SmilesImage']:
                 datas = []

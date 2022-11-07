@@ -14,6 +14,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 from jaqpotpy.models import Evaluator
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, matthews_corrcoef\
     , precision_score, recall_score, confusion_matrix
+import numpy as np
 
 
 def sync(coro):
@@ -115,3 +116,184 @@ class TestModels(unittest.TestCase):
         assert molecularModel_t1.doa.IN == [False]
         assert int(molecularModel_t1.doa.doa_new[0]) == 271083
         assert int(molecularModel_t1.prediction[0][0]) == -2873819
+
+
+    def test_ALL_regression_ONNX(self):
+        from sklearn.utils import all_estimators
+        import onnxruntime as rt
+
+        featurizer = TopologicalFingerprint()
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
+
+        regression_estimators = all_estimators(type_filter='regressor')
+
+        onnx_exceptions = [
+            'CCA',
+            'DummyRegressor',
+            'KernelRidge',
+            'PLSCanonical',
+            'PLSRegression',
+            'TransformedTargetRegressor'
+        ]
+
+        missmatch_predictions = [
+            'GaussianProcessRegressor',
+            'KNeighborsRegressor',
+            'LinearRegression'
+        ]
+
+        for name, RegressorClass in regression_estimators:
+            if name not in onnx_exceptions and \
+               name not in missmatch_predictions and \
+               name != 'IsotonicRegression': # Because IsotonicRegression requires only 1 input feature
+
+                try:
+                    if name == 'RANSACRegressor':
+                        model = RegressorClass(n_samples=15) # n_samples must be less than len(train_df) and 15<23
+                    else:
+                        model = RegressorClass()
+                except Exception:
+                    pass
+                else:
+                    molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+                    sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
+                    input_name = sess.get_inputs()[0].name
+                    label_name = sess.get_outputs()[0].name
+
+                    new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+                               , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+                               , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+                               , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
+
+                    onnx_inp_feat = featurizer.featurize(new_mols)
+                    pred_onx = sess.run([label_name], {input_name: onnx_inp_feat.astype(np.float32)})
+                    molecular_model(new_mols)
+                    precision = 5
+                    try:
+                        assert ([round(item, precision) for item in molecular_model.prediction] == [round(float(item), precision) for item in pred_onx[0]])
+                    except TypeError:
+                        # Some models return the predictions as a 2d array size = (2, 1)
+                        # These models are GaussianProcessRegressor, KNeighborsRegressor, LinearRegression,
+                        # MultiTaskElasticNet, MultiTaskElasticNetCV, MultiTaskLasso, MultiTaskLassoCV,
+                        # RadiusNeighborsRegressor, Ridge and RidgeCV
+                        assert ([round(item[0], precision) for item in molecular_model.prediction] == [round(float(item), precision) for item in pred_onx[0]])
+
+    def test_ONE_regression_ONNX(self):
+        from sklearn.utils import all_estimators
+        import onnxruntime as rt
+
+        featurizer = RDKitDescriptors()
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
+
+        from sklearn.gaussian_process import GaussianProcessRegressor
+        from sklearn.linear_model import LinearRegression, GammaRegressor, ARDRegression
+        from sklearn.ensemble import RandomForestRegressor
+        from sklearn.neighbors import KNeighborsRegressor
+
+        model = ARDRegression()
+        molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
+        input_name = sess.get_inputs()[0].name
+        label_name = sess.get_outputs()[0].name
+
+        new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
+
+        onnx_inp_feat = featurizer.featurize(new_mols)
+        pred_onx = sess.run(None, {input_name: onnx_inp_feat.astype(np.float32)})
+        molecular_model(new_mols)
+        # print([round(float(item), 5) for item in pred_onx[0]])
+        #
+        # try:
+        #     print([round(item[0], 5) for item in molecular_model.prediction])
+        # except:
+        #     print([round(item, 5) for item in molecular_model.prediction])
+
+    def test_ALL_classification_ONNX(self):
+        from sklearn.utils import all_estimators
+        import onnxruntime as rt
+
+        featurizer = TopologicalFingerprint()
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+
+        classification_estimators = all_estimators(type_filter='classifier')
+
+        onnx_exceptions = [
+            'DummyClassifier',
+            'GaussianProcessClassifier', # Weird exception!
+            'LabelPropagation',
+            'LabelSpreading',
+            'NearestCentroid'
+        ]
+
+        missmatch_predictions = [
+            'KNeighborsClassifier',
+            'QuadraticDiscriminantAnalysis'
+        ]
+
+        for name, ClassifierClass in classification_estimators:
+            if name not in onnx_exceptions and \
+               name not in missmatch_predictions and \
+               name != 'ComplementNB' and name != 'CategoricalNB' and name!='AdaBoostClassifier': # Because IsotonicRegression requires only 1 input feature
+
+                try:
+                    # if name == 'RANSACRegressor':
+                    #     model = ClassifierClass(n_samples=15) # n_samples must be less than len(train_df) and 15<23
+                    # else:
+                    model = ClassifierClass()
+                except Exception:
+                    pass
+                else:
+                    molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+                    sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
+                    input_name = sess.get_inputs()[0].name
+
+                    new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+                               , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+                               , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+                               , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
+
+                    onnx_inp_feat = featurizer.featurize(new_mols)
+                    pred_onx = sess.run(None, {input_name: onnx_inp_feat.astype(np.float32)})
+                    molecular_model(new_mols)
+                    precision = 5
+                    assert (molecular_model.prediction == pred_onx[0]).all()
+                    # assert [round(item, precision) for item in [item[0] for item in molecular_model.probability]] == [round(float(item), precision) for item in [item[0] for item in pred_onx[1]]]
+
+    def test_ONE_classification_ONNX(self):
+        from sklearn.utils import all_estimators
+        import onnxruntime as rt
+
+        featurizer = TopologicalFingerprint()
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.ensemble import AdaBoostClassifier
+        from sklearn.dummy import DummyClassifier
+        from sklearn.neighbors import KNeighborsClassifier
+        from sklearn.gaussian_process import GaussianProcessClassifier
+        from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+
+        model = QuadraticDiscriminantAnalysis()
+        molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
+        input_name = sess.get_inputs()[0].name
+
+        new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
+
+        onnx_inp_feat = featurizer.featurize(new_mols)
+        pred_onx = sess.run(None, {input_name: onnx_inp_feat.astype(np.float32)})
+        molecular_model(new_mols)
+        assert len(pred_onx)==2
+        # print(molecular_model.prediction)
+        # print(pred_onx[0])
+        #
+        # print(molecular_model.probability)
+        # print(pred_onx[1])

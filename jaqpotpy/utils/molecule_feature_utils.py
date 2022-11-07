@@ -160,6 +160,51 @@ def construct_hydrogen_bonding_info(mol: RDKitMol) -> List[Tuple[int, str]]:
     hydrogen_bonding.append((f.GetAtomIds()[0], f.GetFamily()))
   return hydrogen_bonding
 
+def get_atom_num_radical_electrons(atom: RDKitAtom):
+    """Get the number of radical electrons for an atom.
+    Parameters
+    ----------
+    atom : rdkit.Chem.rdchem.Atom
+        RDKit atom instance.
+    Returns
+    -------
+    list
+        List containing one int only.
+    See Also
+    --------
+    atom_num_radical_electrons_one_hot
+    """
+    return [atom.GetNumRadicalElectrons()]
+
+
+def get_atom_is_aromatic(atom: RDKitAtom):
+    """Get whether the atom is aromatic.
+    Parameters
+    ----------
+    atom : rdkit.Chem.rdchem.Atom
+        RDKit atom instance.
+    Returns
+    -------
+    list
+        List containing one bool only.
+    See Also
+    --------
+    atom_is_aromatic_one_hot
+    """
+    return [atom.GetIsAromatic()]
+
+def get_atom_is_chiral_center(atom: RDKitAtom):
+    """Get whether the atom is chiral center
+    Parameters
+    ----------
+    atom : rdkit.Chem.rdchem.Atom
+        RDKit atom instance.
+    Returns
+    -------
+    list
+        List containing one bool only.
+    """
+    return [atom.HasProp('_ChiralityPossible')]
 
 def get_atom_hydrogen_bonding_one_hot(
     atom: RDKitAtom, hydrogen_bonding: List[Tuple[int, str]]) -> List[float]:
@@ -354,6 +399,29 @@ def get_atom_total_degree_one_hot(
   return one_hot_encode(atom.GetTotalDegree(), allowable_set,
                         include_unknown_set)
 
+
+def get_atom_degree_one_hot(
+    atom: RDKitAtom,
+    allowable_set: List[int] = DEFAULT_TOTAL_DEGREE_SET,
+    include_unknown_set: bool = True) -> List[float]:
+  """Get an one-hot feature of the degree which an atom has.
+  Parameters
+  ---------
+  atom: rdkit.Chem.rdchem.Atom
+    RDKit atom object
+  allowable_set: List[int]
+    The degree to consider. The default set is `[0, 1, ..., 5]`
+  include_unknown_set: bool, default True
+    If true, the index of all types not in `allowable_set` is `len(allowable_set)`.
+  Returns
+  -------
+  List[float]
+    A one-hot vector of the degree which an atom has.
+    If `include_unknown_set` is False, the length is `len(allowable_set)`.
+    If `include_unknown_set` is True, the length is `len(allowable_set) + 1`.
+  """
+  return one_hot_encode(atom.GetDegree(), allowable_set,
+                        include_unknown_set)
 
 def get_atom_implicit_valence_one_hot(
     atom: RDKitAtom,

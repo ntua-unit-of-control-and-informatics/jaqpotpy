@@ -70,7 +70,7 @@ class MolecularTorch(Model):
                 pass
             else:
                 self.evaluator.dataset.create()
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model_fitted = MolecularModel()
         self.model_nn.to(self.device)
         # self.train_loader = DataLoader(dataset=self.dataset.df, **self.trainDataLoaderParams)
@@ -190,7 +190,10 @@ class MolecularTorch(Model):
         model.doa = self.doa
         model.model = self.best_model
         model.optimizer = self.optimizer_local
-        model.X = self.dataset.X
+        if type(self.dataset.featurizer).__name__ == "Compose":
+            model.X = self.dataset._X
+        else:
+            model.X = self.dataset.X
         model.Y = self.dataset.y
         model.library = ['torch']
         model.version = [torch.__version__]

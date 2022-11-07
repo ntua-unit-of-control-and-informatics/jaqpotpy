@@ -10,7 +10,11 @@ long_description = (this_directory / "README.md").read_text()
 # twine upload dist/jaqpotpy-1.0.66-py3-none-any.whl
 # docker build -t euclia/jaqpotpy:1.0.3 --no-cache python setup.py bdist_wheel--build-arg tag=1.0.3 .
 
+<<<<<<< Updated upstream
 version = '1.0.67'
+=======
+version = '1.0.72'
+>>>>>>> Stashed changes
 
 
 setup(name='jaqpotpy',

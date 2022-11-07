@@ -647,7 +647,6 @@ class MaterialFeaturizer(Featurizer):
     return features
 
 
-
 def get_print_threshold() -> int:
   """Return the printing threshold for datasets.
   The print threshold is the number of elements from ids/tasks to
