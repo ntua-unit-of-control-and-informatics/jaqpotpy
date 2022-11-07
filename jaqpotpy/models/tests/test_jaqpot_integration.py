@@ -92,7 +92,7 @@ class TestJaqpotIntegration(unittest.TestCase):
 
     def test_classification_sklearn_predict(self):
         jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
-        jaqpot.request_key("jasonsoti1@gmail.com", "PX-E850E")
+        jaqpot.request_key("jasons.com", "")
         df = pd.DataFrame(self.mols, columns=['Smiles'])
         predictions = jaqpot.predict(df, 'PU0ZVenjQrkvs2i6L1Pm')
         print(predictions[0].head(), '\n\n\n\n\n', predictions[1])

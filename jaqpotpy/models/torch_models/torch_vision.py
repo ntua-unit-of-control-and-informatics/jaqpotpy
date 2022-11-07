@@ -3,6 +3,7 @@ from jaqpotpy.cfg import config
 import torch.nn.functional as F
 import math
 
+
 class CNN(torch.nn.Module):
     def __init__(self, layers: torch.nn.ModuleList, out_channels, input_size, dropout=0):
         super(CNN, self).__init__()
