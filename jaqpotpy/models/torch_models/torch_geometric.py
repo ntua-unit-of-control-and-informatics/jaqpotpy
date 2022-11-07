@@ -284,7 +284,7 @@ class GCN_t(torch.nn.Module):
         return x
 
 
-class GATEConv(MessagePassing):
+class GATEConv_V1(MessagePassing):
     def __init__(
         self,
         in_channels: int,
@@ -332,7 +332,7 @@ class GATEConv(MessagePassing):
         return self.lin2(x_j) * alpha.unsqueeze(-1)
 
 
-class AttentiveFP(torch.nn.Module):
+class AttentiveFP_V1(torch.nn.Module):
     r"""The Attentive FP model for molecular representation learning from the
     `"Pushing the Boundaries of Molecular Representation for Drug Discovery
     with the Graph Attention Mechanism"
@@ -361,7 +361,7 @@ class AttentiveFP(torch.nn.Module):
 
         self.lin1 = Linear(in_channels, hidden_channels)
 
-        conv = GATEConv(hidden_channels, hidden_channels, edge_dim, dropout)
+        conv = GATEConv_V1(hidden_channels, hidden_channels, edge_dim, dropout)
         gru = GRUCell(hidden_channels, hidden_channels)
         self.atom_convs = torch.nn.ModuleList([conv])
         self.atom_grus = torch.nn.ModuleList([gru])

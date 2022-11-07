@@ -24,7 +24,7 @@ from torch.nn import Linear
 from torch_geometric.nn import global_mean_pool
 from torch.autograd import Variable
 from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
-from jaqpotpy.models.torch_models.torch_geometric import AttentiveFP
+from jaqpotpy.models.torch_models import AttentiveFP_V1
 import jaqpotpy.utils.pytorch_utils as ptu
 from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
 from torch_geometric.loader import DataLoader
@@ -431,7 +431,7 @@ class TestModels(unittest.TestCase):
         val = Evaluator()
         val.dataset = dataset
         val.register_scoring_function('Accuracy score', accuracy_score)
-        model_nn = AttentiveFP(in_channels=39, hidden_channels=40, out_channels=1, edge_dim=10, num_layers=2, num_timesteps=2)
+        model_nn = AttentiveFP_V1(in_channels=39, hidden_channels=40, out_channels=2, edge_dim=10, num_layers=2, num_timesteps=2)
         optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
         m = MolecularTorchGeometric(dataset=dataset
@@ -440,13 +440,25 @@ class TestModels(unittest.TestCase):
                                     , epochs=100, optimizer=optimizer, criterion=criterion).fit()
         m.eval()
 
+        smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
+
+        molMod = m.create_molecular_model()
+
+        molMod(smiles_new)
+
+        print(molMod.prediction)
+
     def test_attentiveFP_GCN_model_regr(self):
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=AttentiveFPFeaturizer()) #ys_regr
         dataset.create()
         val = Evaluator()
         val.dataset = dataset
         val.register_scoring_function('r2', r2_score)
-        model_nn = AttentiveFP(in_channels=39, hidden_channels=40, out_channels=1, edge_dim=10, num_layers=2, num_timesteps=2)
+        model_nn = AttentiveFP_V1(in_channels=39, hidden_channels=40, out_channels=1, edge_dim=10, num_layers=2, num_timesteps=2)
         optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.L1Loss()
         m = MolecularTorchGeometric(dataset=dataset
