@@ -290,10 +290,15 @@ class MolecularModel(Model):
                 for g in data['MoleculeGraph'].to_list():
                     import torch
                     from torch_geometric.data import Data
-                    dat = Data(x=torch.FloatTensor(g.node_features)
-                               , edge_index=torch.LongTensor(g.edge_index)
-                               , edge_attr=torch.LongTensor(g.edge_features)
-                               , num_nodes=g.num_nodes)
+                    if g.edge_features:
+                        dat = Data(x=torch.FloatTensor(g.node_features)
+                                   , edge_index=torch.LongTensor(g.edge_index)
+                                   , edge_attr=torch.LongTensor(g.edge_features)
+                                   , num_nodes=g.num_nodes)
+                    else:
+                        dat = Data(x=torch.FloatTensor(g.node_features)
+                                   , edge_index=torch.LongTensor(g.edge_index)
+                                   , num_nodes=g.num_nodes)
                     graph_data_list.append(dat)
                 self._prediction = []
             if self._descriptors.__name__ == 'AttentiveFPFeaturizer':
