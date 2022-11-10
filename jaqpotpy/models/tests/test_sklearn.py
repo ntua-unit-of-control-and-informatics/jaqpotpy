@@ -155,28 +155,27 @@ class TestModels(unittest.TestCase):
                 except Exception:
                     pass
                 else:
+                    # print(name)
                     molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
-                    sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
-                    input_name = sess.get_inputs()[0].name
-                    label_name = sess.get_outputs()[0].name
 
                     new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
                                , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
                                , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
                                , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
 
-                    onnx_inp_feat = featurizer.featurize(new_mols)
-                    pred_onx = sess.run([label_name], {input_name: onnx_inp_feat.astype(np.float32)})
                     molecular_model(new_mols)
+                    skl_feat = featurizer.featurize_dataframe(new_mols)
+
+                    skl_preds = molecular_model.model.predict(skl_feat)
                     precision = 5
                     try:
-                        assert ([round(item, precision) for item in molecular_model.prediction] == [round(float(item), precision) for item in pred_onx[0]])
+                        assert ([round(item, precision) for item in molecular_model.prediction] == [round(float(item), precision) for item in skl_preds])
                     except TypeError:
                         # Some models return the predictions as a 2d array size = (2, 1)
                         # These models are GaussianProcessRegressor, KNeighborsRegressor, LinearRegression,
                         # MultiTaskElasticNet, MultiTaskElasticNetCV, MultiTaskLasso, MultiTaskLassoCV,
                         # RadiusNeighborsRegressor, Ridge and RidgeCV
-                        assert ([round(item[0], precision) for item in molecular_model.prediction] == [round(float(item), precision) for item in pred_onx[0]])
+                        assert ([round(item[0], precision) for item in molecular_model.prediction] == [round(float(item), precision) for item in skl_preds])
 
     def test_ONE_regression_ONNX(self):
         from sklearn.utils import all_estimators
@@ -205,7 +204,7 @@ class TestModels(unittest.TestCase):
         onnx_inp_feat = featurizer.featurize(new_mols)
         pred_onx = sess.run(None, {input_name: onnx_inp_feat.astype(np.float32)})
         molecular_model(new_mols)
-        # print([round(float(item), 5) for item in pred_onx[0]])
+        print([round(float(item), 5) for item in pred_onx[0]])
         #
         # try:
         #     print([round(item[0], 5) for item in molecular_model.prediction])
@@ -247,20 +246,19 @@ class TestModels(unittest.TestCase):
                 except Exception:
                     pass
                 else:
+                    # print(name)
                     molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
-                    sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
-                    input_name = sess.get_inputs()[0].name
 
                     new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
                                , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
                                , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
                                , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
 
-                    onnx_inp_feat = featurizer.featurize(new_mols)
-                    pred_onx = sess.run(None, {input_name: onnx_inp_feat.astype(np.float32)})
+                    skl_feat = featurizer.featurize_dataframe(new_mols)
+                    skl_preds = molecular_model.model.predict(skl_feat)
                     molecular_model(new_mols)
                     precision = 5
-                    assert (molecular_model.prediction == pred_onx[0]).all()
+                    assert (molecular_model.prediction == skl_preds).all()
                     # assert [round(item, precision) for item in [item[0] for item in molecular_model.probability]] == [round(float(item), precision) for item in [item[0] for item in pred_onx[1]]]
 
     def test_ONE_classification_ONNX(self):
@@ -269,7 +267,16 @@ class TestModels(unittest.TestCase):
 
         featurizer = TopologicalFingerprint()
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        val = Evaluator()
+        val.dataset = dataset
 
+        val.register_scoring_function('Accuracy', accuracy_score)
+        val.register_scoring_function('Binary f1', f1_score)
+        val.register_scoring_function('Roc Auc', roc_auc_score)
+        val.register_scoring_function("MCC", matthews_corrcoef)
+        val.register_scoring_function("Precision", precision_score)
+        val.register_scoring_function("Recall", recall_score)
+        val.register_scoring_function("Confusion Matrix", confusion_matrix)
         from sklearn.linear_model import LogisticRegression
         from sklearn.ensemble import AdaBoostClassifier
         from sklearn.dummy import DummyClassifier
@@ -278,9 +285,9 @@ class TestModels(unittest.TestCase):
         from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
         model = QuadraticDiscriminantAnalysis()
-        molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
-        sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
-        input_name = sess.get_inputs()[0].name
+        molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
+        # sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
+        # input_name = sess.get_inputs()[0].name
 
         new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
             , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
@@ -288,12 +295,14 @@ class TestModels(unittest.TestCase):
             , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
             , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
 
-        onnx_inp_feat = featurizer.featurize(new_mols)
-        pred_onx = sess.run(None, {input_name: onnx_inp_feat.astype(np.float32)})
+        # onnx_inp_feat = featurizer.featurize(new_mols)
+        # pred_onx = sess.run(None, {input_name: onnx_inp_feat.astype(np.float32)})
         molecular_model(new_mols)
-        assert len(pred_onx)==2
+        # assert len(pred_onx)==2
+        # print(pred_onx)
         # print(molecular_model.prediction)
         # print(pred_onx[0])
-        #
+        # print(pred_onx[0].flatten())
+
         # print(molecular_model.probability)
         # print(pred_onx[1])

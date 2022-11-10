@@ -9,17 +9,11 @@ from jaqpotpy.cfg import config
 import jaqpotpy
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
+import onnxruntime as rt
+import numpy as np
 
 
 class MolecularSKLearn(Model):
-
-    @property
-    def initial_types(self):
-        return self._initial_types
-
-    @initial_types.setter
-    def initial_types(self, item):
-        self._initial_types = item
 
     def __init__(self, dataset: MolecularDataset, doa: DOA, model: Any
                  , eval: Evaluator = None, preprocess: Preprocesses = None):
@@ -81,8 +75,6 @@ class MolecularSKLearn(Model):
 
         X = X.astype(float).copy()
         self.trained_model = self.model.fit(X, y)
-        if self.evaluator:
-            self.__eval__()
         if type(self.dataset.featurizer).__name__ == "RDKitDescriptors":
             model.descriptors = "RDKitDescriptors"
         else:
@@ -97,6 +89,9 @@ class MolecularSKLearn(Model):
         model.jaqpotpy_docker = config.jaqpotpy_docker
         model.external_feats = self.dataset.external
         model.inference_model = self.__convert_to_onnx__(X.shape[1])
+        self.inference_model = model.inference_model
+        if self.evaluator:
+            self.__eval__()
         return model
 
     def __convert_to_onnx__(self, num_columns):
@@ -113,9 +108,11 @@ class MolecularSKLearn(Model):
         for pre_key in pre_keys:
             pre_function = self.preprocess.fitted_classes.get(pre_key)
             X = pre_function.transform(X)
-        data = self.dataset.featurizer.featurize_dataframe(X)
-        data = data[self.dataset.X].to_numpy()
-        return self.model.predict(data)
+        data = self.dataset.featurizer.featurize(X)
+        sess = rt.InferenceSession(self.model.inference_model.SerializeToString())
+        input_name = sess.get_inputs()[0].name
+        pred_onx = sess.run(None, {input_name: data.astype(np.float32)})
+        return pred_onx[0].flatten()
 
     def __eval__(self):
         if self.evaluator.dataset.df is not None:
@@ -128,7 +125,12 @@ class MolecularSKLearn(Model):
             for pre_key in pre_keys:
                 pre_function = self.preprocess.fitted_classes.get(pre_key)
                 X = pre_function.transform(X)
-        preds = self.trained_model.predict(X)
+        sess = rt.InferenceSession(self.inference_model.SerializeToString())
+        input_name = sess.get_inputs()[0].name
+        X = np.array(X.astype(float).copy())
+        preds = sess.run(None, {input_name: X.astype(np.float32)})
+        preds = preds[0].flatten()
+        # preds = self.trained_model.predict(X)
         preds_t = []
         for p in preds:
             try:
@@ -214,8 +216,6 @@ class MaterialSKLearn(Model):
             model.preprocessor_y_names = preprocess_names_y
 
         self.trained_model = self.model.fit(X, y)
-        if self.evaluator:
-            self.__eval__()
         model.descriptors = self.dataset.featurizer
         model.doa = self.doa
         model.model = self.trained_model
@@ -225,6 +225,8 @@ class MaterialSKLearn(Model):
         model.version = [sklearn.__version__]
         model.jaqpotpy_version = jaqpotpy.__version__
         model.external_feats = self.dataset.external
+        if self.evaluator:
+            self.__eval__()
         return model
 
     def __predict__(self, X):

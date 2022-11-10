@@ -333,8 +333,13 @@ class MolecularModel(Model):
             except AttributeError as e:
                 pass
             if self.library == ['sklearn']:
-                preds = self.model.predict(data)
-                for p in preds:
+                import onnxruntime as rt
+                data = np.array(data.astype(float).copy())
+                sess = rt.InferenceSession(self.inference_model.SerializeToString())
+                input_name = sess.get_inputs()[0].name
+                preds = sess.run(None, {input_name: data.astype(np.float32)})
+                # preds = self.model.predict(data)
+                for p in preds[0].flatten():
                     try:
                         if self.preprocessing_y:
                             for f in self.preprocessing_y:
@@ -343,10 +348,10 @@ class MolecularModel(Model):
                         pass
                     self._prediction.append(p.tolist())
                 try:
-                    probs = self.model.predict_proba(data)
-                    self._probability = [prob.tolist() for prob in probs]
-
-                except AttributeError as e:
+                    # probs = self.model.predict_proba(data)
+                    self._probability = [[item[0], item[1]] for item in preds[1]]
+                    # self._probability = [prob.tolist() for prob in probs]
+                except IndexError as e:
                     pass
             if self.library == ['torch_geometric', 'torch']:
                 self.model.eval()
