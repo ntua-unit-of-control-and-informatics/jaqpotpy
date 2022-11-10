@@ -237,7 +237,7 @@ class TestModels(unittest.TestCase):
         for name, ClassifierClass in classification_estimators:
             if name not in onnx_exceptions and \
                name not in missmatch_predictions and \
-               name != 'ComplementNB' and name != 'CategoricalNB' and name!='AdaBoostClassifier': # Because IsotonicRegression requires only 1 input feature
+               name != 'ComplementNB' and name != 'CategoricalNB' and name!='AdaBoostClassifier':
 
                 try:
                     # if name == 'RANSACRegressor':
