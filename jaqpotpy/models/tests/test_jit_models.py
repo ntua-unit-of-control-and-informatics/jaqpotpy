@@ -43,7 +43,7 @@ class TestJitModels(unittest.TestCase):
         , 1.0002, 1.008, 1.1234, 0.25567, 0.5647, 0.99887, 1.9897, 1.989, 2.314, 0.112, 0.113, 0.54, 1.123, 1.0001
     ]
 
-    def test_torch_models(self):
+    def test_torch_models_jit_1(self):
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification')
         dataset.create()
         val = Evaluator()
@@ -57,9 +57,17 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=100, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+        from torch_geometric.data import Data
+        g = dataset.__getitem__(0)
+        dat = Data(x=torch.FloatTensor(g.node_features)
+                   , edge_index=torch.LongTensor(g.edge_index)
+                   , num_nodes=g.num_nodes)
+
+        mj = torch.jit.trace(model, dat)
         model = m.create_molecular_model()
-        m.eval()
+        # model.eval()
+
         for smil in self.mols:
             mol = Chem.MolFromSmiles(smil)
             model(mol)

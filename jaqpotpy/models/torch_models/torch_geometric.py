@@ -169,6 +169,46 @@ class SAGEConv_V1(torch.nn.Module):
         return x
 
 
+class GCN_V1_Jittable(torch.nn.Module):
+
+    def __init__(self, in_channels
+                 , num_layers, hidden_channels, out_channels
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+        super(GCN_V1_Jittable, self).__init__()
+        torch.manual_seed(config.global_seed)
+
+        self.act = activation
+        self.dropout = dropout
+        self.act_first = act_first
+        self.norm = norm
+
+        # self.jaqpotpy_version = config.version
+
+        self.layers = torch.nn.ModuleList([GCNConv(in_channels, hidden_channels).jittable()])
+        for i in range(num_layers - 1):
+            self.layers.append(GCNConv(hidden_channels, hidden_channels).jittable())
+        self.out = torch.nn.Linear(hidden_channels, out_channels)
+
+    def forward(self, x, edge_index):
+        for layer in self.layers:
+            x = layer(x, edge_index)
+            if self.norm and self.act_first is True:
+                x = self.act(x)
+                x = self.norm(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            elif self.norm and self.act_first is False:
+                x = self.norm(x)
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+            else:
+                x = self.act(x)
+                x = F.dropout(x, p=self.dropout, training=self.training)
+        x = global_mean_pool(x, data.batch)
+        x = self.out(x)
+        return x
+
+
+
 class GCN_V1_J(torch.nn.Module):
 
     def __init__(self, in_channels
