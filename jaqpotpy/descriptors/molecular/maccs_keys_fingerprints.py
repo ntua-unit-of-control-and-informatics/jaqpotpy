@@ -70,7 +70,10 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
     return np.asarray(array)
 
   def _get_column_names(self, **kwargs) -> list:
-      return ["MACCSFingerprint"]
+    descriptors = []
+    for i in range(167):
+      descriptors.append("f" + str(i))
+    return descriptors
 
   def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
     return self._featurize(datapoint, **kwargs)

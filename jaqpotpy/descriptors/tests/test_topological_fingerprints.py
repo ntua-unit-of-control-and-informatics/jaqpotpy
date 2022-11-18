@@ -2,7 +2,7 @@
 Test topological fingerprints.
 """
 import unittest
-from jaqpotpy.descriptors.molecular import TopologicalFingerprint
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MACCSKeysFingerprint
 
 
 class TestCircularFingerprint(unittest.TestCase):
@@ -19,6 +19,14 @@ class TestCircularFingerprint(unittest.TestCase):
     self.mol = Chem.MolFromSmiles(smiles)
     smiles = 'C/C=C/C=C/C(=O)N[C@@H](CC(=O)N[C@H](C(=O)[C@@H]1C(=O)NC(=O)[C@H]1C)C(C)C)c1ccccc1'
     self.mol2 = Chem.MolFromSmiles(smiles)
+
+  def test_maccs_fingerprints(self):
+    featurizer = MACCSKeysFingerprint()
+    smiles = [
+      'O=C(NO)c1cc(CS(=O)(=O)c2ccc(Cl)cc2)on1',
+      'C/C=C/C=C/C(=O)N[C@@H](CC(=O)N[C@H](C(=O)[C@@H]1C(=O)NC(=O)[C@H]1C)C(C)C)c1ccccc1'
+    ]
+    assert featurizer.featurize_dataframe(smiles).shape == (2, 167)
 
   def test_circular_fingerprints(self):
     """
