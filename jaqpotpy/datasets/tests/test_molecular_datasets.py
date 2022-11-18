@@ -150,8 +150,7 @@ class TestMolDatasets(unittest.TestCase):
     def test_smiles_tab_data_save(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=TopologicalFingerprint())
         dataset.create()
-        dataset.dataset_name = "Smiles_fingerprints"
-        dataset.save()
+
         assert dataset.featurizer_name == 'TopologicalFingerprint'
         assert dataset.smiles_strings[
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
