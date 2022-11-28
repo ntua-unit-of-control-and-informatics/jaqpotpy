@@ -47,6 +47,11 @@ class TestMolDatasets(unittest.TestCase):
         , 1.0002, 1.008, 1.1234, 0.25567, 0.5647, 0.99887, 1.9897, 1.989, 2.314, 0.112, 0.113, 0.54, 1.123, 1.0001
     ]
 
+    def test_streaming_dataet(self):
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys
+                                , featurizer=MolGraphConvFeaturizer(use_edges=True), streaming=True)
+        item = dataset.__getitem__(10)
+
     def test_smiles_tab_data_with_x(self):
         # featurizer = TopologicalFingerprint()
         featurizer = MordredDescriptors(ignore_3D=False)

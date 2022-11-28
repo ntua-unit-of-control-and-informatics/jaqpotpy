@@ -6,7 +6,7 @@ from jaqpotpy.descriptors.molecular.pub_chem_fingerprint import PubChemFingerpri
 from jaqpotpy.descriptors.molecular.topological_fingerprints import TopologicalFingerprint
 # try:
 from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeaturizer, PagtnMolGraphFeaturizer,\
-        TorchMolGraphConvFeaturizer
+        TorchMolGraphConvFeaturizer, AttentiveFPFeaturizer
 from jaqpotpy.descriptors.graph.graph_data import GraphData, BatchGraphData
 from jaqpotpy.descriptors.graph.graph_features import GraphConvConstants
 from jaqpotpy.descriptors.graph.mol_graphs import *

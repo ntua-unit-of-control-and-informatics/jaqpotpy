@@ -31,7 +31,7 @@ from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import torch_geometric
-from jaqpotpy.models.torch_models import GCN as GCN_J
+from jaqpotpy.models.torch_models import GCN_V1 as GCN_J
 from jaqpotpy import Jaqpot
 from sklearn import svm
 from rdkit import Chem
@@ -461,7 +461,7 @@ class TestModels(unittest.TestCase):
         val = Evaluator()
         val.dataset = dataset
         val.register_scoring_function('r2', r2_score)
-        model_nn = AttentiveFP_V1(in_channels=39, hidden_channels=40, out_channels=1, edge_dim=10, num_layers=2, num_timesteps=2)
+        model_nn = SAGEConv_V1(in_channels=39, hidden_channels=40, out_channels=1, edge_dim=10, num_layers=2, num_timesteps=2)
         optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.L1Loss()
         m = MolecularTorchGeometric(dataset=dataset

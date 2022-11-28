@@ -10,11 +10,8 @@ long_description = (this_directory / "README.md").read_text()
 # twine upload dist/jaqpotpy-1.0.66-py3-none-any.whl
 # docker build -t euclia/jaqpotpy:1.0.3 --no-cache python setup.py bdist_wheel--build-arg tag=1.0.3 .
 
-<<<<<<< Updated upstream
-version = '1.0.67'
-=======
-version = '1.0.72'
->>>>>>> Stashed changes
+
+version = '1.0.74'
 
 
 setup(name='jaqpotpy',
@@ -29,7 +26,8 @@ setup(name='jaqpotpy',
       author_email='pantelispanka@gmail.com',
       license='MIT License',
       packages=find_packages(exclude=["*.tests"]),
-      package_data={find_packages(exclude=["*.tests"]): ['data/*.gz']},
+      package_data={'jaqpotpy': ['data/*.gz']},
+      # package_data={find_packages(exclude=["*.tests"]): ['data/*.gz']},
       # packages=['jaqpotpy', 'jaqpotpy.api', 'jaqpotpy.mappers', 'jaqpotpy.utils'
       #           , 'jaqpotpy.entities', 'jaqpotpy.dto', 'jaqpotpy.doa'
       #           , 'jaqpotpy.helpers', 'jaqpotpy.colorlog', 'jaqpotpy.models', 'jaqpotpy.cfg'

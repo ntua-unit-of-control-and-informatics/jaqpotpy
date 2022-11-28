@@ -9,14 +9,11 @@ except ModuleNotFoundError:
     Lattice = Structure = None
     pass
 import pandas as pd
-
+import os
 import numpy as np
 import base64
 import torch.nn.functional as nnf
-# import dill
 import pickle
-# import dill as pickle
-# import cloudpickle as pickle
 # from jaqpotpy import Jaqpot
 
 
@@ -286,7 +283,6 @@ class MolecularModel(Model):
                 data = pd.concat([data, ext], axis=1)
             graph_data_list = []
             if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
-                # graph_data = data['MoleculeGraph']
                 for g in data['MoleculeGraph'].to_list():
                     import torch
                     from torch_geometric.data import Data
@@ -302,7 +298,6 @@ class MolecularModel(Model):
                     graph_data_list.append(dat)
                 self._prediction = []
             if self._descriptors.__name__ == 'AttentiveFPFeaturizer':
-                # graph_data = data['MoleculeGraph']
                 for g in data.values:
                     import torch
                     from torch_geometric.data import Data
@@ -359,13 +354,24 @@ class MolecularModel(Model):
                 except IndexError as e:
                     pass
             if self.library == ['torch_geometric', 'torch']:
-                self.model.eval()
-                # self.model.no_grad()
-                # torch.no_grad()
+                # self.model.eval()
+
+                with open("./model_temp.pt", "wb") as f:
+                    f.write(self.model)
+                f.close()
+                loaded_model = torch.jit.load("./model_temp.pt")
+                os.remove("./model_temp.pt")
                 from torch_geometric.loader import DataLoader
                 data_loader = DataLoader(graph_data_list, batch_size=len(graph_data_list))
                 for g in data_loader:
-                    pred = self.model(g)
+                    x = g.x
+                    edge_index = g.edge_index
+                    edge_attributes = g.edge_attr
+                    if edge_attributes is not None:
+                        pred = loaded_model(x, edge_index, edge_attributes, g.batch)
+                    else:
+                        pred = loaded_model(x, edge_index, g.batch)
+                    # pred = self.model(g)
                     if self.modeling_task == "classification":
                         for p in pred:
                             prob = nnf.softmax(p, dim=0)
@@ -386,11 +392,16 @@ class MolecularModel(Model):
                         for p in preds:
                             self._prediction.append(p.tolist())
             if self.library == ['torch']:
-                self.model.eval()
+                # self.model.eval()
+                with open("./model_temp.pt", "wb") as f:
+                    f.write(self.model)
+                f.close()
+                loaded_model = torch.jit.load("./model_temp.pt")
+                os.remove("./model_temp.pt")
                 from torch.utils.data import DataLoader
                 data_loader = DataLoader(data, batch_size=len(data))
                 for g in data_loader:
-                    pred = self.model(g.float())
+                    pred = loaded_model(g.float())
                     if self.modeling_task == "classification":
                         for p in pred:
                             prob = nnf.softmax(p, dim=0)

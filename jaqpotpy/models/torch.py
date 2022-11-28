@@ -188,12 +188,13 @@ class MolecularTorch(Model):
         else:
             model.descriptors = self.dataset.featurizer
         model.doa = self.doa
-        model.model = self.best_model
+        model_s = torch.jit.script(self.best_model)
+        model_save = torch.jit.save(model_s, "local_temp.pt")
+        with open("./local_temp.pt", "rb") as f:
+            model.model = f.read()
+        f.close()
+        os.remove("./local_temp.pt")
         model.optimizer = self.optimizer_local
-        if type(self.dataset.featurizer).__name__ == "Compose":
-            model.X = self.dataset._X
-        else:
-            model.X = self.dataset.X
         model.Y = self.dataset.y
         model.library = ['torch']
         model.version = [torch.__version__]
@@ -346,7 +347,7 @@ class MaterialTorch(Model):
         else:
             print("No eval functions passed")
 
-    def create_molecular_model(self):
+    def create_material_model(self):
         model = MaterialModel()
         model.descriptors = self.dataset.featurizer
         model.doa = self.doa

@@ -1,7 +1,7 @@
-from jaqpotpy.models import MolecularTorchGeometric, GCN
-from jaqpotpy.models.torch_models import GCN_V1_J
+from jaqpotpy.models import MolecularTorchGeometric, GCN_V1, AttentiveFPModel_V1, AttentiveFP
 from jaqpotpy.datasets import TorchGraphDataset
 from jaqpotpy.models import Evaluator
+from jaqpotpy.descriptors.molecular import AttentiveFPFeaturizer
 from sklearn.metrics import max_error, mean_absolute_error, r2_score
 import torch
 from rdkit import Chem
@@ -51,24 +51,40 @@ class TestJitModels(unittest.TestCase):
         val.register_scoring_function('Max Error', max_error)
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
-        model = GCN_V1_J(30, 3, 40, 2)
+        model = GCN_V1(30, 3, 40, 2)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+        criterion = torch.nn.CrossEntropyLoss()
+        m = MolecularTorchGeometric(dataset=dataset
+                                    , model_nn=model, eval=val
+                                    , train_batch=4, test_batch=4
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        for smil in self.mols:
+            mol = Chem.MolFromSmiles(smil)
+            model(mol)
+            model.prediction
+
+    def test_torch_models_jit_Attentive(self):
+        featurizer = AttentiveFPFeaturizer()
+        g_data = featurizer.featurize(self.mols[0])
+        dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
+                                    , featurizer=featurizer)
+        dataset.create()
+        val = Evaluator()
+        val.dataset = dataset
+        val.register_scoring_function('Max Error', max_error)
+        val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
+        val.register_scoring_function('R 2 score', r2_score)
+        # model = AttentiveFPModel_V1(in_channels=39, hidden_channels=40, out_channels=2, edge_dim=10, num_layers=2,
+        #                             num_timesteps=2)
+        model = AttentiveFP(in_channels=39, hidden_channels=40, out_channels=2, edge_dim=10, num_layers=2,
+                                    num_timesteps=2).jittable()
+
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
                                     , epochs=80, optimizer=optimizer, criterion=criterion).fit()
-        from torch_geometric.data import Data
-        g = dataset.__getitem__(0)
-        dat = Data(x=torch.FloatTensor(g.node_features)
-                   , edge_index=torch.LongTensor(g.edge_index)
-                   , num_nodes=g.num_nodes)
 
-        mj = torch.jit.trace(model, dat)
-        model = m.create_molecular_model()
-        # model.eval()
-
-        for smil in self.mols:
-            mol = Chem.MolFromSmiles(smil)
-            model(mol)
-            model.prediction
+        mj = torch.jit.script(model)

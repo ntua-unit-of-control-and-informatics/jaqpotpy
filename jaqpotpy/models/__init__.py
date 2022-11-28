@@ -5,7 +5,7 @@ from jaqpotpy.models.sklearn import MolecularSKLearn, MaterialSKLearn
 try:
     from jaqpotpy.models.torch_geometric import MolecularTorchGeometric
     from jaqpotpy.models.torch import MolecularTorch
-    from jaqpotpy.models.torch_models.torch_geometric import GCN
+    from jaqpotpy.models.torch_models.torch_geometric import *
     from jaqpotpy.models.torch import MolecularTorch, MaterialTorch
 except ModuleNotFoundError:
     MolecularTorchGeometric = MolecularTorch = GCN = MolecularTorch = MaterialTorch = None

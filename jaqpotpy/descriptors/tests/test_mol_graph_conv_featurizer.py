@@ -91,7 +91,6 @@ class TestPagtnMolGraphConvFeaturizer(unittest.TestCase):
     featurizer = PagtnMolGraphFeaturizer(max_length=5)
     graph_feat = featurizer.featurize(smiles)
     assert len(graph_feat) == 2
-
     # assert "C1=CC=CN=C1"
     assert graph_feat[0].num_nodes == 6
     assert graph_feat[0].num_node_features == 94
