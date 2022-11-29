@@ -379,6 +379,13 @@ class PagtnMolGraphFeaturizer(MolecularFeaturizer):
     def __getitem__(self):
         return self
 
+    def _get_column_names(self, **kwargs) -> list:
+        """
+        Return the column names
+        """
+        names = ['PagtnMolGraphFeaturizer']
+        return names
+
     def _pagtn_atom_featurizer(self, atom: RDKitAtom) -> np.ndarray:
         """Calculate Atom features from RDKit atom object.
     Parameters
@@ -511,6 +518,31 @@ class PagtnMolGraphFeaturizer(MolecularFeaturizer):
         edge_index, edge_features = self._pagtn_edge_featurizer(datapoint)
         graph = GraphData(node_features, edge_index, edge_features)
         return graph
+
+    def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> GraphData:
+        """Calculate molecule graph features from RDKit mol object.
+    Parameters
+    ----------
+    datapoint: rdkit.Chem.rdchem.Mol
+      RDKit mol object.
+    Returns
+    -------
+    graph: GraphData
+      A molecule graph with some features.
+    """
+        if 'mol' in kwargs:
+            datapoint = kwargs.get("mol")
+            raise DeprecationWarning(
+                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
+            )
+
+        node_features = np.asarray(
+            [self._pagtn_atom_featurizer(atom) for atom in datapoint.GetAtoms()],
+            dtype=np.float)
+        edge_index, edge_features = self._pagtn_edge_featurizer(datapoint)
+        graph = GraphData(node_features, edge_index, edge_features)
+        return graph
+
 
 
 class TorchMolGraphConvFeaturizer(MolecularFeaturizer):

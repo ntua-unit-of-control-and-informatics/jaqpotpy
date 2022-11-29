@@ -14,6 +14,7 @@ import numpy as np
 import base64
 import torch.nn.functional as nnf
 import pickle
+import torch
 # from jaqpotpy import Jaqpot
 
 
@@ -284,9 +285,22 @@ class MolecularModel(Model):
             graph_data_list = []
             if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
                 for g in data['MoleculeGraph'].to_list():
-                    import torch
                     from torch_geometric.data import Data
-                    if g.edge_features:
+                    if g.edge_features is not None:
+                        dat = Data(x=torch.FloatTensor(g.node_features)
+                                   , edge_index=torch.LongTensor(g.edge_index)
+                                   , edge_attr=torch.LongTensor(g.edge_features)
+                                   , num_nodes=g.num_nodes)
+                    else:
+                        dat = Data(x=torch.FloatTensor(g.node_features)
+                                   , edge_index=torch.LongTensor(g.edge_index)
+                                   , num_nodes=g.num_nodes)
+                    graph_data_list.append(dat)
+                self._prediction = []
+            if self._descriptors.__name__ == 'PagtnMolGraphFeaturizer':
+                for g in data['PagtnMolGraphFeaturizer'].to_list():
+                    from torch_geometric.data import Data
+                    if g.edge_features is not None:
                         dat = Data(x=torch.FloatTensor(g.node_features)
                                    , edge_index=torch.LongTensor(g.edge_index)
                                    , edge_attr=torch.LongTensor(g.edge_features)
@@ -299,7 +313,6 @@ class MolecularModel(Model):
                 self._prediction = []
             if self._descriptors.__name__ == 'AttentiveFPFeaturizer':
                 for g in data.values:
-                    import torch
                     from torch_geometric.data import Data
                     dat = Data(x=torch.FloatTensor(g[0].node_features)
                                 , edge_index=torch.LongTensor(g[0].edge_index)
@@ -346,7 +359,7 @@ class MolecularModel(Model):
                                 p = f.inverse_transform(p.reshape(1, -1))
                     except AttributeError as e:
                         pass
-                    self._prediction.append(p.tolist())
+                    self._prediction.append([p.tolist()])
                 try:
                     # probs = self.model.predict_proba(data)
                     self._probability = [[item[0], item[1]] for item in preds[1]]

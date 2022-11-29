@@ -165,7 +165,33 @@ class TorchGraphDataset(MolecularDataset, Dataset):
         return self.df
 
     def __getitem__(self, idx):
-        return self.df[idx]
+        if self.streaming is False:
+            return self.df[idx]
+        else:
+            tempdf = []
+            import torch
+            from torch_geometric.data import Data
+            smile = self.smiles[idx]
+            descriptors = self.featurizer.featurize(smile)
+            for i, g in enumerate(descriptors):
+                if self._task == 'regression':
+                    dato = Data(x=torch.FloatTensor(g.node_features)
+                                , edge_index=torch.LongTensor(g.edge_index)
+                                , edge_attr= torch.LongTensor(g.edge_features) if g.edge_features is not None else g.edge_features
+                                , num_nodes=g.num_nodes, y=torch.Tensor([self.y[i]]))
+                    tempdf.append(dato)
+                elif self._task == 'classification':
+                    dato = Data(x=torch.FloatTensor(g.node_features)
+                                , edge_index=torch.LongTensor(g.edge_index)
+                                , edge_attr=torch.LongTensor(g.edge_features) if g.edge_features is not None else g.edge_features
+                                , num_nodes=g.num_nodes, y=torch.LongTensor([self.y[i]]))
+                    tempdf.append(dato)
+                else:
+                    raise Exception("Please set task (classification / regression).")
+            self._smiles_strings = self.smiles
+            self.X = ['TorchMolGraph']
+            self.y = ['Y']
+            return tempdf[idx]
 
     def __len__(self):
         return len(self.df)

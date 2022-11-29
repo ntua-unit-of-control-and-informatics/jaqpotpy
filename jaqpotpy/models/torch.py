@@ -195,6 +195,7 @@ class MolecularTorch(Model):
         f.close()
         os.remove("./local_temp.pt")
         model.optimizer = self.optimizer_local
+        model.X = self.dataset.X
         model.Y = self.dataset.y
         model.library = ['torch']
         model.version = [torch.__version__]

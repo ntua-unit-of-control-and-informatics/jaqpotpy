@@ -56,7 +56,7 @@ class GhebConvV1(torch.nn.Module):
 
     def __init__(self, in_channels
                  , num_layers, hidden_channels, out_channels, k=10
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0,  norm: torch.nn.Module = None, act_first=True):
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0.0,  norm: torch.nn.Module = None, act_first=True):
         super(GhebConvV1, self).__init__()
         torch.manual_seed(config.global_seed)
 
@@ -94,7 +94,7 @@ class SAGEConv_V1(torch.nn.Module):
 
     def __init__(self, in_channels
                  , num_layers, hidden_channels, out_channels
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0.0, norm: torch.nn.Module = None, act_first=True):
         super(SAGEConv_V1, self).__init__()
         torch.manual_seed(config.global_seed)
 
@@ -131,7 +131,7 @@ class GraphConv_V1(torch.nn.Module):
 
     def __init__(self, in_channels
                  , num_layers, hidden_channels, out_channels
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0.0, norm: torch.nn.Module = None, act_first=True):
         super(GraphConv_V1, self).__init__()
         torch.manual_seed(config.global_seed)
 
@@ -168,7 +168,7 @@ class GatedGraphConv_V1(torch.nn.Module):
 
     def __init__(self, in_channels
                  , num_layers, hidden_channels, out_channels
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0.0, norm: torch.nn.Module = None, act_first=True):
         super(GatedGraphConv_V1, self).__init__()
         torch.manual_seed(config.global_seed)
 
@@ -205,7 +205,7 @@ class ResGatedGraphConv_V1(torch.nn.Module):
 
     def __init__(self, in_channels
                  , num_layers, hidden_channels, out_channels
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0.0, norm: torch.nn.Module = None, act_first=True):
         super(ResGatedGraphConv_V1, self).__init__()
         torch.manual_seed(config.global_seed)
 
@@ -242,7 +242,7 @@ class GATConv_V1(torch.nn.Module):
 
     def __init__(self, in_channels
                  , num_layers, hidden_channels, out_channels
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0.0, norm: torch.nn.Module = None, act_first=True):
         super(GATConv_V1, self).__init__()
         torch.manual_seed(config.global_seed)
 
@@ -549,7 +549,7 @@ class GINConv_V1(torch.nn.Module):
 
     def __init__(self, in_channels
                  , num_layers, hidden_channels, out_channels
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0.0, norm: torch.nn.Module = None, act_first=True):
         super(GINConv_V1, self).__init__()
         torch.manual_seed(config.global_seed)
 

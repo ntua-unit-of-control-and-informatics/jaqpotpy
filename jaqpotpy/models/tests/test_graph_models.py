@@ -61,7 +61,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_1(self):
         featurizer = MolGraphConvFeaturizer(use_chirality=True)
@@ -80,7 +82,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_2(self):
         featurizer = MolGraphConvFeaturizer(use_partial_charge=True)
@@ -99,7 +103,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_3(self):
         featurizer = PagtnMolGraphFeaturizer()
@@ -113,13 +119,15 @@ class TestJitModels(unittest.TestCase):
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
         model = AttentiveFP(in_channels=94, hidden_channels=40, out_channels=2, edge_dim=42, num_layers=2,
-                                    num_timesteps=2)
+                                    num_timesteps=2).jittable()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_4(self):
         featurizer = AttentiveFPFeaturizer()
@@ -133,13 +141,15 @@ class TestJitModels(unittest.TestCase):
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
         model = AttentiveFP(in_channels=39, hidden_channels=40, out_channels=2, edge_dim=10, num_layers=2,
-                                    num_timesteps=2)
+                                    num_timesteps=2).jittable()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_5(self):
         featurizer = MolGraphConvFeaturizer()
@@ -157,7 +167,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_6(self):
         featurizer = MolGraphConvFeaturizer(use_edges=True)
@@ -176,7 +188,9 @@ class TestJitModels(unittest.TestCase):
             m = MolecularTorchGeometric(dataset=dataset
                                         , model_nn=model, eval=val
                                         , train_batch=4, test_batch=4
-                                        , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                        , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+            model = m.create_molecular_model()
+            model(self.mols[0])
         except TypeError as e:
             print(e)
             pass
@@ -192,14 +206,16 @@ class TestJitModels(unittest.TestCase):
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
         model = AttentiveFP(in_channels=30, hidden_channels=40, out_channels=2, edge_dim=11, num_layers=2,
-                                    num_timesteps=2)
+                                    num_timesteps=2).jittable()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
         try:
             m = MolecularTorchGeometric(dataset=dataset
                                         , model_nn=model, eval=val
                                         , train_batch=4, test_batch=4
-                                        , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                        , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+            model = m.create_molecular_model()
+            model(self.mols[0])
         except TypeError as e:
             print(e)
             pass
@@ -215,13 +231,15 @@ class TestJitModels(unittest.TestCase):
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
         model = AttentiveFP(in_channels=30, hidden_channels=40, out_channels=1, edge_dim=11, num_layers=2,
-                                    num_timesteps=2)
+                                    num_timesteps=2).jittable()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.L1Loss()
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_9(self):
         featurizer = MolGraphConvFeaturizer(use_edges=True, use_chirality=True)
@@ -234,14 +252,16 @@ class TestJitModels(unittest.TestCase):
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
         model = AttentiveFP(in_channels=32, hidden_channels=40, out_channels=2, edge_dim=11, num_layers=2,
-                                    num_timesteps=2)
+                                    num_timesteps=2).jittable()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
         try:
             m = MolecularTorchGeometric(dataset=dataset
                                         , model_nn=model, eval=val
                                         , train_batch=4, test_batch=4
-                                        , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                        , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+            model = m.create_molecular_model()
+            model(self.mols[0])
         except TypeError as e:
             print(e)
             pass
@@ -262,7 +282,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_11(self):
         featurizer = MolGraphConvFeaturizer()
@@ -280,7 +302,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_12(self):
         featurizer = MolGraphConvFeaturizer()
@@ -298,7 +322,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
 
     def test_torch_graph_models_13(self):
@@ -317,7 +343,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_14(self):
         featurizer = MolGraphConvFeaturizer()
@@ -335,7 +363,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_15(self):
         featurizer = MolGraphConvFeaturizer()
@@ -353,7 +383,9 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
     def test_torch_graph_models_16(self):
         featurizer = MolGraphConvFeaturizer()
@@ -371,5 +403,7 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=80, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        model = m.create_molecular_model()
+        model(self.mols[0])
 
