@@ -13,24 +13,24 @@ class Action(Generic[T_cov]):
     """
 
     def __init__(self, action, action_meta):
-        self.action = action
-        self.action_meta = action_meta
+        self._action = action
+        self._action_meta = action_meta
 
     @property
     def action(self):
-        return self.action
+        return self._action
 
     @action.setter
     def action(self, value):
-        self.action = value
+        self._action = value
 
     @property
     def action_meta(self):
-        return self.action_meta
+        return self._action_meta
 
     @action_meta.setter
     def action_meta(self, value):
-        self.action_meta = value
+        self._action_meta = value
 
 
 class Actions(Generic[T_cov]):
@@ -44,7 +44,6 @@ class Actions(Generic[T_cov]):
     @actions.setter
     def actions(self, value: Iterable[Action]):
         self.actions = value
-
 
 
 class Space(Generic[T_cov]):

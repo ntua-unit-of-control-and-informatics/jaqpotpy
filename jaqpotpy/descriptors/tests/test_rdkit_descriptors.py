@@ -68,11 +68,6 @@ class TestRDKitDescriptors(unittest.TestCase):
     descriptors = featurizer.featurize_dataframe(['CC(=O)OC1=CC=CC=C1C(=O)O','CC(=O)OC1=CC=CC=C1C(=O)O'])
     assert descriptors.shape == (2, 208)
 
-  def test_load(self):
-    featurizer = RDKitDescriptors().unpick("./test.picl")
-    descriptors = featurizer.featurize_dataframe('CC(=O)OC1=CC=CC=C1C(=O)O')
-    assert descriptors.shape == (1, 208)
-
 
   def test_rdkit_descriptors_with_use_fragment(self):
     """

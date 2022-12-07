@@ -11,6 +11,7 @@ class TestImageDatasets(unittest.TestCase):
 
     png_path = "C:/Users/jason/centralenv/Jaqpot_Tests/faces/faces"
 
+    @unittest.skip('Local data')
     def test_png(self):
         featurizer = transforms.Compose([
             transforms.ToTensor(),

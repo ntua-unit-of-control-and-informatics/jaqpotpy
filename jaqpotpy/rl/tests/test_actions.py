@@ -19,23 +19,17 @@ class TestActions(unittest.TestCase):
         # mw.AddBond(8, 9, Chem.BondType.TRIPLE)
         im = Chem.Draw.MolToImage(mw)
         ax = plt.axes([0, 0, 1, 1], frameon=True)
-        ax.imshow(im)
-        plt.show()
+        # ax.imshow(im)
+        # plt.show()
 
     def test_actions(self):
         acts = []
         action1 = Action(0, "Add atom C")
-        # action1.action = 0
-        # action1.action_meta = "Add atom C"
         action2 = Action(1, "Add atom O")
         action2.action = 1
         action2.action_meta = "Add atom O"
-        action3 = Action
-        action3.action = 2
-        action3.action_meta = "Add bond"
-        action4 = Action
-        action4.action = 3
-        action4.action_meta = "Remove bond"
+        action3 = Action(2, "Add bond")
+        action4 = Action(3, "remove bond")
         acts.append(action1) # = [action1, action2, action3, action4]
         acts.append(action2)
         acts.append(action3)

@@ -16,7 +16,7 @@ version = '1.0.74'
 
 setup(name='jaqpotpy',
       # version='2.0.5-beta0',
-      version='1.0.67',
+      version='1.0.74',
       description='Standardizing molecular modeling',
       long_description=long_description,
       long_description_content_type='text/markdown',

@@ -31,7 +31,6 @@ from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import torch_geometric
-from jaqpotpy.models.torch_models import GCN as GCN_J
 from jaqpotpy import Jaqpot
 from sklearn import svm
 from rdkit import Chem
@@ -86,12 +85,12 @@ class TestJaqpotIntegration(unittest.TestCase):
         val.dataset = dataset
 
         model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=SVC(probability=True), eval=val).fit()
-        jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+        jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
         jaqpot.request_key("jasonsoti1@gmail.com", "PX-E850E")
         model.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model", model_title="Test SKLearn")
 
     def test_classification_sklearn_predict(self):
-        jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+        jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
         jaqpot.request_key("jasons.com", "")
         df = pd.DataFrame(self.mols, columns=['Smiles'])
         predictions = jaqpot.predict(df, 'PU0ZVenjQrkvs2i6L1Pm')
