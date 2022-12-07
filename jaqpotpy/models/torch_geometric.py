@@ -357,7 +357,7 @@ class MolecularTorchGeometric(Model):
                     pred = out.argmax(dim=1)
                 correct += int((pred == data.y).sum())
                 truth = np.append(truth, data.y.numpy())
-                preds = np.append(preds, pred.numpy())
+                preds = np.append(preds, pred.detach().numpy())
             # return out, pred.numpy(), correct / len(dataloader.dataset)
             for eval_key in eval_keys:
                 eval_function = self.evaluator.functions.get(eval_key)

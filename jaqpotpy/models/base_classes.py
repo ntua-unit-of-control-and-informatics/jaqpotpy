@@ -440,6 +440,11 @@ class MolecularModel(Model):
                             except AttributeError as e:
                                 pass
                             self._prediction.append([p.tolist()])
+
+            # Convert self._descriptors again to string in case of RDKitDescriptors in order to make model picklable
+            # (RDKitDescriptors have lambda functions which are not picklable)
+            if type(self._descriptors).__name__ == "RDKitDescriptors":
+                self._descriptors = "RDKitDescriptors"
             # else:
             #     preds = self.model.predict(data)
             # for p in preds:

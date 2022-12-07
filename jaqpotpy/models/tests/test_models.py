@@ -31,7 +31,12 @@ from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import torch_geometric
-from jaqpotpy.models.torch_models import GCN_V1 as GCN_J
+from jaqpotpy.models.torch_models import (
+    GCN_V1 as GCN_J,
+    Feedforward_V1 as Feedforward_J,
+    RNN_V1 as RNN_J,
+    LSTM_V1 as LSTM_J
+)
 from jaqpotpy import Jaqpot
 from sklearn import svm
 from rdkit import Chem
@@ -121,7 +126,7 @@ class TestModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model_nn, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=250, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=50, optimizer=optimizer, criterion=criterion).fit()
         m.eval()
         molMod = m.create_molecular_model()
         molMod.model_name = "test_regression"
@@ -148,6 +153,61 @@ class TestModels(unittest.TestCase):
             print(molMod.prediction)
 
 
+    def test_model_class_Feedforward(self):
+        # featurizer = MordredDescriptors(ignore_3D=True)
+        featurizer = RDKitDescriptors()
+        path = '../../test_data/data.csv'
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=featurizer, task="classification")
+        # dataset = MolecularTabularDataset(path=path
+        #                                   , y_cols=['standard_value']
+        #                                   , smiles_col='canonical_smiles'
+        #                                   , featurizer=featurizer
+        #                                   , task='regression'
+        #                                   )
+        dataset.create()
+        # dataset.y = 'activity'
+        val = Evaluator()
+        val.dataset = dataset
+        val.register_scoring_function('Max Error', max_error)
+        val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
+        val.register_scoring_function('R 2 score', r2_score)
+        model_nn = Feedforward_J(input_size=208, hidden_layers=3528, num_layers=2, out_size=2)
+        optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
+        criterion = torch.nn.CrossEntropyLoss()
+
+        m = MolecularTorch(dataset=dataset
+                           , model_nn=model_nn, eval=val
+                           , train_batch=4, test_batch=4
+                           , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        m.eval()
+        molMod = m.create_molecular_model()
+        molMod.model_name = "test_regression"
+        molMod.save()
+        try:
+            molMod.load("./test_regression.jmodel")
+        except FileNotFoundError:
+            print("A File is missing in load model")
+        # print(molMod.library)
+        # print(molMod.version)
+        # print(molMod.jaqpotpy_version)
+        molMod(['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+                   , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+                   , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+                   , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+                   , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'])
+        # print(molMod.Y)
+        # print(molMod.prediction)
+        smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'
+            , 'CC(C)(C)c1ccc(N(C(=O)c2ccco2)[C@H](C(=O)NCCc2cccc(F)c2)c2cccnc2)cc1'
+            , 'OC[C@@H](O1)[C@@H](O)[C@H](O)[C@@H]2[C@@H]1c3c(O)c(OC)c(O)cc3C(=O)O2'
+            , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1']
+
+        for smile in smiles_new:
+            molMod(smile)
     def test_rnn_regression(self):
         cid = create_char_to_idx(self.mols)
         max_len = 250
@@ -208,6 +268,77 @@ class TestModels(unittest.TestCase):
                            , model_nn=model_rnn, eval=val
                            , train_batch=4, test_batch=4
                            , epochs=50, optimizer=optimizer, criterion=criterion).fit()
+        model.eval()
+        molMod = model.create_molecular_model()
+        smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
+
+        for smile in smiles_new:
+            molMod(smile)
+
+            print(molMod.prediction)
+
+    def test_RNN_J_regression(self):
+
+        feat = OneHotSequence(max_length=80)
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, featurizer=feat, task='regression')
+        dataset.create()
+
+        val = Evaluator()
+        val.dataset = dataset
+        val.register_scoring_function('Max Error', max_error)
+        val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
+        val.register_scoring_function('R 2 score', r2_score)
+
+        model_rnn = RNN_J(input_size=35, num_layers=1, hidden_layers=80, out_size=1)
+        # model_rnn = LSTM(2800, 100, 1)
+        optimizer = torch.optim.Adam(model_rnn.parameters(), lr=0.01, weight_decay=5e-4)
+
+        criterion = torch.nn.L1Loss()
+        model = MolecularTorch(dataset=dataset
+                           , model_nn=model_rnn, eval=val
+                           , train_batch=4, test_batch=4
+                           , epochs=10, optimizer=optimizer, criterion=criterion).fit()
+        model.eval()
+        molMod = model.create_molecular_model()
+        smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'
+            , 'CC(C)(C)c1ccc(N(C(=O)c2ccco2)[C@H](C(=O)NCCc2cccc(F)c2)c2cccnc2)cc1'
+            , 'OC[C@@H](O1)[C@@H](O)[C@H](O)[C@@H]2[C@@H]1c3c(O)c(OC)c(O)cc3C(=O)O2'
+            , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1']
+
+        molMod(smiles_new)
+        print(molMod.prediction)
+
+        for smile in smiles_new:
+            molMod(smile)
+            print(molMod.prediction)
+            print(molMod.probability)
+
+    def test_RNN_J_class(self):
+        feat = OneHotSequence(max_length=80)
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
+        dataset.create()
+
+        val = Evaluator()
+        val.dataset = dataset
+        val.register_scoring_function('Max Error', max_error)
+        val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
+        val.register_scoring_function('R 2 score', r2_score)
+
+        model_rnn = RNN_J(input_size=35, num_layers=2, hidden_layers=80, out_size=2)
+        optimizer = torch.optim.Adam(model_rnn.parameters(), lr=0.01, weight_decay=5e-4)
+        criterion = torch.nn.CrossEntropyLoss()
+        model = MolecularTorch(dataset=dataset
+                           , model_nn=model_rnn, eval=val
+                           , train_batch=4, test_batch=4
+                           , epochs=10, optimizer=optimizer, criterion=criterion).fit()
         model.eval()
         molMod = model.create_molecular_model()
         smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
@@ -354,7 +485,7 @@ class RNNModel(torch.nn.Module):
 
     def forward(self, x):
         # Initialize hidden state with zeros
-        h0 = Variable(torch.zeros(self.layer_dim, x.size(0), self.hidden_dim))
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim)
 
         # One time step
         out, hn = self.rnn(x, h0)
@@ -408,13 +539,13 @@ class GCN_REGR(torch.nn.Module):
     def __init__(self):
         super(GCN_REGR, self).__init__()
         torch.manual_seed(12345)
-        self.conv1 = GCNConv(30, 40)
-        self.conv2 = GCNConv(40, 40)
-        self.conv3 = GCNConv(40, 40)
-        self.lin = Linear(40, 1)
+        self.conv1 = GCNConv(30, 40).jittable()
+        self.conv2 = GCNConv(40, 40).jittable()
+        self.conv3 = GCNConv(40, 40).jittable()
+        self.lin = Linear(40, 1)#.jittable()
 
-    def forward(self, data):
-        x, edge_index = data.x, data.edge_index
+    def forward(self, x, edge_index, batch):
+        # x, edge_index = data.x, data.edge_index
         x = self.conv1(x, edge_index)
         x = F.relu(x)
         x = F.dropout(x, training=self.training)
@@ -422,7 +553,7 @@ class GCN_REGR(torch.nn.Module):
         x = F.relu(x)
         x = self.conv3(x, edge_index)
         x = F.relu(x)
-        x = global_mean_pool(x, data.batch)
+        x = global_mean_pool(x, batch)
         x = F.dropout(x, p=0.5, training=self.training)
         x = self.lin(x)
         return x
