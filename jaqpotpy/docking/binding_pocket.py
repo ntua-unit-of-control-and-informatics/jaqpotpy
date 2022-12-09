@@ -107,7 +107,7 @@ class ConvexHullPocketFinder(BindingPocketFinder):
     List[CoordinateBox]
       List of binding pockets on protein. Each pocket is a `CoordinateBox`
     """
-    coords, _ = load_molecule(protein_file)
+    coords, _ = load_molecule(protein_file, add_hydrogens=False, calc_charges=False)
     return get_face_boxes(coords, self.pad)
 
   def find_pockets(self, macromolecule_file: str) -> List[CoordinateBox]:

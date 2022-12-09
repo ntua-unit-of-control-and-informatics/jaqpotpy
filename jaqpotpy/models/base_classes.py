@@ -9,13 +9,12 @@ except ModuleNotFoundError:
     Lattice = Structure = None
     pass
 import pandas as pd
-import os
+
 import numpy as np
 import base64
 import torch.nn.functional as nnf
 import pickle
-import torch
-# from jaqpotpy import Jaqpot
+import os
 
 
 class Model(object):
@@ -41,7 +40,6 @@ class Model(object):
     _jaqpotpy_version = None
     _jaqpotpy_docker = None
     _optimizer = None
-    _inference_model = None
 
     @property
     def smiles(self):
@@ -134,14 +132,6 @@ class Model(object):
     @external_feats.setter
     def external_feats(self, value):
         self._external_feats = value
-
-    @property
-    def inference_model(self):
-        return self._inference_model
-
-    @inference_model.setter
-    def inference_model(self, value):
-        self._inference_model = value
 
     @property
     def model(self):
@@ -264,6 +254,7 @@ class MolecularModel(Model):
             model: MolecularModel = pickle.loads(raw_model)
             return model
         except Exception as e:
+
             pass
 
     def infer(self):
@@ -284,40 +275,14 @@ class MolecularModel(Model):
                 data = pd.concat([data, ext], axis=1)
             graph_data_list = []
             if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
+                # graph_data = data['MoleculeGraph']
                 for g in data['MoleculeGraph'].to_list():
+                    import torch
                     from torch_geometric.data import Data
-                    if g.edge_features is not None:
-                        dat = Data(x=torch.FloatTensor(g.node_features)
-                                   , edge_index=torch.LongTensor(g.edge_index)
-                                   , edge_attr=torch.LongTensor(g.edge_features)
-                                   , num_nodes=g.num_nodes)
-                    else:
-                        dat = Data(x=torch.FloatTensor(g.node_features)
-                                   , edge_index=torch.LongTensor(g.edge_index)
-                                   , num_nodes=g.num_nodes)
-                    graph_data_list.append(dat)
-                self._prediction = []
-            if self._descriptors.__name__ == 'PagtnMolGraphFeaturizer':
-                for g in data['PagtnMolGraphFeaturizer'].to_list():
-                    from torch_geometric.data import Data
-                    if g.edge_features is not None:
-                        dat = Data(x=torch.FloatTensor(g.node_features)
-                                   , edge_index=torch.LongTensor(g.edge_index)
-                                   , edge_attr=torch.LongTensor(g.edge_features)
-                                   , num_nodes=g.num_nodes)
-                    else:
-                        dat = Data(x=torch.FloatTensor(g.node_features)
-                                   , edge_index=torch.LongTensor(g.edge_index)
-                                   , num_nodes=g.num_nodes)
-                    graph_data_list.append(dat)
-                self._prediction = []
-            if self._descriptors.__name__ == 'AttentiveFPFeaturizer':
-                for g in data.values:
-                    from torch_geometric.data import Data
-                    dat = Data(x=torch.FloatTensor(g[0].node_features)
-                                , edge_index=torch.LongTensor(g[0].edge_index)
-                                , edge_attr=torch.LongTensor(g[0].edge_features)
-                                , num_nodes=g[0].num_nodes)
+                    dat = Data(x=torch.FloatTensor(g.node_features)
+                               , edge_index=torch.LongTensor(g.edge_index)
+                               , edge_attr=g.edge_features
+                               , num_nodes=g.num_nodes)
                     graph_data_list.append(dat)
                 self._prediction = []
             if self._X == 'ImagePath':
@@ -346,45 +311,41 @@ class MolecularModel(Model):
             except AttributeError as e:
                 pass
             if self.library == ['sklearn']:
-                import onnxruntime as rt
-                data = np.array(data.astype(float).copy())
-                sess = rt.InferenceSession(self.inference_model.SerializeToString())
-                input_name = sess.get_inputs()[0].name
-                preds = sess.run(None, {input_name: data.astype(np.float32)})
-                # preds = self.model.predict(data)
-                for p in preds[0].flatten():
+                preds = self.model.predict(data)
+                for p in preds:
                     try:
                         if self.preprocessing_y:
                             for f in self.preprocessing_y:
                                 p = f.inverse_transform(p.reshape(1, -1))
                     except AttributeError as e:
                         pass
-                    self._prediction.append([p.tolist()])
+                    self._prediction.append(p.tolist())
                 try:
-                    # probs = self.model.predict_proba(data)
-                    self._probability = [[item[0], item[1]] for item in preds[1]]
-                    # self._probability = [prob.tolist() for prob in probs]
-                except IndexError as e:
+                    probs = self.model.predict_proba(data)
+                    self._probability = [prob.tolist() for prob in probs]
+
+                except AttributeError as e:
                     pass
             if self.library == ['torch_geometric', 'torch']:
-                # self.model.eval()
-
-                with open("./model_temp.pt", "wb") as f:
-                    f.write(self.model)
-                f.close()
-                loaded_model = torch.jit.load("./model_temp.pt")
-                os.remove("./model_temp.pt")
+                try:
+                    self.model.eval()
+                except AttributeError as e:
+                    with open("./temp_model.pt", "wb") as f:
+                        f.write(self.model)
+                        f.close()
+                    self.model = torch.jit.load("./temp_model.pt")
+                    os.remove("./temp_model.pt")
+                    self.model.eval()
                 from torch_geometric.loader import DataLoader
                 data_loader = DataLoader(graph_data_list, batch_size=len(graph_data_list))
-                for g in data_loader:
-                    x = g.x
-                    edge_index = g.edge_index
-                    edge_attributes = g.edge_attr
+                for data in data_loader:
+                    x = data.x
+                    edge_index = data.edge_index
+                    edge_attributes = data.edge_attr
                     if edge_attributes is not None:
-                        pred = loaded_model(x, edge_index, edge_attributes, g.batch)
+                        pred = self.model(x, edge_index, edge_attributes, data.batch)
                     else:
-                        pred = loaded_model(x, edge_index, g.batch)
-                    # pred = self.model(g)
+                        pred = self.model(x, edge_index, data.batch)
                     if self.modeling_task == "classification":
                         for p in pred:
                             prob = nnf.softmax(p, dim=0)
@@ -405,16 +366,25 @@ class MolecularModel(Model):
                         for p in preds:
                             self._prediction.append(p.tolist())
             if self.library == ['torch']:
-                # self.model.eval()
-                with open("./model_temp.pt", "wb") as f:
-                    f.write(self.model)
-                f.close()
-                loaded_model = torch.jit.load("./model_temp.pt")
-                os.remove("./model_temp.pt")
+                try:
+                    self.model.eval()
+                except AttributeError as e:
+                    with open("./temp_model.pt", "wb") as f:
+                        f.write(self.model)
+                        f.close()
+                    self.model = torch.jit.load("./temp_model.pt")
+                    os.remove("./temp_model.pt")
+                    self.model.eval()
                 from torch.utils.data import DataLoader
                 data_loader = DataLoader(data, batch_size=len(data))
-                for g in data_loader:
-                    pred = loaded_model(g.float())
+                for data in data_loader:
+                    x = data.x
+                    edge_index = data.edge_index
+                    edge_attributes = data.edge_attr
+                    if edge_attributes is not None:
+                        pred = self.model(x, edge_index, edge_attributes, data.batch)
+                    else:
+                        pred = self.model(x, edge_index, data.batch)
                     if self.modeling_task == "classification":
                         for p in pred:
                             prob = nnf.softmax(p, dim=0)
@@ -440,11 +410,6 @@ class MolecularModel(Model):
                             except AttributeError as e:
                                 pass
                             self._prediction.append([p.tolist()])
-
-            # Convert self._descriptors again to string in case of RDKitDescriptors in order to make model picklable
-            # (RDKitDescriptors have lambda functions which are not picklable)
-            if type(self._descriptors).__name__ == "RDKitDescriptors":
-                self._descriptors = "RDKitDescriptors"
             # else:
             #     preds = self.model.predict(data)
             # for p in preds:

@@ -208,8 +208,8 @@ def load_complex(molecular_complex: OneOrMany[str],
 
 
 def load_molecule(molecule_file,
-                  add_hydrogens=True,
-                  calc_charges=True,
+                  add_hydrogens=False,
+                  calc_charges=False,
                   sanitize=True,
                   is_protein=False):
   """Converts molecule file to (xyz-coords, obmol object)
