@@ -414,6 +414,8 @@ class MolecularModel(Model):
             #     preds = self.model.predict(data)
             # for p in preds:
             #     self._prediction.append([p[0]])
+            if type(self._descriptors).__name__ == "RDKitDescriptors":
+                self._descriptors = "RDKitDescriptors"
             return self
         else:
             pass

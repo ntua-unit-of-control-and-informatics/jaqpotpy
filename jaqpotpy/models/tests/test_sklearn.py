@@ -9,6 +9,7 @@ from jaqpotpy.datasets import SmilesDataset, MolecularTabularDataset
 from jaqpotpy.models import MolecularSKLearn
 from jaqpotpy.doa.doa import Leverage
 from sklearn.svm import SVC, SVR
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 from jaqpotpy.models import Evaluator
@@ -60,17 +61,24 @@ class TestModels(unittest.TestCase):
         , 1.0002, 1.008, 1.1234, 0.25567, 0.5647, 0.99887, 1.9897, 1.989, 2.314, 0.112, 0.113, 0.54, 1.123, 1.0001
     ]
 
-    def test_SVR(self):
+    def test_RF(self):
         featurizer = RDKitDescriptors()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
-        model = SVR()
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        model = RandomForestClassifier(n_estimators=5, random_state=42)
         molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
-        assert molecularModel_t1.doa.IN == [True]
+        molecularModel_t1.Y = 'DILI'
+        from jaqpotpy import Jaqpot
+        jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+        jaqpot.request_key('jasonsoti1@gmail.com', 'PX-E850E')
+        molecularModel_t1.deploy_on_jaqpot(jaqpot=jaqpot,
+                                     description="Test AD Model",
+                                     model_title="TEST Model")
+        # assert molecularModel_t1.doa.IN == [True]
 
     def test_predict_proba(self):
         featurizer = RDKitDescriptors()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='regression', featurizer=featurizer)
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
         model = SVC(probability=True)
         molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')

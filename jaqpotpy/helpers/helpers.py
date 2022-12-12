@@ -91,7 +91,7 @@ def create_molecular_req(model, title, description, type):
         dependendFeatures = model.Y
     else:
         dependendFeatures = [model.Y]
-    dependendFeatures.extend(['DOA', 'Probabilities'])
+    dependendFeatures.extend(['AD', 'Probabilities'])
     pnb.setRawModel(model)
     pnb.setJaqpotPyVersion(jaqpotpy.__version__)
     pnb.setJaqpotPyDockerVersion(config.jaqpotpy_docker)
@@ -102,6 +102,7 @@ def create_molecular_req(model, title, description, type):
     pnb.setDescription(description)
     pnb.setTitle(title)
     pnb.setType(type)
+    pnb.setRuntime('jaqpotpy')
     director = PretrainedNeedsDirector()
     return director.construct(pnb)
 
