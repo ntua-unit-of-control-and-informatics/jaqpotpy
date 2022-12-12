@@ -68,13 +68,13 @@ class TestModels(unittest.TestCase):
         molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.Y = 'DILI'
-        from jaqpotpy import Jaqpot
-        jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
-        jaqpot.request_key('jasonsoti1@gmail.com', 'PX-E850E')
-        molecularModel_t1.deploy_on_jaqpot(jaqpot=jaqpot,
-                                     description="Test AD Model",
-                                     model_title="TEST Model")
-        # assert molecularModel_t1.doa.IN == [True]
+        # from jaqpotpy import Jaqpot
+        # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
+        # jaqpot.request_key('***************', '*****')
+        # molecularModel_t1.deploy_on_jaqpot(jaqpot=jaqpot,
+        #                              description="Test AD Model",
+        #                              model_title="TEST Model")
+        assert molecularModel_t1.doa.IN == [True]
 
     def test_predict_proba(self):
         featurizer = RDKitDescriptors()
