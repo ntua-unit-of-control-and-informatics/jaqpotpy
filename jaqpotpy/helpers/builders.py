@@ -241,6 +241,7 @@ class PretrainedNeedsDirector:
         pretrained_needs.libraries = self._builder.getLibraries()
         pretrained_needs.versions = self._builder.getVersions()
         pretrained_needs.type = self._builder.getType()
+        pretrained_needs.runtime = self._builder.get_runtime()
         return pretrained_needs
 
 
