@@ -4,7 +4,7 @@ Tests for Jaqpotpy Models.
 import unittest
 import asyncio
 import warnings
-from jaqpotpy.descriptors.molecular import TopologicalFingerprint, RDKitDescriptors, MordredDescriptors
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
 from jaqpotpy.datasets import SmilesDataset, MolecularTabularDataset
 from jaqpotpy.models import MolecularSKLearn
 from jaqpotpy.doa.doa import Leverage
@@ -62,15 +62,15 @@ class TestModels(unittest.TestCase):
     ]
 
     def test_RF(self):
-        featurizer = RDKitDescriptors()
+        featurizer = MACCSKeysFingerprint()
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
         model = RandomForestClassifier(n_estimators=5, random_state=42)
         molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.Y = 'DILI'
         # from jaqpotpy import Jaqpot
-        # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
-        # jaqpot.request_key('***************', '*****')
+        # jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/") #"http://localhost:8080/jaqpot/services/"
+        # jaqpot.request_key('****************', '********')
         # molecularModel_t1.deploy_on_jaqpot(jaqpot=jaqpot,
         #                              description="Test AD Model",
         #                              model_title="TEST Model")
@@ -103,6 +103,7 @@ class TestModels(unittest.TestCase):
         molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         print(molecularModel_t1.probability)
+
 
     # # This test runs in local due to import of data and not in mem data.
     # def test_SVM(self):
