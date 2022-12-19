@@ -77,6 +77,8 @@ class MolecularSKLearn(Model):
         self.trained_model = self.model.fit(X, y)
         if type(self.dataset.featurizer).__name__ == "RDKitDescriptors":
             model.descriptors = "RDKitDescriptors"
+        elif type(self.dataset.featurizer).__name__ == "MACCSKeysFingerprint":
+            model.descriptors = "MACCSKeysFingerprint"
         else:
             model.descriptors = self.dataset.featurizer
         model.doa = self.doa

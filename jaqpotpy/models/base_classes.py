@@ -1,5 +1,5 @@
 from jaqpotpy.doa.doa import DOA
-from jaqpotpy.descriptors.molecular import RDKitDescriptors
+from jaqpotpy.descriptors.molecular import RDKitDescriptors, MACCSKeysFingerprint
 from jaqpotpy.descriptors.base_classes import Featurizer #MolecularFeaturizer, MaterialFeaturizer,
 from typing import Any, Iterable, Union, Dict
 from jaqpotpy.datasets.image_datasets import default_loader
@@ -264,6 +264,9 @@ class MolecularModel(Model):
             if self._descriptors == "RDKitDescriptors":
                 self._descriptors = RDKitDescriptors()
                 data = self._descriptors.featurize_dataframe(self._smiles)
+            elif self._descriptors == "MACCSKeysFingerprint":
+                self._descriptors = MACCSKeysFingerprint()
+                data = self._descriptors.featurize_dataframe(self._smiles)
             elif type(self._descriptors).__name__ == "Compose":
                 self._descriptors.__name__ = "Compose"
                 data = [self._descriptors(default_loader(image)) for image in self._smiles]
@@ -416,6 +419,8 @@ class MolecularModel(Model):
             #     self._prediction.append([p[0]])
             if type(self._descriptors).__name__ == "RDKitDescriptors":
                 self._descriptors = "RDKitDescriptors"
+            if type(self._descriptors).__name__ == "MACCSKeysFingerprint":
+                self._descriptors = "MACCSKeysFingerprint"
             return self
         else:
             pass
