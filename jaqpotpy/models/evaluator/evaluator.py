@@ -25,6 +25,7 @@ class Evaluator:
 
 class GenerativeEvaluator:
     functions: Dict[str, Callable] = {}
+    eval_functions: Dict[str, Callable] = {}
     dataset: Iterable[str]
 
     def __init__(self):
@@ -35,18 +36,26 @@ class GenerativeEvaluator:
         cls.functions[function_name] = function
 
     @classmethod
+    def register_evaluation_function(cls, function_name, function):
+        cls.eval_functions[function_name] = function
+
+    @classmethod
     def register_dataset(cls, dataset: Iterable[str]):
-        dataset = dataset
+        cls.dataset = dataset
+        # dataset = dataset
 
     def __getitem__(self):
         return self
 
     def get_reward(self, mols):
-        rr = np.empty(1)
-        rr.fill(1.)
+        rr = 1.
         for key in self.functions.keys():
-            f = self.functions.get(key)
-            rr *= f(mols)
+            try:
+                f = self.functions.get(key)
+                rr *= f(mols)
+            except TypeError as e:
+                f = self.functions.get(key)
+                rr *= f(mols, self.dataset)
         return rr.reshape(-1, 1)
 
 

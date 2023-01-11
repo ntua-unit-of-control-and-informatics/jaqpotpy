@@ -1,6 +1,7 @@
 import unittest
 from jaqpotpy.datasets.molecular_datasets import SmilesDataset
 from jaqpotpy.descriptors.molecular import MolGanFeaturizer, GraphMatrix
+from jaqpotpy.models.evaluator import GenerativeEvaluator
 from jaqpotpy.models.generative.models import GanMoleculeGenerator\
     , GanMoleculeDiscriminator, MoleculeDiscriminator
 from jaqpotpy.models.generative.gan import GanSolver
@@ -9,8 +10,14 @@ import torch.nn.functional as F
 from rdkit import Chem
 import torch
 
+from jaqpotpy.models.generative.molecular_metrics import diversity_scores \
+    , drugcandidate_scores, synthetic_accessibility_score_scores, valid_mean \
+    , quantitative_estimation_druglikeness_scores, novel_score \
+    , water_octanol_partition_coefficient_scores, unique_total_score, valid_scores
+
 
 class TestModels(unittest.TestCase):
+
 
     def setUp(self):
         from tdc.generation import MolGen
@@ -23,6 +30,50 @@ class TestModels(unittest.TestCase):
         except FileNotFoundError:
             self.data = MolGen(name='ZINC')
             self.smiles = self.data.__dict__['smiles_lst']
+
+        self.mols_test = [
+            "CC(C)(C)c1ccc2occ(CC(=O)Nc3ccccc3F)c2c1",
+            "C[C@@H]1CC(Nc2cncc(-c3nncn3C)c2)C[C@@H](C)C1",
+            "N#Cc1ccc(-c2ccc(O[C@@H](C(=O)N3CCCC3)c3ccccc3)cc2)cc1",
+            "CCOC(=O)[C@@H]1CCCN(C(=O)c2nc(-c3ccc(C)cc3)n3c2CCCCC3)C1",
+            "N#CC1=C(SCC(=O)Nc2cccc(Cl)c2)N=C([O-])[C@H](C#N)C12CCCCC2",
+            "CC[NH+](CC)[C@](C)(CC)[C@H](O)c1cscc1Br",
+            "COc1ccc(C(=O)N(C)[C@@H](C)C/C(N)=N/O)cc1O",
+            "O=C(Nc1nc[nH]n1)c1cccnc1Nc1cccc(F)c1",
+            "Cc1c(/C=N/c2cc(Br)ccn2)c(O)n2c(nc3ccccc32)c1C#N",
+            "C[C@@H]1CN(C(=O)c2cc(Br)cn2C)CC[C@H]1[NH3+]",
+            "CCOc1ccc(OCC)c([C@H]2C(C#N)=C(N)N(c3ccccc3C(F)(F)F)C3=C2C(=O)CCC3)c1",
+            "Cc1ccc2nc(S[C@H](C)C(=O)NC3CCC(C)CC3)n(C)c(=O)c2c1",
+            "O=C(N1CCc2c(F)ccc(F)c2C1)C1(O)Cc2ccccc2C1",
+            "Cc1ccccc1C(=O)N1CCC2(CC1)C[C@H](c1ccccc1)C(=O)N2C",
+            "CCCc1cc(NC(=O)CN2C(=O)NC3(CCC(C)CC3)C2=O)n(C)n1",
+            "CC(C)Cc1nc(SCC(=O)NC[C@@H]2CCCO2)c2c(=O)n(C)c(=O)n(C)c2n1",
+            "Cc1ccc(CNC(=O)c2ccccc2NC(=O)[C@@H]2CC(=O)N(c3ccc(C)cc3)C2)cc1",
+            "CCCCC(=O)NC(=S)Nc1ccccc1C(=O)N1CCOCC1",
+            "Cc1c(NC(=O)CSc2nc3sc4c(c3c(=O)[nH]2)CCCC4)c(=O)n(-c2ccccc2)n1C",
+            "CC(C)[C@@H](Oc1cccc(Cl)c1)C(=O)N1CCC(n2cccn2)CC1",
+            "CCN(CC)C(=O)C[C@@H](C)[NH2+][C@H](C)c1cccc(F)c1F",
+            "Cc1nc2c(c(Nc3ncc(C)s3)n1)CCN(C(=O)CCc1ccccc1)C2",
+            "O=C(NCCNC(=O)N1C[C@H]2CC=CC[C@@H]2C1)c1cccnc1",
+            "O=c1n(CCO)c2ccccc2n1CCO",
+            "COC(=O)Cc1csc(NC(=O)Cc2coc3cc(C)ccc23)n1",
+            "Cc1ccc(N2CC[C@@H](NS(=O)(=O)c3ccccc3C)C2=O)cc1C",
+            "CC[C@H](C)C[C@@H](C)NC(=O)N1CCN(CC(=O)NC2CC2)CC1",
+            "CC(=O)Nc1c2n(c3ccccc13)C[C@](C)(C(=O)NC1CCCCC1)N(C1CCCCC1)C2=O",
+            "N#Cc1ccncc1NC[C@@H]1C[C@@]12CCc1ccccc12",
+            "Cc1cccn2c(=O)c(C(=O)NC[C@H]3CCO[C@@H]3C(C)C)cnc12",
+            "CNC(=O)c1ccc(/C=C/C(=O)Nc2c(C)cc(C)nc2Cl)cc1",
+            "CC1=C(CNC(=O)c2cc(-c3ccccc3)nc3c2CNN3C(C)C)CN=N1",
+            "C[C@@H](NC(=O)COC(=O)/C=C/c1ccc(Cl)cc1)c1ccccc1",
+            "CCc1ccc(N(Cc2ccc(C)s2)C(=O)c2ccc(=O)n(C)n2)cc1",
+            "CCOC(=O)c1nnc2ccccc2c1N1CC[C@@H]([NH+](CC)CC)C1",
+            "Cc1ccc(C#N)cc1S(=O)(=O)NCc1ccnc(OC(C)(C)C)c1",
+            "O=C(O[C@H]1CCOC1)C1(c2ccc(Cl)c(Cl)c2)CCC1",
+            "CCC[NH2+][C@@H]1COC[C@H]1C(=O)NCc1cscc1C",
+            "O=C(NCc1nccc2ccccc12)c1ccc[nH]c1=O",
+            "CC(=O)c1ccc(S(=O)(=O)N2CCCC[C@H]2C)cc1",
+        ]
+
 
     def test_smiles_parser(self):
         for s in self.smiles[0:10080]:
@@ -195,7 +246,6 @@ class TestModels(unittest.TestCase):
 
             edges_hard, nodes_hard = torch.max(out1, -1)[1], torch.max(out2, -1)[1]
 
-
             out_d = discriminator(out1, None, out2)
             print(out_d)
             p = self.postprocess((out1, out2), "hard_gumbel")
@@ -263,3 +313,213 @@ class TestModels(unittest.TestCase):
                            , discriminator=discriminator, dataset=self.dataset
                            , la=1, g_lr=0.1, d_lr=0.1, batch_size=42, val_at=20, epochs=30)
         solver.fit()
+
+    def test_with_evaluator(self):
+        mols = Chem.SDMolSupplier('./data/gdb9.sdf')
+        max_atoms = 9
+        atoms_encoded = 5
+        featurizer = MolGanFeaturizer(max_atom_count=9, kekulize=False, sanitize=True, atom_labels=[0, 6, 7, 8, 9])
+        smiles_gen = []
+        from jaqpotpy.cfg import config
+        config.verbose = False
+        i = 0
+        for m in mols:
+            i += 1
+            if i > 30000:
+                break
+            try:
+                smile = Chem.MolToSmiles(m)
+                feat = featurizer.featurize(smile)
+                i += 1
+                if feat[0]:
+                    smiles_gen.append(smile)
+            except Exception as e:
+                continue
+        config.verbose = True
+        smiles_train = []
+        for st in smiles_gen[1000:10000]:
+            smiles_train.append(st)
+        smiles_test = []
+        for stt in smiles_gen[12000:13969]:
+            smiles_test.append(stt)
+
+        self.dataset = SmilesDataset(smiles=smiles_train, task="generation", featurizer=featurizer)
+        self.dataset.create()
+        generator = GanMoleculeGenerator([128, 256, 524], 8, max_atoms, 5, atoms_encoded, 0.5)
+        discriminator = MoleculeDiscriminator([[128, 64], 128, [128, 64]], atoms_encoded, 5 - 1, 0.5)
+
+        gen_eval = GenerativeEvaluator()
+        # gen_eval.register_scoring_function("Valid all", valid_mean)
+        gen_eval.register_scoring_function("Valid", valid_scores)
+        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
+        # gen_eval.register_scoring_function("BBB", bbb_function)
+        # gen_eval.register_scoring_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        # gen_eval.register_scoring_function("Novel", novel_score)
+        # gen_eval.register_scoring_function("Unique", unique_total_score)
+        # gen_eval.register_scoring_function("Diversity", diversity_scores)
+        # gen_eval.register_scoring_function("Water Oct", water_octanol_partition_coefficient_scores)
+        # gen_eval.register_scoring_function("Drugcandidate Scores", drugcandidate_scores)
+
+        # gen_eval.register_scoring_function("Novel all", novel_score)
+        gen_eval.register_dataset(smiles_test)
+        # gen_eval.register_evaluation_function("BBB Mean", bbb_mean_function)
+        gen_eval.register_evaluation_function("Valid all", valid_mean)
+        gen_eval.register_evaluation_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        gen_eval.register_evaluation_function("Novel", novel_score)
+        gen_eval.register_evaluation_function("Unique", unique_total_score)
+        gen_eval.register_evaluation_function("Water Oct", water_octanol_partition_coefficient_scores)
+        gen_eval.register_evaluation_function("Drugcandidate Scores", drugcandidate_scores)
+
+        solver = GanSolver(generator=generator
+                           , discriminator=discriminator, evaluator=gen_eval, dataset=self.dataset
+                           , la=0, g_lr=0.0001, d_lr=0.0001, lamda_gradient_penalty=10.0
+                           , batch_size=42, val_at=1, epochs=30)
+        solver.fit()
+
+
+    def test_with_evaluator_big(self):
+        smiles = []
+        try:
+            with open("./data/zinc.tab", "r") as f:
+                for l in f.readlines():
+                    if l != "smiles\n":
+                        smiles.append(l.replace('\n', "").replace("\"", ""))
+        except Exception as e:
+            print(e)
+
+        max_atoms = 20
+        atoms_encoded = 12
+        featurizer = MolGanFeaturizer(max_atom_count=max_atoms, kekulize=False, sanitize=True, atom_labels=[0, 6, 7, 8, 9, 5, 53, 1, 16, 15, 17, 35] )
+        smiles_gen = []
+        from jaqpotpy.cfg import config
+        config.verbose = False
+        for m in smiles[0:60000]:
+            feat = featurizer.featurize(m)
+            if feat[0]:
+                smiles_gen.append(m)
+        config.verbose = True
+        smiles_train = []
+        for st in smiles_gen[0:4000]:
+            smiles_train.append(st)
+        smiles_test = []
+        for stt in smiles_gen[4000:4500]:
+            smiles_test.append(stt)
+
+        self.dataset = SmilesDataset(smiles=smiles_train, task="generation", featurizer=featurizer)
+        self.dataset.create()
+        generator = GanMoleculeGenerator([128, 256, 524], 8, max_atoms, 5, atoms_encoded, 0.5)
+        discriminator = MoleculeDiscriminator([[128, 64], 128, [128, 64]], atoms_encoded, 5 - 1, 0.5)
+
+        gen_eval = GenerativeEvaluator()
+        # gen_eval.register_scoring_function("Valid all", valid_mean)
+        gen_eval.register_scoring_function("Valid", valid_scores)
+        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
+        # gen_eval.register_scoring_function("BBB", bbb_function)
+        # gen_eval.register_scoring_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        # gen_eval.register_scoring_function("Novel", novel_score)
+        # gen_eval.register_scoring_function("Unique", unique_total_score)
+        # gen_eval.register_scoring_function("Diversity", diversity_scores)
+        # gen_eval.register_scoring_function("Water Oct", water_octanol_partition_coefficient_scores)
+        # gen_eval.register_scoring_function("Drugcandidate Scores", drugcandidate_scores)
+
+        # gen_eval.register_scoring_function("Novel all", novel_score)
+        gen_eval.register_dataset(smiles_test)
+        # gen_eval.register_evaluation_function("BBB Mean", bbb_mean_function)
+        gen_eval.register_evaluation_function("Valid all", valid_mean)
+        gen_eval.register_evaluation_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        gen_eval.register_evaluation_function("Novel", novel_score)
+        gen_eval.register_evaluation_function("Unique", unique_total_score)
+        gen_eval.register_evaluation_function("Water Oct", water_octanol_partition_coefficient_scores)
+        gen_eval.register_evaluation_function("Drugcandidate Scores", drugcandidate_scores)
+
+        solver = GanSolver(generator=generator
+                           , discriminator=discriminator, evaluator=gen_eval, dataset=self.dataset
+                           , la=0.8, g_lr=0.0001, d_lr=0.0001, lamda_gradient_penalty=10.0
+                           , batch_size=42, val_at=1, epochs=130)
+        solver.fit()
+
+
+
+
+
+    def test_jaqpot_model(self):
+        from jaqpotpy import Jaqpot
+        from jaqpotpy.models import MolecularModel
+        from jaqpotpy.cfg import config
+        config.verbose = False
+        jaqpot = Jaqpot()
+        jaqpot.set_api_key("eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2NzI4MjE4MDQsImlhdCI6MTY3MjY0OTAwNCwiYXV0aF90aW1lIjoxNjcyNjQ5MDAzLCJqdGkiOiIxYTBiYmNjMi0wM2IzLTQ4NDYtYTg1ZS03ODcwZTdlNWE1MGYiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiI1MzUxZDVkZDEyNDRhNGNmYjYzZWM4OTg2OGYyYjgyM2JkWDZDbkJUViIsInNlc3Npb25fc3RhdGUiOiJhMTdhMzIxNy1jZjBmLTQxNmEtODJkMy04ZDM0OWRmNmQxZWMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwic2lkIjoiYTE3YTMyMTctY2YwZi00MTZhLTgyZDMtOGQzNDlkZjZkMWVjIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.ivsqqMMMUu7fYhB-kgjmMFZKHc2q9XsX02EkKFNYFrvIX4K9EsyQKGDjudZeYU9JwR4fqNXttVOkTvsDR6g9-Hmfg5W2RdkHh3L1OhAs8U4PZ39llYGpXVv_vF7UzCH8h5EmlpBe_WBH7_HSE9pNBqtR_B8KvwCEeEllWlF8XqYdz9dezllGnGjqFldxtATk71VcDpneVx1KR2wWcj0iz1q4wLlePimE-UJw8vDn2uKy43km5LiyrAvz4RsyaGdI5lX66k7Pg0klO2rqT-xNzCwVuRv6KnESH0TIKDKE4vv9hjaEUwTPks4NjG59N-muuHebSbfPK7nDbABYfaB7yw")
+        model = MolecularModel().load_from_jaqpot(jaqpot=jaqpot, id="BKsEYKTVRSKZyCjEWBzp")
+        mols = Chem.SDMolSupplier('./data/gdb9.sdf')
+        for mol in mols:
+            # smile = Chem.MolToSmiles(mol)
+            try:
+                model(mol)
+                print(model.prediction)
+                print(model.probability)
+            except Exception as e:
+                continue
+        print(Chem.MolToSmiles("COC(=N)NCC#N"))
+        print(type('COC(=N)NCC#N').__name__)
+        model("C#CC12CC(C)C1C2")
+        print(model.prediction)
+        print(model.probability)
+
+
+from jaqpotpy import Jaqpot
+from jaqpotpy.models import MolecularModel
+
+jaqpot = Jaqpot()
+jaqpot.set_api_key(
+    "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2NzI4MjE4MDQsImlhdCI6MTY3MjY0OTAwNCwiYXV0aF90aW1lIjoxNjcyNjQ5MDAzLCJqdGkiOiIxYTBiYmNjMi0wM2IzLTQ4NDYtYTg1ZS03ODcwZTdlNWE1MGYiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiI1MzUxZDVkZDEyNDRhNGNmYjYzZWM4OTg2OGYyYjgyM2JkWDZDbkJUViIsInNlc3Npb25fc3RhdGUiOiJhMTdhMzIxNy1jZjBmLTQxNmEtODJkMy04ZDM0OWRmNmQxZWMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwic2lkIjoiYTE3YTMyMTctY2YwZi00MTZhLTgyZDMtOGQzNDlkZjZkMWVjIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.ivsqqMMMUu7fYhB-kgjmMFZKHc2q9XsX02EkKFNYFrvIX4K9EsyQKGDjudZeYU9JwR4fqNXttVOkTvsDR6g9-Hmfg5W2RdkHh3L1OhAs8U4PZ39llYGpXVv_vF7UzCH8h5EmlpBe_WBH7_HSE9pNBqtR_B8KvwCEeEllWlF8XqYdz9dezllGnGjqFldxtATk71VcDpneVx1KR2wWcj0iz1q4wLlePimE-UJw8vDn2uKy43km5LiyrAvz4RsyaGdI5lX66k7Pg0klO2rqT-xNzCwVuRv6KnESH0TIKDKE4vv9hjaEUwTPks4NjG59N-muuHebSbfPK7nDbABYfaB7yw")
+model_local = MolecularModel().load_from_jaqpot(jaqpot=jaqpot, id="BKsEYKTVRSKZyCjEWBzp")
+
+def bbb_function(mols):
+    from jaqpotpy import Jaqpot
+    from jaqpotpy.models import MolecularModel
+    import numpy as np
+    from jaqpotpy.cfg import config
+    config.verbose = False
+    rew = []
+
+    for mol in mols:
+        try:
+            smiles = Chem.MolToSmiles(mol)
+            model_local(smiles)
+            # rew.append(model_local.prediction[0])
+            rew.append(model_local.probability[0][1])
+        except Exception as e:
+            rew.append(0)
+            continue
+    return np.asarray(rew, dtype="float32")
+    # model(["COc1cc(C=O)ccc1O"])
+    # print(model.prediction)
+    # print(model.probability)
+
+
+def bbb_mean_function(mols):
+    from jaqpotpy import Jaqpot
+    from jaqpotpy.models import MolecularModel
+    import numpy as np
+    jaqpot = Jaqpot()
+    jaqpot.set_api_key(
+        "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2NzI0MDA1NTcsImlhdCI6MTY3MjIyNzc1NywiYXV0aF90aW1lIjoxNjcyMjI3NzU2LCJqdGkiOiJmZTA5NzliMi0yNzA1LTQxY2MtOTI5YS1jZjcwNmI0MzE0MWQiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiIzOGMwMTI2Njk1MWIwY2E5MjQ2YjEwOTUxMDk3YmY3NjcxVEpkYnpmaSIsInNlc3Npb25fc3RhdGUiOiJlMGVmMThkMC0yYjI1LTRjZDctYmZmZC02YTgxYTViNmY3YzYiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwic2lkIjoiZTBlZjE4ZDAtMmIyNS00Y2Q3LWJmZmQtNmE4MWE1YjZmN2M2IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.AZeIENjLUXKmChf7EUhQLgZ8qiDRR9Iwv-FsGrAmkGvdv9tCkGYBlNAFdL67YQr9XfFL2mx-SNRXNVK2Vmrbh1UrPj_tIJI9-dNfYqEpT4whlaAPUQqMpyO81RH-7oLqZupDeuMNTUHYM_FYThsCAcin7Fbgioax89U20UMwNBgsK0Eii6fWMFexyDB-MEXPiPa2IbBr8o246pjqFfohkTJNxoQwD3P5SNMaMMCxn1rzScsPlBdMZkUtB3BxmIqKXDKnpqvfgqJO2QryFo3X65G3KFeAdxtAp7mCkhqjrBJXX9IzRWpcTQZKJMl8mQvaSgJh758b0jurwp-_PVj2mA")
+    model = MolecularModel().load_from_jaqpot(jaqpot=jaqpot, id="BKsEYKTVRSKZyCjEWBzp")
+    rew = []
+    for mol in mols:
+        mol = Chem.MolToSmiles(mol)
+        print(mol)
+        if mol is None:
+            rew.append([0])
+        else:
+            if type(mol).__name__ == 'str':
+                mol = Chem.MolToSmiles(mol)
+            try:
+                model(mol)
+                print(model.probability)
+                print(model.probability[0][1])
+                rew.append(model.probability[0][1])
+            except Exception as e:
+                print(str(e))
+                rew.append(0)
+    return np.asarray(sum(rew) / len(mols))

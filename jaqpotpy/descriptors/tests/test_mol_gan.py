@@ -3,6 +3,7 @@ import numpy as np
 from jaqpotpy.descriptors.molecular import MolGanFeaturizer
 from rdkit import Chem
 
+
 class TestMolGan(unittest.TestCase):
 
     def test_mol_gan_feat(self):
@@ -16,7 +17,6 @@ class TestMolGan(unittest.TestCase):
         featurizer = MolGanFeaturizer(max_atom_count=20)
         valid_data = featurizer.featurize(smiles)
         print(valid_data[0].__dict__)
-
 
     def test_mol_gan_defeat(self):
         smiles = [

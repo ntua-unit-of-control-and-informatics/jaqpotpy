@@ -5,8 +5,8 @@ from jaqpotpy.models import MolecularModel
 from jaqpotpy.models.evaluator import GenerativeEvaluator
 from jaqpotpy.models.generative.molecular_metrics import diversity_scores \
     , drugcandidate_scores, synthetic_accessibility_score_scores, valid_mean \
-    , quantitative_estimation_druglikeness_scores, novel_score, diversity_scores \
-    , water_octanol_partition_coefficient_scores, unique_total_score
+    , quantitative_estimation_druglikeness_scores, novel_score \
+    , water_octanol_partition_coefficient_scores, unique_total_score, valids, valid_scores
 
 
 class TestEvaluators(unittest.TestCase):
@@ -65,6 +65,59 @@ class TestEvaluators(unittest.TestCase):
             "O=Cc1ccc(OCc2ccn(-c3cccc(F)c3)n2)cc1",
             "Clc1ccccc1Cn1ccnc1",
                      ]
+
+
+        self.mols_no_valids = [
+            "CCOc1ccccAdsfvSdSCC3)cc2)c1",
+            "Cc1cccc(NC(=O)CN2CCN(c3ccc4c(c3)OCCO4)C2=O)n1",
+            "C=C(C)C(=O)N[C@H](C)c1nc2ccccc2n1CCC(=O)N1CCCCCC1",
+            "CCOC[C@H]1CC[NH+](Cc2ccc(-c3nc4ccccc4s3)o2)C1",
+            "CCOC(=O)[C@]1(Cc2cccc(Cl)c2)CCCN(C(=O)c2ccnn2C)C1",
+            "Cc1ccc([N+](=O)[O-])cc1NC(=O)C(=O)N1CC[C@H]([NH+]2CCCC2)C1",
+            "CCOCCCNC(=O)N[C@@H]1CCC[C@@H](CC)C1",
+            "O=C(Cc1cccc(F)c1F)Nc1cccc(Br)n1",
+            "COc1ccccc1NC(=O)[C@@H]1CCCN(C(=O)Nc2cccs2)C1",
+            "C[C@H]1CCC[C@](C#N)([C@]2(O)CCCCC2(C)C)C1",
+            "O=C(NCc1ccc([N+]2=CCCC2)cc1)NC1(c2ccc(Cl)cc2)CC1",
+            "CCCC(=O)N[C@@H]1CCC[NH+](Cc2ncccc2C)C1",
+            "O=C(NCc1cccs1)C1(c2cccc(Cl)c2)CCC1",
+            "C[C@H]1CCC[C@H](NC(=O)[C@@H](C)Sc2ncn[nH]2)[C@@H]1C",
+            "COc1ccc([C@@H]([NH2+]Cc2ccc(Cl)nc2)c2ccc(F)cc2)cc1",
+            "COc1cc(NC(=O)[C@H](C)Sc2ccccc2Cl)cc(OC)c1",
+            "CCN1CCCadsfijsldc2)CC1",
+            "CCCOc1ccc(Br)cc1C[NH+]1CCC([C@@H](C)O)CC1",
+            "Cc1cc2n(C[C@H](O)CO[C@H](c3ccccc3)c3ccccc3C)c(=O)c3ccccc3n2n1",
+            "CCc1ncc(CN(C)C(=O)Nc2c(C)ccc([N+](=O)[O-])c2C)s1",
+            "c1ccc2nc(NCCCc3nc4ccccc4[nH]3)cnc2c1",
+            "Cc1c([C@H](C)[NH2+]Cc2cccn2C)cnn1C",
+            "CC(=O)N[C@@H](C(C)C",
+            "",
+            "Cc1ccccc1N1C(=O)/C(=C/c2cccn2-c2cccc([N+](=O)[O-])c2)C([O-])=NC1=S",
+            "COCCN1C[C@H](C(=O)N(Cc2cccc(Cl)c2)C(C)C)CC1=O",
+            "COc1ccc(NC(=O)N2CCN(C(=O)Cc3csc4ccccc34)CC2)cc1OC",
+            "C#CCN(C[C@H]1CCCO1)C(=O)N[C@@H](C)c1cccc([N+](=O)[O-])c1",
+            "Cc1cccc(C2=CCN(C(=O)Nc3ccc(C(N)=O)c(Cl)c3)CC2)c1",
+            "COCCCN1C(=O)c2ccc(C(=O)Nc3nc(-c4ccc(C)cc4)cs3)cc2C1=O",
+            "O=S(=O)(Nc1ccc(N2CCCS2(=O)=O)cc1)c1ccc(F)c(Cl)c1",
+            "O=C1/C(=C/c2ccccc2)Oc2c1ccc1c2CN(Cc2cccs2)CO1",
+            "CC[C@@H](C)[C@@H](NC(=O)c1cccc(F)c1)C(=O)N=c1[nH]c2ccccc2[nH]1",
+            "Cc1c(F)cc(N)cc1S(=O)(=O)N[C@@H](C)C1CC1",
+            "Cc1ccc(Cn2ncc3c(N)ncnc32)cc1",
+            "CCOC(=O)C(C)(C)c1nc(-c2ccccc2)no1",
+            "CCOC(=O)c1sc(/C=C/c2nc3c(s2)CCC3)nc1C",
+            "C[C@@H]1CC[C@@H]([NH2+]C2CCC(NS(C)(=O)=O)CC2)c2ccccc21",
+            "CN(C)S(=O)(=O)c1ccc(C(=O)N(C(=O)N2CCCCC2)c2ccccc2)cc1",
+            "CC[NH2+][C@@H](CC)c1ccccc1OCc1cccc(F)c1",
+            "C=CCOC(=O)C1=C(C)N=C2S[C@H](C)C(=O)N2[C@H]1c1ccc(F)cc1",
+            "CCC[NH2+][C@]1(C(=O)OCC)CC[C@H](n2cc(Cl)c(C)n2)C1",
+            "Cc1cc(NC(=O)CSc2nnc3c4ccccc4n(C)c3n2)ccc1Br",
+            "CCOC(=O)c1sc(NC(=O)c2ccc(-n3c(C)nc4ccccc4c3=O)cc2)cc1C",
+            "CC#CCC(=O)C1([NH+](CC)CC)CCCC1",
+            "O=C(NCCCc1ccccc1)C1CCN(C(=O)[C@@H]2CC(=O)N(c3ccccc3)C2)CC1",
+            "O=Cc1ccc(OCc2ccn(-c3cccc(F)c3)n2)cc1",
+            "Clc1ccccc1Cn1ccnc1",
+                     ]
+
 
         self.mols_test = [
             "CC(C)(C)c1ccc2occ(CC(=O)Nc3ccccc3F)c2c1",
@@ -125,6 +178,13 @@ class TestEvaluators(unittest.TestCase):
         gen_eval = GenerativeEvaluator()
         gen_eval.register_scoring_function("Valid all", valid_mean)
         gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
+        gen_eval.register_scoring_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        gen_eval.register_scoring_function("Novel", novel_score)
+        gen_eval.register_scoring_function("Unique", unique_total_score)
+        # gen_eval.register_scoring_function("Diversity", diversity_scores)
+        gen_eval.register_scoring_function("Water Oct", water_octanol_partition_coefficient_scores)
+        gen_eval.register_scoring_function("Drugcandidate Scores", drugcandidate_scores)
+
         # gen_eval.register_scoring_function("Novel all", novel_score)
         gen_eval.register_dataset(self.mols_test)
         mols = []
@@ -132,6 +192,73 @@ class TestEvaluators(unittest.TestCase):
             mols.append(Chem.MolFromSmiles(i))
         rew = gen_eval.get_reward(mols)
         print(rew)
+
+    def test_generative_evaluator_no_valids(self):
+        from rdkit import Chem
+        gen_eval = GenerativeEvaluator()
+        gen_eval.register_scoring_function("Valid all", valid_mean)
+        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
+        gen_eval.register_scoring_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        gen_eval.register_scoring_function("Novel", novel_score)
+        gen_eval.register_scoring_function("Unique", unique_total_score)
+        # gen_eval.register_scoring_function("Diversity", diversity_scores)
+        gen_eval.register_scoring_function("Water Oct", water_octanol_partition_coefficient_scores)
+        gen_eval.register_scoring_function("Drugcandidate Scores", drugcandidate_scores)
+
+        # gen_eval.register_scoring_function("Novel all", novel_score)
+        gen_eval.register_dataset(self.mols_test)
+        mols = []
+        for i in self.mols_no_valids:
+            try:
+                mol = Chem.MolFromSmiles(i)
+                mols.append(mol)
+            except Exception as e:
+                mols.append(None)
+        rew = gen_eval.get_reward(mols)
+
+
+    def test_generative_evaluator_scores(self):
+        from rdkit import Chem
+        gen_eval = GenerativeEvaluator()
+        gen_eval.register_scoring_function("Valid all", valid_mean)
+        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
+        gen_eval.register_scoring_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        gen_eval.register_scoring_function("Novel", novel_score)
+        gen_eval.register_scoring_function("Unique", unique_total_score)
+        gen_eval.register_scoring_function("Diversity", diversity_scores)
+        gen_eval.register_scoring_function("Water Oct", water_octanol_partition_coefficient_scores)
+        gen_eval.register_scoring_function("Drugcandidate Scores", drugcandidate_scores)
+
+        # gen_eval.register_scoring_function("Novel all", novel_score)
+        gen_eval.register_dataset(self.mols_test)
+        mols = []
+        for i in self.mols_no_valids:
+            try:
+                mol = Chem.MolFromSmiles(i)
+                mols.append(mol)
+            except Exception as e:
+                mols.append(None)
+        rew = gen_eval.get_reward(mols)
+
+    def test_generative_evaluator_scores_valids(self):
+        from rdkit import Chem
+        gen_eval = GenerativeEvaluator()
+        gen_eval.register_scoring_function("Valids", valid_scores)
+        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
+
+        # gen_eval.register_scoring_function("Novel all", novel_score)
+        gen_eval.register_dataset(self.mols_test)
+        mols = []
+        for i in self.mols_no_valids:
+            try:
+                mol = Chem.MolFromSmiles(i)
+                mols.append(mol)
+            except Exception as e:
+                mols.append(None)
+        rew = gen_eval.get_reward(mols)
+
+
+
 
 # gen_eval = GenerativeEvaluator()
 #

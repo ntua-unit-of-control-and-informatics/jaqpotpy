@@ -1,3 +1,9 @@
+import datetime
+import os
+import time
+
+import rdkit
+
 from jaqpotpy.models.generative.models import GanMoleculeGenerator, MoleculeDiscriminator
 from jaqpotpy.datasets.molecular_datasets import SmilesDataset
 import torch
@@ -8,9 +14,11 @@ from rdkit import Chem
 from jaqpotpy.helpers.logging import init_logger
 from typing import Any
 import numpy as np
-from jaqpotpy.models.generative.molecular_metrics import MolecularMetrics
+from jaqpotpy.models.evaluator import GenerativeEvaluator
 from collections import defaultdict
 from rdkit import RDLogger
+
+from jaqpotpy.models.generative.molecular_metrics import MolecularMetrics
 
 RDLogger.DisableLog('rdApp.info')
 
@@ -20,14 +28,14 @@ class GanSolver(object):
     def __init__(self, generator: GanMoleculeGenerator
                  , discriminator: MoleculeDiscriminator
                  , dataset: SmilesDataset
-
+                 , evaluator: GenerativeEvaluator
                  , g_lr
                  , d_lr
-                 , lamda_gradient_penalty: float = 0.01
-                 , la: float = 1.0
-                 , n_critic: int = 1
+                 , lamda_gradient_penalty: float = 20.0
+                 , la: float = 0.5
+                 , n_critic: int = 3
                  , weight_decay: float = 5e-4
-                 , optimizer: str = "RMSprop"
+                 , optimizer: str = "Adam"
                  , batch_size: int = 32
                  , epochs: int = 12
                  , val_at: int = 10
@@ -38,6 +46,7 @@ class GanSolver(object):
                  , task: str = "Generate / Reinforce"
                  # , OptimizationModel: MolecularModel
                  ):
+        self.start_time = time.time()
         self.generator = generator
         self.discriminator = discriminator
         self.value_network = discriminator
@@ -50,6 +59,8 @@ class GanSolver(object):
         self.device = device
 
         self.metric = metric
+
+        self.evaluator = evaluator
 
         self.la = la
         self.g_lr = g_lr
@@ -71,66 +82,63 @@ class GanSolver(object):
         self.epochs = epochs
         self.num_steps = (len(self.dataset) // self.batch_size)
 
+        self.image_dir_path = path
+
         if self.la > 0:
             self.n_critic = n_critic
         else:
             self.n_critic = 1
 
+        self.BOND_DIM = self.dataset.featurizer.BOND_DIM
+        self.MAX_ATOMS = self.dataset.featurizer.MAX_ATOMS
         self.build_env()
 
     def build_env(self):
 
         if self.optimizer == "Adam":
             self.g_optim = torch.optim.Adam(self.generator.parameters(), lr=self.g_lr, weight_decay=self.weight_decay)
-            self.d_optim = torch.optim.Adam(self.discriminator.parameters(), lr=self.g_lr,
+            self.d_optim = torch.optim.Adam(self.discriminator.parameters(), lr=self.d_lr,
                                             weight_decay=self.weight_decay)
-            self.v_optim = torch.optim.Adam(self.value_network.parameters(), lr=self.g_lr,
+            self.v_optim = torch.optim.Adam(self.value_network.parameters(), lr=self.d_lr,
                                             weight_decay=self.weight_decay)
         if self.optimizer == "AdamW":
             self.g_optim = torch.optim.AdamW(self.generator.parameters(), lr=self.g_lr, weight_decay=self.weight_decay)
-            self.d_optim = torch.optim.AdamW(self.discriminator.parameters(), lr=self.g_lr,
+            self.d_optim = torch.optim.AdamW(self.discriminator.parameters(), lr=self.d_lr,
                                              weight_decay=self.weight_decay)
-            self.v_optim = torch.optim.AdamW(self.value_network.parameters(), lr=self.g_lr,
+            self.v_optim = torch.optim.AdamW(self.value_network.parameters(), lr=self.d_lr,
                                              weight_decay=self.weight_decay)
         if self.optimizer == "SGD":
             self.g_optim = torch.optim.SGD(self.generator.parameters(), lr=self.g_lr, weight_decay=self.weight_decay)
-            self.d_optim = torch.optim.SGD(self.discriminator.parameters(), lr=self.g_lr,
+            self.d_optim = torch.optim.SGD(self.discriminator.parameters(), lr=self.d_lr,
                                            weight_decay=self.weight_decay)
-            self.v_optim = torch.optim.SGD(self.value_network.parameters(), lr=self.g_lr,
+            self.v_optim = torch.optim.SGD(self.value_network.parameters(), lr=self.d_lr,
                                            weight_decay=self.weight_decay)
         if self.optimizer == "Adadelta":
             self.g_optim = torch.optim.Adadelta(self.generator.parameters(), lr=self.g_lr,
                                                 weight_decay=self.weight_decay)
-            self.d_optim = torch.optim.Adadelta(self.discriminator.parameters(), lr=self.g_lr,
+            self.d_optim = torch.optim.Adadelta(self.discriminator.parameters(), lr=self.d_lr,
                                                 weight_decay=self.weight_decay)
-            self.v_optim = torch.optim.Adadelta(self.value_network.parameters(), lr=self.g_lr,
+            self.v_optim = torch.optim.Adadelta(self.value_network.parameters(), lr=self.d_lr,
                                                 weight_decay=self.weight_decay)
         if self.optimizer == "Adagrad":
             self.g_optim = torch.optim.Adagrad(self.generator.parameters(), lr=self.g_lr,
                                                weight_decay=self.weight_decay)
-            self.d_optim = torch.optim.Adagrad(self.discriminator.parameters(), lr=self.g_lr,
+            self.d_optim = torch.optim.Adagrad(self.discriminator.parameters(), lr=self.d_lr,
                                                weight_decay=self.weight_decay)
-            self.v_optim = torch.optim.Adagrad(self.value_network.parameters(), lr=self.g_lr,
+            self.v_optim = torch.optim.Adagrad(self.value_network.parameters(), lr=self.d_lr,
                                                weight_decay=self.weight_decay)
         if self.optimizer == "Adamax":
             self.g_optim = torch.optim.Adamax(self.generator.parameters(), lr=self.g_lr, weight_decay=self.weight_decay)
-            self.d_optim = torch.optim.Adamax(self.discriminator.parameters(), lr=self.g_lr,
+            self.d_optim = torch.optim.Adamax(self.discriminator.parameters(), lr=self.d_lr,
                                               weight_decay=self.weight_decay)
-            self.v_optim = torch.optim.Adamax(self.value_network.parameters(), lr=self.g_lr,
+            self.v_optim = torch.optim.Adamax(self.value_network.parameters(), lr=self.d_lr,
                                               weight_decay=self.weight_decay)
         if self.optimizer == "RMSprop":
             self.g_optim = torch.optim.RMSprop(self.generator.parameters(), lr=self.g_lr,
                                                weight_decay=self.weight_decay)
-            self.d_optim = torch.optim.RMSprop(self.discriminator.parameters(), lr=self.g_lr,
+            self.d_optim = torch.optim.RMSprop(self.discriminator.parameters(), lr=self.d_lr,
                                                weight_decay=self.weight_decay)
-            self.v_optim = torch.optim.RMSprop(self.value_network.parameters(), lr=self.g_lr,
-                                               weight_decay=self.weight_decay)
-        if self.optimizer == "RMSprop":
-            self.g_optim = torch.optim.RMSprop(self.generator.parameters(), lr=self.g_lr,
-                                               weight_decay=self.weight_decay)
-            self.d_optim = torch.optim.RMSprop(self.discriminator.parameters(), lr=self.g_lr,
-                                               weight_decay=self.weight_decay)
-            self.v_optim = torch.optim.RMSprop(self.value_network.parameters(), lr=self.g_lr,
+            self.v_optim = torch.optim.RMSprop(self.value_network.parameters(), lr=self.d_lr,
                                                weight_decay=self.weight_decay)
 
         self.discriminator.to(self.device)
@@ -144,19 +152,19 @@ class GanSolver(object):
         self.v_optim.zero_grad()
 
     def fit(self):
-
         the_step = self.num_steps
         for epoch_i in range(self.epochs):
             for a_step, i in enumerate(self.data_loader):
-
                 nod_fs = torch.split(i[2][0], 1)
                 adc_mat = torch.split(i[2][1], 1)
                 mols = []
+                mol_strings = []
                 for ind, n in enumerate(nod_fs):
                     g2 = GraphMatrix(torch.squeeze(adc_mat[ind]).cpu().detach().numpy(),
                                      torch.squeeze(n).cpu().detach().numpy())
-                    m = self.dataset.featurizer.defeaturize(g2)
-                    mols.append(m[0])
+                    m = self.dataset.featurizer._defeaturize(g2, sanitize=False, cleanup=False)
+                    mol_strings.append(Chem.MolToSmiles(m))
+                    mols.append(m)
 
                 if epoch_i < 0:
                     cur_la = 0
@@ -176,14 +184,10 @@ class GanSolver(object):
 
                 z = self.sample_z(i[2][0].size(dim=0))
 
-                # samples = self.generator.sample_generator(self.data_loader.batch_size)
                 edges_logits, nodes_logits = self.generator(z)
                 (edges_hat, nodes_hat) = self.postprocess((edges_logits, nodes_logits), self.post_method)
 
-                # in_adj.to(self.device)
-                # in_feats.to(self.device)
-
-                out_a_hat, logits_hat = self.discriminator(edges_hat, None, nodes_hat)
+                logits_fake, features_fake = self.discriminator(edges_hat, None, nodes_hat)
 
                 # Compute losses for gradient penalty.
                 eps = torch.rand(logits_real.size(0), 1, 1, 1).to(self.device)
@@ -193,7 +197,7 @@ class GanSolver(object):
                 grad_penalty = self.gradient_penalty(grad0, x_int0) + self.gradient_penalty(grad1, x_int1)
 
                 d_loss_real = torch.mean(logits_real)
-                d_loss_fake = torch.mean(logits_hat)
+                d_loss_fake = torch.mean(logits_fake)
                 loss_D = -d_loss_real + d_loss_fake + self.la_gp * grad_penalty
 
                 if cur_step % self.n_critic != 0 and cur_la > 0:
@@ -219,20 +223,35 @@ class GanSolver(object):
                 nod_fs = torch.split(nodes_hat, 1)
                 adc_mat = torch.split(edges_hat, 1)
                 for ind, n in enumerate(nod_fs):
-                    am = torch.squeeze(adc_mat[ind]).cpu()
-                    am = torch.permute(am, (2, 0, 1))
-                    g2 = GraphMatrix(am.detach().numpy(),
-                                     torch.squeeze(n).cpu().detach().numpy())
+
+                    adjacency = torch.argmax(adc_mat[ind], dim=3)
+                    adjacency = torch.nn.functional.one_hot(adjacency, num_classes=self.BOND_DIM)
+                    adjacency = torch.squeeze(adjacency)
+                    adjacency = torch.permute(adjacency, (2, 0, 1))
+
+                    nodes = torch.argmax(n, dim=2)
+                    nodes = torch.nn.functional.one_hot(nodes, num_classes=self.MAX_ATOMS)
+
+                    g2 = GraphMatrix(adjacency.detach().numpy(),
+                                     torch.squeeze(nodes).cpu().detach().numpy())
+
                     t = self.dataset.featurizer.defeaturize(g2)
                     if t.size == 0:
                         mols_hat.append(None)
                     else:
+                        if t[0] is not None:
+                            print(Chem.MolToSmiles(t[0]))
                         mols_hat.append(t[0])
 
                 # Real Reward
-                reward_r = torch.from_numpy(self.reward(mols)).to(self.device)
+                reward_r = torch.from_numpy(self.evaluator.get_reward(mols)).to(self.device)
                 # Fake Reward
-                reward_f = torch.from_numpy(self.reward(mols_hat)).to(self.device)
+                reward_f = torch.from_numpy(self.evaluator.get_reward(mols_hat)).to(self.device)
+
+                # # Real Reward (OLD MOLECULAR METRICS)
+                # reward_r = torch.from_numpy(self.reward(mols)).to(self.device)
+                # # Fake Reward (OLD MOLECULAR METRICS)
+                # reward_f = torch.from_numpy(self.reward(mols_hat)).to(self.device)
 
                 # Losses Update
                 loss_G = -logits_fake
@@ -260,6 +279,12 @@ class GanSolver(object):
                 # train_step_V = torch.from_numpy(np.full(1, train_step_V))
                 # train_step_V.requires_grad = True
 
+                self.logger.info("Reward from reals for epoch "
+                      + str(epoch_i) + " step " + str(cur_step - self.num_steps * epoch_i)
+                      + ": " + str(np.mean(reward_r.cpu().detach().numpy())))
+                self.logger.info("Reward from fakes for epoch "
+                      + str(epoch_i) + " step " + str(cur_step - self.num_steps * epoch_i)
+                      + ": " + str(np.mean(reward_f.cpu().detach().numpy())))
                 self.logger.info("Generator loss for epoch "
                                  + str(epoch_i) + " step " + str(cur_step - self.num_steps * epoch_i)
                                  + ": " + str(loss_G.cpu().detach().numpy()))
@@ -273,13 +298,13 @@ class GanSolver(object):
                 self.reset_grad()
 
                 if cur_step % self.n_critic == 0:
-                    self.g_optim.zero_grad()
+                    # self.g_optim.zero_grad()
                     train_step_G.backward(retain_graph=True, inputs=list(self.generator.parameters()))
                     self.g_optim.step()
 
                 # Optimise value network.
                 if cur_step % self.n_critic == 0:
-                    self.v_optim.zero_grad()
+                    # self.v_optim.zero_grad()
                     train_step_V.backward(inputs=list(self.value_network.parameters()))
                     self.v_optim.step()
 
@@ -289,29 +314,8 @@ class GanSolver(object):
                 if epoch_i > self.val_after and cur_step - self.num_steps * epoch_i == 0:
                     self.logger.info("VALIDATING")
                     mols = mols_hat
-                    m0, m1 = self.all_scores(mols, mols, norm=True)  # 'mols' is output of Fake Reward
-                    for k, v in m1.items():
-                        scores[k].append(v)
-                    for k, v in m0.items():
-                        scores[k].append(np.array(v)[np.nonzero(v)].mean())
-
-                    log = "Elapsed [{}], Iteration [{}/{}]:".format("undefined", epoch_i + 1, self.epochs)
-                    is_first = True
-                    for tag, value in losses.items():
-                        if is_first:
-                            log += "\n{}: {:.2f}".format(tag, np.mean(value))
-                            is_first = False
-                        else:
-                            log += ", {}: {:.2f}".format(tag, np.mean(value))
-                    is_first = True
-                    for tag, value in scores.items():
-                        if is_first:
-                            log += "\n{}: {:.2f}".format(tag, np.mean(value))
-                            is_first = False
-                        else:
-                            log += ", {}: {:.2f}".format(tag, np.mean(value))
-                    print(log)
-
+                    self.all_scores(mols, self.evaluator.dataset, epoch_i=epoch_i, norm=True)
+                    # self.all_scores(mols, self.evaluator.dataset, epoch_i=epoch_i, norm=True)  # 'mols' is output of Fake Reward
             pass
 
     def sample_z(self, batch_size):
@@ -319,33 +323,6 @@ class GanSolver(object):
 
     def get_mols(self, data: Any):
         return ""
-
-    def reward(self, mols):
-        rr = 1.
-        for m in ('logp,sas,qed,unique' if self.metric == 'all' else self.metric).split(','):
-
-            if m == 'logp':
-                rr *= MolecularMetrics.water_octanol_partition_coefficient_scores(mols, norm=True)
-            # elif m == 'np':
-            #     rr *= MolecularMetrics.natural_product_scores(mols, norm=True)
-            # elif m == 'sas':
-            # rr *= MolecularMetrics.synthetic_accessibility_score_scores(mols, norm=True)
-            elif m == 'qed':
-                rr *= MolecularMetrics.quantitative_estimation_druglikeness_scores(mols, norm=True)
-            elif m == 'novelty':
-                rr *= MolecularMetrics.novel_scores(mols, self.data)
-            elif m == 'dc':
-                rr *= MolecularMetrics.drugcandidate_scores(mols, self.data)
-            elif m == 'unique':
-                rr *= MolecularMetrics.unique_scores(mols)
-            elif m == 'diversity':
-                rr *= MolecularMetrics.diversity_scores(mols, self.data)
-            elif m == 'validity':
-                rr *= MolecularMetrics.valid_scores(mols)
-            else:
-                raise RuntimeError('{} is not defined as a metric'.format(m))
-
-        return rr.reshape(-1, 1)
 
     def postprocess(self, inputs, method, temperature=1.):
 
@@ -397,17 +374,127 @@ class GanSolver(object):
             print(name)
             print("The number of parameters: {}".format(num_params))
 
-    def all_scores(self, mols, data, norm=False, reconstruction=False):
+    def all_scores_(self, mols, data, epoch_i, norm=False, reconstruction=False):
         m0 = {k: list(filter(lambda e: e is not None, v)) for k, v in {
-            'NP': MolecularMetrics.natural_product_scores(mols, norm=norm),
-            'QED': MolecularMetrics.quantitative_estimation_druglikeness_scores(mols),
-            'Solute': MolecularMetrics.water_octanol_partition_coefficient_scores(mols, norm=norm),
-            # 'SA': MolecularMetrics.synthetic_accessibility_score_scores(mols, norm=norm),
-            'diverse': MolecularMetrics.diversity_scores(mols, data),
-            'drugcand': MolecularMetrics.drugcandidate_scores(mols, data)}.items()}
+                'NP': MolecularMetrics.natural_product_scores(mols, norm=norm),
+                'QED': MolecularMetrics.quantitative_estimation_druglikeness_scores(mols),
+                'Solute': MolecularMetrics.water_octanol_partition_coefficient_scores(mols, norm=norm),
+                # 'SA': MolecularMetrics.synthetic_accessibility_score_scores(mols, norm=norm),
+                # 'diverse': MolecularMetrics.diversity_scores(mols, data),
+                'drugcand': MolecularMetrics.drugcandidate_scores(mols, data)}.items()}
 
         m1 = {'valid': MolecularMetrics.valid_total_score(mols) * 100,
-              'unique': MolecularMetrics.unique_total_score(mols) * 100,
-              'novel': MolecularMetrics.novel_total_score(mols, data) * 100}
+                  'unique': MolecularMetrics.unique_total_score(mols) * 100,
+                  'novel': MolecularMetrics.novel_total_score(mols, data) * 100}
+        losses = defaultdict(list)
+        scores = defaultdict(list)
+        for k, v in m1.items():
+            scores[k].append(v)
+        for k, v in m0.items():
+            scores[k].append(np.array(v)[np.nonzero(v)].mean())
 
-        return m0, m1
+            # Saving molecule images.
+        mol_f_name = os.path.join(self.image_dir_path, 'mol-{}.png'.format(epoch_i))
+        save_mol_img(mols, mol_f_name)
+
+        # Print out training information.
+        et = time.time() - self.start_time
+        et = str(datetime.timedelta(seconds=et))[:-7]
+        log = "Elapsed [{}], Iteration [{}/{}]:".format(et, epoch_i + 1, self.epochs)
+
+        is_first = True
+        for tag, value in losses.items():
+            if is_first:
+                log += "\n{}: {:.2f}".format(tag, np.mean(value))
+                is_first = False
+            else:
+                log += ", {}: {:.2f}".format(tag, np.mean(value))
+        is_first = True
+        for tag, value in scores.items():
+            if is_first:
+                log += "\n{}: {:.2f}".format(tag, np.mean(value))
+                is_first = False
+            else:
+                log += ", {}: {:.2f}".format(tag, np.mean(value))
+        print(log)
+        if self.logger is not None:
+            self.logger.info(log)
+
+    def all_scores(self, mols, data, epoch_i, norm=False, reconstruction=False):
+        et = time.time() - self.start_time
+        et = str(datetime.timedelta(seconds=et))[:-7]
+        log = "Elapsed [{}], Iteration [{}/{}]:".format(et, epoch_i + 1, self.epochs)
+        for key in self.evaluator.eval_functions.keys():
+            function_name = key
+            f = self.evaluator.eval_functions.get(key)
+            try:
+                score = f(mols)
+                log += ", {}: {:.2f}".format(function_name, np.mean(score))
+            except TypeError as e:
+                score = f(mols, data)
+                log += ", {}: {:.2f}".format(function_name, np.mean(score))
+        if self.logger is not None:
+            self.logger.info(log)
+        else:
+            print(log)
+        mol_f_name = os.path.join(self.image_dir_path, 'mol-{}.png'.format(epoch_i))
+        save_mol_img(mols, mol_f_name)
+
+    def reward(self, mols):
+        rr = 1.
+        for m in ('logp,sas,qed,unique' if self.metric == 'all' else self.metric).split(','):
+
+            if m == 'np':
+                rr *= MolecularMetrics.natural_product_scores(mols, norm=True)
+            elif m == 'logp':
+                rr *= MolecularMetrics.water_octanol_partition_coefficient_scores(mols, norm=True)
+            elif m == 'sas':
+                rr *= MolecularMetrics.synthetic_accessibility_score_scores(mols, norm=True)
+            elif m == 'qed':
+                rr *= MolecularMetrics.quantitative_estimation_druglikeness_scores(mols, norm=True)
+            elif m == 'novelty':
+                rr *= MolecularMetrics.novel_scores(mols, self.evaluator.dataset)
+            elif m == 'dc':
+                rr *= MolecularMetrics.drugcandidate_scores(mols, self.evaluator.dataset)
+            elif m == 'unique':
+                rr *= MolecularMetrics.unique_scores(mols)
+            elif m == 'diversity':
+                rr *= MolecularMetrics.diversity_scores(mols, self.evaluator.dataset)
+            elif m == 'validity':
+                rr *= MolecularMetrics.valid_scores(mols)
+            else:
+                raise RuntimeError('{} is not defined as a metric'.format(m))
+
+        return rr.reshape(-1, 1)
+
+
+import datetime
+import string
+import random
+
+def save_mol_img(mols, f_name='tmp.png', is_test=False):
+    orig_f_name = f_name
+    for a_mol in mols:
+        try:
+            if Chem.MolToSmiles(a_mol) is not None:
+                print('Generating molecule')
+
+                if is_test:
+                    f_name = orig_f_name
+                    f_split = f_name.split('.')
+                    f_split[-1] = random_string() + '.' + f_split[-1]
+                    f_name = ''.join(f_split)
+
+                rdkit.Chem.Draw.MolToFile(a_mol, f_name)
+                break
+
+                # if not is_test:
+                #     break
+        except:
+            continue
+
+
+
+def random_string(string_len=3):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(string_len))

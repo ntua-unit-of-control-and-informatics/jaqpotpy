@@ -174,7 +174,6 @@ class GanMoleculeGenerator(nn.Module, GanGeneratorModel):
         self.activation_f = torch.nn.Tanh()
         self.multi_dense_layer = MultiDenseLayer(z_dim, conv_dims, self.activation_f)
 
-        self.z_dim = z_dim
         self.vertexes = vertexes
         self.edges = edges
         self.nodes = nodes
@@ -326,10 +325,8 @@ class MoleculeDiscriminator(nn.Module):
         h_1 = self.gcn_layer(node, adj, hidden)
         h = self.agg_layer(h_1, node, hidden)
         h = self.multi_dense_layer(h)
-
         output = self.output_layer(h)
         output = activation(output) if activation is not None else output
-
         return output, h
 
 
