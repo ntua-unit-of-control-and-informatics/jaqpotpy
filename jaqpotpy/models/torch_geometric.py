@@ -296,11 +296,15 @@ class MolecularTorchGeometric(Model):
             x = data.x.to(self.device)
             edge_index = data.edge_index.to(self.device)
             edge_attributes = data.edge_attr.to(self.device)
+            batch = data.batch.to(self.device)
+
+            y = data.y.to(self.device)
+
             if edge_attributes is not None:
-                out = self.model_nn(x, edge_index, edge_attributes, data.batch)
+                out = self.model_nn(x, edge_index, edge_attributes, batch)
             else:
-                out = self.model_nn(x, edge_index, data.batch)
-            loss = self.criterion(out, data.y)
+                out = self.model_nn(x, edge_index, batch)
+            loss = self.criterion(out, y)
             loss.backward()
             self.optimizer_local.step()
             self.optimizer_local.zero_grad()
@@ -313,24 +317,32 @@ class MolecularTorchGeometric(Model):
                 x = data.x.to(self.device)
                 edge_index = data.edge_index.to(self.device)
                 edge_attributes = data.edge_attr.to(self.device)
+                batch = data.batch.to(self.device)
+
+                y = data.y.to(self.device)
+
                 if edge_attributes is not None:
-                    out = self.model_nn(x, edge_index, edge_attributes, data.batch)
+                    out = self.model_nn(x, edge_index, edge_attributes, batch)
                 else:
-                    out = self.model_nn(x, edge_index, data.batch)
+                    out = self.model_nn(x, edge_index, batch)
                 pred = out.argmax(dim=1)
-                correct += int((pred == data.y).sum())
-            return out, pred.numpy(), correct / len(dataloader.dataset)
+                correct += int((pred == y).sum())
+            return out, pred.cpu().numpy(), correct / len(dataloader.dataset)
         else:
             self.model_nn.eval()
             for data in dataloader:
                 x = data.x.to(self.device)
                 edge_index = data.edge_index.to(self.device)
                 edge_attributes = data.edge_attr.to(self.device)
+                batch = data.batch.to(self.device)
+
+                y = data.y.to(self.device)
+
                 if edge_attributes is not None:
-                    out = self.model_nn(x, edge_index, edge_attributes, data.batch)
+                    out = self.model_nn(x, edge_index, edge_attributes, batch)
                 else:
-                    out = self.model_nn(x, edge_index, data.batch)
-                loss = self.criterion(out, data.y)
+                    out = self.model_nn(x, edge_index, batch)
+                loss = self.criterion(out, y)
             return out, loss
 
     def eval(self):
@@ -338,26 +350,31 @@ class MolecularTorchGeometric(Model):
         self.best_model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer_local.load_state_dict(checkpoint['optimizer_state_dict'])
         self.best_model.eval()
+        self.best_model.to(self.device)
         if self.evaluator.functions:
             eval_keys = self.evaluator.functions.keys()
             correct = 0
             truth = np.array([])
             preds = np.array([])
             for data in self.test_loader:
-                x = data.x
-                edge_index = data.edge_index
-                edge_attributes = data.edge_attr
+                x = data.x.to(self.device)
+                edge_index = data.edge_index.to(self.device)
+                edge_attributes = data.edge_attr.to(self.device)
+                batch = data.batch.to(self.device)
+
+                y = data.y.to(self.device)
+
                 if edge_attributes is not None:
-                    out = self.best_model(x, edge_index, edge_attributes, data.batch)
+                    out = self.best_model(x, edge_index, edge_attributes, batch)
                 else:
                     out = self.best_model(x, edge_index, data.batch)
                 if self.dataset.task == "regression":
                     pred = out
                 else:
                     pred = out.argmax(dim=1)
-                correct += int((pred == data.y).sum())
-                truth = np.append(truth, data.y.numpy())
-                preds = np.append(preds, pred.detach().numpy())
+                correct += int((pred == y).sum())
+                truth = np.append(truth, y.cpu().numpy())
+                preds = np.append(preds, pred.cpu().detach().numpy())
             # return out, pred.numpy(), correct / len(dataloader.dataset)
             for eval_key in eval_keys:
                 eval_function = self.evaluator.functions.get(eval_key)
@@ -373,6 +390,7 @@ class MolecularTorchGeometric(Model):
         model.descriptors = self.dataset.featurizer
         model.doa = self.doa
         # model.model = self.best_model
+        self.best_model.to("cpu")
         model_s = torch.jit.script(self.best_model)
         model_save = torch.jit.save(model_s, "local_temp.pt")
         with open("./local_temp.pt", "rb") as f:

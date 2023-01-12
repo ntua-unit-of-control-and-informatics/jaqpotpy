@@ -124,13 +124,15 @@ class MolecularTorch(Model):
     def train(self):
         self.model_nn.train()
         for data in self.train_loader:
-            out = self.model_nn(data[0].float())
+            input = data[0].to(self.device)
+            y = data[1].to(self.device)
+            out = self.model_nn(input.float())
             if self.dataset.task == 'classification':
-                truth = torch.squeeze(data[1].long())
+                truth = torch.squeeze(y.long())
                 loss = self.criterion(out, truth)
             else:
                 # truth = torch.squeeze(data[1].float())
-                loss = self.criterion(out, data[1].float())
+                loss = self.criterion(out, y.float())
             # loss = self.criterion(out, data[1].float())
             # print(loss)
             loss.backward(retain_graph=True)
@@ -166,11 +168,13 @@ class MolecularTorch(Model):
             truth = np.array([])
             preds = np.array([])
             for data in self.test_loader:
-                out = self.best_model(data[0].float())
+                input = data[0].to(self.device)
+                y = data[1].to(self.device)
+                out = self.best_model(input.float())
                 pred = out.argmax(dim=1)
-                correct += int((pred == data[1].float()).sum())
-                truth = np.append(truth, data[1].float().numpy())
-                preds = np.append(preds, pred.numpy())
+                correct += int((pred == y.float()).sum())
+                truth = np.append(truth, y.float().numpy())
+                preds = np.append(preds, pred.cpu().numpy())
             # return out, pred.numpy(), correct / len(dataloader.dataset)
             for eval_key in eval_keys:
                 eval_function = self.evaluator.functions.get(eval_key)
@@ -235,6 +239,7 @@ class MaterialTorch(Model):
         self.test_loader = None
         self.log_steps = log_steps
         self.best_model = None
+        self.path = None
         self.device = torch.device(device)
 
         # torch.multiprocessing.freeze_support()
@@ -289,15 +294,14 @@ class MaterialTorch(Model):
     def train(self):
         self.model_nn.train()
         for data in self.train_loader:
+            data = data.to(self.device)
             out = self.model_nn(data[0].float())
             if self.dataset.task == 'classification':
                 truth = torch.squeeze(data[1].long())
+                truth = truth.to(self.device)
                 loss = self.criterion(out, truth)
             else:
-                # truth = torch.squeeze(data[1].float())
                 loss = self.criterion(out, data[1].float())
-            # loss = self.criterion(out, data[1].float())
-            # print(loss)
             loss.backward(retain_graph=True)
             self.optimizer_local.step()
             self.optimizer_local.zero_grad()
@@ -307,6 +311,7 @@ class MaterialTorch(Model):
         if self.dataset.task == 'classification':
             correct = 0
             for data in dataloader:
+                data = data.to(self.device)
                 out = self.model_nn(data[0].float())
                 pred = out.argmax(dim=1)
                 truth = torch.squeeze(data[1].long())
@@ -316,6 +321,7 @@ class MaterialTorch(Model):
         else:
             self.model_nn.eval()
             for data in dataloader:
+                data = data.to(self.device)
                 if self.best_model:
                     self.best_model.eval()
                 out = self.model_nn(data[0].float())
@@ -331,6 +337,7 @@ class MaterialTorch(Model):
             truth = np.array([])
             preds = np.array([])
             for data in self.test_loader:
+                data = data.to(self.device)
                 if self.dataset.task == 'classification':
                     out = self.best_model(data[0].float())
                     pred = out.argmax(dim=1)
@@ -349,15 +356,27 @@ class MaterialTorch(Model):
             print("No eval functions passed")
 
     def create_material_model(self):
-        model = MaterialModel()
+        checkpoint = torch.load(self.path)
+        self.best_model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer_local.load_state_dict(checkpoint['optimizer_state_dict'])
+        model = MolecularModel()
         model.descriptors = self.dataset.featurizer
         model.doa = self.doa
-        model.model = self.best_model
+        # model.model = self.best_model
+        self.best_model.to("cpu")
+        model_s = torch.jit.script(self.best_model)
+        model_save = torch.jit.save(model_s, "local_temp.pt")
+        with open("./local_temp.pt", "rb") as f:
+            model.model = f.read()
+        f.close()
+        os.remove("./local_temp.pt")
+        # model.model = torch.jit.script(self.best_model)
+        model.optimizer = self.optimizer_local
         model.X = self.dataset.X
         model.Y = self.dataset.y
-        model.library = ['torch']
+        model.library = ['torch_geometric', 'torch']
         model.version = [torch.__version__]
         model.jaqpotpy_version = jaqpotpy.__version__
+        model.jaqpotpy_docker = config.jaqpotpy_docker
         model.modeling_task = self.dataset.task
-        model.external_feats = self.dataset.external
         return model

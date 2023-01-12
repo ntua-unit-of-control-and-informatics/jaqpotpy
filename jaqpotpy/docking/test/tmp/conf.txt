@@ -1,13 +1,13 @@
-receptor = ./tmp/7zb6.pdbqt
-ligand = ./tmp/mulno.pdbqt
+receptor = ./tmp/1a9m_pocket.pdbqt
+ligand = ./tmp/1a9m_ligand.pdbqt
 
-center_x = 34.558598
-center_y = -0.309561
-center_z = 10.693773
+center_x = 43.114639
+center_y = 18.629565
+center_z = 64.745907
 
-size_x = 81.289000
-size_y = 75.900000
-size_z = 74.561000
+size_x = 33.370000
+size_y = 34.211000
+size_z = 32.442000
 
 num_modes = 4
 

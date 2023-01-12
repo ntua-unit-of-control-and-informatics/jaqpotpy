@@ -1,3 +1,3 @@
 from .jaqpot import Jaqpot
 
-__version__ = '1.0.79'
+__version__ = '1.0.92'

@@ -7,16 +7,16 @@ long_description = (this_directory / "README.md").read_text()
 # python setup.py bdist_wheel
 # twine upload dist/*
 # twine upload --repository testpypi dist/jaqpotpy-2.0.0b0-py3-none-any.whl
-# twine upload dist/jaqpotpy-1.0.66-py3-none-any.whl
+# twine upload dist/jaqpotpy-1.0.84-py3-none-any.whl
 # docker build -t euclia/jaqpotpy:1.0.3 --no-cache python setup.py bdist_wheel--build-arg tag=1.0.3 .
 
 
-version = '1.0.82'
+version = '1.0.92'
 
 
 setup(name='jaqpotpy',
       # version='2.0.5-beta0',
-      version='1.0.82',
+      version='1.0.92',
       description='Standardizing molecular modeling',
       long_description=long_description,
       long_description_content_type='text/markdown',

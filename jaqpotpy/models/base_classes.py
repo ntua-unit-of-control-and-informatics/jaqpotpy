@@ -15,6 +15,7 @@ import base64
 import torch.nn.functional as nnf
 import pickle
 import os
+import torch
 
 
 class Model(object):
@@ -280,7 +281,6 @@ class MolecularModel(Model):
             if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
                 # graph_data = data['MoleculeGraph']
                 for g in data['MoleculeGraph'].to_list():
-                    import torch
                     from torch_geometric.data import Data
                     dat = Data(x=torch.FloatTensor(g.node_features)
                                , edge_index=torch.LongTensor(g.edge_index)
@@ -344,7 +344,7 @@ class MolecularModel(Model):
                 for data in data_loader:
                     x = data.x
                     edge_index = data.edge_index
-                    edge_attributes = data.edge_attr
+                    edge_attributes = torch.Tensor(data.edge_attr[0])
                     if edge_attributes is not None:
                         pred = self.model(x, edge_index, edge_attributes, data.batch)
                     else:
@@ -381,13 +381,8 @@ class MolecularModel(Model):
                 from torch.utils.data import DataLoader
                 data_loader = DataLoader(data, batch_size=len(data))
                 for data in data_loader:
-                    x = data.x
-                    edge_index = data.edge_index
-                    edge_attributes = data.edge_attr
-                    if edge_attributes is not None:
-                        pred = self.model(x, edge_index, edge_attributes, data.batch)
-                    else:
-                        pred = self.model(x, edge_index, data.batch)
+
+                    pred = self.model(data.float())
                     if self.modeling_task == "classification":
                         for p in pred:
                             prob = nnf.softmax(p, dim=0)
@@ -464,7 +459,6 @@ class MaterialModel(Model):
             graph_data_list = []
             if self._descriptors.__name__ == 'CrystalGraphCNN':
                 for g in data['MaterialGraph'].to_list():
-                    import torch
                     from torch_geometric.data import Data
                     dat = Data(x=torch.FloatTensor(g.node_features)
                                , edge_index=torch.LongTensor(g.edge_index)

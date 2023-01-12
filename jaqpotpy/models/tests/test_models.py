@@ -301,7 +301,7 @@ class TestModels(unittest.TestCase):
         model = MolecularTorch(dataset=dataset
                            , model_nn=model_rnn, eval=val
                            , train_batch=4, test_batch=4
-                           , epochs=10, optimizer=optimizer, criterion=criterion).fit()
+                           , epochs=4, optimizer=optimizer, criterion=criterion).fit()
         model.eval()
         molMod = model.create_molecular_model()
         smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
@@ -351,6 +351,38 @@ class TestModels(unittest.TestCase):
             molMod(smile)
 
             print(molMod.prediction)
+
+    def test_topf_class(self):
+        feat = TopologicalFingerprint()
+        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
+        dataset.create()
+
+        val = Evaluator()
+        val.dataset = dataset
+        val.register_scoring_function('Accuracy', accuracy_score)
+
+        model_cnn = FFFingerprint()
+        optimizer = torch.optim.Adam(model_cnn.parameters(), lr=0.001, weight_decay=5e-4)
+        criterion = torch.nn.CrossEntropyLoss()
+        model = MolecularTorch(dataset=dataset
+                           , model_nn=model_cnn, eval=val
+                           , train_batch=10, test_batch=10
+                           , epochs=30, optimizer=optimizer, criterion=criterion).fit()
+        model.eval()
+        molMod = model.create_molecular_model()
+        smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
+        molMod(smiles_new)
+        print(molMod.prediction)
+
+        for smile in smiles_new:
+            molMod(smile)
+            print(molMod.prediction)
+
+
 
     def test_cnn_class(self):
         feat = SmilesToImage(img_size=60)
@@ -443,6 +475,24 @@ class CNNNet_regression(torch.nn.Module):
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
         return x
+
+
+class FFFingerprint(torch.nn.Module):
+    def __init__(self):
+        super(FFFingerprint, self).__init__()
+        self.fc1 = torch.nn.Linear(2048, 4096)
+
+        # Non-linearity
+        self.sigmoid = torch.nn.Sigmoid()
+
+        # Linear function (readout)
+        self.fc2 =torch.nn.Linear(4096, 2)
+
+    def forward(self, x):
+        out = self.fc1(x)
+        out = self.sigmoid(out)
+        out = self.fc2(out)
+        return out
 
 
 class CNNNet_classification(torch.nn.Module):

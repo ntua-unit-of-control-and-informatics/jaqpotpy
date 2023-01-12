@@ -109,7 +109,7 @@ class TestJitModels(unittest.TestCase):
 
     def test_torch_graph_models_3(self):
         featurizer = PagtnMolGraphFeaturizer()
-        g_data = featurizer.featurize(self.mols[0])
+        g_data = featurizer.featurize("CCN1CCN(C(=O)N[C@@H](C(=O)N[C@@H]2C(=O)N3C(C(=O)O)=C(CSc4nnnn4C)CS[C@H]23)c2ccc(O)cc2)C(=O)C1=O")
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
                                     , featurizer=featurizer)
         dataset.create()
