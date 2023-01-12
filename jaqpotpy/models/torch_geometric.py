@@ -293,9 +293,9 @@ class MolecularTorchGeometric(Model):
     def train(self):
         self.model_nn.train()
         for data in self.train_loader:
-            x = data.x
-            edge_index = data.edge_index
-            edge_attributes = data.edge_attr
+            x = data.x.to(self.device)
+            edge_index = data.edge_index.to(self.device)
+            edge_attributes = data.edge_attr.to(self.device)
             if edge_attributes is not None:
                 out = self.model_nn(x, edge_index, edge_attributes, data.batch)
             else:
@@ -310,9 +310,9 @@ class MolecularTorchGeometric(Model):
         if self.dataset.task == 'classification':
             correct = 0
             for data in dataloader:
-                x = data.x
-                edge_index = data.edge_index
-                edge_attributes = data.edge_attr
+                x = data.x.to(self.device)
+                edge_index = data.edge_index.to(self.device)
+                edge_attributes = data.edge_attr.to(self.device)
                 if edge_attributes is not None:
                     out = self.model_nn(x, edge_index, edge_attributes, data.batch)
                 else:
@@ -323,9 +323,9 @@ class MolecularTorchGeometric(Model):
         else:
             self.model_nn.eval()
             for data in dataloader:
-                x = data.x
-                edge_index = data.edge_index
-                edge_attributes = data.edge_attr
+                x = data.x.to(self.device)
+                edge_index = data.edge_index.to(self.device)
+                edge_attributes = data.edge_attr.to(self.device)
                 if edge_attributes is not None:
                     out = self.model_nn(x, edge_index, edge_attributes, data.batch)
                 else:

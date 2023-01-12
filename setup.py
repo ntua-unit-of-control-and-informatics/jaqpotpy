@@ -34,7 +34,8 @@ setup(name='jaqpotpy',
       #           , 'jaqpotpy.datasets', 'jaqpotpy.descriptors', 'jaqpotpy.descriptors.molecular'
       #           , 'jaqpotpy.descriptors.graph'],
       install_requires=[
-            'pandas', 'requests', 'pydantic', 'rdkit-pypi', 'mordred', 'pyjwt', 'scikit-learn'
+            'pandas', 'requests', 'pydantic', 'rdkit-pypi', 'mordred', 'pyjwt', 'scikit-learn', "tqdm"
+            , 'skl2onnx', 'onnxruntime'
             # ,'tornado', 'scikit-learn', 'torch', 'torch-scatter', 'torch-sparse', 'torch-cluster'
             # , 'torch-spline-conv', 'torch-geometric', 'dgl', 'torch_sparse', 'kennard-stone'
       ],

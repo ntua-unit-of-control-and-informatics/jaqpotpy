@@ -439,9 +439,6 @@ class TestModels(unittest.TestCase):
         solver.fit()
 
 
-
-
-
     def test_jaqpot_model(self):
         from jaqpotpy import Jaqpot
         from jaqpotpy.models import MolecularModel
