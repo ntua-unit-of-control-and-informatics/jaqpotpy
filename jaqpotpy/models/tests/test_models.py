@@ -442,7 +442,6 @@ class TestModels(unittest.TestCase):
 
     # def test_load_from_jaqpot(self):
     #     jaqpot = Jaqpot("http://localhost:8080/jaqpot/services/")
-    #     jaqpot.login("pantelispanka", "kapan2")
     #     model = MolecularModel().load_from_jaqpot(jaqpot=jaqpot, id="XQ1JsTDwCXs4uxZqeUJi")
     #     model('O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21')
 

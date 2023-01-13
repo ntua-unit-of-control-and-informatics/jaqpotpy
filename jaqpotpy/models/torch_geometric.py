@@ -295,7 +295,10 @@ class MolecularTorchGeometric(Model):
         for data in self.train_loader:
             x = data.x.to(self.device)
             edge_index = data.edge_index.to(self.device)
-            edge_attributes = data.edge_attr.to(self.device)
+            try:
+                edge_attributes = data.edge_attr.to(self.device)
+            except AttributeError:
+                edge_attributes = None
             batch = data.batch.to(self.device)
 
             y = data.y.to(self.device)
@@ -316,7 +319,10 @@ class MolecularTorchGeometric(Model):
             for data in dataloader:
                 x = data.x.to(self.device)
                 edge_index = data.edge_index.to(self.device)
-                edge_attributes = data.edge_attr.to(self.device)
+                try:
+                    edge_attributes = data.edge_attr.to(self.device)
+                except AttributeError:
+                    edge_attributes = None
                 batch = data.batch.to(self.device)
 
                 y = data.y.to(self.device)

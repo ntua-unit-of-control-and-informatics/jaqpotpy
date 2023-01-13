@@ -278,9 +278,12 @@ class MolecularModel(Model):
                 ext = pd.DataFrame.from_dict(self.external)
                 data = pd.concat([data, ext], axis=1)
             graph_data_list = []
-            if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
+
+            # if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
                 # graph_data = data['MoleculeGraph']
-                for g in data['MoleculeGraph'].to_list():
+            if self.library == ['torch_geometric', 'torch']:
+                column = data.columns[0]
+                for g in data[column].to_list():
                     from torch_geometric.data import Data
                     dat = Data(x=torch.FloatTensor(g.node_features)
                                , edge_index=torch.LongTensor(g.edge_index)
@@ -288,6 +291,7 @@ class MolecularModel(Model):
                                , num_nodes=g.num_nodes)
                     graph_data_list.append(dat)
                 self._prediction = []
+
             if self._X == 'ImagePath':
                 pass
             elif self._X != ['TorchMolGraph'] and self.X != ['OneHotSequence'] and self.X != ["SmilesImage"]:
@@ -344,7 +348,11 @@ class MolecularModel(Model):
                 for data in data_loader:
                     x = data.x
                     edge_index = data.edge_index
-                    edge_attributes = torch.Tensor(data.edge_attr[0])
+                    try:
+                        edge_attributes = torch.Tensor(data.edge_attr[0])
+                    except TypeError:
+                        edge_attributes = None
+
                     if edge_attributes is not None:
                         pred = self.model(x, edge_index, edge_attributes, data.batch)
                     else:
