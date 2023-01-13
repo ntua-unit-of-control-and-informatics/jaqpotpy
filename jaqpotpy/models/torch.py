@@ -144,17 +144,21 @@ class MolecularTorch(Model):
         if self.dataset.task == 'classification':
             correct = 0
             for data in dataloader:
-                out = self.model_nn(data[0].float())
+                input = data[0].to(self.device)
+                y = data[1].to(self.device)
+                out = self.model_nn(input.float())
                 pred = out.argmax(dim=1)
-                truth = torch.squeeze(data[1].long())
+                truth = torch.squeeze(y.long())
                 correct += int((pred == truth).sum())
                 loss = self.criterion(out, truth)
-            return out, pred.numpy(), correct / len(dataloader.dataset)
+            return out, pred.cpu().numpy(), correct / len(dataloader.dataset)
         else:
             self.model_nn.eval()
             for data in dataloader:
-                out = self.model_nn(data[0].float())
-                loss = self.criterion(out, data[1].float())
+                input = data[0].to(self.device)
+                y = data[0].to(self.device)
+                out = self.model_nn(input)
+                loss = self.criterion(out, y.float())
             return out, loss
 
     def eval(self):
@@ -173,7 +177,7 @@ class MolecularTorch(Model):
                 out = self.best_model(input.float())
                 pred = out.argmax(dim=1)
                 correct += int((pred == y.float()).sum())
-                truth = np.append(truth, y.float().numpy())
+                truth = np.append(truth, y.cpu().float().numpy())
                 preds = np.append(preds, pred.cpu().numpy())
             # return out, pred.numpy(), correct / len(dataloader.dataset)
             for eval_key in eval_keys:
@@ -311,8 +315,8 @@ class MaterialTorch(Model):
         if self.dataset.task == 'classification':
             correct = 0
             for data in dataloader:
-                data = data.to(self.device)
-                out = self.model_nn(data[0].float())
+                input = data[0].to(self.device)
+                out = self.model_nn(input.float())
                 pred = out.argmax(dim=1)
                 truth = torch.squeeze(data[1].long())
                 correct += int((pred == truth).sum())

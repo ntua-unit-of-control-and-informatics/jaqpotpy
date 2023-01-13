@@ -300,10 +300,9 @@ class MolecularTorchGeometric(Model):
             except AttributeError:
                 edge_attributes = None
             batch = data.batch.to(self.device)
-
             y = data.y.to(self.device)
-
             if edge_attributes is not None:
+
                 out = self.model_nn(x, edge_index, edge_attributes, batch)
             else:
                 out = self.model_nn(x, edge_index, batch)
@@ -339,7 +338,9 @@ class MolecularTorchGeometric(Model):
             for data in dataloader:
                 x = data.x.to(self.device)
                 edge_index = data.edge_index.to(self.device)
-                edge_attributes = data.edge_attr.to(self.device)
+                edge_attributes = None
+                if data.edge_attr is not None:
+                    edge_attributes = data.edge_attr.to(self.device)
                 batch = data.batch.to(self.device)
 
                 y = data.y.to(self.device)
@@ -365,7 +366,9 @@ class MolecularTorchGeometric(Model):
             for data in self.test_loader:
                 x = data.x.to(self.device)
                 edge_index = data.edge_index.to(self.device)
-                edge_attributes = data.edge_attr.to(self.device)
+                edge_attributes = None
+                if data.edge_attr is not None:
+                    edge_attributes = data.edge_attr.to(self.device)
                 batch = data.batch.to(self.device)
 
                 y = data.y.to(self.device)
