@@ -344,7 +344,7 @@ class MolecularModel(Model):
                     os.remove("./temp_model.pt")
                     self.model.eval()
                 from torch_geometric.loader import DataLoader
-                data_loader = DataLoader(graph_data_list, batch_size=len(graph_data_list))
+                data_loader = DataLoader(graph_data_list, batch_size=1)
                 for data in data_loader:
                     x = data.x
                     edge_index = data.edge_index
@@ -387,7 +387,7 @@ class MolecularModel(Model):
                     os.remove("./temp_model.pt")
                     self.model.eval()
                 from torch.utils.data import DataLoader
-                data_loader = DataLoader(data, batch_size=len(data))
+                data_loader = DataLoader(data, batch_size=1)
                 for data in data_loader:
 
                     pred = self.model(data.float())
@@ -505,7 +505,7 @@ class MaterialModel(Model):
                 # self.model.no_grad()
                 # torch.no_grad()
                 from torch_geometric.loader import DataLoader
-                data_loader = DataLoader(graph_data_list, batch_size=len(graph_data_list))
+                data_loader = DataLoader(graph_data_list, batch_size=1)
                 for g in data_loader:
                     pred = self.model(g)
                     if self.modeling_task == "classification":
@@ -530,7 +530,7 @@ class MaterialModel(Model):
                 # self.model.no_grad()
                 # torch.no_grad()
                 from torch.utils.data import DataLoader
-                data_loader = DataLoader(data, batch_size=len(data))
+                data_loader = DataLoader(data, batch_size=1)
                 for g in data_loader:
                     pred = self.model(g.float())
                     if self.modeling_task == "classification":

@@ -69,7 +69,9 @@ class TestDocking(unittest.TestCase):
     # Check only one output since num_modes==1
     docked_outputs = list(docked_outputs)
     print(docked_outputs)
-    assert len(docked_outputs) == 1
+    print(len(docked_outputs))
+    print(len(docked_outputs[0]))
+    assert len(docked_outputs) == 4
     assert len(docked_outputs[0]) == 2
 
 

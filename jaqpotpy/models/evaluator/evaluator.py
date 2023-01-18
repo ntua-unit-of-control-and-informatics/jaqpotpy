@@ -1,7 +1,5 @@
-from abc import ABCMeta
 from typing import Dict, Callable, Any, Iterable
 from jaqpotpy.datasets.molecular_datasets import SmilesDataset
-import numpy as np
 
 
 class Evaluator:

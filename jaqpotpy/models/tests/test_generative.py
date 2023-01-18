@@ -18,7 +18,6 @@ from jaqpotpy.models.generative.molecular_metrics import diversity_scores \
 
 class TestModels(unittest.TestCase):
 
-
     def setUp(self):
         from tdc.generation import MolGen
         try:

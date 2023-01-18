@@ -2,7 +2,7 @@ from jaqpotpy.models import MolecularTorchGeometric, GCN_V1, AttentiveFPModel_V1
     , GhebConvV1, GraphConv_V1, GatedGraphConv_V1, ResGatedGraphConv_V1, GATConv_V1, AttentiveFP
 from jaqpotpy.models.torch_models import GCN_V1, SAGEConv_V1
 from jaqpotpy.datasets import TorchGraphDataset
-from jaqpotpy.models import Evaluator
+from jaqpotpy.models import Evaluator, AttentiveFP_V1
 from sklearn.metrics import max_error, mean_absolute_error, r2_score
 import torch
 from rdkit import Chem
@@ -64,6 +64,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_1(self):
         featurizer = MolGraphConvFeaturizer(use_chirality=True)
@@ -85,6 +86,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_2(self):
         featurizer = MolGraphConvFeaturizer(use_partial_charge=True)
@@ -140,7 +142,7 @@ class TestJitModels(unittest.TestCase):
         val.register_scoring_function('Max Error', max_error)
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
-        model = AttentiveFP(in_channels=39, hidden_channels=40, out_channels=2, edge_dim=10, num_layers=2,
+        model = AttentiveFP(in_channels=39, hidden_channels=40, out_channels=39, edge_dim=10, num_layers=2,
                                     num_timesteps=2).jittable()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
@@ -150,6 +152,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_5(self):
         featurizer = MolGraphConvFeaturizer()
@@ -170,6 +173,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_6(self):
         featurizer = MolGraphConvFeaturizer(use_edges=True)
@@ -191,6 +195,7 @@ class TestJitModels(unittest.TestCase):
                                         , epochs=40, optimizer=optimizer, criterion=criterion).fit()
             model = m.create_molecular_model()
             model(self.mols[0])
+            model(self.mols)
         except TypeError as e:
             print(e)
             pass
@@ -216,6 +221,7 @@ class TestJitModels(unittest.TestCase):
                                         , epochs=40, optimizer=optimizer, criterion=criterion).fit()
             model = m.create_molecular_model()
             model(self.mols[0])
+            model(self.mols)
         except TypeError as e:
             print(e)
             pass
@@ -240,6 +246,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_9(self):
         featurizer = MolGraphConvFeaturizer(use_edges=True, use_chirality=True)
@@ -262,6 +269,7 @@ class TestJitModels(unittest.TestCase):
                                         , epochs=40, optimizer=optimizer, criterion=criterion).fit()
             model = m.create_molecular_model()
             model(self.mols[0])
+            model(self.mols)
         except TypeError as e:
             print(e)
             pass
@@ -285,6 +293,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_11(self):
         featurizer = MolGraphConvFeaturizer()
@@ -305,6 +314,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_12(self):
         featurizer = MolGraphConvFeaturizer()
@@ -325,6 +335,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
 
     def test_torch_graph_models_13(self):
@@ -346,6 +357,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_14(self):
         featurizer = MolGraphConvFeaturizer()
@@ -366,6 +378,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_15(self):
         featurizer = MolGraphConvFeaturizer()
@@ -386,6 +399,7 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
     def test_torch_graph_models_16(self):
         featurizer = MolGraphConvFeaturizer()
@@ -406,4 +420,5 @@ class TestJitModels(unittest.TestCase):
                                     , epochs=40, optimizer=optimizer, criterion=criterion).fit()
         model = m.create_molecular_model()
         model(self.mols[0])
+        model(self.mols)
 
