@@ -111,7 +111,7 @@ class TestModels(unittest.TestCase):
         await fn()
 
     def test_torch_model_regression(self):
-        dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='regression')
+        dataset = TorchGraphDataset(smiles=self.mols, y=self.ys_regr, task='regression')
         dataset.create()
         dataset.y = 'activity'
         val = Evaluator()
@@ -126,7 +126,7 @@ class TestModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model_nn, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=50, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=20, optimizer=optimizer, criterion=criterion, test_metric=(mean_absolute_error, 'minimize')).fit()
         m.eval()
         molMod = m.create_molecular_model()
         molMod.model_name = "test_regression"
@@ -169,7 +169,7 @@ class TestModels(unittest.TestCase):
         val = Evaluator()
         val.dataset = dataset
         val.register_scoring_function('Max Error', max_error)
-        val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
+        val.register_scoring_function('MAE', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
         model_nn = Feedforward_J(input_size=208, hidden_layers=3528, num_layers=2, out_size=2)
         optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
@@ -178,7 +178,7 @@ class TestModels(unittest.TestCase):
         m = MolecularTorch(dataset=dataset
                            , model_nn=model_nn, eval=val
                            , train_batch=4, test_batch=4
-                           , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+                           , epochs=40, optimizer=optimizer, criterion=criterion, test_metric=(mean_absolute_error,'minimize')).fit()
         m.eval()
         molMod = m.create_molecular_model()
         molMod.model_name = "test_regression"
