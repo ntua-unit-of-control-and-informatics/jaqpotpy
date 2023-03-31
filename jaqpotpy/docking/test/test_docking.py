@@ -28,8 +28,8 @@ class TestDocking(unittest.TestCase):
     # self.ligand_file = os.path.join(current_dir, "1jld_ligand.sdf")
 
     self.protein_file = os.path.join(current_dir, "1a9m_pocket.pdb")
-    self.ligand_file = os.path.join(current_dir, "1a9m_ligand.sdf")
-
+    # self.ligand_file = os.path.join(current_dir, "1a9m_ligand.sdf")
+    self.ligand_file = os.path.join(current_dir, "ZINC000787318646.sdf")
 
   @pytest.mark.slow
   def test_docker_init(self):
@@ -42,16 +42,18 @@ class TestDocking(unittest.TestCase):
   def test_docker_dock(self):
     """Test that Docker can dock."""
     # We provide no scoring model so the docker won't score
-    vpg = jp.docking.VinaPoseGenerator()
+    vpg = jp.docking.VinaPoseGenerator(calc_charges=False, add_hydrogens=False)
     docker = jp.docking.Docker(vpg)
     docked_outputs = docker.dock((self.protein_file, self.ligand_file),
-                                 exhaustiveness=10,
-                                 num_modes=10,
-                                 out_dir="./tmp")
+                                 exhaustiveness=32,
+                                 num_modes=2,
+                                 out_dir="./tmp",
+                                 use_pose_generator_scores=True)
 
     print(docked_outputs)
+    print(list(docked_outputs))
     # Check only one output since num_modes==1
-    assert len(list(docked_outputs)) == 10
+    assert len(list(docked_outputs)) == 2
 
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
   @pytest.mark.slow
@@ -83,7 +85,7 @@ class TestDocking(unittest.TestCase):
     vpg = jp.docking.VinaPoseGenerator()
     docker = jp.docking.Docker(vpg)
     docked_outputs = docker.dock((self.protein_file, self.ligand_file),
-                                 exhaustiveness=4,
+                                 exhaustiveness=40,
                                  num_modes=4,
                                  out_dir="./tmp",
                                  use_pose_generator_scores=True)

@@ -17,6 +17,20 @@ from scipy.spatial import ConvexHull
 from typing import List, Sequence, Tuple
 import numpy as np
 from scipy.spatial import ConvexHull
+from jaqpotpy.utils.rdkit_utils import load_molecule, write_molecule
+
+
+def create_hydrated_pdbqt_pdb(protein_file: str, out_dir: str):
+  protein_name = os.path.basename(protein_file).split(".")[0]
+  protein_hyd = os.path.join(out_dir, "%s_hyd.pdb" % protein_name)
+  protein_pdbqt = os.path.join(out_dir, "%s.pdbqt" % protein_name)
+  protein_mol = load_molecule(protein_file,
+                              calc_charges=True,
+                              add_hydrogens=True)
+  write_molecule(protein_mol[1], protein_hyd, is_protein=True)
+  write_molecule(protein_mol[1], protein_pdbqt, is_protein=True)
+  return protein_pdbqt
+
 
 
 class CoordinateBox(object):

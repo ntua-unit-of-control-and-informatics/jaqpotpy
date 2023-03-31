@@ -104,8 +104,11 @@ class GninaPoseGenerator(PoseGenerator):
     for production use.
   """
 
-  def __init__(self):
+  def __init__(self,  calc_charges: bool = False, add_hydrogens: bool = False):
     """Initialize GNINA pose generator."""
+
+    self.calc_charges = calc_charges
+    self.add_hydrogens = add_hydrogens
 
     data_dir = get_data_dir()
     if platform.system() == 'Linux':
@@ -194,8 +197,8 @@ class GninaPoseGenerator(PoseGenerator):
       raise ValueError('Ligand file must be in .sdf format.')
 
     protein_mol = load_molecule(protein_file,
-                                calc_charges=calc_charges,
-                                add_hydrogens=add_hydrogens)
+                                calc_charges=self.calc_charges,
+                                add_hydrogens=self.add_hydrogens)
     ligand_name = os.path.basename(ligand_file).split(".")[0]
 
     # Define locations of log and output files
@@ -254,7 +257,7 @@ class VinaPoseGenerator(PoseGenerator):
   available only on Ubuntu and MacOS.
   """
 
-  def __init__(self, pocket_finder: Optional[BindingPocketFinder] = None):
+  def __init__(self, pocket_finder: Optional[BindingPocketFinder] = None, calc_charges: bool = False, add_hydrogens: bool = False):
     """Initializes Vina Pose Generator
     Parameters
     ----------
@@ -262,6 +265,8 @@ class VinaPoseGenerator(PoseGenerator):
       If specified should be an instance of
       `dc.dock.BindingPocketFinder`.
     """
+    self.calc_charges = calc_charges
+    self.add_hydrogens = add_hydrogens
     self.pocket_finder = pocket_finder
 
   def generate_poses(
@@ -363,8 +368,8 @@ class VinaPoseGenerator(PoseGenerator):
     protein_hyd = os.path.join(out_dir, "%s_hyd.pdb" % protein_name)
     protein_pdbqt = os.path.join(out_dir, "%s.pdbqt" % protein_name)
     protein_mol = load_molecule(protein_file,
-                                calc_charges=calc_charges,
-                                add_hydrogens=add_hydrogens)
+                                calc_charges=self.calc_charges,
+                                add_hydrogens=self.add_hydrogens)
     write_molecule(protein_mol[1], protein_hyd, is_protein=True)
     write_molecule(protein_mol[1], protein_pdbqt, is_protein=True)
 
@@ -405,8 +410,8 @@ class VinaPoseGenerator(PoseGenerator):
     ligand_pdbqt = os.path.join(out_dir, "%s.pdbqt" % ligand_name)
 
     ligand_mol = load_molecule(ligand_file,
-                               calc_charges=calc_charges,
-                               add_hydrogens=add_hydrogens)
+                               calc_charges=self.calc_charges,
+                               add_hydrogens=self.add_hydrogens)
     write_molecule(ligand_mol[1], ligand_pdbqt)
 
     docked_complexes = []
