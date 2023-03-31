@@ -45,6 +45,86 @@ class TestJitModels(unittest.TestCase):
         , 1.0002, 1.008, 1.1234, 0.25567, 0.5647, 0.99887, 1.9897, 1.989, 2.314, 0.112, 0.113, 0.54, 1.123, 1.0001
     ]
 
+    def test_tdc_attentive(self):
+        import pandas as pd
+        from sklearn.metrics import average_precision_score, accuracy_score
+        from tdc.benchmark_group import admet_group
+
+        group = admet_group(path='C:/Users/jason/centralenv/TDC/data/')
+
+        benchmark = group.get('CYP3A4_Substrate_CarbonMangels')
+        name = benchmark['name']
+        train_val = benchmark['train_val']
+        test = benchmark['test']
+
+        featurizer = AttentiveFPFeaturizer()
+
+        # featurizer = PagtnMolGraphFeaturizer()
+
+        train, valid = group.get_train_valid_split(benchmark=name, split_type='default', seed=42)
+
+        train_dataset = TorchGraphDataset(smiles=train['Drug'], y=train['Y'], task='classification'
+                                          , featurizer=featurizer)
+
+        test_dataset = TorchGraphDataset(smiles=valid['Drug'], y=valid['Y'], task='classification'
+                                         , featurizer=featurizer)
+
+        train_dataset.create()
+        test_dataset.create()
+        val = Evaluator()
+        val.dataset = test_dataset
+        val.register_scoring_function('Accuracy', accuracy_score)
+        val.register_scoring_function('AUPRC', average_precision_score)
+
+        model = AttentiveFP(in_channels=39, hidden_channels=80, out_channels=2, edge_dim=10, num_layers=6,
+                            num_timesteps=3).jittable()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+        criterion = torch.nn.CrossEntropyLoss()
+        m = MolecularTorchGeometric(dataset=train_dataset
+                                    , model_nn=model, eval=val
+                                    , train_batch=262, test_batch=200
+                                    , epochs=10, optimizer=optimizer, criterion=criterion, device="cpu", test_metric=(accuracy_score, 'maximize'))  # .fit()
+
+        def cross_train_torch(group, nn, name, test_df, task='regression'):
+            predictions_list = []
+
+            for seed in [1, 2, 3, 4, 5]:
+                predictions = {}
+
+                # Train - Validation split
+                train, valid = group.get_train_valid_split(benchmark=name, split_type='default', seed=seed)
+
+                # Create the Jaqpot Datasets
+                jaq_train = TorchGraphDataset(smiles=train['Drug'], y=train['Y'], featurizer=nn.dataset.featurizer,
+                                              task=task)
+                jaq_train.create()
+
+                jaq_val = TorchGraphDataset(smiles=valid['Drug'], y=valid['Y'], featurizer=nn.dataset.featurizer,
+                                            task=task)
+                jaq_val.create()
+
+                # Update the datasets
+                nn.evaluator.dataset = jaq_val
+                nn.dataset = jaq_train
+
+                # Train the model
+                trained_model = nn.fit()
+
+                # Create molecular model and take predictions on the Test set
+                mol_model = trained_model.create_molecular_model()
+                mol_model(test_df['Drug'].tolist())
+
+                # Keep the predictions
+                predictions[name] = mol_model.prediction
+                predictions_list.append(predictions)
+
+            # Return the cross validation score
+            return group.evaluate_many(predictions_list)
+
+        # evaluation = cross_train_torch(group, m, name, test, 'classification')
+
+        # print(evaluation)
+
     def test_torch_graph_models_0(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -53,7 +133,7 @@ class TestJitModels(unittest.TestCase):
         val = Evaluator()
         val.dataset = dataset
         val.register_scoring_function('Max Error', max_error)
-        val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
+        val.register_scoring_function('MAE', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
         model = GCN_V1(30, 3, 40, 2)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
@@ -61,7 +141,10 @@ class TestJitModels(unittest.TestCase):
         m = MolecularTorchGeometric(dataset=dataset
                                     , model_nn=model, eval=val
                                     , train_batch=4, test_batch=4
-                                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+                                    , epochs=40, optimizer=optimizer, criterion=criterion, test_metric=(mean_absolute_error,'minimize')).fit()
+
+        m.eval()
+
         model = m.create_molecular_model()
         model(self.mols[0])
         model(self.mols)

@@ -194,7 +194,7 @@ class MolecularTorchGeometric(Model):
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
-                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu'):
+                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu', test_metric=(None, 'minimize')):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset: TorchGraphDataset = dataset
         self.model_nn = model_nn
@@ -219,6 +219,15 @@ class MolecularTorchGeometric(Model):
         self.path = None
         self.model_dir = model_dir
         self.device = torch.device(device)
+        self.__default__ = False
+        if test_metric[0] is None and dataset.task == 'classification':
+            self.__default__ = True
+            test_metric = ('Accuracy', 'maximize')
+        if test_metric[0] is None and dataset.task == 'regression':
+            self.__default__ = True
+            test_metric = ('Loss', 'minimize')
+        self.test_metric = test_metric
+
         # torch.multiprocessing.freeze_support()
 
     def __call__(self, smiles):
@@ -254,8 +263,8 @@ class MolecularTorchGeometric(Model):
             if epoch % self.log_steps == 0:
                 if self.dataset.task == "classification":
                     los = test_loss[2]
-                    if temp_loss is None or temp_loss < los:
-                        temp_loss = los
+                    if self.__save_choice__(temp_loss, train_loss[2], los):
+                        temp_loss = [train_loss[2], los]
                         temp_path = self.path
                         self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
                         torch.save({
@@ -268,15 +277,15 @@ class MolecularTorchGeometric(Model):
                             os.remove(temp_path)
                         except TypeError as e:
                             continue
-                    print(f'Epoch: {epoch:03d}, Train Accuracy: {train_loss[2]}, Test Accuracy: {test_loss[2]}')
+                    print(f'Epoch: {epoch:03d}, Train Score: {train_loss[2]}, Test Score: {test_loss[2]}')
                 else:
                     los = test_loss[1]
-                    if temp_loss is None or temp_loss > los:
-                        temp_loss = los
+                    if self.__save_choice__(temp_loss, train_loss[1], los):
+                        temp_loss = [train_loss[1], los]
                         temp_path = self.path
                         # print(temp_loss.item())
                         # print(str(temp_loss))
-                        self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(temp_loss.item()) + ".pt"
+                        self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los.item()) + ".pt"
                         torch.save({
                             'epoch': epoch,
                             'model_state_dict': self.model_nn.state_dict(),
@@ -287,8 +296,35 @@ class MolecularTorchGeometric(Model):
                             os.remove(temp_path)
                         except TypeError as e:
                             continue
-                    print(f'Epoch: {epoch:03d}, Train Loss: {train_loss[1]}, Test Loss: {test_loss[1]}')
+                    print(f'Epoch: {epoch:03d}, Train Score: {train_loss[1]}, Test Score: {test_loss[1]}')
         return self
+
+
+    def __save_choice__(self, temp_loss, train_loss, test_loss):
+        if self.test_metric[1] == 'minimize':
+            if temp_loss is None:
+                return True
+            elif temp_loss[1] > test_loss:
+                return True
+            elif temp_loss[1] == test_loss:
+                if temp_loss[0] >= train_loss:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        elif self.test_metric[1] == 'maximize':
+            if temp_loss is None:
+                return True
+            elif temp_loss[1] < test_loss:
+                return True
+            elif temp_loss[1] == test_loss:
+                if temp_loss[0] <= train_loss:
+                    return True
+                else:
+                    return False
+            else:
+                return False
 
     def train(self):
         self.model_nn.train()
@@ -312,6 +348,40 @@ class MolecularTorchGeometric(Model):
             self.optimizer_local.zero_grad()
 
     def test(self, dataloader):
+        if self.__default__:
+            return self.__default_test__(dataloader)
+        else:
+            self.model_nn.eval()
+            test_function = self.test_metric[0]
+            truth = np.array([])
+            preds = np.array([])
+            for data in dataloader:
+                x = data.x.to(self.device)
+                edge_index = data.edge_index.to(self.device)
+                try:
+                    edge_attributes = data.edge_attr.to(self.device)
+                except AttributeError:
+                    edge_attributes = None
+                batch = data.batch.to(self.device)
+
+                y = data.y.to(self.device)
+
+                if edge_attributes is not None:
+                    out = self.model_nn(x, edge_index, edge_attributes, batch)
+                else:
+                    out = self.model_nn(x, edge_index, batch)
+
+                truth = np.append(truth, y.cpu().numpy())
+
+                if self.dataset.task == "regression":
+                    preds = np.append(preds, out.cpu().detach().numpy())
+                    return out, test_function(truth, preds)
+                else:
+                    preds = np.append(preds, out.argmax(dim=1).cpu().detach().numpy())
+                    return out, out.argmax(dim=1).cpu().numpy(), test_function(truth, preds)
+
+
+    def __default_test__(self, dataloader):
         self.model_nn.eval()
         if self.dataset.task == 'classification':
             correct = 0

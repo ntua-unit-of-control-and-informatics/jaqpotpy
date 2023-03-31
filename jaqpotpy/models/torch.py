@@ -22,7 +22,7 @@ class MolecularTorch(Model):
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
-                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu'):
+                 , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu', test_metric=(None, 'minimize')):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset: MolecularDataset = dataset
         self.model_nn = model_nn
@@ -47,7 +47,14 @@ class MolecularTorch(Model):
         self.path = None
         self.model_dir = model_dir
         self.device = torch.device(device)
-
+        self.__default__ = False
+        if test_metric[0] is None and dataset.task == 'classification':
+            self.__default__ = True
+            test_metric = ('Accuracy', 'maximize')
+        if test_metric[0] is None and dataset.task == 'regression':
+            self.__default__ = True
+            test_metric = ('Loss', 'minimize')
+        self.test_metric = test_metric
         # torch.multiprocessing.freeze_support()
 
     def __call__(self, smiles):
@@ -84,9 +91,9 @@ class MolecularTorch(Model):
             test_loss = self.test(self.test_loader)
             if self.dataset.task == "classification":
                 los = test_loss[2]
-                if temp_loss is None or temp_loss < los:
-                # if temp_loss < los and steps > epoch:
-                    temp_loss = los
+                if self.__save_choice__(temp_loss, train_loss[2], los):
+                    temp_loss = [train_loss[2], los]
+                    # if temp_loss < los and steps > epoch:
                     temp_path = self.path
                     self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
                     torch.save({
@@ -100,11 +107,11 @@ class MolecularTorch(Model):
                     except TypeError as e:
                         continue
                 if epoch % self.log_steps == 0:
-                    print(f'Epoch: {epoch:03d}, Train Accuracy: {train_loss[2]}, Test Accuracy: {test_loss[2]}')
+                    print(f'Epoch: {epoch:03d}, Train Score: {train_loss[2]}, Test Score: {test_loss[2]}')
             else:
                 los = test_loss[1].item()
-                if temp_loss is None or temp_loss > los:
-                    temp_loss = los
+                if self.__save_choice__(temp_loss, train_loss[2], los):
+                    temp_loss = [train_loss[1], los]
                     temp_path = self.path
                     self.path = self.model_dir + "molecular_model_ep_" + str(epoch) + "_er_" + str(los) + ".pt"
                     torch.save({
@@ -118,8 +125,35 @@ class MolecularTorch(Model):
                     except TypeError as e:
                         continue
                 if epoch % self.log_steps == 0:
-                    print(f'Epoch: {epoch:03d}, Train Loss: {train_loss[1]}, Test Loss: {test_loss[1]}')
+                    print(f'Epoch: {epoch:03d}, Train Score: {train_loss[1]}, Test Score: {test_loss[1]}')
         return self
+
+    def __save_choice__(self, temp_loss, train_loss, test_loss):
+        if self.test_metric[1] == 'minimize':
+            if temp_loss is None:
+                return True
+            elif temp_loss[1] > test_loss:
+                return True
+            elif temp_loss[1] == test_loss:
+                if temp_loss[0] >= train_loss:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        elif self.test_metric[1] == 'maximize':
+            if temp_loss is None:
+                return True
+            elif temp_loss[1] < test_loss:
+                return True
+            elif temp_loss[1] == test_loss:
+                if temp_loss[0] <= train_loss:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+
 
     def train(self):
         self.model_nn.train()
@@ -140,6 +174,32 @@ class MolecularTorch(Model):
             self.optimizer_local.zero_grad()
 
     def test(self, dataloader):
+        if self.__default__:
+            return self.__default_test__(dataloader)
+        else:
+            self.model_nn.eval()
+            test_function = self.test_metric[0]
+            truth = np.array([])
+            preds = np.array([])
+            if self.dataset.task == 'classification':
+                for data in dataloader:
+                    input = data[0].to(self.device)
+                    y = data[1].to(self.device)
+                    out = self.model_nn(input.float())
+                    y = torch.squeeze(y.long())
+                    preds = np.append(preds, out.argmax(dim=1).cpu().detach().numpy())
+                    truth = np.append(truth, y)
+                return out, out.argmax(dim=1).cpu().numpy(), test_function(truth, preds)
+            else:
+                self.model_nn.eval()
+                for data in dataloader:
+                    input = data[0].to(self.device)
+                    y = data[0].to(self.device)
+                    out = self.model_nn(input)
+                    preds = np.append(preds, out.cpu().detach().numpy())
+                return out, test_function(truth, preds)
+
+    def __default_test__(self, dataloader):
         self.model_nn.eval()
         if self.dataset.task == 'classification':
             correct = 0
