@@ -1,0 +1,14 @@
+receptor = ./tmp/1a9m_pocket.pdbqt
+ligand = ./tmp/ZINC000787318646.pdbqt
+
+center_x = 43.114639
+center_y = 18.629565
+center_z = 64.745907
+
+size_x = 33.370000
+size_y = 34.211000
+size_z = 32.442000
+
+num_modes = 2
+
+exhaustiveness = 32

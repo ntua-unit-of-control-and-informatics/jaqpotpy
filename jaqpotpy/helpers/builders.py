@@ -236,6 +236,12 @@ class PretrainedNeedsDirector:
         pretrained_needs.runtime = self._builder.getRuntime()
         pretrained_needs.description = self._builder.getDescription()
         pretrained_needs.title = self._builder.getTitle()
+        pretrained_needs.jaqpotpyVersion = self._builder.getJaqpotPyVersion()
+        pretrained_needs.jaqpotpyDockerVersion = self._builder.getJaqpotpyDockerVersion()
+        pretrained_needs.libraries = self._builder.getLibraries()
+        pretrained_needs.versions = self._builder.getVersions()
+        pretrained_needs.type = self._builder.getType()
+        pretrained_needs.runtime = self._builder.getRuntime()
         return pretrained_needs
 
 
@@ -250,6 +256,35 @@ class PretrainedNeedsBuilder:
     description = []
     title = []
     rawModel = []
+    libraries = []
+    versions = []
+    jaqpotpy_version: str = None
+    jaqpotpy_docker_version: str = None
+    type: str = None
+
+    def setLibraries(self, libraries):
+        self.libraries.clear()
+        self.libraries = libraries
+
+    def setVersions(self, versions):
+        self.versions.clear()
+        self.versions = versions
+
+    def setJaqpotPyVersion(self, jaqpotpy_version):
+        # self.jaqpotpy_version.clear()
+        self.jaqpotpy_version = jaqpotpy_version
+
+    def setJaqpotPyDockerVersion(self, jaqpotpy_docker_version):
+        # self.jaqpotpy_version.clear()
+        self.jaqpotpy_docker_version = jaqpotpy_docker_version
+
+    def setType(self, type):
+        # self.type.clear()
+        self.type = type
+
+    def getType(self):
+        # self.type.clear()
+        return self.type
 
     def setRawModel(self, model):
         self.rawModel.clear()
@@ -321,6 +356,18 @@ class PretrainedNeedsBuilder:
 
     def getTitle(self):
         return self.title
+
+    def getJaqpotPyVersion(self):
+        return self.jaqpotpy_version
+
+    def getJaqpotpyDockerVersion(self):
+        return self.jaqpotpy_docker_version
+
+    def getLibraries(self):
+        return self.libraries
+
+    def getVersions(self):
+        return self.versions
 
 
 class DOABuilder(metaclass=abc.ABCMeta):

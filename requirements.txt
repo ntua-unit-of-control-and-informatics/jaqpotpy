@@ -1,7 +1,28 @@
-tornado
 pandas
 pyjwt
 simplejson
 pydotplus
 requests
 pydantic
+rdkit-pypi
+mordred
+scikit-learn
+tqdm
+torch
+torch-scatter
+torch-sparse
+torch-cluster
+torch-spline-conv
+torch-geometric
+kennard-stone
+mendeleev
+pymatgen
+
+# TORCH - GEOMETRIC (KEEP IT LAST)
+-f https://data.pyg.org/whl/torch-1.13.0+cpu.html
+torch-scatter
+torch-sparse
+torch-cluster
+torch-spline-conv
+torch-geometric
+# pyg-lib

@@ -1,5 +1,5 @@
-from tornado import gen, httpclient
-from tornado.httputil import HTTPHeaders
+#from tornado import gen, httpclient
+#from tornado.httputil import HTTPHeaders
 import getpass
 import urllib.parse
 from jaqpotpy.mappers import decode
@@ -24,6 +24,19 @@ def authenticate_sync(baseurl, username, password):
         return r.json()
     except Exception as e:
         print("Error 1: " + str(e))
+
+
+def validate_api_key(baseurl, api_key):
+    uri = baseurl + "aa/validate/accesstoken"
+    data = api_key
+    h = {"Content-type": "*/*", "Accept": "application/json"}
+    try:
+        r = requests.post(uri, data=data, headers=h)
+        # resp = decode.decode_auth(r.text)
+        return r.json()
+    except Exception as e:
+        print("Error 1: " + str(e))
+
 
 
 # def authenticate_sync(http_client, baseurl, username, password):

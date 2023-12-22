@@ -4,12 +4,14 @@ import pandas as pd
 def decode_predicted(dataset):
     feat_info = dataset['features']
     predicted = {}
+    predicted_f = []
     for feat in feat_info:
         name = feat['name']
         key = feat['key']
         try:
             category = feat['category']
-            predicted_f = feat['name']
+            if (category == 'PREDICTED') and (feat['name'] not in predicted_f):
+                predicted_f.append(feat['name'])
         except KeyError:
             dataentries = {}
             for dataEntry in dataset['dataEntry']:

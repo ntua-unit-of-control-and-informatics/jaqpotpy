@@ -1,6 +1,10 @@
+
+# Jaqpotpy
+## _Standardizing molecular modeling_
+
 # Jaqpot 
 
-Jaqpot platform enables sklearn, xgBoost and other models developed in python to be accessible through a user interface, that allows extensive documentation of the models and sharing through your contacts.
+Jaqpot platform is a model repo developed in python and jaqpotpy making the models accessible through a user interface, that allows extensive documentation of the models and sharing through your contacts.
 
 
 ## jaqpotpy
@@ -83,7 +87,5 @@ The function will inform you about the model id that is created and is available
 
 
 ### Continue furter through the jaqpot user interface
-
-
 
 

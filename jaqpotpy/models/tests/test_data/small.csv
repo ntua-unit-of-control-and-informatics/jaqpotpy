@@ -1,0 +1,5 @@
+compound_chembl_id,canonical_smiles,standard_type,standard_value,standard_units,molregno,target_chembl_id,L1,L2,L3,organism,pref_name,target_type
+CHEMBL1276307,CO[C@@H]1[C@@H](O)[C@@H](O)[C@H](Oc2ccc3c(O)c(NC(=O)/C=C/c4ccccc4)c(=O)oc3c2C)OC1(C)C,IC50,10000.000000000000000000000000000000,nM,712272,CHEMBL1826,Bacteria,Gram-Negative,Escherichia,Escherichia coli,DNA gyrase subunit B,SINGLE PROTEIN
+CHEMBL1276306,CO[C@@H]1[C@@H](O)[C@@H](O)[C@H](Oc2ccc3c(O)c(NC(=O)c4ccccc4)c(=O)oc3c2C)OC1(C)C,IC50,10000.000000000000000000000000000000,nM,712271,CHEMBL1826,Bacteria,Gram-Negative,Escherichia,Escherichia coli,DNA gyrase subunit B,SINGLE PROTEIN
+CHEMBL1276305,COc1cc(C(=O)Nc2c(O)c3ccc(O[C@@H]4OC(C)(C)[C@H](OC)[C@@H](O)[C@H]4O)c(C)c3oc2=O)ccc1O,IC50,10000.000000000000000000000000000000,nM,712270,CHEMBL1826,Bacteria,Gram-Negative,Escherichia,Escherichia coli,DNA gyrase subunit B,SINGLE PROTEIN
+CHEMBL1276304,CCCc1cc(C(=O)Nc2c(O)c3ccc(O[C@@H]4OC(C)(C)[C@H](OC)[C@@H](O)[C@H]4O)c(C)c3oc2=O)ccc1O,IC50,10000.000000000000000000000000000000,nM,712269,CHEMBL1826,Bacteria,Gram-Negative,Escherichia,Escherichia coli,DNA gyrase subunit B,SINGLE PROTEIN
