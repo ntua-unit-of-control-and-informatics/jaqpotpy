@@ -2,9 +2,6 @@ from jaqpotpy.descriptors.molecular import MACCSKeysFingerprint
 from jaqpotpy.datasets import SmilesDataset
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models import MolecularSKLearn
-from jaqpotpy import Jaqpot
-from sklearn.ensemble import RandomForestRegressor
-import numpy as np
 from sklearn.linear_model import LinearRegression
 
 # Train model
