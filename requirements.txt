@@ -12,13 +12,30 @@ kennard-stone
 mendeleev
 pymatgen
 
-# torch 1.13 for windows
+
+#############
+## PyTorch ##
+#############
+
+# torch 1.13-cpu-windows-python3.10
 https://download.pytorch.org/whl/cpu/torch-1.13.0%2Bcpu-cp310-cp310-win_amd64.whl
-# TORCH - GEOMETRIC (KEEP IT LAST)
--f https://data.pyg.org/whl/torch-1.13.0+cpu.html
-torch-scatter
-torch-sparse
-torch-cluster
-torch-spline-conv
-torch-geometric
-# pyg-lib
+
+
+###########################################################
+## PyG compatible with torch 1.13-cpu-windows-python3.10 ##
+###########################################################
+
+# torch-scatter 2.1.0
+https://data.pyg.org/whl/torch-1.13.0%2Bcpu/torch_scatter-2.1.0%2Bpt113cpu-cp310-cp310-win_amd64.whl
+
+# torch-sparse 0.6.17
+https://data.pyg.org/whl/torch-1.13.0%2Bcpu/torch_sparse-0.6.17%2Bpt113cpu-cp310-cp310-win_amd64.whl
+
+# torch-cluster 1.6.1
+https://data.pyg.org/whl/torch-1.13.0%2Bcpu/torch_cluster-1.6.1%2Bpt113cpu-cp310-cp310-win_amd64.whl
+
+# torch-spline-conv 1.2.2
+https://data.pyg.org/whl/torch-1.13.0%2Bcpu/torch_spline_conv-1.2.2%2Bpt113cpu-cp310-cp310-win_amd64.whl
+
+# torch-geometric
+torch_geometric
