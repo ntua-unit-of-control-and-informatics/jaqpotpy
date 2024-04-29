@@ -18,12 +18,12 @@ lr = LinearRegression()
 model = MolecularSKLearn(dataset, doa=Leverage(), model=lr, eval=None)
 fitted = model.fit()
 
-api_key = ''  # set your api key here
+# api_key = ''  # set your api key here
+#
+# jaqpot = Jaqpot(baseUrl="http://localhost:8080/jaqpot/services/")
+# jaqpot.set_api_key(api_key)
+# fitted.deploy_on_jaqpot(jaqpot=jaqpot,
+#                         description="ALEX",
+#                         model_title="RANDOM")
 
-jaqpot = Jaqpot(baseUrl="http://localhost:8080/jaqpot/services/")
-jaqpot.set_api_key(api_key)
-fitted.deploy_on_jaqpot(jaqpot=jaqpot,
-                        description="ALEX",
-                        model_title="RANDOM")
-
-model.prediction
+print(fitted.prediction)
