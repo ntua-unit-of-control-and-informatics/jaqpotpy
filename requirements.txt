@@ -11,3 +11,14 @@ tqdm
 kennard-stone
 mendeleev
 pymatgen
+
+# torch 1.13 for windows
+https://download.pytorch.org/whl/cpu/torch-1.13.0%2Bcpu-cp310-cp310-win_amd64.whl
+# TORCH - GEOMETRIC (KEEP IT LAST)
+-f https://data.pyg.org/whl/torch-1.13.0+cpu.html
+torch-scatter
+torch-sparse
+torch-cluster
+torch-spline-conv
+torch-geometric
+# pyg-lib
