@@ -179,3 +179,34 @@ class ImageDataset(BaseDataset):
     def load(cls, filename):
         with open(filename, 'rb') as f:
             return pickle.load(f)
+
+
+class NumericalVectorDataset(BaseDataset):
+    """
+    A subclass of BaseDataset for handling datasets composed of numerical vectors.
+    """
+    def __init__(self, vectors: Optional[List[List[float]]] = None, targets: Optional[List[float]] = None, path: Optional[str] = None):
+        super().__init__(path)
+        self.vectors = vectors if vectors is not None else []
+        self.targets = targets if targets is not None else []
+        self.x_cols = [f'feature_{i}' for i in range(len(self.vectors[0]))] if self.vectors else []
+        self.y_cols = ['target'] if self.targets else []
+        self._task = "regression"  # Default task; can be changed to classification if needed
+
+    def create(self):
+        """
+        Creates the DataFrame from the input vectors and targets.
+        """
+        if self.path:
+            # Load data from a CSV file if a path is provided
+            self.df = pd.read_csv(self.path)
+        else:
+            # Create DataFrame from provided lists
+            self.df = pd.DataFrame(self.vectors, columns=self.x_cols)
+            if self.targets:
+                self.df['target'] = self.targets
+        self.X = self.df[self.x_cols]
+        self.y = self.df['target'] if 'target' in self.df.columns else None
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(num_vectors={len(self.vectors)}, num_features={len(self.x_cols) if self.x_cols else 0})"

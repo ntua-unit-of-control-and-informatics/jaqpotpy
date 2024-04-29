@@ -29,3 +29,4 @@ fitted = model.fit()
 input_dataset = ['CC']
 fitted(input_dataset)
 print(fitted.prediction)
+print('this is a test')
