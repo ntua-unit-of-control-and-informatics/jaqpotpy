@@ -1,0 +1,15 @@
+pandas
+pyjwt
+simplejson
+pydotplus
+requests
+pydantic
+rdkit-pypi
+mordred
+scikit-learn
+tqdm
+kennard-stone
+mendeleev
+pymatgen
+skl2onnx
+onnxruntime
