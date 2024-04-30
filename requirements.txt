@@ -17,6 +17,7 @@ onnxruntime
 # Torch requirements
 torch==2.3.0
 torch-geometric==2.3.1
+torchvision==0.18.0
 # TORCH - GEOMETRIC OPTIONAL DEPENDENCIES (KEEP IT LAST)
 -f https://data.pyg.org/whl/torch-2.3.0+cpu.html
 torch-scatter
