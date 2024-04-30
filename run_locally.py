@@ -16,6 +16,12 @@ lr = LinearRegression()
 model = MolecularSKLearn(training_dataset, doa=Leverage(), model=lr, eval=None)
 fitted = model.fit()
 
+# Infer
+input_dataset = ['CC']
+fitted(input_dataset)
+print(fitted.prediction)
+print('this is a test')
+
 # Upload to local jaqpot
 # api_key = ''  # set your api key here
 #
@@ -24,9 +30,3 @@ fitted = model.fit()
 # fitted.deploy_on_jaqpot(jaqpot=jaqpot,
 #                         description="ALEX",
 #                         model_title="RANDOM")
-
-# Infer
-input_dataset = ['CC']
-fitted(input_dataset)
-print(fitted.prediction)
-print('this is a test')
