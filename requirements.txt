@@ -11,14 +11,17 @@ tqdm
 kennard-stone
 mendeleev
 pymatgen
+skl2onnx
+onnxruntime
 
-# torch 1.13 for windows
-https://download.pytorch.org/whl/cpu/torch-1.13.0%2Bcpu-cp310-cp310-win_amd64.whl
-# TORCH - GEOMETRIC (KEEP IT LAST)
--f https://data.pyg.org/whl/torch-1.13.0+cpu.html
+# Torch requirements
+torch==2.3.0
+torch-geometric==2.3.1
+torchvision==0.18.0
+# TORCH - GEOMETRIC OPTIONAL DEPENDENCIES (KEEP IT LAST)
+-f https://data.pyg.org/whl/torch-2.3.0+cpu.html
 torch-scatter
 torch-sparse
 torch-cluster
 torch-spline-conv
-torch-geometric
 # pyg-lib

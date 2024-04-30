@@ -139,3 +139,5 @@ jaqpotpy/models/.DS_Store
 jaqpotpy/models/.DS_Store
 .DS_Store
 jaqpotpy/models/tests/.DS_Store
+
+run_tests/test_logs*
