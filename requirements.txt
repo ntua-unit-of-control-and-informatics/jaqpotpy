@@ -8,16 +8,23 @@ rdkit-pypi
 mordred
 scikit-learn
 tqdm
+torch
+torch-scatter
+torch-sparse
+torch-cluster
+torch-spline-conv
+torch-geometric
 kennard-stone
 mendeleev
 pymatgen
+skl2onnx
+onnxruntime
 
-torch==1.13.0
-
-torch-cluster==1.6.0+pt113cpu -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
-torch-scatter==2.1.0+pt113cpu -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
-torch-sparse==0.6.15+pt113cpu -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
-torch-spline-conv==1.2.1+pt113cpu -f https://data.pyg.org/whl/torch-1.13.0+cpu.html
-
-# torch-geometric
-torch_geometric==2.2.0
+# TORCH - GEOMETRIC (KEEP IT LAST)
+-f https://data.pyg.org/whl/torch-2.3.0+cpu.html
+torch-scatter
+torch-sparse
+torch-cluster
+torch-spline-conv
+torch-geometric
+# pyg-lib
