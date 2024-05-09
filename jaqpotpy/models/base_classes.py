@@ -224,6 +224,71 @@ class Model(object):
         raise NotImplemented("Not implemented")
 
 
+class NumericalModel(Model):
+
+    def __call__(self, external=None):
+        self._external = external
+        self.infer()
+
+    def save(self):
+        if self.model_title:
+            with open(self.model_title + ".jmodel", 'wb') as f:
+                pickle.dump(self, f)
+        else:
+            with open("jaqpot_model" + ".jmodel", 'wb') as f:
+                pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
+
+    def deploy_on_jaqpot(self, X, y, jaqpot, description, model_title: str = None):
+        jaqpot.deploy_sklearn(self, X=X, y=y, description=description, title=model_title)
+    
+
+    @classmethod
+    def load_from_jaqpot(cls, jaqpot, id: str):
+        try:
+            model = jaqpot.get_raw_model_by_id(id)
+            raw_model = base64.b64decode(model['actualModel'][0])
+            model: NumericalModel = pickle.loads(raw_model)
+            return model
+        except Exception as e:
+
+            pass
+
+    def infer(self):
+        self._prediction = []
+        self._probability = []
+
+    
+        data = pd.DataFrame.from_dict(self.external) 
+        print("External data loaded:", data)  
+        if self.library == ['sklearn']:
+            preds = self.model.predict(data)
+            for p in preds:
+                try:
+                    if self.preprocessing_y:
+                        for f in self.preprocessing_y:
+                            p = f.inverse_transform(p.reshape(1, -1))
+                except AttributeError as e:
+                    pass
+                self._prediction.append(p.tolist())
+            try:
+                probs = self.model.predict_proba(data)
+                self._probability = [prob.tolist() for prob in probs]
+
+            except AttributeError as e:
+                pass
+
+                    
+        
+            return self
+        else:
+            pass
+    
+
 class MolecularModel(Model):
 
     def __call__(self, smiles, external=None):
@@ -261,6 +326,28 @@ class MolecularModel(Model):
     def infer(self):
         self._prediction = []
         self._probability = []
+
+        if not self._smiles:
+            data = pd.DataFrame.from_dict(self.external) 
+            print("External data loaded:", data)  
+            if self.library == ['sklearn']:
+                preds = self.model.predict(data)
+                for p in preds:
+                    try:
+                        if self.preprocessing_y:
+                            for f in self.preprocessing_y:
+                                p = f.inverse_transform(p.reshape(1, -1))
+                    except AttributeError as e:
+                        pass
+                    self._prediction.append(p.tolist())
+                try:
+                    probs = self.model.predict_proba(data)
+                    self._probability = [prob.tolist() for prob in probs]
+
+                except AttributeError as e:
+                    pass
+
+                    
         if self._smiles:
             if self._descriptors == "RDKitDescriptors":
                 self._descriptors = RDKitDescriptors()
@@ -272,11 +359,17 @@ class MolecularModel(Model):
                 self._descriptors.__name__ = "Compose"
                 data = [self._descriptors(default_loader(image)) for image in self._smiles]
             else:
-                data = self._descriptors.featurize_dataframe(self._smiles)
+                #data = self._descriptors.featurize_dataframe(self._smiles)
+                data = []
+            
 
             if self.external:
                 ext = pd.DataFrame.from_dict(self.external)
                 data = pd.concat([data, ext], axis=1)
+            
+            graph_data_list = []
+                
+            
             graph_data_list = []
 
             # if self._descriptors.__name__ == 'MolGraphConvFeaturizer':

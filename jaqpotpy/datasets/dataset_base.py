@@ -5,7 +5,8 @@ from typing import Any
 import inspect
 from typing import Iterable
 import pickle
-
+from typing import List, Optional
+import pandas as pd
 
 class BaseDataset(object):
     """
@@ -181,6 +182,9 @@ class ImageDataset(BaseDataset):
             return pickle.load(f)
 
 
+
+    
+    
 class NumericalVectorDataset(BaseDataset):
     """
     A subclass of BaseDataset for handling datasets composed of numerical vectors.
@@ -192,6 +196,15 @@ class NumericalVectorDataset(BaseDataset):
         self.x_cols = [f'feature_{i}' for i in range(len(self.vectors[0]))] if self.vectors else []
         self.y_cols = ['target'] if self.targets else []
         self._task = "regression"  # Default task; can be changed to classification if needed
+    
+    def save(self):
+        if self._dataset_name:
+            with open(self._dataset_name + ".jdb", 'wb') as f:
+                pickle.dump(self, f)
+        else:
+            with open("jaqpotpy_dataset" + ".jdb", 'wb') as f:
+                pickle.dump(self, f)
+        
 
     def create(self):
         """
@@ -205,8 +218,34 @@ class NumericalVectorDataset(BaseDataset):
             self.df = pd.DataFrame(self.vectors, columns=self.x_cols)
             if self.targets:
                 self.df['target'] = self.targets
-        self.X = self.df[self.x_cols]
-        self.y = self.df['target'] if 'target' in self.df.columns else None
+        
+        self.x_cols = self.df.columns[:-1]  # All columns except the last one
+        self.X = self.df[self.x_cols].to_numpy()  # Storing feature data as numpy array
+        self.y_cols = self.df.columns[-1]    # The last column
+        #self.y = self.df['target'] if 'target' in self.df.columns else None
+        self.y = self.df[self.df.columns[-1]].to_numpy()  # Storing target data as numpy array
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(num_vectors={len(self.vectors)}, num_features={len(self.x_cols) if self.x_cols else 0})"
+
+    def __get_X__(self):
+        return self.X
+
+    def __get_Y__(self):
+        return self.y
+
+    def __get__(self):
+        return self.df
+
+    def __getitem__(self, idx):
+        # print(self.df[self.X].iloc[idx].values)
+        # print(type(self.df[self.X].iloc[idx].values))
+        X = self.df[self.X].iloc[idx].values
+        y = self.df[self.y].iloc[idx].to_numpy()
+        return X, y
+
+    def __len__(self):
+        if self.df is None:
+            self.create()
+        return len(self.df)
+

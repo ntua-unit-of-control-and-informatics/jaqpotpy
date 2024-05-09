@@ -15,154 +15,65 @@ from torch.utils.data import Dataset
 
 class MolecularTabularDataset(MolecularDataset):
     """
-    Reads CSV with smiles, experimental features and endpoints
+    Reads CSV with SMILES, experimental features, and endpoints.
+    Handles datasets with optional SMILES for feature generation.
     """
-    def __init__(self, path, x_cols=None, y_cols=Iterable[Any], smiles_col=None, smiles=Iterable[str]
-                 , y: Iterable[Any] = Iterable[Any], X: Iterable[Any] = None,
-                 featurizer: MolecularFeaturizer = None, task: str = "regression") -> None:
-        # super(SmilesTabularDataset, path, x_cols, y_cols).__init__(path, x_cols, y_cols)
-        super(MolecularTabularDataset, self).__init__(path=path, x_cols=x_cols, y_cols=y_cols)
-        self._y = y
-        self._x = X
-        self._df = None
-        self._external = None
-        self._x_cols_all = None
+    def __init__(self, path, feature_columns=None, target_columns=None, smiles_col=None,
+                 smiles: Iterable[str] = None, targets: Iterable[Any] = None,
+                 features: Iterable[Any] = None, featurizer: MolecularFeaturizer = None,
+                 task: str = "regression"):
+        super().__init__(path=path, x_cols=feature_columns, y_cols=target_columns)
+        self.feature_values = features
+        self.target_values = targets
+        self.df = None
+        self.external_features = None
+        self.feature_columns = None
         self.smiles_col = smiles_col
         self.smiles = smiles
-        self._smiles_strings = None
-        self.ys = y
-        self._task = task
-        self.featurizer: MolecularFeaturizer = featurizer
-        self.indices: [] = None
-        # self.create()
+        self.smiles_strings = None
+        self.targets = targets
+        self.task = task
+        self.featurizer = featurizer
+        self.indices = []
 
     def save(self):
-        if self._dataset_name:
-            with open(self._dataset_name + ".jdb", 'wb') as f:
-                pickle.dump(self, f)
-        else:
-            with open("jaqpotpy_dataset" + ".jdb", 'wb') as f:
-                pickle.dump(self, f)
+        dataset_name = self._dataset_name if self._dataset_name else "jaqpotpy_dataset"
+        with open(f"{dataset_name}.jdb", 'wb') as f:
+            pickle.dump(self, f)
 
-    # def create(self):
-    #     print('Hello')
-    #     name, extension = os.path.splitext(self.path)
-    #     if extension == '.csv':
-    #         data = pd.read_csv(self.path)
-    #         smiles = data[self.smiles_col].to_list()
-    #         self._smiles_strings = smiles
-    #         self.smiles = smiles
-    #         descriptors = self.featurizer.featurize_dataframe(smiles)
-    #         # print(len(list(descriptors)))
-    #         if self.x_cols:
-    #             self._external = self.x_cols
-    #             xs = data[self.x_cols]
-    #             y = data[self.y_cols]
-    #             self.df = pd.concat([descriptors, xs, y], axis=1)
-    #             self._x_cols_all = list(descriptors) + list(xs)
-    #             self.y_cols = list(y)
-    #             self.y = list(y)
-    #         else:
-    #             y = data[self.y_cols]
-    #             self.df = pd.concat([descriptors, y], axis=1)
-    #             self._x_cols_all = list(descriptors)
-    #             self.y_cols = list(y)
-    #             self.y = list(y)
-    #         if self.X is None:
-    #             if self.x_cols:
-    #                 xs = data[self.x_cols]
-    #                 if not xs.empty:
-    #                     self._x = list(descriptors) + list(xs)
-    #                 else:
-    #                     self._x = list(descriptors)
-    #             else:
-    #                 self._x = list(descriptors)
-    #     return self
-    
     def create(self):
         print('Hello')
-        name, extension = os.path.splitext(self.path)
+        _, extension = os.path.splitext(self.path)
         if extension == '.csv':
             data = pd.read_csv(self.path)
-            if self.smiles_col and self.featurizer:  # Check if SMILES column and featurizer are provided
+            if self.smiles_col and self.featurizer:
                 smiles = data[self.smiles_col].to_list()
-                self._smiles_strings = smiles
-                self.smiles = smiles
-                descriptors = self.featurizer.featurize_dataframe(smiles)
-                if self.x_cols:
-                    self._external = self.x_cols
-                    xs = data[self.x_cols]
-                    y = data[self.y_cols]
-                    self.df = pd.concat([descriptors, xs, y], axis=1)
-                    self._x_cols_all = list(descriptors) + list(xs)
-                    self.y_cols = list(y)
-                    self.y = list(y)
-                else:
-                    y = data[self.y_cols]
-                    self.df = pd.concat([descriptors, y], axis=1)
-                    self._x_cols_all = list(descriptors)
-                    self.y_cols = list(y)
-                    self.y = list(y)
-            else:  # No SMILES processing
-                if self.x_cols:
-                    xs = data[self.x_cols]
-                    y = data[self.y_cols]
-                    self.df = pd.concat([xs, y], axis=1)
-                    self._x_cols_all = list(xs)
-                    self.y_cols = list(y)
-                    self.y = list(y)
-                else:
-                    self.df = pd.DataFrame(data[self.y_cols])
-
-            # if self.X is None:
-            #      if self.x_cols:
-            #          xs = data[self.x_cols]
-            #          if not xs.empty:
-            #              self._x = list(descriptors) + list(xs)
-            #          else:
-            #              self._x = list(descriptors)
-            #      else:
-            #          self._x = list(descriptors)
-
-            if self.X is None:
-                # Initialize self._x as an empty list to ensure it always has a defined state.
-                self._x = []
-
-                # If descriptors are generated (i.e., SMILES column is used and featurizer is applied),
-                # append them to self._x.
-                if self.smiles_col:
-                    self._x.extend(list(descriptors))
-
-                # If extra feature columns are specified, append them to self._x.
-                if self.x_cols:
-                    xs = data[self.x_cols]
-                    self._x.extend(list(xs))
-    
-            # if self.X is None:
-            #     if self.smiles_col and self.x_cols:
-            #          xs = data[self.x_cols]
-            #          self._x = list(descriptors) + list(xs)
-            #     if self.smiles_col and not self.x_cols:
-            #          self._x = list(descriptors)
-            #     if not self.smiles_col and self.x_cols:
-            #          self._x = list(descriptors)
-            #          self._x = list(xs)
+                descriptors = self.featurizer.featurize(smiles)
+                if self.feature_columns
+                    features = data[self.feature_columns]
+                    targets = data[self.target_columns]
+                    self.df = pd.concat([descriptors,features, targets], axis=1)
+                    self.all_feature_columns = list(descriptors.columns) + self.feature_columns
+            else:
+                self.df = pd.DataFrame(data[self.target_columns])
+            self.feature_values = self.df[self.all_feature_columns].values
+            self.target_values = self.df[self.target_columns].values
+        else:
+            raise ValueError("Only .csv files are supported.")
         return self
 
     def __get_X__(self):
-        return self.df[self.X].to_numpy()
+        return self.df[self.feature_columns].to_numpy()
 
     def __get_Y__(self):
-        return self.df[self.y].to_numpy()
+        return self.df[self.target_columns].to_numpy()
 
     def __get__(self):
         return self.df
 
     def __getitem__(self, idx):
-        # print(self.df[self.X].iloc[idx].values)
-        # print(type(self.df[self.X].iloc[idx].values))
-        X = self.df[self.X].iloc[idx].values
-        y = self.df[self.y].iloc[idx].to_numpy()
+        X = self.df[self.feature_columns].iloc[idx].values
+        y = self.df[self.target_columns].iloc[idx].to_numpy()
         return X, y
 
     def __len__(self):
@@ -171,16 +82,7 @@ class MolecularTabularDataset(MolecularDataset):
         return len(self.df)
 
     def __repr__(self) -> str:
-        # args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
-        # args_names = [arg for arg in args_spec.args if arg != 'self']
-        # args_info = ''
-        # for arg_name in args_names:
-        #   value = self.__dict__[arg_name]
-        #   # for str
-        #   if isinstance(value, str):
-        #     value = "'" + value + "'"
-        #   # for list
-        return self.__class__.__name__
+        return f"{self.__class__.__name__} - features: {self.feature_columns}, targets: {self.target_columns}"
 
 
 class TorchGraphDataset(MolecularDataset, Dataset):

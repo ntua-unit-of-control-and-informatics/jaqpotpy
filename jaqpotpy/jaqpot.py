@@ -341,44 +341,46 @@ class Jaqpot:
             The id of the model that uploaded
         """
 
-        algorithm = type(model).__name__
-        sk_version = model.__getstate__()['_sklearn_version']
+        # algorithm = type(model).__name__
+        # sk_version = model.__getstate__()['_sklearn_version']
 
-        splited = sk_version.split(".")
-        if int(splited[1]) < 21 and int(splited[0]) == 0:
-            runtime = "scikit-learn-legacy"
-        if int(splited[1]) == 22:
-            runtime = "scikit-learn-0-22"
-        if int(splited[1]) == 23:
-            runtime = "scikit-learn-0-23"
-        if int(splited[1]) == 24:
-            runtime = "scikit-learn-0-24"
-        if int(splited[1]) > 24:
-            runtime = "scikit-learn-0-24"
-        if int(splited[0]) == 1 and int(splited[1]) == 0:
-            runtime = "scikit-learn-1-0"
-        if int(splited[0]) == 1 and int(splited[1]) == 1:
-            runtime = "scikit-learn-1-1"
+        # splited = sk_version.split(".")
+        # if int(splited[1]) < 21 and int(splited[0]) == 0:
+        #     runtime = "scikit-learn-legacy"
+        # if int(splited[1]) == 22:
+        #     runtime = "scikit-learn-0-22"
+        # if int(splited[1]) == 23:
+        #     runtime = "scikit-learn-0-23"
+        # if int(splited[1]) == 24:
+        #     runtime = "scikit-learn-0-24"
+        # if int(splited[1]) > 24:
+        #     runtime = "scikit-learn-0-24"
+        # if int(splited[0]) == 1 and int(splited[1]) == 0:
+        #     runtime = "scikit-learn-1-0"
+        # if int(splited[0]) == 1 and int(splited[1]) == 1:
+        #     runtime = "scikit-learn-1-1"
 
-        if isinstance(X, pd.DataFrame) is False and isinstance(X, pd.Series) is False:
-            raise Exception('Function deploy_sklearn supports pandas dataframe or series. X is not one')
-        if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
-            raise Exception('Function deploy_sklearn supports pandas dataframe or series. Y is not one')
+        # if isinstance(X, pd.DataFrame) is False and isinstance(X, pd.Series) is False:
+        #     raise Exception('Function deploy_sklearn supports pandas dataframe or series. X is not one')
+        # if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
+        #     raise Exception('Function deploy_sklearn supports pandas dataframe or series. Y is not one')
 
         additionalInfo = {}
-        if model_meta is True:
-            additionalInfo['meta'] = model.__getstate__()
-        else:
-            additionalInfo['meta'] = {}
-            additionalInfo['meta']['_sklearn_version'] = sk_version
-        additionalInfo['meta']['algorithm'] = algorithm
-        if isinstance(X, pd.DataFrame):
-            additionalInfo['inputSeries'] = list(X)
-        if isinstance(X, pd.Series):
-            additionalInfo['inputSeries'] = X.name
+        # if model_meta is True:
+        #     additionalInfo['meta'] = model.__getstate__()
+        # else:
+        #     additionalInfo['meta'] = {}
+        #     additionalInfo['meta']['_sklearn_version'] = sk_version
+        # additionalInfo['meta']['algorithm'] = algorithm
+        # if isinstance(X, pd.DataFrame):
+        #     additionalInfo['inputSeries'] = list(X)
+        # if isinstance(X, pd.Series):
+        #     additionalInfo['inputSeries'] = X.name
         pretrained = help.create_pretrain_req(model, X, y, title, description,
-                                              algorithm, "Scikit learn model or pipeline", runtime,
-                                              additionalInfo)
+                                               algorithm, "Scikit learn model or pipeline", runtime,
+                                               additionalInfo)
+
+        
         size = getsizeof(pretrained.rawModel[0])
         if size < 2000000:
             j = json.dumps(pretrained, cls=JaqpotSerializer)
