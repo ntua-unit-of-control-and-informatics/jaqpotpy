@@ -1,0 +1,21 @@
+from jaqpotpy import Jaqpot
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+lr = LinearRegression()
+df = pd.DataFrame({'y': [0.1, 0.3, 0.7],
+                   'd1': [5,1,3],
+                    'd2': [7, 1, 3]})
+
+y = df['y']
+X = df[['d1','d2']]
+
+model = lr.fit(X=X, y=y)
+
+jaqpot = Jaqpot()
+
+api_key = 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE3MTQ2NDE4NzAsImlhdCI6MTcxNDQ2OTA3MCwiYXV0aF90aW1lIjoxNzE0NDY5MDcwLCJqdGkiOiJiMzA5ZjI3Zi04YWI1LTRkYTctYWM4MS0yNWU2MWUyODQ3OGMiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjpbImJyb2tlciIsImFjY291bnQiXSwic3ViIjoiZWU2NjhlMWItYTVlNy00MjRjLWFkMTUtZGM2MGM1ZGY3YWMxIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiamFxcG90LXVpLWNvZGUiLCJub25jZSI6ImJiNmU3ZjA1YjRiZWUxNDRlYzJmMGQyMGMzNjIwYWZlZDM3a1NGaldiIiwic2Vzc2lvbl9zdGF0ZSI6IjAwMmQ3YThlLWViM2UtNDU1YS04ZTlmLTM2ZDYyZmI5N2E3MSIsImFsbG93ZWQtb3JpZ2lucyI6WyInKiciLCIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsImRlZmF1bHQtcm9sZXMtamFxcG90IiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJicm9rZXIiOnsicm9sZXMiOlsicmVhZC10b2tlbiJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgamFxcG90LWFjY291bnRzIGVtYWlsIHByb2ZpbGUgd3JpdGUgcmVhZCIsInNpZCI6IjAwMmQ3YThlLWViM2UtNDU1YS04ZTlmLTM2ZDYyZmI5N2E3MSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6ImdpYW5uaXMgc2F2dmFzIiwicHJlZmVycmVkX3VzZXJuYW1lIjoieWlhbm5pc24yMDAwQGdtYWlsLmNvbSIsImdpdmVuX25hbWUiOiJnaWFubmlzIiwiZmFtaWx5X25hbWUiOiJzYXZ2YXMiLCJlbWFpbCI6InlpYW5uaXNuMjAwMEBnbWFpbC5jb20ifQ.EbqDITrZNyEA19d9N4xJup9yJIdcCdcKnxKW3FDXVbd1ZNg1TC-O_mh8xiBAEshIq4zuJiprskFix67YB4ngcdSMqymzXByg-0is0C-utO3X7g_IUJKBS-LYXkseMNlRrek5V7m_Ynsr_6UYTjCmm8PCpMXxdJ9pqpEXBm7QMc8c_0n9G5yZdE-bl3AlHwB5-3QJlQVMcTOgF3ZPn3-hY5RGge8MtizwSj7S-J6OUqw7ZSTFzGYLEsvSXzJzy4eN6MVaYhMVJuG10QOB89UK-hh4Qk9R2k9Ng3070HRrBrJ328-H_tti0sNj0p-alRvHYr5UXNUfSnvQN9SLK3Q6xQ'
+jaqpot.set_api_key(api_key)
+jaqpot.deploy_sklearn(lr, X, y, title="Pipeline for Periklis", description="External Descriptors")

@@ -22,19 +22,16 @@ print(training_dataset)
 model = MolecularSKLearn(training_dataset, doa=Leverage(), model=lr, eval=None)
 fitted = model.fit()
 
- #Upload to local jaqpot
-
-jaqpot = Jaqpot()
-
-jaqpot.request_key('guest','guest')
- 
-fitted.deploy_on_jaqpot(jaqpot=jaqpot, description="ALEX", model_title="RANDOM")
+# Upload to local jaqpot
+# api_key = ''  # set your api key here
+#
+# jaqpot = Jaqpot(baseUrl="http://localhost:8080/jaqpot/services/")
+# jaqpot.set_api_key(api_key)
+# fitted.deploy_on_jaqpot(jaqpot=jaqpot,
+#                         description="ALEX",
+#                         model_title="RANDOM")
 
 # Infer
 input_dataset = ['CC']
 fitted(input_dataset)
 print(fitted.prediction)
-print('this is a test')
-
-
-
