@@ -74,8 +74,9 @@ class PubChemFingerprint(MolecularFeaturizer):
         return np.asarray(feature)
     
     def _get_column_names(self, **kwargs) -> list:
+        descriptors_length = 881
         descriptors = []
-        for i in range(881):
+        for i in range(descriptors_length):
             descriptors.append("f" + str(i))
         return descriptors
 
