@@ -1,5 +1,5 @@
 from torch.utils.data import Dataset
-from ..featurizers_torch import SmilesGraphFeaturizer
+from ..featurizers import SmilesGraphFeaturizer
 
 
 class SmilesGraphDataset(Dataset):
