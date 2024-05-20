@@ -92,7 +92,7 @@ class MordredDescriptors(MolecularFeaturizer):
         # convert errors to zero
         if convert_nan:
             feature = [
-            0.0 if self.is_missing(val) or isinstance(val, str) else val
+            -1000.0 if self.is_missing(val) or isinstance(val, str) else val
             for val in feature
         ]
         return np.asarray(feature)
