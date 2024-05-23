@@ -16,7 +16,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             use_tqdm=True,
             log_enabled=True,
             log_file=None,
-            normalization_mu=0.0,
+            normalization_mean=0.0,
             normalization_std=1.0
             ):
         
@@ -31,7 +31,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             log_file
             )
         
-        self.normalization_mu = normalization_mu
+        self.normalization_mean = normalization_mean
         self.normalization_std = normalization_std
          
     def train_one_epoch(self, train_loader):
@@ -138,19 +138,19 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         for i in range(self.n_epochs):            
             self.current_epoch += 1
             train_loss = self.train_one_epoch(train_loader)
-            _, train_metrics_dict, train_conf_mat = self.evaluate(train_loader)
+            _, train_metrics_dict = self.evaluate(train_loader)
             if self.log_enabled:
                 self.log_metrics(train_loss, metrics_dict=train_metrics_dict, mode='train')
             if val_loader:
-                val_loss, val_metrics_dict, val_conf_mat = self.evaluate(val_loader)
+                val_loss, val_metrics_dict = self.evaluate(val_loader)
                 if self.log_enabled:
                     self.log_metrics(val_loss, metrics_dict=val_metrics_dict, mode='val')
 
     def _normalize(self, x):
-        return x.sub_(self.normalization_mu).div_(self.normalization_std)
+        return x.sub_(self.normalization_mean).div_(self.normalization_std)
 
     def _denormalize(self, x):
-        return x.mul_(self.normalization_std).add_(self.normalization_mu)
+        return x.mul_(self.normalization_std).add_(self.normalization_mean)
 
     def predict(self, val_loader):
         all_preds = []
