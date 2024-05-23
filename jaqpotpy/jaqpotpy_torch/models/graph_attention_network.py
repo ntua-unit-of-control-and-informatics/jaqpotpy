@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from typing import Optional, Iterable, Union
 from torch_geometric.nn import GATConv
@@ -6,6 +7,8 @@ from torch_geometric.nn import global_add_pool, global_mean_pool, global_max_poo
 import torch.nn.init as init
 from torch import Tensor
 from torch_geometric.typing import OptTensor
+
+from jaqpotpy.jaqpotpy_torch.models import FullyConnectedNetwork
 
 
 class GraphAttentionBlock(nn.Module):
@@ -72,7 +75,7 @@ class GraphAttentionNetwork(nn.Module):
                  jittable: Optional[bool] = True,
                  *args,
                  **kwargs):
-    
+
         super(GraphAttentionNetwork, self).__init__()
                 
         # Input types check
@@ -202,4 +205,60 @@ class GraphAttentionNetwork(nn.Module):
             return global_max_pool(x, batch)
         else:
             raise NotImplementedError(f"Pooling operation '{self.pooling}' is not supported")
-             
+
+
+class GraphAttentionNetworkWithExternal(nn.Module):
+    def __init__(self,
+                 graph_input_dim: int,
+                 num_external_features: int,
+                 fc_hidden_dims: Iterable[int],
+                 graph_hidden_dims: Iterable[int],
+                 output_dim: Optional[int] = 1,
+                 graph_heads: int = Union[int, Iterable[int]],
+                 graph_edge_dim: Optional[int] = None,
+                 graph_output_dim: Optional[int] = 1,
+                 graph_activation: Optional[nn.Module] = nn.ReLU(),
+                 graph_dropout: Union[float, Iterable[float]] = 0.5,
+                 graph_norm: Optional[bool] = False,
+                 graph_pooling: Optional[str] = 'mean',
+                 fc_dropout: Union[float, Iterable[float]] = 0.5,
+                 fc_activation: Optional[nn.Module] = nn.ReLU(),
+                 jittable: Optional[bool] = True,
+                 *args,
+                 **kwargs):
+
+        if not isinstance(num_external_features, int):
+            raise TypeError("num_external_features must be of type int")
+
+        self.graph_model = GraphAttentionNetwork(input_dim=graph_input_dim,
+                                                 hidden_dims=graph_hidden_dims,
+                                                 heads=graph_heads,
+                                                 graph_edge_dim=graph_edge_dim,
+                                                 graph_output_dim=graph_output_dim,
+                                                 graph_activation=graph_activation,
+                                                 graph_dropout=graph_dropout,
+                                                 graph_norm=graph_norm,
+                                                 pooling=graph_pooling,
+                                                 jittable=jittable
+                                                 )
+
+        self.num_external_features = num_external_features
+        self.output_dim = output_dim
+
+        self.fc_net = FullyConnectedNetwork(input_dim=graph_output_dim + self.num_external_features,
+                                            hidden_dims=fc_hidden_dims,
+                                            output_dim=self.output_dim,
+                                            activation=fc_activation,
+                                            dropout=fc_dropout)
+
+    def forward(self,
+                x: Tensor,
+                edge_index: Tensor,
+                external: Tensor,
+                batch: Optional[Tensor],
+                edge_attr: OptTensor = None) -> Tensor:
+
+        x = self.graph_model(x, edge_index, batch, edge_attr=edge_attr)
+        x = torch.cat((x, external), dim=1)
+        x = self.fc_net(x)
+        return x
