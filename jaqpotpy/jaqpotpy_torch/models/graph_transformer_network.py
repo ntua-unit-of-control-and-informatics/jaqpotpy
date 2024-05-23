@@ -8,7 +8,8 @@ import torch.nn.init as init
 from torch import Tensor
 from torch_geometric.typing import OptTensor
 
-from jaqpotpy.jaqpotpy_torch.models import FullyConnectedNetwork
+from .fully_connected_network import FullyConnectedNetwork
+
 
 class GraphTransformerBlock(nn.Module):
 
@@ -207,7 +208,7 @@ class GraphTransformerNetwork(nn.Module):
             raise NotImplementedError(f"Pooling operation '{self.pooling}' is not supported")
 
 
-class GraphAttentionNetworkWithExternal(nn.Module):
+class GraphTransformerNetworkWithExternal(nn.Module):
     def __init__(self,
                  graph_input_dim: int,
                  num_external_features: int,
@@ -226,6 +227,8 @@ class GraphAttentionNetworkWithExternal(nn.Module):
                  jittable: Optional[bool] = True,
                  *args,
                  **kwargs):
+        
+        super().__init__()
 
         if not isinstance(num_external_features, int):
             raise TypeError("num_external_features must be of type int")
