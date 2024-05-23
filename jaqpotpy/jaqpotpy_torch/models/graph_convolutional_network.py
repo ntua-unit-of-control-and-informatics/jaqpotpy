@@ -7,7 +7,7 @@ from torch_geometric.nn import global_add_pool, global_mean_pool, global_max_poo
 import torch.nn.init as init
 from torch import Tensor
 
-from jaqpotpy.jaqpotpy_torch.models import FullyConnectedNetwork
+from .fully_connected_network import FullyConnectedNetwork
 
 
 class GraphConvBlock(nn.Module):
@@ -197,6 +197,8 @@ class GraphConvolutionalNetworkWithExternal(nn.Module):
                  jittable: Optional[bool] = True,
                  *args,
                  **kwargs):
+        
+        super().__init__()
         
         if not isinstance(num_external_features, int):
             raise TypeError("num_external_features must be of type int")

@@ -8,7 +8,7 @@ import torch.nn.init as init
 from torch import Tensor
 from torch_geometric.typing import OptTensor
 
-from jaqpotpy.jaqpotpy_torch.models import FullyConnectedNetwork
+from .fully_connected_network import FullyConnectedNetwork
 
 
 class GraphAttentionBlock(nn.Module):
@@ -227,6 +227,8 @@ class GraphAttentionNetworkWithExternal(nn.Module):
                  *args,
                  **kwargs):
 
+        super().__init__()
+        
         if not isinstance(num_external_features, int):
             raise TypeError("num_external_features must be of type int")
 
