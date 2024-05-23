@@ -5,8 +5,9 @@ import warnings
 import pickle
 import json
 
+from .featurizer import Featurizer
 
-class SmilesGraphFeaturizer():
+class SmilesGraphFeaturizer(Featurizer):
     
     SUPPORTED_ATOM_CHARACTERISTICS = {"symbol": lambda atom: atom.GetSymbol(),
                                       "degree": lambda atom: atom.GetDegree(),
