@@ -257,7 +257,8 @@ class VinaPoseGenerator(PoseGenerator):
   available only on Ubuntu and MacOS.
   """
 
-  def __init__(self, pocket_finder: Optional[BindingPocketFinder] = None, calc_charges: bool = False, add_hydrogens: bool = False):
+  def __init__(self, pocket_finder: Optional[BindingPocketFinder] = None, calc_charges: bool = False
+               , add_hydrogens: bool = False, prepare_protein: bool = True):
     """Initializes Vina Pose Generator
     Parameters
     ----------
@@ -268,6 +269,7 @@ class VinaPoseGenerator(PoseGenerator):
     self.calc_charges = calc_charges
     self.add_hydrogens = add_hydrogens
     self.pocket_finder = pocket_finder
+    self.prepare_protein = prepare_protein
 
   def generate_poses(
       self,
@@ -364,14 +366,15 @@ class VinaPoseGenerator(PoseGenerator):
     (protein_file, ligand_file) = molecular_complex
 
     # Prepare protein
-    protein_name = os.path.basename(protein_file).split(".")[0]
-    protein_hyd = os.path.join(out_dir, "%s_hyd.pdb" % protein_name)
-    protein_pdbqt = os.path.join(out_dir, "%s.pdbqt" % protein_name)
-    protein_mol = load_molecule(protein_file,
-                                calc_charges=self.calc_charges,
-                                add_hydrogens=self.add_hydrogens)
-    write_molecule(protein_mol[1], protein_hyd, is_protein=True)
-    write_molecule(protein_mol[1], protein_pdbqt, is_protein=True)
+    if self.prepare_protein:
+      protein_name = os.path.basename(protein_file).split(".")[0]
+      protein_hyd = os.path.join(out_dir, "%s_hyd.pdb" % protein_name)
+      protein_pdbqt = os.path.join(out_dir, "%s.pdbqt" % protein_name)
+      protein_mol = load_molecule(protein_file,
+                                  calc_charges=self.calc_charges,
+                                  add_hydrogens=self.add_hydrogens)
+      write_molecule(protein_mol[1], protein_hyd, is_protein=True)
+      write_molecule(protein_mol[1], protein_pdbqt, is_protein=True)
 
     # Get protein centroid and range
     if centroid is not None and box_dims is not None:

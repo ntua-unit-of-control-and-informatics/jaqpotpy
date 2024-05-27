@@ -526,8 +526,6 @@ class MolecularFeaturizer(Featurizer):
       df = pd.DataFrame({'MACCSFingerprint': features})
     elif columns == ['MolGanGraphs']:
       df = pd.DataFrame({'MolGanGraphs': features})
-    elif columns == ['CoulombMatrixEig']:
-      df = pd.DataFrame({'CoulombMatrixEig': features})
     else:
       df = pd.DataFrame(features, columns=columns)
     return df

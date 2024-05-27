@@ -60,7 +60,7 @@ class MordredDescriptors(MolecularFeaturizer):
     def __getitem__(self):
         return self
 
-    def _featurize(self, datapoint: RDKitMol, convert_nan:True,**kwargs) -> np.ndarray:
+    def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
         """
         Calculate Mordred descriptors.
         Parameters
@@ -90,9 +90,8 @@ class MordredDescriptors(MolecularFeaturizer):
 
         feature = self.calc(datapoint)
         # convert errors to zero
-        if convert_nan:
-            feature = [
-            -1000.0 if self.is_missing(val) or isinstance(val, str) else val
+        feature = [
+            0.0 if self.is_missing(val) or isinstance(val, str) else val
             for val in feature
         ]
         return np.asarray(feature)
@@ -118,11 +117,12 @@ class MordredDescriptors(MolecularFeaturizer):
         smiles = 'CC(=O)OC1=CC=CC=C1C(=O)O'
         mol = Chem.MolFromSmiles(smiles)
         feature = self.calc(mol).fill_missing(0).asdict()
-        names = [key for key in feature.keys()]
-
+        names = []
+        for k in feature.keys():
+            names.append(k)
         return names
 
-    def _featurize_dataframe(self, datapoint: RDKitMol, convert_nan:True, **kwargs) -> np.ndarray:
+    def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
         """
     Calculate Mordred descriptors.
     Parameters
@@ -151,9 +151,8 @@ class MordredDescriptors(MolecularFeaturizer):
                 raise ImportError("This class requires Mordred to be installed.")
         feature = self.calc(datapoint)
         # convert errors to zero
-        if convert_nan:
-            feature = [
-            -1000.0 if self.is_missing(val) or isinstance(val, str) else val
+        feature = [
+            0.0 if self.is_missing(val) or isinstance(val, str) else val
             for val in feature
         ]
         return np.asarray(feature)
