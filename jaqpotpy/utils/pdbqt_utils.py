@@ -43,7 +43,12 @@ def convert_protein_to_pdbqt(mol: RDKitMol, outfile: str) -> None:
   outfile: str
     filename which already has a valid pdb representation of mol
   """
-  lines = [x.strip() for x in open(outfile).readlines()]
+  # lines = [x.strip() for x in open(outfile).readlines()]
+  lines = []
+  with open(outfile) as f:
+    for line in f.readlines():
+      lines.append(line)
+  f.close()
   out_lines = []
   for line in lines:
     if "ROOT" in line or "ENDROOT" in line or "TORSDOF" in line:
@@ -197,7 +202,12 @@ def _create_pdb_map(outfile: str) -> Dict[int, str]:
   pdb_map: Dict[int, str]
     Maps rdkit atom numbers to lines to be written to PDBQT file.
   """
-  lines = [x.strip() for x in open(outfile).readlines()]
+  # lines = [x.strip() for x in open(outfile).readlines()]
+  lines = []
+  with open(outfile) as f:
+    for line in f.readlines():
+      lines.append(line)
+  f.close()
   lines = list(
       filter(lambda x: x.startswith("HETATM") or x.startswith("ATOM"), lines))
   lines = [x[:66] for x in lines]

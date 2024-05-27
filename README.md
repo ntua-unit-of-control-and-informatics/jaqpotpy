@@ -1,91 +1,91 @@
-
 # Jaqpotpy
-## _Standardizing molecular modeling_
 
-# Jaqpot 
+The jaqpotpy library enables you to upload and deploy machine learning models to the Jaqpot platform. Once uploaded, you can manage, document, and share your models via the Jaqpot user interface at **https://app.jaqpot.org**. You can also make predictions online or programmatically using the Jaqpot API.
 
-Jaqpot platform is a model repo developed in python and jaqpotpy making the models accessible through a user interface, that allows extensive documentation of the models and sharing through your contacts.
+## Getting Started
 
+### Prerequisites
 
-## jaqpotpy
+- Python 3.x
+- An account on **https://app.jaqpot.org**
 
-jaqpotpy enables model deployment with a simple command. 
+### Installation
 
-### First register to Jaqpot through **https://app.jaqpot.org**
+Install jaqpotpy using pip:
 
-`jaqpot = Jaqpot()`  initializes jaqpot upon the standard available API that 
-is integrated with the application and user interface at **https://app.jaqpot.org/** .
+```bash
+pip install jaqpotpy
+```
 
+### Logging In
 
+To use jaqpotpy, you need to log in to the Jaqpot platform. You can log in using your username and password or by setting an API key.
 
- ### Let jaqpot know who you are
+#### Login with Username and Password
 
-Login and have access on the jaqpot services
+```python
+from jaqpotpy import Jaqpot
 
-In order to do so you can use the functions:
+jaqpot = Jaqpot()
+jaqpot.login('your_username', 'your_password') 
+```
 
-* `jaqpot.login('username', 'password')`
+#### Request and Set API Key
 
-Will login and set the api key that is needed.
+You can request an API key and set it:
+```python
+jaqpot.request_key('your_username', 'your_password')
+```
+or
+```python
+jaqpot.request_key_safe()  # Prompts for username and password securely
+```
+#### Set API Key Directly
 
-* `jaqpot.request_key('username', 'password')`
+If you already have an API key (you can retrieve one from https://app.jaqpot.org), you can set it directly:
 
-Same as above you request the key and set it on jaqpot
+```python
+jaqpot.set_api_key("your_api_key")
+```
 
-* `jaqpot.request_key_safe()`
+### Model Training and Deployment
 
-Will ask the user for the username and password by hidding the password if 
-jaqpot is used through a jupiter notebook etc
+Follow these steps to train and deploy your model on Jaqpot:
 
-### Set Key without login
+	1. Train your model using pandas DataFrame as input.
+	2. Deploy the trained model using the deploy_on_jaqpot function.
 
-Some users may have logged in through google or github. At the account page 
-a user can find an api key that can be used in order to have access on the services.
-These keys have short life and should be updated on each login.
-
-* `jaqpot.set_api_key("api_key")`
-
-#### Get the key from user interface
-
-
-### Model training and deployment
-
-
-An example code that demonstrates a model deployemnt.
-
-
-
-
-*  Warning! One of the things that may differ from simpler training and validation routes is that you need to train your model with a pandas dataframe as input and not with Numpy arrays!
-
+#### Example Code
+_Note: Ensure you use a pandas DataFrame for training your model._
 
 ```python
 from jaqpotpy import Jaqpot
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 
+# Initialize Jaqpot
+jaqpot = Jaqpot()
 
+# Load your data
 df = pd.read_csv('/path/to/gdp.csv')
-lm = LinearRegression()
 
+# Train your model
+lm = LinearRegression()
 y = df['GDP']
 X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
-
 model = lm.fit(X=X, y=y)
 
-jaqpot.deploy_sklearn(model, X, y, title="Title", description="Describe")
+# Deploy the model on Jaqpot
+jaqpot.deploy_sklearn(model, X, y, title="GDP Model", description="Predicting GDP based on various factors")
 ```
 
-The function will inform you about the model id that is created and is available through the user interface and the API.
+The function will provide you with the model ID that you can use to manage your model through the user interface and API.
 
+Result:
+```text
+- INFO - Model with ID: <model_id> created. Visit the application to proceed.
+```
 
-* Result
+#### Managing Your Models
 
-
-- INFO - Model with id: <model_id> created. Visit the application to proceed
-
-
-
-### Continue furter through the jaqpot user interface
-
-
+You can further manage your models through the Jaqpot user interface at https://app.jaqpot.org. This platform allows you to view detailed documentation, share models with your contacts, and make predictions.
