@@ -1,9 +1,11 @@
 from setuptools import setup, find_packages
+import codecs
+import os
 
-from pathlib import Path
+here = os.path.abspath(os.path.dirname(__file__))
 
-this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
+    long_description = "\\n" + fh.read()
 
 setup(name='jaqpotpy',
       version='{{VERSION_PLACEHOLDER}}',
