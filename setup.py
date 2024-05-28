@@ -20,7 +20,25 @@ setup(name='jaqpotpy',
       packages=find_packages(exclude=["*.tests"]),
       package_data={'jaqpotpy': ['data/*.gz']},
       install_requires=[
-          'pandas', 'requests', 'pydantic', 'rdkit-pypi', 'mordred', 'pyjwt', 'scikit-learn', 'tqdm',
-          'skl2onnx', 'onnxruntime'
+            'pandas==2.2.2',
+            'pyjwt==2.8.0',
+            'simplejson==3.19.2',
+            'pydotplus==2.0.2',
+            'requests==2.32.2',
+            'pydantic==2.7.1',
+            'rdkit-pypi==2022.9.5',
+            'mordred==1.2.0',
+            'scikit-learn==1.5.0',
+            'tqdm==4.66.4',
+            'kennard-stone==2.2.1',
+            'mendeleev==0.16.2',
+            'pymatgen==2024.5.1',
+            'skl2onnx==1.16.0',
+            'onnxruntime==1.18.0',
+
+            # Torch requirements
+            'torch==2.3.0',
+            'torch-geometric==2.3.1',
+            'torchvision==0.18.0',
       ],
       zip_safe=False)
