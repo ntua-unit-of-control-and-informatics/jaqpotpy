@@ -1,28 +1,21 @@
 from setuptools import setup, find_packages
+import codecs
+import os
 
-from pathlib import Path
-this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+here = os.path.abspath(os.path.dirname(__file__))
 
-# python setup.py bdist_wheel
-# twine upload dist/*
-# twine upload --repository testpypi dist/jaqpotpy-2.0.0b0-py3-none-any.whl
-# twine upload dist/jaqpotpy-1.0.84-py3-none-any.whl
-# docker build -t euclia/jaqpotpy:1.0.3 --no-cache python setup.py bdist_wheel--build-arg tag=1.0.3 .
-
-
-version = '1.0.101'
+with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
+    long_description = fh.read()
 
 setup(name='jaqpotpy',
-      # version='2.0.5-beta0',
-      version='1.0.101',
+      version='{{VERSION_PLACEHOLDER}}',
       description='Standardizing molecular modeling',
       long_description=long_description,
       long_description_content_type='text/markdown',
 
-      url='https://github.com/euclia/jaqpotpy',
-      author='Pantelis Karatzas',
-      author_email='pantelispanka@gmail.com',
+      url='https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy',
+      author='Unit of Process Control and Informatics | National Technical University of Athens',
+      author_email='upci.ntua@gmail.com',
       license='MIT License',
       packages=find_packages(exclude=["*.tests"]),
       package_data={'jaqpotpy': ['data/*.gz']},
