@@ -26,16 +26,7 @@ setup(name='jaqpotpy',
       license='MIT License',
       packages=find_packages(exclude=["*.tests"]),
       package_data={'jaqpotpy': ['data/*.gz']},
-      # package_data={find_packages(exclude=["*.tests"]): ['data/*.gz']},
-      # packages=['jaqpotpy', 'jaqpotpy.api', 'jaqpotpy.mappers', 'jaqpotpy.utils'
-      #           , 'jaqpotpy.entities', 'jaqpotpy.dto', 'jaqpotpy.doa'
-      #           , 'jaqpotpy.helpers', 'jaqpotpy.colorlog', 'jaqpotpy.models', 'jaqpotpy.cfg'
-      #           , 'jaqpotpy.datasets', 'jaqpotpy.descriptors', 'jaqpotpy.descriptors.molecular'
-      #           , 'jaqpotpy.descriptors.graph'],
       install_requires=[
-      #     'pandas', 'requests', 'pydantic', 'rdkit-pypi', 'mordred', 'pyjwt', 'scikit-learn', 
-      #     'tqdm', 'skl2onnx', 'onnxruntime'
-           
             'pandas==2.2.2',
             'pyjwt==2.8.0',
             'simplejson==3.19.2',
@@ -52,15 +43,9 @@ setup(name='jaqpotpy',
             'skl2onnx==1.16.0',
             'onnxruntime==1.18.0',
 
-            # # Torch requirements
+            # Torch requirements
             'torch==2.3.0',
             'torch-geometric==2.3.1',
             'torchvision==0.18.0',
-            # 'torch-scatter==2.1.2',
-            # 'torch-sparse==0.6.18',
-            # 'torch-cluster==1.6.3',
-            # 'torch-spline-conv==1.2.2'
-            # # ,'tornado', 'scikit-learn', 'torch', 'torch-scatter', 'torch-sparse', 'torch-cluster'
-            # # , 'torch-spline-conv', 'torch-geometric', 'dgl', 'torch_sparse', 'kennard-stone'
       ],
       zip_safe=False)
