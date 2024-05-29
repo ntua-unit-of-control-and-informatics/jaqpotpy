@@ -6,13 +6,10 @@ import unittest
 from jaqpotpy.descriptors.molecular import RDKitDescriptors
 
 class TestRDKitDescriptors(unittest.TestCase):
-  """
-  Test RDKitDescriptors.
-  """
 
   def setUp(self):
     """
-    Set up tests.
+    Set up tests. Initialize a mol and the default featurizer.
     """
     from rdkit import Chem
     smiles = 'CC(=O)OC1=CC=CC=C1C(=O)O'
@@ -21,7 +18,9 @@ class TestRDKitDescriptors(unittest.TestCase):
 
   def test_rdkit_descriptors(self):
     """
-    Test simple descriptors.
+    Test simple descriptors with input a mol.
+    Test 1: Checks correct descriptors dimensions  of numpy array
+    Test 2: Checks a specific desc value (MW) if it calculated as wished with a small tolerance
     """
     descriptors = self.featurizer([self.mol])
     assert descriptors.shape == (1, len(self.featurizer.descriptors))
@@ -32,7 +31,9 @@ class TestRDKitDescriptors(unittest.TestCase):
 
   def test_rdkit_descriptors_on_smiles(self):
     """
-    Test invocation on raw smiles.
+    Test simple descriptors with input a SMILES.
+    Test 1: Checks correct descriptors dimensions  of numpy array
+    Test 2: Checks a specific desc value (MW) if it calculated as wished with a small tolerance
     """
     descriptors = self.featurizer('CC(=O)OC1=CC=CC=C1C(=O)O')
     assert descriptors.shape == (1, len(self.featurizer.descriptors))
@@ -43,7 +44,8 @@ class TestRDKitDescriptors(unittest.TestCase):
 
   def test_rdkit_descriptors_on_smiles_df(self):
     """
-    Test invocation on raw smiles.
+    Test featurizer_dataframe
+    Tests with 1 and 2 smiles the dimensions that need to be passed
     """
     descriptors = self.featurizer.featurize_dataframe('CC(=O)OC1=CC=CC=C1C(=O)O')
     assert descriptors.shape == (1, 208)
@@ -52,7 +54,7 @@ class TestRDKitDescriptors(unittest.TestCase):
 
   def test_rdkit_descriptors_with_use_fragment(self):
     """
-    Test with use_fragment
+    Test the same as above with use_fragment = False
     """
     from rdkit.Chem import Descriptors
     featurizer = RDKitDescriptors(use_fragment=False)
