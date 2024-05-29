@@ -3,9 +3,7 @@ Test basic molecular features.
 """
 import numpy as np
 import unittest
-
 from jaqpotpy.descriptors.molecular import RDKitDescriptors
-
 
 class TestRDKitDescriptors(unittest.TestCase):
   """
@@ -25,11 +23,10 @@ class TestRDKitDescriptors(unittest.TestCase):
     """
     Test simple descriptors.
     """
-    featurizer = RDKitDescriptors()
-    descriptors = featurizer([self.mol])
-    assert descriptors.shape == (1, len(featurizer.descriptors))
+    descriptors = self.featurizer([self.mol])
+    assert descriptors.shape == (1, len(self.featurizer.descriptors))
     assert np.allclose(
-        descriptors[0, featurizer.descriptors.index('ExactMolWt')],
+        descriptors[0, self.featurizer.descriptors.index('ExactMolWt')],
         180,
         atol=0.1)
 
@@ -37,11 +34,10 @@ class TestRDKitDescriptors(unittest.TestCase):
     """
     Test invocation on raw smiles.
     """
-    featurizer = RDKitDescriptors()
-    descriptors = featurizer('CC(=O)OC1=CC=CC=C1C(=O)O')
-    assert descriptors.shape == (1, len(featurizer.descriptors))
+    descriptors = self.featurizer('CC(=O)OC1=CC=CC=C1C(=O)O')
+    assert descriptors.shape == (1, len(self.featurizer.descriptors))
     assert np.allclose(
-        descriptors[0, featurizer.descriptors.index('ExactMolWt')],
+        descriptors[0, self.featurizer.descriptors.index('ExactMolWt')],
         180,
         atol=0.1)
 
@@ -49,25 +45,10 @@ class TestRDKitDescriptors(unittest.TestCase):
     """
     Test invocation on raw smiles.
     """
-    featurizer = RDKitDescriptors()
-    descriptors = featurizer.featurize_dataframe('CC(=O)OC1=CC=CC=C1C(=O)O')
+    descriptors = self.featurizer.featurize_dataframe('CC(=O)OC1=CC=CC=C1C(=O)O')
     assert descriptors.shape == (1, 208)
-    featurizer = RDKitDescriptors()
-    descriptors = featurizer.featurize_dataframe(['CC(=O)OC1=CC=CC=C1C(=O)O','CC(=O)OC1=CC=CC=C1C(=O)O'])
+    descriptors = self.featurizer.featurize_dataframe(['CC(=O)OC1=CC=CC=C1C(=O)O','CC(=O)OC1=CC=CC=C1C(=O)O'])
     assert descriptors.shape == (2, 208)
-
-  def test_rdkit_descriptors_on_smiles_df(self):
-    """
-    Test invocation on raw smiles.
-    """
-    featurizer = RDKitDescriptors()
-    descriptors = featurizer.featurize_dataframe('CC(=O)OC1=CC=CC=C1C(=O)O')
-    assert descriptors.shape == (1, 208)
-    featurizer = RDKitDescriptors()
-    featurizer.pick()
-    descriptors = featurizer.featurize_dataframe(['CC(=O)OC1=CC=CC=C1C(=O)O','CC(=O)OC1=CC=CC=C1C(=O)O'])
-    assert descriptors.shape == (2, 208)
-
 
   def test_rdkit_descriptors_with_use_fragment(self):
     """
@@ -84,6 +65,8 @@ class TestRDKitDescriptors(unittest.TestCase):
         180,
         atol=0.1)
 
-  def test_rdkiy_pickl(self):
+  def test_rdkit_pickl(self):
       featurizer = RDKitDescriptors(use_fragment=False)
+      featurizer.pick()
+      featurizer = RDKitDescriptors(use_fragment=True)
       featurizer.pick()
