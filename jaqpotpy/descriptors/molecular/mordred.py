@@ -60,7 +60,7 @@ class MordredDescriptors(MolecularFeaturizer):
     def __getitem__(self):
         return self
 
-    def _featurize(self, datapoint: RDKitMol, convert_nan:True,**kwargs) -> np.ndarray:
+    def _featurize(self, datapoint: RDKitMol, convert_nan: bool = True,**kwargs) -> np.ndarray:
         """
         Calculate Mordred descriptors.
         Parameters
@@ -122,7 +122,7 @@ class MordredDescriptors(MolecularFeaturizer):
 
         return names
 
-    def _featurize_dataframe(self, datapoint: RDKitMol, convert_nan:True, **kwargs) -> np.ndarray:
+    def _featurize_dataframe(self, datapoint: RDKitMol, convert_nan: bool = True, **kwargs) -> np.ndarray:
         """
     Calculate Mordred descriptors.
     Parameters
