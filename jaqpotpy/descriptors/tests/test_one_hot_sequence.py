@@ -4,7 +4,7 @@ Test basic molecular features.
 import numpy as np
 import unittest
 
-from jaqpotpy.descriptors import OneHotSequence
+from jaqpotpy.descriptors.molecular import OneHotSequence
 
 
 class TestOneHotSeqDescriptors(unittest.TestCase):

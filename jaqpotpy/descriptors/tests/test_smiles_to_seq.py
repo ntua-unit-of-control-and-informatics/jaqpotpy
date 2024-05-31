@@ -4,7 +4,7 @@ Test basic molecular features.
 import numpy as np
 import unittest
 
-from jaqpotpy.descriptors import SmilesToSeq, create_char_to_idx
+from jaqpotpy.descriptors.molecular import SmilesToSeq, create_char_to_idx
 
 
 class TestSmilesToSeqDescriptors(unittest.TestCase):

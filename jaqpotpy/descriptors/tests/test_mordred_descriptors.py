@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-from jaqpotpy.descriptors import MordredDescriptors
+from jaqpotpy.descriptors.molecular import MordredDescriptors
 from jaqpotpy.cfg import config
 
 class TestMordredDescriptors(unittest.TestCase):

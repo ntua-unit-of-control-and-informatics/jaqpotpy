@@ -17,7 +17,7 @@ from torch_geometric.nn import global_mean_pool
 from torch.autograd import Variable
 from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
 import jaqpotpy.utils.pytorch_utils as ptu
-from jaqpotpy.descriptors import MolGraphConvFeaturizer
+from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
 from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
