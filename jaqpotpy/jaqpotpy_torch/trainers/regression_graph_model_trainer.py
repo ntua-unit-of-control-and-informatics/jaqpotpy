@@ -3,9 +3,21 @@ from .torch_model_trainer import TorchModelTrainer
 import torch.nn.functional as F
 import sklearn.metrics as metrics
 import torch
+import base64
+import io
+import pickle
+
+import torch_geometric
+import jaqpotpy
+import requests
 
 
 class RegressionGraphModelTrainer(TorchModelTrainer):
+
+    @property
+    def model_type(self):
+        return 'regression-graph-model'
+
     def __init__(
             self, 
             model, 
@@ -134,7 +146,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
 
         return metrics_dict
     
-    def train(self, train_loader, val_loader=None):        
+    def train(self, train_loader, val_loader=None):
         for i in range(self.n_epochs):            
             self.current_epoch += 1
             train_loss = self.train_one_epoch(train_loader)
@@ -187,3 +199,70 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             epoch_logs += f"{metric}={value:.4f}"
 
         self.logger.info(epoch_logs)
+
+    def deploy_model(self, token, featurizer, endpoint_name, public=False, meta=dict()):
+        
+        model_scripted = torch.jit.script(self.model)
+        model_buffer = io.BytesIO()
+        torch.jit.save(model_scripted, model_buffer)
+        model_buffer.seek(0)
+        model_scripted_base64 = base64.b64encode(model_buffer.getvalue()).decode('utf-8')
+
+
+        featurizer_buffer = io.BytesIO()
+        pickle.dump(featurizer, featurizer_buffer)
+        featurizer_buffer.seek(0)
+        featurizer_pickle_base64 = base64.b64encode(featurizer_buffer.getvalue()).decode('utf-8')
+        
+        additional_model_params = {
+            'normalization_mean': self.normalization_mean,
+            'normalization_std': self.normalization_std
+            }
+        
+
+        libraries = [
+            {'name': torch.__name__, 'version': str(torch.__version__)},
+            {'name': torch_geometric.__name__, 'version': str(torch_geometric.__version__)}
+        ]
+
+
+
+        json_data = self._model_data_as_json(actualModel=model_scripted_base64,
+                                             model_type=self.model_type,
+                                             featurizer=featurizer_pickle_base64,
+                                             public=public,
+                                             libraries=libraries,
+                                             independentFeatures=['smiles'],
+                                             dependentFeatures=[endpoint_name],
+                                             additional_model_params=additional_model_params,
+                                             reliability=0,
+                                             pretrained=False,
+                                             meta=meta
+                                             )
+
+        response = self._deploy_json(json_data=json_data, token=token)
+        
+        return response
+
+
+
+
+    # def save(self):
+        
+    #     task = 'regression'
+
+    #     with open(f'metadata_{task}.json', 'w') as f:
+    #         metadata = {
+    #             "task": task,
+    #             "normalization_mean": self.normalization_mean,
+    #             "normalization_std": self.normalization_std, 
+    #             }
+            
+    #         import json
+    #         json.dump(metadata, f)
+
+
+    #     model_scripted = torch.jit.script(self.model)
+    #     model_scripted.save(f'model_scripted_{task}.pt')
+
+        
