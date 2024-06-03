@@ -3,7 +3,16 @@ import torch
 import logging
 import sys
 
+import jaqpotpy
+import requests
+
+
 class TorchModelTrainer(ABC):
+    @property
+    @abstractmethod
+    def model_type(self):
+        pass
+
     def __init__(self,
                 model,
                 n_epochs,
@@ -80,3 +89,59 @@ class TorchModelTrainer(ABC):
             loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the evaluation dataset.
         """
         pass
+    
+
+    def deploy_model(self, token, *args, **kwargs):
+        """
+        Deploy the model on Jaqpot.
+        """
+        pass
+
+    @classmethod
+    def _model_data_as_json(cls,
+                            actualModel,
+                            model_type,
+                            featurizer,
+                            public,
+                            libraries,
+                            independentFeatures,
+                            dependentFeatures,
+                            additional_model_params,
+                            reliability=0,
+                            pretrained=False,
+                            meta=dict()
+                            ):
+        
+        data = {
+            'meta': meta,
+            'public': public,
+            'type': model_type,
+            'jaqpotpyVersion': str(jaqpotpy.__version__),
+            'libraries' : libraries,
+            'independentFeatures': independentFeatures,
+            'dependentFeatures': dependentFeatures,
+            'additional_model_params': additional_model_params,
+            'reliability': reliability,
+            'pretrained': pretrained,
+            'actualModel': actualModel,
+            'featurizer': featurizer,
+        }
+
+        return data
+    
+    @classmethod
+    def _deploy_json(cls, json_data, token=''):
+
+        headers = {
+                'Authorization': f'Bearer {token}',
+                'Content-Type': 'application/json'
+            }
+        
+        url = "http://localhost:8006/api/v1/models/upload/"
+        response = requests.post(url, json=json_data)
+
+        return response
+
+
+
+    
