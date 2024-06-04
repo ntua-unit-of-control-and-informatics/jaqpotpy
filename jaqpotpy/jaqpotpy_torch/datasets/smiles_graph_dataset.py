@@ -100,15 +100,22 @@ class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
             if self.external_normalization_std.shape[0] != external.shape[1]:
                 raise ValueError("external_normalization_std must have the same number of elements as external features")
 
-
+    def get_num_external_features(self):
+        return self.external.size(1)
+    
     def set_external_feature_labels(self, external_feature_labels):
-        if len(external_feature_labels) != self.external.size(1):
+        if 'SMILES' in external_feature_labels:
+            raise ValueError("The 'SMILES' keyword is in a protected namespace and should not be used for external features.")
+        if len(external_feature_labels) != self.get_num_external_features:
             raise ValueError("Number of external feature labels must match the number of columns in the external data.")
         self.external_feature_labels = list(external_feature_labels)
 
     def get_external_feature_labels(self):
+        for label in self.external_feature_labels:
+            if label.upper():
+                raise ValueError("The 'SMILES' keyword is in a protected namespace and should not be used for external features.")
         return self.external_feature_labels
-
+    
     def _normalize_external(self, external_row):
         normalized_external_row = (external_row - self.external_normalization_mean) / self.external_normalization_std
         return normalized_external_row
@@ -116,12 +123,13 @@ class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
     def __getitem__(self, idx):
 
         if self.precomputed_features:
-            return self.precomputed_features[idx]
+            data = self.precomputed_features[idx]
+        else:
+            sm = self.smiles[idx]
+            y = self.y[idx] if self.y else None
+            data = self.featurizer(sm, y)
 
-        sm = self.smiles[idx]
-        y = self.y[idx] if self.y else None
         external = self.external[idx]
+        data.external = self._normalize_external(external_row=external).unsqueeze(0)
 
-        data = self.featurizer(sm, y)
-        data.external = self._normalize_external(external_row=external)
         return data

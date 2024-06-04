@@ -42,6 +42,7 @@ class TorchModelTrainer(ABC):
         self.current_epoch = 0
         self.log_enabled = log_enabled
         self.log_filepath = log_filepath
+        self.json_data_for_deployment = None
 
         self.logger = self._setup_logger()
 
@@ -90,10 +91,10 @@ class TorchModelTrainer(ABC):
         """
         pass
     
-
-    def deploy_model(self, token, *args, **kwargs):
+    @abstractmethod
+    def prepare_for_deployment(self, *args, **kwargs):
         """
-        Deploy the model on Jaqpot.
+        Prepare the model for deployment on Jaqpot.
         """
         pass
 
@@ -128,9 +129,13 @@ class TorchModelTrainer(ABC):
         }
 
         return data
+
     
-    @classmethod
-    def _deploy_json(cls, json_data, token=''):
+    def deploy_model(self, token):
+
+        if self.json_data_for_deployment is None:
+            no_json_err_msg = f"No JSON data to deploy. Note that prepare_for_deployment() must be called first to prepare the JSON to be deployed. Please check the function documentation for the specific arguments needed for the current class {self.__class__.__name__}."
+            raise ValueError(no_json_err_msg)
 
         headers = {
                 'Authorization': f'Bearer {token}',
@@ -138,9 +143,11 @@ class TorchModelTrainer(ABC):
             }
         
         url = "http://localhost:8006/api/v1/models/upload/"
-        response = requests.post(url, json=json_data)
+        response = requests.post(url, json=self.json_data_for_deployment, headers=headers)
 
         return response
+    
+    
 
 
 

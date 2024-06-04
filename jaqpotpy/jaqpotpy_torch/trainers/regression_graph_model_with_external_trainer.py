@@ -1,23 +1,19 @@
 from tqdm import tqdm
-from .torch_model_trainer import TorchModelTrainer
-import torch.nn.functional as F
-import sklearn.metrics as metrics
 import torch
 import base64
 import io
 import pickle
 
 import torch_geometric
-import jaqpotpy
-import requests
+
+from .regression_graph_model_trainer import RegressionGraphModelTrainer
 
 
-class RegressionGraphModelTrainer(TorchModelTrainer):
-
+class RegressionGraphModelWithExternalTrainer(RegressionGraphModelTrainer):
     @property
     def model_type(self):
-        return 'regression-graph-model'
-
+        return 'regression-graph-model-with-external'
+    
     def __init__(
             self, 
             model, 
@@ -32,20 +28,18 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             normalization_std=1.0
             ):
         
-        super().__init__(
-            model,
-            n_epochs,
-            optimizer,
-            loss_fn,
-            device,
+        super().__init__(model, 
+            n_epochs, 
+            optimizer, 
+            loss_fn, 
+            device, 
             use_tqdm,
             log_enabled,
-            log_file
+            log_file,
+            normalization_mean,
+            normalization_std
             )
-        
-        self.normalization_mean = normalization_mean
-        self.normalization_std = normalization_std
-         
+    
     def train_one_epoch(self, train_loader):
 
         running_loss = 0
@@ -62,7 +56,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             self.optimizer.zero_grad()
 
             # outputs = self.model(x=data.x, edge_index=data.edge_index, batch=data.batch, edge_attr=data.edge_attr).squeeze(-1)
-            outputs = self.model(x=data.x, edge_index=data.edge_index, batch=data.batch).squeeze(-1)
+            outputs = self.model(x=data.x, edge_index=data.edge_index, external=data.external, batch=data.batch).squeeze(-1)
             loss = self.loss_fn(outputs.float(), y_norm.float())
 
             running_loss += loss.item() * data.y.size(0)
@@ -81,7 +75,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             tqdm_loader.close()
             
         return avg_loss
-    
+ 
     def evaluate(self, val_loader):
         """
         Evaluate the model's performance on the validation set.
@@ -107,7 +101,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
                 y_norm = self._normalize(data.y)
                 
                 # outputs = model(x=data.x, edge_index=data.edge_index, batch=data.batch, edge_attr=data.edge_attr).squeeze(-1)
-                outputs = self.model(x=data.x, edge_index=data.edge_index, batch=data.batch).squeeze(-1)
+                outputs = self.model(x=data.x, edge_index=data.edge_index, external=data.external, batch=data.batch).squeeze(-1)
                 
                 all_preds.extend(outputs.tolist())
                 all_true.extend(y_norm.tolist())
@@ -127,43 +121,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         metrics_dict['loss'] = avg_loss
             
         return avg_loss, metrics_dict
-
-    def _compute_metrics(self, y_true, y_pred):
-    
-        explained_variance = metrics.explained_variance_score(y_true, y_pred)
-        r2 = metrics.r2_score(y_true, y_pred)
-        mse = metrics.mean_squared_error(y_true, y_pred)
-        rmse = metrics.root_mean_squared_error(y_true, y_pred)
-        mae = metrics.mean_absolute_error(y_true, y_pred)
-
-        metrics_dict = {
-            'explained_variance': explained_variance,
-            'r2': r2,
-            'mse': mse,
-            'rmse': rmse,
-            'mae': mae
-        }
-
-        return metrics_dict
-    
-    def train(self, train_loader, val_loader=None):
-        for i in range(self.n_epochs):            
-            self.current_epoch += 1
-            train_loss = self.train_one_epoch(train_loader)
-            _, train_metrics_dict = self.evaluate(train_loader)
-            if self.log_enabled:
-                self.log_metrics(train_loss, metrics_dict=train_metrics_dict, mode='train')
-            if val_loader:
-                val_loss, val_metrics_dict = self.evaluate(val_loader)
-                if self.log_enabled:
-                    self.log_metrics(val_loss, metrics_dict=val_metrics_dict, mode='val')
-
-    def _normalize(self, x):
-        return x.sub_(self.normalization_mean).div_(self.normalization_std)
-
-    def _denormalize(self, x):
-        return x.mul_(self.normalization_std).add_(self.normalization_mean)
-
+       
     def predict(self, val_loader):
         all_preds = []
         self.model.eval()
@@ -173,39 +131,28 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
                 data = data.to(self.device)
                 
                 # outputs = model(x=data.x, edge_index=data.edge_index, batch=data.batch, edge_attr=data.edge_attr).squeeze(-1)
-                outputs = self.model(x=data.x, edge_index=data.edge_index, batch=data.batch).squeeze(-1)
+                outputs = self.model(x=data.x, edge_index=data.edge_index, external=data.external, batch=data.batch).squeeze(-1)
                 
                 all_preds.extend(outputs.tolist())
 
         all_preds = self._denormalize(torch.tensor(all_preds)).tolist()
 
         return all_preds
-    
-    def log_metrics(self, loss, metrics_dict, mode='train'):
-        if mode=='train':
-            epoch_logs = ' Train: '
-        elif mode=='val':
-            epoch_logs = ' Val:   '
-        else:
-            raise ValueError(f"Invalid mode '{mode}'")
-
-        epoch_logs += f"loss={loss:.4f}"
-        for metric, value in metrics_dict.items():
-
-            if metric=='loss':
-                continue
-
-            epoch_logs += ' | '
-            epoch_logs += f"{metric}={value:.4f}"
-
-        self.logger.info(epoch_logs)
-
+ 
     def prepare_for_deployment(self,
                                featurizer,
+                               external_feature_names,
                                endpoint_name,
+                               external_normalization_mean,
+                               external_normalization_std,
                                public=False,
                                meta=dict()
                                ):
+        
+        if len(external_feature_names) != self.model.num_external_features:
+            raise ValueError(f"Size {len(external_feature_names)} of 'external_feature_names' must match the number of {self.model.num_external_features} external features that the model expects as input.")
+        if 'SMILES' in external_feature_names:
+            raise ValueError("The 'SMILES' keyword is in a protected namespace and should not be used for external features.")
         
         model_scripted = torch.jit.script(self.model)
         model_buffer = io.BytesIO()
@@ -221,7 +168,9 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         
         additional_model_params = {
             'normalization_mean': self.normalization_mean,
-            'normalization_std': self.normalization_std
+            'normalization_std': self.normalization_std,
+            'external_normalization_mean': external_normalization_mean,
+            'external_normalization_std': external_normalization_std
             }
         
 
@@ -230,40 +179,20 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             {'name': torch_geometric.__name__, 'version': str(torch_geometric.__version__)}
         ]
 
+
+        independentFeatures = ['SMILES'] + external_feature_names
+
         self.json_data_for_deployment = self._model_data_as_json(actualModel=model_scripted_base64,
                                                                  model_type=self.model_type,
                                                                  featurizer=featurizer_pickle_base64,
                                                                  public=public,
                                                                  libraries=libraries,
-                                                                 independentFeatures=['SMILES'],
+                                                                 independentFeatures=independentFeatures,
                                                                  dependentFeatures=[endpoint_name],
                                                                  additional_model_params=additional_model_params,
                                                                  reliability=0,
                                                                  pretrained=False,
                                                                  meta=meta
                                                                  )
-                        
+        
         return self.json_data_for_deployment
-
-
-
-
-    # def save(self):
-        
-    #     task = 'regression'
-
-    #     with open(f'metadata_{task}.json', 'w') as f:
-    #         metadata = {
-    #             "task": task,
-    #             "normalization_mean": self.normalization_mean,
-    #             "normalization_std": self.normalization_std, 
-    #             }
-            
-    #         import json
-    #         json.dump(metadata, f)
-
-
-    #     model_scripted = torch.jit.script(self.model)
-    #     model_scripted.save(f'model_scripted_{task}.pt')
-
-        
