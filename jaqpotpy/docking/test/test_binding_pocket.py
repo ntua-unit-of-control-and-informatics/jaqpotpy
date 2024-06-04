@@ -24,7 +24,7 @@ class TestBindingPocket(unittest.TestCase):
   # def test_convex_init(self):
   #   """Tests that ConvexHullPocketFinder can be initialized."""
   #   dc.dock.ConvexHullPocketFinder()
-
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_get_face_boxes_for_protein(self):
     """Tests that binding pockets are detected."""
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -37,6 +37,7 @@ class TestBindingPocket(unittest.TestCase):
     for pocket in boxes:
       assert isinstance(pocket, box_utils.CoordinateBox)
 
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_convex_find_pockets(self):
     """Test that some pockets are filtered out."""
     current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -51,6 +52,7 @@ class TestBindingPocket(unittest.TestCase):
 
     assert len(pockets) < len(all_pockets)
 
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_extract_active_site(self):
     """Test that computed pockets have strong overlap with true binding pocket."""
     current_dir = os.path.dirname(os.path.realpath(__file__))

@@ -4,7 +4,7 @@ Tests for Docking
 import os
 import platform
 import unittest
-import pytest
+#import pytest
 import logging
 import numpy as np
 import jaqpotpy as jp
@@ -31,7 +31,8 @@ class TestDockingUtils(unittest.TestCase):
     self.ligand_file = os.path.join(current_dir, "1a9m_ligand.sdf")
 
 
-  @pytest.mark.slow
+  #@pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_docker_init(self):
     """Test that Docker can be initialized."""
     vpg = jp.docking.VinaPoseGenerator()
@@ -45,7 +46,8 @@ class TestDockingUtils(unittest.TestCase):
 
 
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
-  @pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
+  #@pytest.mark.slow
   def test_docker_dock(self):
     """Test that Docker can dock."""
     # We provide no scoring model so the docker won't score
