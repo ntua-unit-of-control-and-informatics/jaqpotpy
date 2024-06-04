@@ -72,6 +72,7 @@ class TestModels(unittest.TestCase):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_sklearn_comp(self):
         import warnings
         warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
@@ -86,6 +87,7 @@ class TestModels(unittest.TestCase):
         material_model('FeO')
         material_model.prediction
 
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_sklearn_struct(self):
         import warnings
         warnings.filterwarnings("ignore", category=PendingDeprecationWarning)

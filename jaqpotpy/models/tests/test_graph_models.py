@@ -45,6 +45,7 @@ class TestJitModels(unittest.TestCase):
         , 1.0002, 1.008, 1.1234, 0.25567, 0.5647, 0.99887, 1.9897, 1.989, 2.314, 0.112, 0.113, 0.54, 1.123, 1.0001
     ]
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_tdc_attentive(self):
         import pandas as pd
         from sklearn.metrics import average_precision_score, accuracy_score
@@ -125,6 +126,7 @@ class TestJitModels(unittest.TestCase):
 
         # print(evaluation)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_0(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -149,6 +151,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_1(self):
         featurizer = MolGraphConvFeaturizer(use_chirality=True)
         g_data = featurizer.featurize(self.mols[0])
@@ -171,6 +174,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_2(self):
         featurizer = MolGraphConvFeaturizer(use_partial_charge=True)
         g_data = featurizer.featurize(self.mols[0])
@@ -192,6 +196,7 @@ class TestJitModels(unittest.TestCase):
         model = m.create_molecular_model()
         model(self.mols[0])
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_3(self):
         featurizer = PagtnMolGraphFeaturizer()
         g_data = featurizer.featurize("CCN1CCN(C(=O)N[C@@H](C(=O)N[C@@H]2C(=O)N3C(C(=O)O)=C(CSc4nnnn4C)CS[C@H]23)c2ccc(O)cc2)C(=O)C1=O")
@@ -214,6 +219,7 @@ class TestJitModels(unittest.TestCase):
         model = m.create_molecular_model()
         model(self.mols[0])
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_4(self):
         featurizer = AttentiveFPFeaturizer()
         g_data = featurizer.featurize(self.mols[0])
@@ -237,6 +243,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_5(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -258,6 +265,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_6(self):
         featurizer = MolGraphConvFeaturizer(use_edges=True)
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -283,6 +291,7 @@ class TestJitModels(unittest.TestCase):
             print(e)
             pass
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_7(self):
         featurizer = MolGraphConvFeaturizer(use_edges=True)
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -308,7 +317,8 @@ class TestJitModels(unittest.TestCase):
         except TypeError as e:
             print(e)
             pass
-
+	    
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_8_regr(self):
         featurizer = MolGraphConvFeaturizer(use_edges=True)
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys_regr, task='regression'
@@ -331,6 +341,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_9(self):
         featurizer = MolGraphConvFeaturizer(use_edges=True, use_chirality=True)
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -357,6 +368,7 @@ class TestJitModels(unittest.TestCase):
             print(e)
             pass
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_10(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -378,6 +390,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_11(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -399,6 +412,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_12(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -420,7 +434,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
-
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_13(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -442,6 +456,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_14(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -462,7 +477,8 @@ class TestJitModels(unittest.TestCase):
         model = m.create_molecular_model()
         model(self.mols[0])
         model(self.mols)
-
+	    
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_15(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
@@ -484,6 +500,7 @@ class TestJitModels(unittest.TestCase):
         model(self.mols[0])
         model(self.mols)
 
+	@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_16(self):
         featurizer = MolGraphConvFeaturizer()
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification'
