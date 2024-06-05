@@ -23,7 +23,7 @@ class RegressionGraphModelWithExternalTrainer(RegressionGraphModelTrainer):
             device='cpu', 
             use_tqdm=True,
             log_enabled=True,
-            log_file=None,
+            log_filepath=None,
             normalization_mean=0.0,
             normalization_std=1.0
             ):
@@ -35,7 +35,7 @@ class RegressionGraphModelWithExternalTrainer(RegressionGraphModelTrainer):
             device, 
             use_tqdm,
             log_enabled,
-            log_file,
+            log_filepath,
             normalization_mean,
             normalization_std
             )

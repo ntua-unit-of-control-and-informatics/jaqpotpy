@@ -5,7 +5,7 @@ import sys
 
 import jaqpotpy
 import requests
-
+import os
 
 class TorchModelTrainer(ABC):
     @property
@@ -14,14 +14,14 @@ class TorchModelTrainer(ABC):
         pass
 
     def __init__(self,
-                model,
-                n_epochs,
-                optimizer,
-                loss_fn,
-                device='cpu',
-                use_tqdm=True,
-                log_enabled=True,
-                log_filepath=None):
+                 model,
+                 n_epochs,
+                 optimizer,
+                 loss_fn,
+                 device='cpu',
+                 use_tqdm=True,
+                 log_enabled=True,
+                 log_filepath=None):
         """
         Args:
             model (torch.nn.Module): The torch model to be trained.
@@ -41,11 +41,22 @@ class TorchModelTrainer(ABC):
         self.use_tqdm = use_tqdm
         self.current_epoch = 0
         self.log_enabled = log_enabled
-        self.log_filepath = log_filepath
+        self.log_filepath = os.path.relpath(log_filepath)
         self.json_data_for_deployment = None
 
         self.logger = self._setup_logger()
 
+        # print(vars(self))
+        # exit()
+
+    # def check_reach_epoch_limit(self, func):
+    #     def wrapper(self, *args, **kwargs):
+    #         if self.current_epoch >= self.n_epochs:
+    #             self.logger.info(f"WARNING: Model has already been trained for the indicated number epochs but will train for {self.n_epochs} more.")
+            
+    #         return func(self, *args, **kwargs)
+    #     return wrapper
+    
     def _setup_logger(self):
 
         logger = logging.getLogger(__name__)
@@ -57,6 +68,8 @@ class TorchModelTrainer(ABC):
     
         handlers=[logging.StreamHandler(sys.stdout)]
         if self.log_filepath:
+            if os.path.exists(self.log_filepath):
+                raise ValueError(f"File already exists: {self.log_filepath}")
             log_file_handler = logging.FileHandler(self.log_filepath)
             handlers.append(log_file_handler)
 
@@ -68,6 +81,7 @@ class TorchModelTrainer(ABC):
 
         return logger
 
+    # @check_reach_epoch_limit
     @abstractmethod
     def train(self, train_loader, val_loader=None):
         """
