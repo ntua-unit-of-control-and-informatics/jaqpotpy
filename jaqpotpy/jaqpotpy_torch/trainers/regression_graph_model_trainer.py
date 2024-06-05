@@ -1,6 +1,5 @@
 from tqdm import tqdm
 from .torch_model_trainer import TorchModelTrainer
-import torch.nn.functional as F
 import sklearn.metrics as metrics
 import torch
 import base64
@@ -8,8 +7,6 @@ import io
 import pickle
 
 import torch_geometric
-import jaqpotpy
-import requests
 
 
 class RegressionGraphModelTrainer(TorchModelTrainer):
@@ -27,7 +24,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             device='cpu', 
             use_tqdm=True,
             log_enabled=True,
-            log_file=None,
+            log_filepath=None,
             normalization_mean=0.0,
             normalization_std=1.0
             ):
@@ -40,11 +37,14 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             device,
             use_tqdm,
             log_enabled,
-            log_file
+            log_filepath
             )
         
         self.normalization_mean = normalization_mean
         self.normalization_std = normalization_std
+
+        self.logger.info('\n'.join(f'- {k}: {v}' for k, v in vars(self).items()))
+        
          
     def train_one_epoch(self, train_loader):
 
@@ -152,6 +152,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             train_loss = self.train_one_epoch(train_loader)
             _, train_metrics_dict = self.evaluate(train_loader)
             if self.log_enabled:
+                self.logger.info(f"Epoch {self.current_epoch}:")
                 self.log_metrics(train_loss, metrics_dict=train_metrics_dict, mode='train')
             if val_loader:
                 val_loss, val_metrics_dict = self.evaluate(val_loader)

@@ -25,7 +25,7 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
             device='cpu', 
             use_tqdm=True,
             log_enabled=True,
-            log_file=None,
+            log_filepath=None,
             decision_threshold=0.5,
             ):
         
@@ -37,7 +37,7 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
             device,
             use_tqdm,
             log_enabled,
-            log_file
+            log_filepath
             )
         
         self.decision_threshold = decision_threshold

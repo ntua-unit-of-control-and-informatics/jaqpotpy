@@ -25,7 +25,7 @@ class BinaryGraphModelWithExternalTrainer(BinaryGraphModelTrainer):
             device='cpu', 
             use_tqdm=True,
             log_enabled=True,
-            log_file=None,
+            log_filepath=None,
             decision_threshold=0.5
             ):
         
@@ -36,7 +36,7 @@ class BinaryGraphModelWithExternalTrainer(BinaryGraphModelTrainer):
             device, 
             use_tqdm,
             log_enabled,
-            log_file,
+            log_filepath,
             decision_threshold
             )
         
