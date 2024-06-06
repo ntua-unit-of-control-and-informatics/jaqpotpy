@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-from jaqpotpy.descriptors import MordredDescriptors
+from jaqpotpy.descriptors.molecular import MordredDescriptors
 from jaqpotpy.cfg import config
 
 class TestMordredDescriptors(unittest.TestCase):
@@ -32,8 +32,7 @@ class TestMordredDescriptors(unittest.TestCase):
         """
         Test featurize_dataframe using mols
         """
-        featurizer = MordredDescriptors()
-        descriptors = featurizer.featurize_dataframe([self.mol, self.mol2])
+        descriptors = self.featurizer.featurize_dataframe([self.mol, self.mol2])
         assert descriptors.shape == (2, 1613)
         assert isinstance(descriptors.iloc[0, 1], (int, float, np.number))
 
