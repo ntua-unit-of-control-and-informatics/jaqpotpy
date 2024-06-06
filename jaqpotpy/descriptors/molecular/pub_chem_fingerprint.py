@@ -72,3 +72,14 @@ class PubChemFingerprint(MolecularFeaturizer):
         pubchem_compound = pcp.get_compounds(smiles, 'smiles')[0]
         feature = [int(bit) for bit in pubchem_compound.cactvs_fingerprint]
         return np.asarray(feature)
+    
+    def _get_column_names(self, **kwargs) -> list:
+        descriptors_length = 881
+        descriptors = []
+        for i in range(descriptors_length):
+            descriptors.append("f" + str(i))
+        return descriptors
+
+    def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
+        return self._featurize(datapoint, **kwargs)
+
