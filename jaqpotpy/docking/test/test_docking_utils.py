@@ -8,7 +8,7 @@ import unittest
 import logging
 import numpy as np
 import jaqpotpy as jp
-from jaqpotpy.descriptors import ComplexFeaturizer
+from jaqpotpy.descriptors.base_classes import ComplexFeaturizer
 from jaqpotpy.models import Model
 from jaqpotpy.docking.pose_generation import PoseGenerator
 
