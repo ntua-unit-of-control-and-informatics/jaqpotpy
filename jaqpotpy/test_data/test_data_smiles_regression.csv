@@ -1,4 +1,4 @@
-SMILES,IC50
+SMILES,ACTIVITY
 CO[C@@H]1[C@@H](O)[C@@H](O)[C@H](Oc2ccc3c(O)c(NC(=O)/C=C/c4ccccc4)c(=O)oc3c2C)OC1(C)C,10000
 CO[C@@H]1[C@@H](O)[C@@H](O)[C@H](Oc2ccc3c(O)c(NC(=O)c4ccccc4)c(=O)oc3c2C)OC1(C)C,10000
 COc1cc(C(=O)Nc2c(O)c3ccc(O[C@@H]4OC(C)(C)[C@H](OC)[C@@H](O)[C@H]4O)c(C)c3oc2=O)ccc1O,10000
