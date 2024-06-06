@@ -22,7 +22,8 @@ class test_GeomDesc(unittest.TestCase):
         #parser = MolParser(sdf, 'sdf')
         # parser = XyzParser(extxyz, 'extxyz')
         #
-        self.featurizer = GeomDescriptors(parser, ['atomic_number', 'thermal_conductivity'])
+        #self.featurizer = GeomDescriptors(parser, ['atomic_number', 'thermal_conductivity'])
+        self.featurizer = None
 
     @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test(self):

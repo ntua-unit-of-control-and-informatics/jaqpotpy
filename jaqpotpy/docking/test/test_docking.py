@@ -8,12 +8,13 @@ import logging
 #import pytest
 import numpy as np
 import jaqpotpy as jp
-from jaqpotpy.descriptors import ComplexFeaturizer
+from jaqpotpy.descriptors.base_classes import ComplexFeaturizer
 from jaqpotpy.models import Model
 from jaqpotpy.docking.pose_generation import PoseGenerator
 import rdkit.Chem
 import rdkit.Chem
 #from jaqpotpy.docking.utils import create_hydrated_pdbqt_pdb
+# pylint: disable=no-member
 
 IS_WINDOWS = platform.system() == 'Windows'
 
@@ -55,7 +56,9 @@ class TestDocking(unittest.TestCase):
     from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 
     #from tdc.single_pred import ADME
-    data = ADME(name='BBB_Martins')
+    #data = ADME(name='BBB_Martins')
+    data = None
+
     split = data.get_split()
     featurizer = AttentiveFPFeaturizer()
     train_dataset = TorchGraphDataset(smiles=split['train']['Drug'], y=split['train']['Y'], task='classification'

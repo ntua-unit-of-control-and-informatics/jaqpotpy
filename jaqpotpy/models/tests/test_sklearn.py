@@ -14,7 +14,7 @@ from sklearn.svm import SVC, SVR
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from jaqpotpy.descriptors.molecular import MordredDescriptors
+from jaqpotpy.descriptors.molecular import MordredDescriptors,RDKitDescriptors,TopologicalFingerprint
 from jaqpotpy.datasets import SmilesDataset
 from jaqpotpy.models import MolecularSKLearn
 from jaqpotpy.doa.doa import Leverage
@@ -48,6 +48,11 @@ class TestModels(unittest.TestCase):
     """
     def setUp(self) -> None:
 
+        self.mols = []
+        self.ys = []
+        self.ys_regr = []
+
+
         script_dir = os.path.dirname(__file__)
         test_data_dir = os.path.abspath(os.path.join(script_dir, '../../test_data'))
         clasification_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_classification.csv')
@@ -56,48 +61,48 @@ class TestModels(unittest.TestCase):
         self.regression_df = pd.read_csv(regression_csv_file_path)
 
 
-        self.smiles = 
-        self.activity = 
-        self.featurizer =  MordredDescriptors()
-        self.classification_dataset = SmilesDataset(smiles=self.smiles, y=self.activity, task='classification', featurizer=self.featurizer)
-        self.regression_dataset = SmilesDataset(smiles=self.smiles, y=self.activity, task='regression', featurizer=self.featurizer)
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            self.X, self.y, test_size=0.2, random_state=42)
+        #self.smiles = 
+        #self.activity = 
+        #self.featurizer =  MordredDescriptors()
+        #self.classification_dataset = SmilesDataset(smiles=self.smiles, y=self.activity, task='classification', featurizer=self.featurizer)
+        #self.regression_dataset = SmilesDataset(smiles=self.smiles, y=self.activity, task='regression', featurizer=self.featurizer)
+        #self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+        #    self.X, self.y, test_size=0.2, random_state=42)
 
     @unittest.skip("This test needs refactoring")
-    def test_random_forest_fit_predict(self)->None:
-        """
-        This test verifies that the RandomForestClassifier can fit a model to the training data and
-        make predictions on the test data. It checks that the number of predictions matches the number
-        of test samples and that the accuracy is above a certain threshold (in this case, 0.7).
-        """
-        # Train the model
-        self.model.fit(self.X_train, self.y_train)
+    # def test_random_forest_fit_predict(self)->None:
+    #     """
+    #     This test verifies that the RandomForestClassifier can fit a model to the training data and
+    #     make predictions on the test data. It checks that the number of predictions matches the number
+    #     of test samples and that the accuracy is above a certain threshold (in this case, 0.7).
+    #     """
+    #     # Train the model
+    #     self.model.fit(self.X_train, self.y_train)
         
-        # Make predictions
-        y_pred = self.model.predict(self.X_test)
+    #     # Make predictions
+    #     y_pred = self.model.predict(self.X_test)
         
-        # Check if predictions have the same length as the test set
-        self.assertEqual(len(y_pred), len(self.y_test), 
-                         "The number of predictions does not match the number of test samples.")
+    #     # Check if predictions have the same length as the test set
+    #     self.assertEqual(len(y_pred), len(self.y_test), 
+    #                      "The number of predictions does not match the number of test samples.")
         
-        # Check if the model accuracy is within an acceptable range
-        accuracy = accuracy_score(self.y_test, y_pred)
-        self.assertGreater(accuracy, 0.2, "The accuracy is lower than expected.")
+    #     # Check if the model accuracy is within an acceptable range
+    #     accuracy = accuracy_score(self.y_test, y_pred)
+    #     self.assertGreater(accuracy, 0.2, "The accuracy is lower than expected.")
     
-    @unittest.skip("This test needs refactoring")
-    def test_random_forest_consistency(self):
-        # Train the model and make predictions
-        self.model.fit(self.X_train, self.y_train)
-        y_pred1 = self.model.predict(self.X_test)
+    # @unittest.skip("This test needs refactoring")
+    # def test_random_forest_consistency(self):
+    #     # Train the model and make predictions
+    #     self.model.fit(self.X_train, self.y_train)
+    #     y_pred1 = self.model.predict(self.X_test)
 
-        # Train the model again and make predictions
-        self.model.fit(self.X_train, self.y_train)
-        y_pred2 = self.model.predict(self.X_test)
+    #     # Train the model again and make predictions
+    #     self.model.fit(self.X_train, self.y_train)
+    #     y_pred2 = self.model.predict(self.X_test)
 
-        # Check if predictions are consistent across runs
-        self.assertListEqual(list(y_pred1), list(y_pred2), 
-                             "Predictions are not consistent across different training runs.")
+    #     # Check if predictions are consistent across runs
+    #     self.assertListEqual(list(y_pred1), list(y_pred2), 
+    #                          "Predictions are not consistent across different training runs.")
 
     @unittest.skip("This test needs refactoring")
     def test_random_forest(self):
@@ -105,7 +110,7 @@ class TestModels(unittest.TestCase):
         Test RandomForestClassifier on a molecular dataset with MACCSKeys fingerprints for classification.
         """
         model = RandomForestClassifier(n_estimators=5, random_state=42)
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=None, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.Y = 'DILI'
         assert molecularModel_t1.doa.IN == [True]
