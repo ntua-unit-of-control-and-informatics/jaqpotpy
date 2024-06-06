@@ -7,28 +7,28 @@ from jaqpotpy.descriptors.molecular import RDKitDescriptors, MordredDescriptors
 import pickle
 # import dill
 
-def calculate_a(X):
-    shape = X.shape
-    a = (3 * (shape[1] + 1)) / shape[0]
-    return a
+# def calculate_a(X):
+#     shape = X.shape
+#     a = (3 * (shape[1] + 1)) / shape[0]
+#     return a
 
 
-def calculate_doa_matrix(X):
-    x_T = X.transpose()
-    x_out = x_T.dot(X)
-    x_out_inv = pd.DataFrame(np.linalg.pinv(x_out.values), x_out.columns, x_out.index)
-    return x_out_inv
+# def calculate_doa_matrix(X):
+#     x_T = X.transpose()
+#     x_out = x_T.dot(X)
+#     x_out_inv = pd.DataFrame(np.linalg.pinv(x_out.values), x_out.columns, x_out.index)
+#     return x_out_inv
 
 
-def calc_doa(doa_matrix, new_data):
-    doaAll = []
-    for nd in new_data:
-        d1 = np.dot(nd, doa_matrix)
-        ndt = np.transpose(nd)
-        d2 = np.dot(d1, ndt)
-        doa = {'DOA': d2}
-        doaAll.append(doa)
-    return doaAll
+# def calc_doa(doa_matrix, new_data):
+#     doaAll = []
+#     for nd in new_data:
+#         d1 = np.dot(nd, doa_matrix)
+#         ndt = np.transpose(nd)
+#         d2 = np.dot(d1, ndt)
+#         doa = {'DOA': d2}
+#         doaAll.append(doa)
+#     return doaAll
 
 
 class DOA(object):
@@ -70,8 +70,8 @@ class Leverage(DOA, ABC):
         self._doa_matrix = None
         self._a = None
 
-    def __getitem__(self):
-        return self
+    def __getitem__(self,key):
+        return key
 
     @property
     def doa_new(self):
@@ -293,8 +293,8 @@ class SmilesLeverage(DOA, ABC):
         # self.featurizer = MordredDescriptors(ignore_3D=True)
         self.featurizer = RDKitDescriptors(use_fragment=False, ipc_avg=False)
 
-    def __getitem__(self):
-        return self
+    def __getitem__(self,key):
+        return key
 
     @property
     def doa_new(self):
