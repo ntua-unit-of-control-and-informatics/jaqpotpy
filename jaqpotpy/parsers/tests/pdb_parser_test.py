@@ -51,7 +51,7 @@ class TestParsers(unittest.TestCase):
     def test_df_file(self):
         #df = self.parser.parse_dataframe()
         # pdb = next(test)
-        print(df)
+        #print(df)
         return
 
     @unittest.skip("This test needs refactoring") 
