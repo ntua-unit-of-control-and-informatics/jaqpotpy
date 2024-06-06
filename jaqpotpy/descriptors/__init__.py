@@ -1,4 +1,4 @@
-# from jaqpotpy.descriptors.molecular.mordred import MordredDescriptors
+#from jaqpotpy.descriptors.molecular.mordred import MordredDescriptors
 # from jaqpotpy.descriptors.molecular.smiles_to_seq import SmilesToSeq, create_char_to_idx
 # from jaqpotpy.descriptors.molecular.one_hot_sequence import OneHotSequence
 # from jaqpotpy.descriptors.molecular.rdkit import RDKitDescriptors
@@ -11,4 +11,4 @@
 # from jaqpotpy.descriptors.graph.mol_graphs import *
 # from jaqpotpy.descriptors.molecular.smles_to_image import SmilesToImage
 # from jaqpotpy.descriptors.molecular.molgan import MolGanFeaturizer
-from jaqpotpy.descriptors.base_classes import ComplexFeaturizer
+# from jaqpotpy.descriptors.base_classes import ComplexFeaturizer
