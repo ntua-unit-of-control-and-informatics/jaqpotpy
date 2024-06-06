@@ -1,5 +1,8 @@
 import numpy as np
 import unittest
+from rdkit import Chem
+from rdkit.Chem import AllChem
+from mordred import Chi, ABCIndex
 
 from jaqpotpy.descriptors.molecular import MordredDescriptors
 from jaqpotpy.cfg import config
@@ -13,7 +16,6 @@ class TestMordredDescriptors(unittest.TestCase):
         """
         Set up tests.
         """
-        from rdkit import Chem
         self.smiles1 = 'CC(=O)OC1=CC=CC=C1C(=O)O'
         self.mol = Chem.MolFromSmiles(self.smiles1)
         self.smiles2 = 'CCCC(=O)OC1=CC=CC=C1C(=O)O'
@@ -48,8 +50,6 @@ class TestMordredDescriptors(unittest.TestCase):
         """
         Test simple descriptors with 3D info
         """
-        from rdkit import Chem
-        from rdkit.Chem import AllChem
         featurizer = MordredDescriptors(ignore_3D=False)
         descriptors = featurizer([self.mol, self.mol2])
         assert descriptors.shape == (2, 1826)
@@ -67,9 +67,7 @@ class TestMordredDescriptors(unittest.TestCase):
         
     def test_base_mordred(self):
         'Mordredcommunity is used instead of morded cause of numpy errors'
-        from rdkit import Chem
-        from mordred import Chi, ABCIndex
-        
+
         benzene = Chem.MolFromSmiles('c1ccccc1')
         # create descriptor instance
         abci = ABCIndex.ABCIndex()
