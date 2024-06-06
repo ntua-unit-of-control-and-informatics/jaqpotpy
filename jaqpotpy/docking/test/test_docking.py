@@ -257,6 +257,8 @@ class TestDocking(unittest.TestCase):
 
   # @unittest.skip("skipping automated test")
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
+
   #@pytest.mark.slow
   def test_docker_pose_generator_scores(self):
     """Test that Docker can get scores from pose_generator."""
