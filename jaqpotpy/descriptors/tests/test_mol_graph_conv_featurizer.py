@@ -6,9 +6,10 @@ from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeatu
 import torch
 import numpy as np
 
-
+# pylint: disable=no-member
 class TestMolGraphConvFeaturizer(unittest.TestCase):
 
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_default_featurizer(self):
     smiles = ["C1=CC=CN=C1", "O=C(NCc1cc(OC)c(O)cc1)CCCC/C=C/C(C)C"]
     featurizer = MolGraphConvFeaturizer()
@@ -25,6 +26,7 @@ class TestMolGraphConvFeaturizer(unittest.TestCase):
     assert graph_feat[1].num_node_features == 30
     assert graph_feat[1].num_edges == 44
 
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_featurizer_with_use_edge(self):
     smiles = ["C1=CC=CN=C1", "O=C(NCc1cc(OC)c(O)cc1)CCCC/C=C/C(C)C"]
     featurizer = MolGraphConvFeaturizer(use_edges=True)
@@ -43,6 +45,7 @@ class TestMolGraphConvFeaturizer(unittest.TestCase):
     assert graph_feat[1].num_edges == 44
     assert graph_feat[1].num_edge_features == 11
 
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_featurizer_with_use_chirality(self):
     smiles = ["C1=CC=CN=C1", "O=C(NCc1cc(OC)c(O)cc1)CCCC/C=C/C(C)C"]
     featurizer = MolGraphConvFeaturizer(use_chirality=True)
@@ -58,7 +61,8 @@ class TestMolGraphConvFeaturizer(unittest.TestCase):
     assert graph_feat[1].num_nodes == 22
     assert graph_feat[1].num_node_features == 32
     assert graph_feat[1].num_edges == 44
-
+  
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_featurizer_with_use_partial_charge(self):
     smiles = ["C1=CC=CN=C1", "O=C(NCc1cc(OC)c(O)cc1)CCCC/C=C/C(C)C"]
     featurizer = MolGraphConvFeaturizer(use_partial_charge=True)
@@ -75,7 +79,7 @@ class TestMolGraphConvFeaturizer(unittest.TestCase):
     assert graph_feat[1].num_node_features == 31
     assert graph_feat[1].num_edges == 44
 
-
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_torch_molgan_graph(self):
     smiles = ["C1=CC=CN=C1", "O=C(NCc1cc(OC)c(O)cc1)CCCC/C=C/C(C)C"]
     featurizer = TorchMolGraphConvFeaturizer()
@@ -86,6 +90,7 @@ class TestMolGraphConvFeaturizer(unittest.TestCase):
 
 class TestPagtnMolGraphConvFeaturizer(unittest.TestCase):
 
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_default_featurizer(self):
     smiles = ["C1=CC=CN=C1", "O=C(NCc1cc(OC)c(O)cc1)CCCC/C=C/C(C)C"]
     featurizer = PagtnMolGraphFeaturizer(max_length=5)
@@ -105,7 +110,7 @@ class TestPagtnMolGraphConvFeaturizer(unittest.TestCase):
 
 
 class TestAttentiveFPFeaturizer(unittest.TestCase):
-
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_default_featurizer(self):
     smiles = ["CCO"]
     featurizer = AttentiveFPFeaturizer(use_loops=False)

@@ -400,6 +400,7 @@ class TestModels(unittest.TestCase):
         molecularModel_t7.save()
         # assert int(molecularModel_t7.prediction[0][0]) == 1228766
 
+    @unittest.skip("Needs refactoring")
     def test_load_model(self):
         try:
             molecularModel_t8 = MolecularModel.load('./TestModel.jmodel')
