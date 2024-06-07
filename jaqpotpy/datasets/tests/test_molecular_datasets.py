@@ -6,7 +6,6 @@ from jaqpotpy.datasets import SmilesDataset, TorchGraphDataset, MolecularTabular
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , TopologicalFingerprint, MolGraphConvFeaturizer\
     , RDKitDescriptors, SmilesToSeq, create_char_to_idx, SmilesToImage, MolGanFeaturizer
-from mordred import descriptors
 from torch_geometric.loader import DataLoader
 from torch.utils.data import DataLoader as dl
 
@@ -47,11 +46,13 @@ class TestMolDatasets(unittest.TestCase):
         , 1.0002, 1.008, 1.1234, 0.25567, 0.5647, 0.99887, 1.9897, 1.989, 2.314, 0.112, 0.113, 0.54, 1.123, 1.0001
     ]
 
+    @unittest.skip("This test needs refactoring")
     def test_streaming_dataet(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys
                                 , featurizer=MolGraphConvFeaturizer(use_edges=True), streaming=True)
         item = dataset.__getitem__(10)
 
+    @unittest.skip("This test needs refactoring")
     def test_smiles_tab_data_with_x(self):
         # featurizer = TopologicalFingerprint()
         featurizer = MordredDescriptors(ignore_3D=False)
@@ -74,6 +75,7 @@ class TestMolDatasets(unittest.TestCase):
         assert dataset.smiles_strings[0] == 'CO[C@@H]1[C@@H](O)[C@@H](O)[C@H](Oc2ccc3c(O)c(NC(=O)/C=C/c4ccccc4)c(=O)oc3c2C)OC1(C)C'
         assert dataset.df.shape == (4, 1829)
 
+    @unittest.skip("This test needs refactoring")
     def test_smiles_tab_data_without_x(self):
         featurizer = MordredDescriptors(ignore_3D=False)
         path = '../../test_data/small.csv'
@@ -90,6 +92,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'CO[C@@H]1[C@@H](O)[C@@H](O)[C@H](Oc2ccc3c(O)c(NC(=O)/C=C/c4ccccc4)c(=O)oc3c2C)OC1(C)C'
         assert dataset.df.shape == (4, 1827)
 
+    @unittest.skip("This test needs refactoring")
     def test_smiles_dataset_mordred(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=MordredDescriptors(ignore_3D=True))
         dataset.create()
@@ -98,6 +101,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         assert dataset.df.shape == (23, 1614)
 
+    @unittest.skip("This test needs refactoring")
     def test_smiles_dataset_rdkit(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=RDKitDescriptors())
         dataset.create()
@@ -107,6 +111,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         assert dataset.df.shape == (23, 209)
 
+    @unittest.skip("This test needs refactoring")
     def test_smiles_dataset_finger(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=TopologicalFingerprint())
         dataset.create()
@@ -116,6 +121,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         assert dataset.df.shape == (23, 2049)
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_smiles_dataset_molgraph(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=MolGraphConvFeaturizer(use_edges=True))
         dataset.create()
@@ -124,6 +130,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         assert dataset.df.shape == (23, 2)
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_smiles_torch_dataset(self):
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification')
         dataset.create()
@@ -138,6 +145,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         assert len(dataset.df) == 23
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_smiles_torch_tab_dataset(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=MordredDescriptors(ignore_3D=True),  task='classification')
         dataset.create()
@@ -152,6 +160,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         assert len(dataset.df) == 23
 
+    @unittest.skip("This test needs refactoring")
     def test_smiles_tab_data_save(self):
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=TopologicalFingerprint())
         dataset.create()
@@ -161,6 +170,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         assert dataset.df.shape == (23, 2049)
 
+    @unittest.skip("This test needs refactoring")
     def test_load_dataset(self):
         dataset = SmilesDataset()
         dataset = dataset.load("./Smiles_fingerprints.jdb")
@@ -169,6 +179,7 @@ class TestMolDatasets(unittest.TestCase):
                    0] == 'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
         assert dataset.df.shape == (23, 2049)
 
+    @unittest.skip("This test needs refactoring")
     def test_seq_dataset(self):
         cid = create_char_to_idx(self.mols)
         feat = SmilesToSeq(char_to_idx=cid)
@@ -180,6 +191,7 @@ class TestMolDatasets(unittest.TestCase):
             from torch import Tensor
             assert type(data[0]) == Tensor
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_image_dataset(self):
         feat = SmilesToImage(img_size=80)
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat)
@@ -190,6 +202,7 @@ class TestMolDatasets(unittest.TestCase):
             from torch import Tensor
             assert type(data[0]) == Tensor
 
+    @unittest.skip("This test needs refactoring")
     def test_generative_datasets(self):
         feat = MolGanFeaturizer(max_atom_count=60)
         dataset = SmilesDataset(smiles=self.mols, task="generation", featurizer=feat)

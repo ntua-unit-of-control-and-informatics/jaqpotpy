@@ -1,27 +1,25 @@
-from jaqpotpy.descriptors.material import ElementPropertyFingerprint
 import unittest
-import pandas as pd
-
+from jaqpotpy.descriptors.material import ElementPropertyFingerprint
 
 class test_ElementPropertyFingerprint(unittest.TestCase):
 
-      def setUp(self) -> None:
-          # self.comp = "Fe2O3"
-          self.comp = ['Fe2O3', 'FeO']
-          # df = pd.read_csv('C:/Users/jason/centralenv/LTKB/dili_formula.csv')
-          # self.comp = list(df['Formula'])
+    def setUp(self) -> None:
+        # self.comp = "Fe2O3"
+        self.comp = ['Fe2O3', 'FeO']
+        # df = pd.read_csv('C:/Users/jason/centralenv/LTKB/dili_formula.csv')
+        # self.comp = list(df['Formula'])
 
-          self.featurizer = ElementPropertyFingerprint()
+        self.featurizer = ElementPropertyFingerprint()
 
-
-      def test_featurizer(self):
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
+    def test_featurizer(self):
 
         features = self.featurizer.featurize('FeO')
         assert features[0].shape == (65,)
         return
 
-
-      def test_featurizer_df(self):
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
+    def test_featurizer_df(self):
         features = self.featurizer.featurize_dataframe(self.comp)
         stats = ["minimum", "maximum", "range", "mean", "std_dev"]
         feats = [

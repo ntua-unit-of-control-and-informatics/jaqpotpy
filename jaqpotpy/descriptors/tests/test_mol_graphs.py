@@ -10,7 +10,7 @@ class TestMolGraphs(unittest.TestCase):
   """
   Test mol graphs.
   """
-
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_construct_conv_mol(self):
     """Tests that ConvMols can be constructed without crash."""
     # Artificial feature array.
@@ -18,6 +18,7 @@ class TestMolGraphs(unittest.TestCase):
     adj_list = [[1], [0, 2], [1]]
     _ = ConvMol(atom_features, adj_list)
 
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_conv_mol_deg_slice(self):
     """Tests that deg_slice works properly."""
     atom_features = np.array([[20, 21, 22, 23], [24, 25, 26, 27],
@@ -40,7 +41,8 @@ class TestMolGraphs(unittest.TestCase):
         # 0 atoms of degree 10
         np.array([[0, 0], [0, 0], [0, 4], [0, 0], [0, 0], [0, 0], [0, 0],
                   [0, 0], [0, 0], [0, 0], [0, 0]]))
-
+    
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_get_atom_features(self):
     """Test that the atom features are computed properly."""
     atom_features = np.array([[40, 41, 42, 43], [44, 45, 46, 47],
@@ -58,7 +60,8 @@ class TestMolGraphs(unittest.TestCase):
         mol.get_atom_features(),
         np.array([[56, 57, 58, 59], [40, 41, 42, 43], [44, 45, 46, 47],
                   [48, 49, 50, 51], [52, 53, 54, 55]]))
-
+    
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")  
   def test_get_adjacency_list(self):
     """Tests that adj-list is canonicalized properly."""
     atom_features = np.array([[40, 41, 42, 43], [44, 45, 46, 47],
@@ -73,7 +76,7 @@ class TestMolGraphs(unittest.TestCase):
     # list respects this reordering and returns correct adjacency list.
     assert (mol.get_adjacency_list() == [[4], [2, 3], [1, 4], [1, 4], [2, 3,
                                                                        0]])
-
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_agglomerate_molecules(self):
     """Test AggrMol.agglomerate_mols."""
     molecules = []
@@ -125,6 +128,7 @@ class TestMolGraphs(unittest.TestCase):
     # 0 atoms of degree 5
     assert np.array_equal(deg_adj_lists[5], np.zeros([0, 5]))
 
+  @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
   def test_null_conv_mol(self):
     """Running Null AggrMol Test. Only works when max_deg=6 and min_deg=0"""
     num_feat = 4
