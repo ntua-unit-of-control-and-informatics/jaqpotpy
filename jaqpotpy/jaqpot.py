@@ -345,22 +345,10 @@ class Jaqpot:
         sk_version = model.__getstate__()['_sklearn_version']
 
         splited = sk_version.split(".")
-        if int(splited[1]) < 21 and int(splited[0]) == 0:
-            runtime = "scikit-learn-legacy"
-        if int(splited[1]) == 22:
-            runtime = "scikit-learn-0-22"
-        if int(splited[1]) == 23:
-            runtime = "scikit-learn-0-23"
-        if int(splited[1]) == 24:
-            runtime = "scikit-learn-0-24"
-        if int(splited[1]) > 24:
-            runtime = "scikit-learn-0-24"
-        if int(splited[0]) == 1 and int(splited[1]) == 0:
-            runtime = "scikit-learn-1-0"
-        if int(splited[0]) == 1 and int(splited[1]) == 1:
-            runtime = "scikit-learn-1-1"
-        if int(splited[0]) == 1 and int(splited[1]) == 2:
-            runtime = "scikit-learn-1-1"
+        if int(splited[0]) == 1 and int(splited[1]) == 5:
+            runtime = "jaqpotpy"
+        else:
+            raise Exception('Only Scikit-Learn 1.5.0 is supported. Please update your scikit-learn version to 1.5.0')
 
         if isinstance(X, pd.DataFrame) is False and isinstance(X, pd.Series) is False:
             raise Exception('Function deploy_sklearn supports pandas dataframe or series. X is not one')
