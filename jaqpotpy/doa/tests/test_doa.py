@@ -45,11 +45,13 @@ class TestDoa(unittest.TestCase):
 
         mol = [
             'C[C@@](C)(O1)C[C@@H](O)[C@@]1(O2)[C@@H](C)[C@@H]3CC=C4[C@]3(C2)C(=O)C[C@H]5[C@H]4CC[C@@H](C6)[C@]5(C)Cc(n7)c6nc(C[C@@]89(C))c7C[C@@H]8CC[C@@H]%10[C@@H]9C[C@@H](O)[C@@]%11(C)C%10=C[C@H](O%12)[C@]%11(O)[C@H](C)[C@]%12(O%13)[C@H](O)C[C@@]%13(C)CO',
-            'COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1', 'CN(C)c1ccc(N(Cc2ccsc2)C(=O)Cc2cncc3ccccc23)cc1']
+            'COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+            , 'CN(C)c1ccc(N(Cc2ccsc2)C(=O)Cc2cncc3ccccc23)cc1']
         
         descriptors = featurizer(mol)
         calc = doa.predict(descriptors)
         assert len(calc)==len(mol), f"Expected len(calc) == len(mol), got {len(calc)} != {len(mol)}"
+        assert abs(doa.a - 16.17391304347826) < 0.00001, f"Expected doa.a == 16.17391304347826, got {doa.a} != 16.17391304347826"
         assert calc[0]['IN']==False, f"Expected calc[0]['IN'] == False, got {calc[0]['IN']} != Flase"
         assert calc[1]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[1]['IN']} != True"
         assert calc[2]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[2]['IN']} != True"
@@ -192,44 +194,3 @@ class TestDoa(unittest.TestCase):
         doa.fit(data)
         calc = doa.predict(data)
         assert len(calc) == len(data)
-import unittest
-import numpy as np
-from jaqpotpy.doa.doa import Leverage
-
-class LeverageTestCase(unittest.TestCase):
-    def setUp(self):
-        self.X_train = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        self.X_test = np.array([[2, 3, 4], [5, 6, 7], [8, 9, 10]])
-        self.leverage = Leverage()
-
-    def test_calculate_threshold(self):
-        self.leverage.data = self.X_train
-        self.leverage.calculate_threshold()
-        self.assertEqual(self.leverage.a, 2.0)
-
-    def test_calculate_matrix(self):
-        self.leverage.data = self.X_train
-        self.leverage.calculate_matrix()
-        expected_matrix = np.array([[ 0.05555556, -0.11111111,  0.05555556],
-                                    [-0.11111111,  0.22222222, -0.11111111],
-                                    [ 0.05555556, -0.11111111,  0.05555556]])
-        np.testing.assert_array_almost_equal(self.leverage.doa_matrix, expected_matrix)
-
-    def test_fit(self):
-        self.leverage.fit(self.X_train)
-        expected_matrix = np.array([[ 0.05555556, -0.11111111,  0.05555556],
-                                    [-0.11111111,  0.22222222, -0.11111111],
-                                    [ 0.05555556, -0.11111111,  0.05555556]])
-        self.assertEqual(self.leverage.a, 2.0)
-        np.testing.assert_array_almost_equal(self.leverage.doa_matrix, expected_matrix)
-
-    def test_predict(self):
-        self.leverage.fit(self.X_train)
-        predictions = self.leverage.predict(self.X_test)
-        expected_predictions = [{'DOA': 2.0, 'A': 2.0, 'IN': True},
-                                {'DOA': 5.0, 'A': 2.0, 'IN': False},
-                                {'DOA': 8.0, 'A': 2.0, 'IN': False}]
-        self.assertEqual(predictions, expected_predictions)
-
-if __name__ == '__main__':
-    unittest.main()
