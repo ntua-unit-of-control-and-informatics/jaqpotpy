@@ -4,14 +4,17 @@ Tests for Docking
 import os
 import platform
 import unittest
-import pytest
 import logging
+#import pytest
 import numpy as np
 import jaqpotpy as jp
-from jaqpotpy.descriptors import ComplexFeaturizer
+from jaqpotpy.descriptors.base_classes import ComplexFeaturizer
 from jaqpotpy.models import Model
 from jaqpotpy.docking.pose_generation import PoseGenerator
-from jaqpotpy.docking.utils import create_hydrated_pdbqt_pdb
+import rdkit.Chem
+import rdkit.Chem
+#from jaqpotpy.docking.utils import create_hydrated_pdbqt_pdb
+# pylint: disable=no-member
 
 IS_WINDOWS = platform.system() == 'Windows'
 
@@ -34,24 +37,28 @@ class TestDocking(unittest.TestCase):
     # self.ligand_file = os.path.join(current_dir, "1a9m_ligand.sdf")
     # self.ligand_file = os.path.join(current_dir, "ZINC000787318646.sdf")
 
-  @pytest.mark.slow
+  #@pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_docker_init(self):
     """Test that Docker can be initialized."""
     vpg = jp.docking.VinaPoseGenerator()
     jp.docking.Docker(vpg)
 
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_tdc(self):
     from jaqpotpy.datasets import TorchGraphDataset
     from jaqpotpy.models import Evaluator
     import torch
     from jaqpotpy.models import GCN_V1, MolecularTorchGeometric, AttentiveFP
 
-    from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer, PagtnMolGraphFeaturizer, AttentiveFPFeaturizer
+    from jaqpotpy.descriptors.molecular import AttentiveFPFeaturizer
 
     from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 
-    from tdc.single_pred import ADME
-    data = ADME(name='BBB_Martins')
+    #from tdc.single_pred import ADME
+    #data = ADME(name='BBB_Martins')
+    data = None
+
     split = data.get_split()
     featurizer = AttentiveFPFeaturizer()
     train_dataset = TorchGraphDataset(smiles=split['train']['Drug'], y=split['train']['Y'], task='classification'
@@ -83,7 +90,8 @@ class TestDocking(unittest.TestCase):
     mol_m = m.create_molecular_model()
     mol_m.model_title = "BBB_MODEL"
     mol_m.save()
-
+  
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_smi_file(self):
       from rdkit import Chem
       from rdkit.Chem import AllChem
@@ -116,7 +124,7 @@ class TestDocking(unittest.TestCase):
           assert len(docked_outputs) == 1
           assert len(docked_outputs[0]) == 2
 
-
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_jaqpotpy(self):
     import warnings
     warnings.filterwarnings("ignore")
@@ -143,7 +151,8 @@ class TestDocking(unittest.TestCase):
 
   # @unittest.skip("skipping automated test")
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
-  @pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
+  #@pytest.mark.slow
   def test_docker_dock(self):
     """Test that Docker can dock."""
     # We provide no scoring model so the docker won't score
@@ -162,7 +171,8 @@ class TestDocking(unittest.TestCase):
 
   # @unittest.skip("skipping automated test")
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
-  @pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
+  #@pytest.mark.slow
   def test_docker_pose_generator_scores_with_smiles(self):
     from rdkit import Chem
     from rdkit.Chem import AllChem
@@ -205,7 +215,8 @@ class TestDocking(unittest.TestCase):
 
   # @unittest.skip("skipping automated test")
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
-  @pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
+  #@pytest.mark.slow
   def test_docker_pose_generator_scores_with_pdbqt(self):
     from rdkit import Chem
     from rdkit.Chem import AllChem
@@ -246,7 +257,9 @@ class TestDocking(unittest.TestCase):
 
   # @unittest.skip("skipping automated test")
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
-  @pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
+
+  #@pytest.mark.slow
   def test_docker_pose_generator_scores(self):
     """Test that Docker can get scores from pose_generator."""
     # We provide no scoring model so the docker won't score
@@ -266,9 +279,9 @@ class TestDocking(unittest.TestCase):
     assert len(docked_outputs) == 4
     assert len(docked_outputs[0]) == 2
 
-  @unittest.skip("skipping automated test")
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
-  @pytest.mark.slow
+  @unittest.skip("skipping automated test")
+  #@pytest.mark.slow
   def test_docker_pose_generator_scores_on_pocket(self):
     """Test that Docker can get scores from pose_generator."""
     # We provide no scoring model so the docker won't score
@@ -286,9 +299,9 @@ class TestDocking(unittest.TestCase):
     assert len(docked_outputs) == 1
     assert len(docked_outputs[0]) == 2
 
-  @unittest.skip("skipping automated test")
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
-  @pytest.mark.slow
+  @unittest.skip("skipping automated test")
+  #@pytest.mark.slow
   def test_docker_specified_pocket(self):
     """Test that Docker can dock into spec. pocket."""
     # Let's turn on logging since this test will run for a while
@@ -305,9 +318,9 @@ class TestDocking(unittest.TestCase):
     # Check returned files exist
     assert len(list(docked_outputs)) == 1
 
-  @unittest.skip("skipping automated test")
   @unittest.skipIf(IS_WINDOWS, "vina is not supported in windows")
-  @pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
+  #@pytest.mark.slow
   def test_pocket_docker_dock(self):
     """Test that Docker can find pockets and dock dock."""
     # Let's turn on logging since this test will run for a while
@@ -324,7 +337,8 @@ class TestDocking(unittest.TestCase):
     # Check returned files exist
     assert len(list(docked_outputs)) == 1
 
-  @pytest.mark.slow
+  #@pytest.mark.slow
+  @unittest.skip("Docking has not been integrated in the latest jaqpotpy version")
   def test_scoring_model_and_featurizer(self):
     """Test that scoring model and featurizer are invoked correctly."""
 

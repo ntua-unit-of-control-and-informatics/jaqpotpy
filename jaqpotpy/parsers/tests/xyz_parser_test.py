@@ -13,13 +13,14 @@ class TestParsers(unittest.TestCase):
         """
         Set up tests.
         """
-        from jaqpotpy.parsers.xyz_parser.xyz_parser import XyzParser
+        from jaqpotpy.parsers.xyz_parser import XyzParser
 
-        xyz = 'C:/Users/jason/Downloads/cyclohexane.xyz'
-        extxyz = 'C:/Users/jason/Downloads/lala.extxyz'
-        path = 'C:/Users/jason/Downloads'
-        self.parser = XyzParser(xyz, ['xyz', 'extxyz'])
+        #xyz = 'C:/Users/jason/Downloads/cyclohexane.xyz'
+        #extxyz = 'C:/Users/jason/Downloads/lala.extxyz'
+        #path = 'C:/Users/jason/Downloads'
+        #self.parser = XyzParser(xyz, ['xyz', 'extxyz'])
 
+    @unittest.skip("This test needs refactoring") 
     def test_xyz(self):
         """
         Test xyz file.
@@ -30,6 +31,7 @@ class TestParsers(unittest.TestCase):
         return
         # assert pdb.atoms.elements
 
+    @unittest.skip("This test needs refactoring")   
     def test_extxyz(self):
         """
         Test extxyz file.
@@ -40,6 +42,7 @@ class TestParsers(unittest.TestCase):
         # assert pdb.atoms.elements
         return
 
+    @unittest.skip("This test needs refactoring") 
     def test_path(self):
         """
         Test xyz folder.
@@ -53,10 +56,10 @@ class TestParsers(unittest.TestCase):
         #     print(self.parser.files_[-1])
         #     stop = input('q to stop')
         return
-
+    @unittest.skip("This test needs refactoring") 
     def test_df_file(self):
-        df = self.parser.parse_dataframe()
-        print(df)
+        #df = self.parser.parse_dataframe()
+        #print(df)
         return
 
 

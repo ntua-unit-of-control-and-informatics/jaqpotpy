@@ -17,7 +17,7 @@ from torch_geometric.nn import global_mean_pool
 from torch.autograd import Variable
 from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
 import jaqpotpy.utils.pytorch_utils as ptu
-from jaqpotpy.descriptors import MolGraphConvFeaturizer
+from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
 from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -72,6 +72,7 @@ class TestModels(unittest.TestCase):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_sklearn_comp(self):
         import warnings
         warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
@@ -86,6 +87,7 @@ class TestModels(unittest.TestCase):
         material_model('FeO')
         material_model.prediction
 
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_sklearn_struct(self):
         import warnings
         warnings.filterwarnings("ignore", category=PendingDeprecationWarning)

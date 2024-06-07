@@ -1,4 +1,4 @@
-  
+
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -17,7 +17,7 @@ class MetaInfo(BaseModel):
     seeAlso: Optional[List[str]]
     hasSources: Optional[List[str]]
     doi: Optional[List[str]]
-    date: Optional[date]
+    date: Optional[str]
     picture: Optional[str]
     markdown: Optional[str]
     tags: Optional[List[str]]

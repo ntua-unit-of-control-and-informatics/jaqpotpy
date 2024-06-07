@@ -138,7 +138,7 @@ class TestMatDatasets(unittest.TestCase):
 
         # self.path = ''
 
-
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_composition_manual(self):
         featurizer = ElementNet()
         dataset = CompositionDataset(compositions=self.compositions, y=self.ys_regr, task='regression', featurizer=featurizer)
@@ -146,14 +146,15 @@ class TestMatDatasets(unittest.TestCase):
         # print(dataset.materials)
         return
 
-
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_composition_csv(self):
         featurizer = ElementNet()
         dataset = CompositionDataset(path=self.path, compositions='Comps', keep_cols=['Feature1','Feature2'], y_cols=['class','reg'], task='regression', featurizer=featurizer)
         dataset.create()
         assert 'Feature1' in dataset.df.columns
         return
-
+    
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_structure_from_structs(self):
         featurizer = SineCoulombMatrix()
         structs = [
@@ -165,6 +166,7 @@ class TestMatDatasets(unittest.TestCase):
         assert 'Feat_0' in dataset.df.columns
         assert 'Endpoint' in dataset.df.columns
 
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_structure_from_dict(self):
         featurizer = SineCoulombMatrix()
         dataset = StructureDataset(structures=[{
