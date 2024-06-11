@@ -120,17 +120,10 @@ class Leverage(DOA, ABC):
 
     def calculate_matrix(self):
         x_T = self._data.transpose()
-        # for s in self._data:
-        #     print(s)
-        #     if isinstance(s, str):
-        #         print("STRING")
         x_out = x_T.dot(self._data)
         self._doa_matrix = np.linalg.pinv(x_out)
-        # self.doa_matrix = x_out #pd.DataFrame(np.linalg.pinv(x_out.values), x_out.columns, x_out.index)
 
     def fit(self, X: np.array):
-        # self._scaler.fit(X)
-        # self._data = self._scaler.transform(X)
         self._data = X
         self.calculate_matrix()
         self.calculate_threshold()
@@ -139,7 +132,6 @@ class Leverage(DOA, ABC):
         doaAll = []
         self._doa = []
         self._in = []
-        # new_data = self._scaler.transform(new_data)
         for nd in new_data:
             d1 = np.dot(nd, self.doa_matrix)
             ndt = np.transpose(nd)
