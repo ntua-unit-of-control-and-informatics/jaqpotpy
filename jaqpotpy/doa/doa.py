@@ -216,8 +216,6 @@ class MeanVar(DOA, ABC):
 
     def fit(self, X: np.array):
         self._data = X
-        # self._scaler.fit(X)
-        # self._data = self._scaler.transform(X)
         columns = list(zip(*self._data))
         shape = X.shape
         list_m_var = []
@@ -226,26 +224,6 @@ class MeanVar(DOA, ABC):
         self._data = np.array(list_m_var)
         self._doa_matrix = np.array(list_m_var)
         self._a = np.array(list_m_var)
-
-    # def calculate(self, new_data: np.array) -> Iterable[Any]:
-    #     doaAll = []
-    #     self._doa = []
-    #     self._in = []
-    #     # new_data = self._scaler.transform(new_data)
-    #     in_doa = True
-    #     for nd in new_data:
-    #         for index, row in enumerate(nd):
-    #             bounds = self._data[index]
-    #             bounds_data = [bounds[0]-4*bounds[1], bounds[0]+4*bounds[1]]
-    #             if row >= bounds_data[0] and row <= bounds_data[1]:
-    #                 continue
-    #             else:
-    #                 in_doa = False
-    #         # if len(new_data[0]) > 100 and many > 5:
-    #         #     in_doa = False
-    #         doa = {'IN': in_doa}
-    #         doaAll.append(doa)
-    #     return doaAll
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
@@ -261,8 +239,6 @@ class MeanVar(DOA, ABC):
                     continue
                 else:
                     in_doa = False
-            # if len(new_data[0]) > 100 and many > 5:
-            #     in_doa = False
             doa = {'IN': in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
