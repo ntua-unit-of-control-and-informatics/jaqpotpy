@@ -8,10 +8,8 @@ from jaqpotpy.descriptors.molecular import RDKitDescriptors, MordredDescriptors
 from jaqpotpy.doa.doa import Leverage, MeanVar, SmilesLeverage
 
 
-
 class TestDoa(unittest.TestCase):
 
-    @unittest.skip("This test needs refactoring")
     def test_leverage(self):
         mols = ['O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
             , 'O=C1CCc2cc(C(=O)N3CCC(C4CCNC4)CC3)ccc2N1'
@@ -39,34 +37,23 @@ class TestDoa(unittest.TestCase):
                 ]
 
         featurizer = RDKitDescriptors(use_fragment=False, ipc_avg=False)
-        # featurizer = MordredDescriptors()
-
         descriptors = featurizer(mols)
 
-        minmax = MinMaxScaler()
-        # doa = Leverage(minmax)
         doa = Leverage()
         doa.fit(descriptors)
-        # print(doa.a)
-        # print(doa.doa_matrix)
-
         mol = [
             'C[C@@](C)(O1)C[C@@H](O)[C@@]1(O2)[C@@H](C)[C@@H]3CC=C4[C@]3(C2)C(=O)C[C@H]5[C@H]4CC[C@@H](C6)[C@]5(C)Cc(n7)c6nc(C[C@@]89(C))c7C[C@@H]8CC[C@@H]%10[C@@H]9C[C@@H](O)[C@@]%11(C)C%10=C[C@H](O%12)[C@]%11(O)[C@H](C)[C@]%12(O%13)[C@H](O)C[C@@]%13(C)CO',
-            'COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
-            , 'CN(C)c1ccc(N(Cc2ccsc2)C(=O)Cc2cncc3ccccc23)cc1'
-            # , 'O=C(Cc1cncc2ccccc12)N(CCC1CCCCC1)c1cccc(Cl)c1'
-            # , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1'
-            # , 'OC[C@@H](O1)[C@@H](O)[C@H](O)[C@@H]2[C@@H]1c3c(O)c(OC)c(O)cc3C(=O)O2'
-            # , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1'
-            # , 'Cc1cc(C(F)(F)F)nc2c1c(N)nn2C(=O)Cc1cccc(Cl)c1'
-            # , 'Cc1cc(C(F)(F)F)nc2c1c(N)nn2C(=O)C1CCOc2ccc(Cl)cc21'
-            # , 'O=C(c1cc(=O)[nH]c2ccccc12)N1CCN(c2cccc(Cl)c2)C(=O)C1'
-            # , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
-        ]
+            'COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1', 'CN(C)c1ccc(N(Cc2ccsc2)C(=O)Cc2cncc3ccccc23)cc1']
+        
         descriptors = featurizer(mol)
-        # descriptors = np.array([[5,1,0], [3,3,3], [-1,-2,0], [5,5,5], [100,10,40]])
         calc = doa.predict(descriptors)
-        assert len(calc) == len(mol)
+
+        assert len(calc)==len(mol), f"Expected len(calc) == len(mol), got {len(calc)} != {len(mol)}"
+        assert abs(doa.a - 16.434782608695652) < 0.00001, f"Expected doa.a == 16.434782608695652, got {doa.a} != 16.434782608695652"
+        assert calc[0]['IN']==False, f"Expected calc[0]['IN'] == False, got {calc[0]['IN']} != False"
+        assert calc[1]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[1]['IN']} != True"
+        assert calc[2]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[2]['IN']} != True"
+        
 
     @unittest.skip("This test needs refactoring")
     def test_smiles_leverage(self):
