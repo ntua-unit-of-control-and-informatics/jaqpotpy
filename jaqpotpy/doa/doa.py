@@ -127,7 +127,6 @@ class Leverage(DOA, ABC):
         self._data = X
         self.calculate_matrix()
         self.calculate_threshold()
-        print(self._a)
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
