@@ -3,7 +3,6 @@ Tests for doa Methods.
 """
 import unittest
 import numpy as np
-import warnings
 from sklearn.preprocessing import MinMaxScaler
 from jaqpotpy.descriptors.molecular import RDKitDescriptors, MordredDescriptors
 from jaqpotpy.doa.doa import Leverage, MeanVar, SmilesLeverage
