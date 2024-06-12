@@ -53,7 +53,9 @@ class BaseDataset(ABC):
             name, extension = os.path.splitext(self.path)
             if extension == '.csv':
                 self._df = pd.read_csv(path)
-
+            else:
+                raise ValueError("The provided file is not a valid CSV file.")
+ 
         self.x_cols = x_cols
         self.y_cols = y_cols
         self._task = None
@@ -61,26 +63,38 @@ class BaseDataset(ABC):
         self._y = None
         self._x = None
 
+  
     @property
-    def df(self)-> pd.DataFrame:
+    def df(self) -> pd.DataFrame:
         """
         Gets the data frame.
 
         Returns:
-            pd.DataFrame: A dataframe containing the data
+            pd.DataFrame: A dataframe containing the data.
         """
         return self._df
 
     @df.setter
-    def df(self, value):
+    def df(self, value: pd.DataFrame):
         """
         Sets the dataframe.
 
         Args:
-            value (pd.Dataframe):a new pandas dataframe
+            value (pd.DataFrame): A new pandas dataframe.
 
+        Raises:
+            ValueError: If the provided value is not a pandas DataFrame.
         """
+        if not isinstance(value, pd.DataFrame):
+            raise ValueError("The value must be a pandas DataFrame.")
         self._df = value
+
+    @df.deleter
+    def df(self):
+        """
+        Deletes the dataframe.
+        """
+        del self._df
 
 
     @property
