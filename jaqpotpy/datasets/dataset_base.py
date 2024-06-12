@@ -2,6 +2,7 @@
 Dataset abstract classes
 """
 from abc import ABC, abstractmethod
+import os
 import pickle
 from typing import Any, Iterable, Optional
 import pandas as pd
@@ -44,16 +45,43 @@ class BaseDataset(ABC):
         if df is not None:
             if not isinstance(df, pd.DataFrame):
                 raise ValueError("Provided 'df' must be a pandas DataFrame.")
-            self._df = df
+            else:
+                self._df = df
+                self.path = None
         elif path is not None:
-            self._df = pd.read_csv(path)
+            self.path = path
+            name, extension = os.path.splitext(self.path)
+            if extension == '.csv':
+                self._df = pd.read_csv(path)
 
         self.x_cols = x_cols
         self.y_cols = y_cols
-        self._task = "Needs to be defined by the user"
-        self._dataset_name = "Needs to be defined by the user"
+        self._task = None
+        self._dataset_name = None
         self._y = None
         self._x = None
+
+    @property
+    def df(self)-> pd.DataFrame:
+        """
+        Gets the data frame.
+
+        Returns:
+            pd.DataFrame: A dataframe containing the data
+        """
+        return self._df
+
+    @df.setter
+    def df(self, value):
+        """
+        Sets the dataframe.
+
+        Args:
+            value (pd.Dataframe):a new pandas dataframe
+
+        """
+        self._df = value
+
 
     @property
     def task(self):
