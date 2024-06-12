@@ -20,8 +20,7 @@ class MolecularTabularDataset(MolecularDataset):
     def __init__(self, path, x_cols=None, y_cols=Iterable[Any], smiles_col=None, smiles=Iterable[str]
                  , y: Iterable[Any] = Iterable[Any], X: Iterable[Any] = None,
                  featurizer: MolecularFeaturizer = None, task: str = "regression") -> None:
-        # super(SmilesTabularDataset, path, x_cols, y_cols).__init__(path, x_cols, y_cols)
-        super(MolecularTabularDataset, self).__init__(path=path, x_cols=x_cols, y_cols=y_cols)
+        super().__init__(path=path, x_cols=x_cols, y_cols=y_cols)
         self._y = y
         self._x = X
         self._df = None

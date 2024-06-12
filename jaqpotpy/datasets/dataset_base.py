@@ -2,7 +2,6 @@
 Dataset base classes
 """
 from typing import Any
-import inspect
 from typing import Iterable
 import pickle
 
