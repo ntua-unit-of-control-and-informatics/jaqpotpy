@@ -130,4 +130,4 @@ class TestDoa(unittest.TestCase):
         assert len(calc) == len(mol)
         assert calc[0]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[0]['IN']} != True"
         assert calc[1]['IN']==False, f"Expected calc[0]['IN'] == False, got {calc[1]['IN']} != False"
-        assert diag == [1.31511044e+01, 6.69162726e-01, 5.37187947e-03], f"Expected diag == [1.31511044e+01 6.69162726e-01 5.37187947e-03], got diag != [1.31511044e+01 6.69162726e-01 5.37187947e-03]"
+        assert np.allclose(diag, [1.31511044e+01, 6.69162726e-01, 5.37187947e-03], atol= 1e-5), f"Expected diag == [1.31511044e+01, 6.69162726e-01, 5.37187947e-03], got diag != {diag}"
