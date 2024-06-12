@@ -1,57 +1,27 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
 from typing import Iterable, Any
 import math
 from jaqpotpy.descriptors.molecular import RDKitDescriptors, MordredDescriptors
 import pickle
-# import dill
-
-# def calculate_a(X):
-#     shape = X.shape
-#     a = (3 * (shape[1] + 1)) / shape[0]
-#     return a
 
 
-# def calculate_doa_matrix(X):
-#     x_T = X.transpose()
-#     x_out = x_T.dot(X)
-#     x_out_inv = pd.DataFrame(np.linalg.pinv(x_out.values), x_out.columns, x_out.index)
-#     return x_out_inv
-
-
-# def calc_doa(doa_matrix, new_data):
-#     doaAll = []
-#     for nd in new_data:
-#         d1 = np.dot(nd, doa_matrix)
-#         ndt = np.transpose(nd)
-#         d2 = np.dot(d1, ndt)
-#         doa = {'DOA': d2}
-#         doaAll.append(doa)
-#     return doaAll
-
-
-class DOA(object):
+class DOA(ABC):
     """
     Abstract class for DOA methods
     """
-    def calculate_threshold(self):
-        raise NotImplementedError
 
-    def calculate_matrix(self):
-        raise NotImplementedError
-
-    def calculate(self, data: Iterable[Any]) -> Iterable[Any]:
-        raise NotImplementedError
-
+    @abstractmethod
     def fit(self, X: np.array):
         raise NotImplementedError
 
+    @abstractmethod
     def predict(self, data: Iterable[Any]) -> Iterable[Any]:
         raise NotImplementedError
 
 
-class Leverage(DOA, ABC):
+class Leverage(DOA):
     """
     Implements DOA method leverage.
     Initialized upon training data and holds the doa matrix and the threshold 'A' value.
@@ -147,7 +117,7 @@ class Leverage(DOA, ABC):
         return doaAll
 
 
-class MeanVar(DOA, ABC):
+class MeanVar(DOA):
     """
     Implements Mean and Variance domain of applicability .
     Initialized upon training data and holds the doa mean and the variance of the data.
@@ -163,8 +133,8 @@ class MeanVar(DOA, ABC):
     def __init__(self) -> None:
         # self._scaler: BaseEstimator = scaler
         self._data: np.array = None
-        self._doa_matrix = None
-        self._a = None
+        # self._doa_matrix = None
+        # self._a = None
 
     @property
     def doa_new(self):
@@ -182,21 +152,6 @@ class MeanVar(DOA, ABC):
     def IN(self, value):
         self._in = value
 
-    @property
-    def doa_matrix(self):
-        return self._doa_matrix
-
-    @doa_matrix.setter
-    def doa_matrix(self, value):
-        self._doa_matrix = value
-
-    @property
-    def a(self):
-        return self._a
-
-    @a.setter
-    def a(self, value):
-        self._a = value
 
     @property
     def data(self):
@@ -214,14 +169,11 @@ class MeanVar(DOA, ABC):
         for i in range(shape[1]):
             list_m_var.append([np.mean(columns[i]), np.std(columns[i]), np.var(columns[i])])
         self._data = np.array(list_m_var)
-        self._doa_matrix = np.array(list_m_var)
-        self._a = np.array(list_m_var)
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
         self._doa = []
         self._in = []
-        # new_data = self._scaler.transform(new_data)
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
