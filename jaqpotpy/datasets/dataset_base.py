@@ -52,9 +52,19 @@ class BaseDataset(ABC):
             self.y_cols_len = len(y_cols)
         else:
             raise TypeError("y_cols must be a string or a list of strings.")
+        
+        if isinstance(x_cols, str):
+            self.x_cols = y_cols
+            self.x_cols_len = 1
+        elif isinstance(x_cols, list) and all(isinstance(item, str) for item in x_cols):
+            self.x_cols = x_cols
+            self.x_cols_len = len(x_cols)
+        elif x_cols is None:
+            self.x_cols = None
+            self.x_cols_len = 0
+        else:
+            raise TypeError("x_cols must either be a string, a list of strings or a None type.")
 
-        self.x_cols = x_cols
-        self.y_cols = y_cols
         self._task = None
         self._dataset_name = None
         self._y = None
