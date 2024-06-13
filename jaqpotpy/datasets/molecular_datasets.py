@@ -70,45 +70,44 @@ class JaqpotpyDataset(BaseDataset):
         self._x_cols_all = value
 
     def create(self):
-        self.smiles = self.df[self.smiles_cols]
+
+        if len(self.smiles_cols == 1):
+            self.smiles = self._df[self.smiles_cols]
+            descriptors = self.featurizer.featurize_dataframe(self.smiles)
+        else:
+            featurized_dfs = [self.featurizer.featurize_dataframe(self._df[[col]]) for col in self.smiles_cols]
+            descriptors = pd.concat(featurized_dfs, axis=1)
+
         self._y = self.df[self.y_cols]
-        if x_cols is None:
+        if self.x_cols is None:
             # Estimate x_cols by excluding y_cols and smiles_col
-            self._x = self.df.drop(columns=y_cols + [smiles_cols])
+            self._x = self.df.drop(columns=self.y_cols + [self.smiles_cols])
             self.x_cols = self._x.columns.tolist()
         else:
             self._x = self.df[self.x_cols]        
+            
 
+        if self.x_cols:
+            self.df = pd.concat([descriptors, xs, y], axis=1)
+            self._x_cols_all = list(descriptors) + list(xs)
+            self.y_cols = list(y)
+            self.y = list(y)
+        else:
+            y = data[self.y_cols]
+            self.df = pd.concat([descriptors, y], axis=1)
+            self._x_cols_all = list(descriptors)
+            self.y_cols = list(y)
+            self.y = list(y)
 
-
-            smiles = data[self.smiles_col].to_list()
-            self._smiles_strings = smiles
-            self.smiles = smiles
-            descriptors = self.featurizer.featurize_dataframe(smiles)
-            # print(len(list(descriptors)))
+        if self.X is None:
             if self.x_cols:
-                self._external = self.x_cols
                 xs = data[self.x_cols]
-                y = data[self.y_cols]
-                self.df = pd.concat([descriptors, xs, y], axis=1)
-                self._x_cols_all = list(descriptors) + list(xs)
-                self.y_cols = list(y)
-                self.y = list(y)
-            else:
-                y = data[self.y_cols]
-                self.df = pd.concat([descriptors, y], axis=1)
-                self._x_cols_all = list(descriptors)
-                self.y_cols = list(y)
-                self.y = list(y)
-            if self.X is None:
-                if self.x_cols:
-                    xs = data[self.x_cols]
-                    if not xs.empty:
-                        self._x = list(descriptors) + list(xs)
-                    else:
-                        self._x = list(descriptors)
+                if not xs.empty:
+                    self._x = list(descriptors) + list(xs)
                 else:
                     self._x = list(descriptors)
+            else:
+                self._x = list(descriptors)
         return self
 
     def __get_X__(self):
