@@ -41,7 +41,7 @@ class JaqpotpyDataset(BaseDataset):
         super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task = task)
         
         if isinstance(smiles_cols, str):
-            self.smiles_cols = smiles_cols
+            self.smiles_cols = [smiles_cols]
             self.smiles_cols_len = 1
         elif isinstance(smiles_cols, list) and all(isinstance(item, str) for item in smiles_cols):
             self.smiles_cols = smiles_cols
@@ -49,8 +49,6 @@ class JaqpotpyDataset(BaseDataset):
         elif smiles_cols is None:
             self.smiles_cols = None
             self.smiles_cols_len = 0
-        else:
-            raise TypeError("smiles_cols must either be a string, a list of strings or None.")
         
         self.featurizer = featurizer
         self._featurizer_name = None
@@ -80,10 +78,7 @@ class JaqpotpyDataset(BaseDataset):
             # The method featurize_dataframe needs self.smiles to be pd.Series
             self.smiles = self._df[self.smiles_cols[0]]
             descriptors = self.featurizer.featurize_dataframe(self.smiles)
-        elif isinstance(self.smiles_cols,str):  
-            self.smiles = self._df[self.smiles_cols]
-            descriptors = self.featurizer.featurize_dataframe(self.smiles) 
-        elif:
+        elif isinstance(self.smiles_cols,list):
             featurized_dfs = [self.featurizer.featurize_dataframe(self._df[[col]]) for col in self.smiles_cols]
             descriptors = pd.concat(featurized_dfs, axis=1)
         else:
@@ -95,7 +90,7 @@ class JaqpotpyDataset(BaseDataset):
 
         if self.x_cols is None:
             # Estimate x_cols by excluding y_cols and smiles_col
-            x_ext =  pd.concat(self._df.drop(columns=self.y_cols + [self.smiles_cols]), descriptors)
+            x_ext =  self._df.drop(columns=self.y_cols + self.smiles_cols)
             self.x_cols = x_ext.columns.tolist()
             self._x = pd.concat(x_ext,descriptors)
             self.x_cols_all = self._x.columns.tolist()
