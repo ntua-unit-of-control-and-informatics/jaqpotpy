@@ -1,10 +1,12 @@
-import os
+"""
+Dataset classes for molecular modelling
+"""
+
 from typing import Iterable, Any, Optional
-import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer, TorchMolGraphConvFeaturizer
+from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
 from jaqpotpy.datasets.dataset_base import BaseDataset
 
 
@@ -30,9 +32,10 @@ class JaqpotpyDataset(BaseDataset):
                  x_cols: Optional[Iterable[str]] = None,
                  smiles_cols: Optional[Iterable[str]] = None,
                  featurizer: Optional[MolecularFeaturizer] = None,
-                 task:str = None) -> None:
+                 task:str = None
+                 ) -> None:
        
-        super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols)
+        super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task = task)
         
         if isinstance(smiles_cols, str):
             self.smiles_cols = smiles_cols
@@ -50,7 +53,6 @@ class JaqpotpyDataset(BaseDataset):
         self._featurizer_name = None
         self.smiles = None
         self._x_cols_all = None
-        self.indices: [] = None
         self.create()
 
     @property
@@ -62,10 +64,10 @@ class JaqpotpyDataset(BaseDataset):
         self._featurizer_name = value
 
     @property
-    def x_colls_all(self) -> Iterable[str]:
+    def x_cols_all(self) -> Iterable[str]:
         return self._x_cols_all
 
-    @x_colls_all.setter
+    @x_cols_all.setter
     def x_colls_all(self, value):
         self._x_cols_all = value
 
@@ -78,37 +80,18 @@ class JaqpotpyDataset(BaseDataset):
             featurized_dfs = [self.featurizer.featurize_dataframe(self._df[[col]]) for col in self.smiles_cols]
             descriptors = pd.concat(featurized_dfs, axis=1)
 
-        self._y = self.df[self.y_cols]
+        self._y = self._df[self.y_cols]
         if self.x_cols is None:
             # Estimate x_cols by excluding y_cols and smiles_col
-            self._x = self.df.drop(columns=self.y_cols + [self.smiles_cols])
-            self.x_cols = self._x.columns.tolist()
+            x_ext =  pd.concat(self._df.drop(columns=self.y_cols + [self.smiles_cols]), descriptors)
+            self.x_cols = x_ext.columns.tolist()
+            self._x = pd.concat(x_ext,descriptors)
+            self.x_cols_all = self._x.columns.tolist()
         else:
-            self._x = self.df[self.x_cols]        
-            
+            self._x =  pd.concat([self._df[self.x_cols] ,  descriptors] , axis=1)
+            self.x_cols_all = self._x.columns.tolist()
 
-        if self.x_cols:
-            self.df = pd.concat([descriptors, xs, y], axis=1)
-            self._x_cols_all = list(descriptors) + list(xs)
-            self.y_cols = list(y)
-            self.y = list(y)
-        else:
-            y = data[self.y_cols]
-            self.df = pd.concat([descriptors, y], axis=1)
-            self._x_cols_all = list(descriptors)
-            self.y_cols = list(y)
-            self.y = list(y)
-
-        if self.X is None:
-            if self.x_cols:
-                xs = data[self.x_cols]
-                if not xs.empty:
-                    self._x = list(descriptors) + list(xs)
-                else:
-                    self._x = list(descriptors)
-            else:
-                self._x = list(descriptors)
-        return self
+        self._df = pd.concat([self._x, self._y], axis = 1)
 
     def __get_X__(self):
         return self.df[self._x].to_numpy()
@@ -153,7 +136,7 @@ class TorchGraphDataset(BaseDataset,Dataset):
         self.ys = y
         self._task = task
         self.featurizer: MolecularFeaturizer = featurizer
-        self.indices: [] = None
+        #self.indices: [] = None
         self.streaming = streaming
         # self.create()
 
@@ -176,7 +159,7 @@ class TorchGraphDataset(BaseDataset,Dataset):
                                 , num_nodes=g.num_nodes, y=torch.LongTensor([self.y[i]]))
                     self._df.append(dato)
                 else:
-                    raise Exception("Please set task (classification / regression).")
+                    raise TypeError("Please set task (classification / regression).")
             self._smiles_strings = self.smiles
             self.X = ['TorchMolGraph']
             self.y = ['Y']
@@ -209,7 +192,7 @@ class TorchGraphDataset(BaseDataset,Dataset):
                                 , num_nodes=g.num_nodes, y=torch.LongTensor([self.y[i]]))
                     tempdf.append(dato)
                 else:
-                    raise Exception("Please set task (classification / regression).")
+                    raise TypeError("Please set task (classification / regression).")
             self._smiles_strings = self.smiles
             self.X = ['TorchMolGraph']
             self.y = ['Y']
