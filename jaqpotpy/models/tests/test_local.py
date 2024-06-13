@@ -141,7 +141,7 @@ class TestModels(unittest.TestCase):
                                           #    'VE1_A', 'VE2_A']
                                           )
         model = LinearRegression()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -159,7 +159,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.prediction
@@ -180,7 +180,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         print(molecularModel_t1.prediction)
@@ -200,7 +200,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.prediction
@@ -216,7 +216,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -231,7 +231,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
 
@@ -245,7 +245,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -266,7 +266,7 @@ class TestModels(unittest.TestCase):
                                           )
 
         model = LinearRegression()
-        molecularModel_t2 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t2 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t2('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t2.doa.IN == [True]
         assert int(molecularModel_t2.doa.doa_new[0]) == 0
