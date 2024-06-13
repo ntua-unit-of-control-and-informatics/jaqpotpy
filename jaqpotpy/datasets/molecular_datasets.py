@@ -68,14 +68,17 @@ class JaqpotpyDataset(BaseDataset):
         return self._x_cols_all
 
     @x_cols_all.setter
-    def x_colls_all(self, value):
+    def x_cols_all(self, value):
         self._x_cols_all = value
 
     def create(self):
 
-        if len(self.smiles_cols == 1):
-            self.smiles = self._df[self.smiles_cols]
+        if (isinstance(self.smiles_cols,list) and len(self.smiles_cols) == 1):
+            self.smiles = self._df[self.smiles_cols[0]]
             descriptors = self.featurizer.featurize_dataframe(self.smiles)
+        elif isinstance(self.smiles_cols,str):  
+            self.smiles = self._df[self.smiles_cols]
+            descriptors = self.featurizer.featurize_dataframe(self.smiles) 
         else:
             featurized_dfs = [self.featurizer.featurize_dataframe(self._df[[col]]) for col in self.smiles_cols]
             descriptors = pd.concat(featurized_dfs, axis=1)
@@ -93,10 +96,10 @@ class JaqpotpyDataset(BaseDataset):
 
         self._df = pd.concat([self._x, self._y], axis = 1)
 
-    def __get_X__(self):
+    def __get_x__(self):
         return self.df[self._x].to_numpy()
 
-    def __get_Y__(self):
+    def __get_y__(self):
         return self.df[self._y].to_numpy()
 
     def __get__(self, instance, owner):
