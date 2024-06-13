@@ -12,7 +12,7 @@ from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeatu
 from jaqpotpy.models import MolecularModel, MolecularSKLearn
 from sklearn.linear_model import LinearRegression
 import asyncio
-from jaqpotpy.doa.doa import Leverage, SmilesLeverage
+from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models.evaluator import Evaluator
 from jaqpotpy.models.preprocessing import Preprocesses
 from sklearn.metrics import max_error, mean_absolute_error, r2_score, accuracy_score, f1_score, roc_auc_score
