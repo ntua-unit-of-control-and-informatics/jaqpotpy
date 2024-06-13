@@ -131,10 +131,7 @@ class MeanVar(DOA):
         return 'MeanVar'
 
     def __init__(self) -> None:
-        # self._scaler: BaseEstimator = scaler
         self._data: np.array = None
-        # self._doa_matrix = None
-        # self._a = None
 
     @property
     def doa_new(self):
