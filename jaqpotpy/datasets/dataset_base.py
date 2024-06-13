@@ -43,7 +43,16 @@ class BaseDataset(ABC):
                 self._df = pd.read_csv(path)
             else:
                 raise ValueError("The provided file is not a valid CSV file.")
- 
+        
+        if isinstance(y_cols, str):
+            self.y_cols = y_cols
+            self.y_cols_len = 1
+        elif isinstance(y_cols, list) and all(isinstance(item, str) for item in y_cols):
+            self.y_cols = y_cols
+            self.y_cols_len = len(y_cols)
+        else:
+            raise TypeError("y_cols must be a string or a list of strings.")
+
         self.x_cols = x_cols
         self.y_cols = y_cols
         self._task = None
@@ -51,7 +60,6 @@ class BaseDataset(ABC):
         self._y = None
         self._x = None
 
-  
     @property
     def df(self) -> pd.DataFrame:
         return self._df
@@ -65,7 +73,6 @@ class BaseDataset(ABC):
     @df.deleter
     def df(self):
         del self._df
-
 
     @property
     def task(self):
