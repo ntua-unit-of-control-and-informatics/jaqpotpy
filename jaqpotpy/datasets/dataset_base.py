@@ -43,28 +43,38 @@ class BaseDataset(ABC):
                 self._df = pd.read_csv(path)
             else:
                 raise ValueError("The provided file is not a valid CSV file.")
-    
+            
+        if not(isinstance(y_cols, str) or 
+               (isinstance(y_cols, list) and all(isinstance(item, str) for item in y_cols))
+               ):
+               raise TypeError("y_cols must be provided and should be either" 
+                               "a string or a list of strings") 
+        
+        if not(isinstance(x_cols, str) or 
+              (isinstance(x_cols, list) and all(isinstance(item, str) for item in x_cols)) or
+              (isinstance(x_cols, list) and len(x_cols) == 0) or
+              (x_cols is None)):
+               raise TypeError("x_cols should be either a string, an empty list"
+                               "a list of strings, or None") 
+
+        #Find the length of each provided column name vector and put everything in lists
         if isinstance(y_cols, str):
-            self.y_cols = y_cols
+            self.y_cols = [y_cols]
             self.y_cols_len = 1
-        elif isinstance(y_cols, list) and all(isinstance(item, str) for item in y_cols):
+        elif isinstance(y_cols, list) :
             self.y_cols = y_cols
-            self.y_cols_len = len(y_cols)
-        else:
-            raise TypeError("y_cols must be a string or a list of strings.")
+            self.x_cols_len = len(y_cols)
 
         if isinstance(x_cols, str):
-            self.x_cols = x_cols
-            self.x_cols_len = 1
-        elif isinstance(x_cols, list) and all(isinstance(item, str) for item in x_cols):
+            self.x_cols = [x_cols]
+            self.y_cols_len = 1
+        elif isinstance(x_cols, list) :
             self.x_cols = x_cols
             self.x_cols_len = len(x_cols)
         elif x_cols is None:
-            self.x_cols = None
+            x_cols= []
             self.x_cols_len = 0
-        else:
-            raise TypeError("x_cols must either be a string, a list of strings or a None.")
-
+        
         self._task = task
         self._dataset_name = None
         self._y = None

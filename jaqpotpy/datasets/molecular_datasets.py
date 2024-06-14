@@ -34,26 +34,38 @@ class JaqpotpyDataset(BaseDataset):
                  featurizer: Optional[MolecularFeaturizer] = None,
                  task:str = None
                  ) -> None:
-        
-        if not(isinstance(y_cols, str) or (isinstance(y_cols, list) and isinstance(y_cols[0], str))):
-               raise ValueError("y_cols must be provided and should be either a string or a list of strings") 
 
-        super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task = task)
+        if not(isinstance(smiles_cols, str) or 
+              (isinstance(smiles_cols, list) and all(isinstance(item, str) for item in smiles_cols)) or
+              (isinstance(smiles_cols, list) and len(smiles_cols) == 0) or
+              (smiles_cols is None)):
+               raise TypeError("smiles_cols should be either a string, an empty list"
+                               "a list of strings, or None") 
+
+        if (smiles_cols is not None) and (featurizer is None):
+            raise TypeError("Cannot estimate SMILES descriptors without a featurizer"
+                            "Please provide a featurizer") 
         
-        self._validate_column_overlap(smiles_cols, x_cols, y_cols)
-        self._validate_column_names(smiles_cols, "smiles_cols")
-        self._validate_column_names(x_cols, "x_cols")
-        self._validate_column_names(y_cols, "y_cols")
-        
+        #Find the length of each provided column name vector and put everything in lists
         if isinstance(smiles_cols, str):
             self.smiles_cols = [smiles_cols]
             self.smiles_cols_len = 1
-        elif isinstance(smiles_cols, list) and all(isinstance(item, str) for item in smiles_cols):
+        elif isinstance(smiles_cols, list) :
             self.smiles_cols = smiles_cols
             self.smiles_cols_len = len(smiles_cols)
         elif smiles_cols is None:
-            self.smiles_cols = None
+            self.smiles_cols= [] 
             self.smiles_cols_len = 0
+        
+        if (featurizer is not None) and not (isinstance(featurizer, MolecularFeaturizer)):
+            raise TypeError("featurizer should be a MolecularFeaturizer instance ") 
+
+        super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task = task)
+
+        self._validate_column_overlap(self.smiles_cols, self.x_cols, self.y_cols)
+        self._validate_column_names(self.smiles_cols, "smiles_cols")
+        self._validate_column_names(self.x_cols, "x_cols")
+        self._validate_column_names(self.y_cols, "y_cols")
         
         self.featurizer = featurizer
         self._featurizer_name = None
@@ -82,11 +94,8 @@ class JaqpotpyDataset(BaseDataset):
         Validate if the columns specified in cols are present in the DataFrame.
         
         """
-        if cols is None:
+        if len(cols) == 0:
             return
-        
-        if isinstance(cols, str):
-            cols = [cols]
         
         missing_cols = [col for col in cols if col not in self._df.columns]
         
@@ -113,26 +122,28 @@ class JaqpotpyDataset(BaseDataset):
 
     def create(self):
 
-        if (isinstance(self.smiles_cols,list) and len(self.smiles_cols) == 1):
+        if  len(self.smiles_cols) == 1:
             # The method featurize_dataframe needs self.smiles to be pd.Series
             self.smiles = self._df[self.smiles_cols[0]]
             descriptors = self.featurizer.featurize_dataframe(self.smiles)
-        elif isinstance(self.smiles_cols,list):
+        elif len(self.smiles_cols)>1:
             featurized_dfs = [self.featurizer.featurize_dataframe(self._df[[col]]) for col in self.smiles_cols]
             descriptors = pd.concat(featurized_dfs, axis=1)
         else:
             #Case where no smiles were provided
-            self.smiles = None
+            self.smiles = []
             descriptors = []
         
-        if self.x_cols is None:
-            # Estimate x_cols by excluding y_cols and smiles_col
-            x_ext =  self._df.drop(columns=self.y_cols + self.smiles_cols)
-            self.x_cols = x_ext.columns.tolist()
-            self._x = pd.concat(x_ext,descriptors)
-            self.x_cols_all = self._x.columns.tolist()
+        if len(self.x_cols) == 0:
+            if len(descriptors)>0:
+                self._x = descriptors
+                self.x_cols_all = self._x.columns.tolist()
+            else:
+                raise ValueError("The design matrix X is empty. Please provide either"
+                                  "smiles or other descriptors")
+
         else:
-            self._x =  pd.concat([self._df[self.x_cols] ,  descriptors] , axis=1)
+            self._x =  pd.concat([self._df[self.x_cols] ,  pd.DataFrame(descriptors)] , axis=1)
             self.x_cols_all = self._x.columns.tolist()
 
         self._y = self._df[self.y_cols]
