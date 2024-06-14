@@ -40,6 +40,9 @@ class JaqpotpyDataset(BaseDataset):
 
         super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task = task)
         
+        # Ensure no overlap between smiles_cols, x_cols, and y_cols
+        self._validate_column_overlap(smiles_cols, x_cols, y_cols)
+        
         if isinstance(smiles_cols, str):
             self.smiles_cols = [smiles_cols]
             self.smiles_cols_len = 1
@@ -71,6 +74,23 @@ class JaqpotpyDataset(BaseDataset):
     @x_cols_all.setter
     def x_cols_all(self, value):
         self._x_cols_all = value
+
+    def _validate_column_overlap(self, smiles_cols, x_cols, y_cols):
+        smiles_set = set(smiles_cols) if smiles_cols else set()
+        x_set = set(x_cols) if x_cols else set()
+        y_set = set(y_cols) if y_cols else set()
+
+        overlap_smiles_x = smiles_set & x_set
+        overlap_smiles_y = smiles_set & y_set
+        overlap_x_y = x_set & y_set
+
+        if overlap_smiles_x:
+            raise ValueError(f"Overlap found between smiles_cols and x_cols: {overlap_smiles_x}")
+        if overlap_smiles_y:
+            raise ValueError(f"Overlap found between smiles_cols and y_cols: {overlap_smiles_y}")
+        if overlap_x_y:
+            raise ValueError(f"Overlap found between x_cols and y_cols: {overlap_x_y}")
+
 
     def create(self):
 
