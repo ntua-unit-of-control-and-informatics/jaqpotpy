@@ -72,10 +72,10 @@ class BaseDataset(ABC):
             self.x_cols = x_cols
             self.x_cols_len = len(x_cols)
         elif x_cols is None:
-            x_cols= []
+            self.x_cols= []
             self.x_cols_len = 0
         
-        self._task = task
+        self.task = task
         self._dataset_name = None
         self._y = None
         self._x = None
@@ -100,7 +100,9 @@ class BaseDataset(ABC):
 
     @task.setter
     def task(self, value):
-        if value.lower() not in ['regression', 'classification']:
+        if value is None:
+            raise ValueError("Task must be either 'regression' or 'classification'")
+        elif value.lower() not in ['regression', 'classification']:
             raise ValueError("Task must be either 'regression' or 'classification'")
         self._task = value
 

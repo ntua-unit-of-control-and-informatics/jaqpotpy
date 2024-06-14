@@ -39,7 +39,8 @@ class TestDatasets(unittest.TestCase):
         self.x_cols = ["X1", "X2"]
         self.featurizer = MACCSKeysFingerprint()
 
-    def test_dataset_with_path_single_smiles_and_external(self):        
+    def test_dataset_with_path_single_smiles_and_external(self):
+        # Assert that all JaqpotpyDataset features return the desired values     
         dataset = JaqpotpyDataset(path=self.path, y_cols=self.y_cols, 
                                   smiles_cols=self.single_smiles_cols, x_cols=self.x_cols, 
                                   task='classification', featurizer=self.featurizer)
@@ -73,6 +74,95 @@ class TestDatasets(unittest.TestCase):
         self.assertIn("featurizer=MACCSKeysFingerprint", repr_str, "The repr string should include the featurizer name")
     
         
+    def test_dataset_with_df_single_smiles_and_external(self):
+        # Assert that JaqpotpyDataset built with dataframe has the correct dimensions        
+        dataset = JaqpotpyDataset(path=self.path, y_cols=self.y_cols, 
+                                  smiles_cols=self.single_smiles_cols, x_cols=self.x_cols, 
+                                  task='classification', featurizer=self.featurizer)
+
+        self.assertEqual(dataset.df.shape[1], 170, "DataFrame should have 170 columns")
+        self.assertEqual(dataset.df.shape[0], 139, "DataFrame should have 139 rows")
+
+
+    def test_dataset_with_only_external(self):
+        # Assert that JaqpotpyDataset built with only two external has the correct dimensions        
+        dataset = JaqpotpyDataset(path=self.path, y_cols=self.y_cols, 
+                                  smiles_cols=None, x_cols=self.x_cols, 
+                                  task='classification', featurizer=self.featurizer)
+
+        self.assertEqual(dataset.df.shape[1], 3, "DataFrame should have 170 columns")
+        self.assertEqual(dataset.df.shape[0], 139, "DataFrame should have 139 rows")
+
+    def test_dataset_no_y(self):
+        # Assert that a TypeError is thrown if no y is provided
+        with self.assertRaises(TypeError):
+            JaqpotpyDataset(
+                df=self.single_smiles_df,
+                y_cols=None, # No y
+                smiles_cols=["SMILES"], 
+                x_cols=self.x_cols,
+                task='classification',
+                featurizer=self.featurizer
+            )
+        
+
+    def test_dataset_no_x_no_smiles_none(self):
+       # Assert that a TypeError is thrown if the user doesn't provide any smiles and external
+        with self.assertRaises(ValueError):
+            JaqpotpyDataset(
+                df=self.single_smiles_df,
+                y_cols= self.y_cols,
+                smiles_cols= None,#["SMILES"], 
+                x_cols= None,# self.x_cols,
+                task='classification',
+                featurizer=self.featurizer
+            )
+
+    def test_dataset_no_x_no_smiles_empty_list(self):
+       # Assert that a ValueError is thrown if the user doesn't provide any smiles and external
+        with self.assertRaises(ValueError):
+            JaqpotpyDataset(
+                df=self.single_smiles_df,
+                y_cols= self.y_cols,
+                smiles_cols= [],#["SMILES"], 
+                x_cols= [],# self.x_cols,
+                task='classification',
+                featurizer=self.featurizer
+            )
+        
+    def test_dataset_only_smiles(self):
+        # Assert that JaqpotpyDataset built with only smiles has the correct dimensions        
+        dataset = JaqpotpyDataset(path=self.path, y_cols=self.y_cols, 
+                                  smiles_cols=self.single_smiles_cols, 
+                                  x_cols=None, 
+                                  task='classification', featurizer=self.featurizer)
+        self.assertEqual(dataset.df.shape[1], 168, "DataFrame should have 170 columns")
+        self.assertEqual(dataset.df.shape[0], 139, "DataFrame should have 139 rows")
+
+    def test_dataset_smiles_no_featurizer(self):
+       # Assert that a TypeError is thrown if the user gives smiles but no featurizer
+        with self.assertRaises(TypeError):
+           JaqpotpyDataset(path=self.path, y_cols=self.y_cols, 
+                                  smiles_cols=self.single_smiles_cols, 
+                                  x_cols=self.x_cols, 
+                                  task='classification', featurizer=None)
+                  
+
+    def test_dataset_smiles_no_task(self):
+        #Assert that a TypeError is thrown if the user doesn't provide a task
+        with self.assertRaises(ValueError):
+            JaqpotpyDataset(path=self.path, y_cols=self.y_cols, 
+                                  smiles_cols=None, x_cols=self.x_cols, 
+                                  task=None, featurizer=self.featurizer)
+    
+    def test_dataset_smiles_wrong_task(self):
+        #Assert that a TypeError is thrown if the user provides a wrong task label
+        with self.assertRaises(ValueError):   
+            JaqpotpyDataset(path=self.path, y_cols=self.y_cols, 
+                                  smiles_cols=None, x_cols=self.x_cols, 
+                                  task='laricifato', featurizer=self.featurizer)
+
+
     def test_overlap_smiles_x(self):
         # Test should fail, as there is overlap between smiles_cols and x_cols
         with self.assertRaises(ValueError):

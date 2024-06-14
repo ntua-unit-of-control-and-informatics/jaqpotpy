@@ -98,7 +98,7 @@ class JaqpotpyDataset(BaseDataset):
             return
         
         missing_cols = [col for col in cols if col not in self._df.columns]
-        
+
         if missing_cols:
             raise ValueError(f"The following columns in {col_type} are not present in the DataFrame: {missing_cols}")
 
