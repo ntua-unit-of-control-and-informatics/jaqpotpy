@@ -80,6 +80,8 @@ class FullyConnectedNetwork(nn.Module):
             if len(dropout) != len(hidden_dims):
                 raise ValueError("hidden_dims and dropout must be of same size")        
         
+        self.input_dim = input_dim
+        self.output_dim = output_dim
         self.hidden_dims = hidden_dims
         self.dropout_probabilities = [dropout]*len(hidden_dims) if isinstance(dropout, float) else dropout
 

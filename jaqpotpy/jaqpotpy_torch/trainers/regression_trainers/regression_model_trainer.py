@@ -42,7 +42,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         data: item returned from dataloader
         Returns:
-            dict with kwargs
+            dict with model kwargs
         """
         pass
     
@@ -73,18 +73,24 @@ class RegressionModelTrainer(TorchModelTrainer):
         self.model.train()
         for _, data in enumerate(tqdm_loader):
 
-            data = data.to(self.device)
+            try: # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                data = data.to(self.device)
+                y = data.y
+            except AttributeError:
+                data = [d.to(self.device) for d in data]
+                y = data[-1]
+
             model_kwargs = self.get_model_kwargs(data)
 
-            y_norm = self._normalize(data.y)
+            y_norm = self._normalize(y)
 
             self.optimizer.zero_grad()
             
             outputs = self.model(**model_kwargs).squeeze(-1)
             loss = self.loss_fn(outputs.float(), y_norm.float())
 
-            running_loss += loss.item() * data.y.size(0)
-            total_samples += data.y.size(0)
+            running_loss += loss.item() * y.size(0)
+            total_samples += y.size(0)
 
             loss.backward()
             self.optimizer.step()
@@ -121,9 +127,15 @@ class RegressionModelTrainer(TorchModelTrainer):
         with torch.no_grad():
             for _, data in enumerate(val_loader):
             
-                data = data.to(self.device)
+                try: # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                    data = data.to(self.device)
+                    y = data.y
+                except AttributeError:
+                    data = [d.to(self.device) for d in data]
+                    y = data[-1]
+
                 model_kwargs = self.get_model_kwargs(data)
-                y_norm = self._normalize(data.y)
+                y_norm = self._normalize(y)
                 
                 outputs = self.model(**model_kwargs).squeeze(-1)
                 all_preds.extend(outputs.tolist())
@@ -131,8 +143,8 @@ class RegressionModelTrainer(TorchModelTrainer):
                 
                 loss = self.loss_fn(outputs.float(), y_norm.float())
                 
-                running_loss += loss.item() * data.y.size(0)
-                total_samples += data.y.size(0)
+                running_loss += loss.item() * y.size(0)
+                total_samples += y.size(0)
             
             avg_loss = running_loss / len(val_loader.dataset)
         
@@ -151,7 +163,11 @@ class RegressionModelTrainer(TorchModelTrainer):
         with torch.no_grad():
             for _, data in enumerate(val_loader):
             
-                data = data.to(self.device)
+                try: # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                    data = data.to(self.device)
+                except AttributeError:
+                    data = [d.to(self.device) for d in data]
+
                 model_kwargs = self.get_model_kwargs(data)
                 
                 outputs = self.model(**model_kwargs).squeeze(-1)

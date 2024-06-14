@@ -71,17 +71,23 @@ class BinaryModelTrainer(TorchModelTrainer):
         self.model.train()
         for _, data in enumerate(tqdm_loader):
 
-            data = data.to(self.device)
+            try: # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                data = data.to(self.device)
+                y = data.y
+            except AttributeError:
+                data = [d.to(self.device) for d in data]
+                y = data[-1]
+            
             model_kwargs = self.get_model_kwargs(data)
 
             self.optimizer.zero_grad()
 
             
             outputs = self.model(**model_kwargs).squeeze(-1)
-            loss = self.loss_fn(outputs.float(), data.y.float())
+            loss = self.loss_fn(outputs.float(), y.float())
 
-            running_loss += loss.item() * data.y.size(0)
-            total_samples += data.y.size(0)
+            running_loss += loss.item() * y.size(0)
+            total_samples += y.size(0)
         
             loss.backward()
             self.optimizer.step()
@@ -120,8 +126,14 @@ class BinaryModelTrainer(TorchModelTrainer):
         self.model.eval()
         with torch.no_grad():
             for _, data in enumerate(val_loader):
-            
-                data = data.to(self.device)
+
+                try: # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                    data = data.to(self.device)
+                    y = data.y
+                except AttributeError:
+                    data = [d.to(self.device) for d in data]
+                    y = data[-1]
+                    
                 model_kwargs = self.get_model_kwargs(data)
 
                 outputs = self.model(**model_kwargs).squeeze(-1)
@@ -131,12 +143,12 @@ class BinaryModelTrainer(TorchModelTrainer):
                 
                 all_probs.extend(probs.tolist())
                 all_preds.extend(preds.tolist())
-                all_labels.extend(data.y.tolist())
+                all_labels.extend(y.tolist())
                 
-                loss = self.loss_fn(outputs.float(), data.y.float())
+                loss = self.loss_fn(outputs.float(), y.float())
                 
-                running_loss += loss.item() * data.y.size(0)
-                total_samples += data.y.size(0)
+                running_loss += loss.item() * y.size(0)
+                total_samples += y.size(0)
             
             avg_loss = running_loss / len(val_loader.dataset)
         
@@ -156,7 +168,11 @@ class BinaryModelTrainer(TorchModelTrainer):
         with torch.no_grad():
             for _, data in enumerate(val_loader):
             
-                data = data.to(self.device)
+                try: # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                    data = data.to(self.device)
+                except AttributeError:
+                    data = [d.to(self.device) for d in data]
+                    
                 model_kwargs = self.get_model_kwargs(data)
 
                 outputs = self.model(**model_kwargs).squeeze(-1)
@@ -174,7 +190,11 @@ class BinaryModelTrainer(TorchModelTrainer):
         with torch.no_grad():
             for _, data in enumerate(val_loader):
             
-                data = data.to(self.device)
+                try: # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                    data = data.to(self.device)
+                except AttributeError:
+                    data = [d.to(self.device) for d in data]
+                    
                 model_kwargs = self.get_model_kwargs(data)
 
                 outputs = self.model(**model_kwargs).squeeze(-1)
