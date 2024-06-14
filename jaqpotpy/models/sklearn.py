@@ -42,10 +42,7 @@ class MolecularSKLearn(Model):
         # else:
         #     pass
         if self.doa:
-            if self.doa.__name__ == 'SmilesLeverage':
-                self.doa_m = self.doa.fit(self.dataset.smiles)
-            else:
-                self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+            self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
         if self.preprocess:

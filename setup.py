@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(name='jaqpotpy',
-      version='{{VERSION_PLACEHOLDER}}',
+      version= '{{VERSION_PLACEHOLDER}}',
       description='Standardizing molecular modeling',
       long_description=long_description,
       long_description_content_type='text/markdown',
@@ -26,7 +26,7 @@ setup(name='jaqpotpy',
             'pydotplus==2.0.2',
             'requests==2.32.2',
             'pydantic==2.7.1',
-            'rdkit-pypi==2022.9.5',
+            'rdkit==2023.9.6',
             'mordredcommunity==2.0.5',
             'scikit-learn==1.5.0',
             'tqdm==4.66.4',

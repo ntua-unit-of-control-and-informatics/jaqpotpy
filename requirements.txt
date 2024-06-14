@@ -4,7 +4,7 @@ simplejson==3.19.2
 pydotplus==2.0.2
 requests==2.32.2
 pydantic==2.7.1
-rdkit-pypi==2022.9.5
+rdkit==2023.9.6
 mordredcommunity==2.0.5 # Used as a replacement of mordred descriptors. Handles descriptor generation errors
 scikit-learn==1.5.0
 tqdm==4.66.4
