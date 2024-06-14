@@ -1,7 +1,6 @@
 from . import BinaryModelTrainer
 
 import torch
-import torch_geometric
 import sklearn
 
 import io
@@ -12,8 +11,8 @@ from jaqpotpy.schemas import Feature
 from typing import Optional
 
 
-class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):    
-    model_type = 'binary-graph-model-with-external'
+class BinaryFCModelTrainer(BinaryModelTrainer):
+    model_type = 'binary-fc-model'
 
     @classmethod
     def get_model_type(cls):
@@ -43,22 +42,18 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
             log_filepath=log_filepath,
             decision_threshold=decision_threshold
             )
-        
+    
     def get_model_kwargs(self, data):
 
         kwargs = {}
 
-        kwargs['x'] = data.x
-        kwargs['edge_index'] = data.edge_index
-        kwargs['batch'] = data.batch
-        kwargs['external'] = data.external
+        X, _ = data
+        kwargs['x'] = X
 
         return kwargs
     
-
     def prepare_for_deployment(self,
-                               featurizer,
-                               external_preprocessor,
+                               preprocessor,
                                endpoint_name,
                                name: str,
                                description: Optional[str] = None,
@@ -68,15 +63,15 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
                                meta=dict()
                                ):
         
-        if not external_preprocessor._sklearn_is_fitted:
+        if not preprocessor._sklearn_is_fitted:
             msg = (
                 "This %(name)s instance is not fitted yet. Call 'fit' with "
                 "appropriate arguments before using this estimator."
             )
             raise NotFittedError(msg % {"name": type(self).__name__})
         
-        if len(external_preprocessor.new_columns_) != self.model.num_external_features:
-            raise ValueError(f"Size {len(external_preprocessor.new_columns_)} of 'external_preprocessor.new_columns_' must match the number of {self.model.num_external_features} external features that the model expects as input.")
+        if len(preprocessor.new_columns_) != self.model.input_dim:
+            raise ValueError(f"Size {len(preprocessor.new_columns_)} of 'preprocessor.new_columns_' must match the number of {self.model.num_features} features that the model expects as input.")
 
 
         model_scripted = torch.jit.script(self.model)
@@ -85,34 +80,20 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
         model_buffer.seek(0)
         model_scripted_base64 = base64.b64encode(model_buffer.getvalue()).decode('utf-8')
 
-        featurizer_buffer = io.BytesIO()
-        pickle.dump(featurizer, featurizer_buffer)
-        featurizer_buffer.seek(0)
-        featurizer_pickle_base64 = base64.b64encode(featurizer_buffer.getvalue()).decode('utf-8')
+        preprocessor_buffer = io.BytesIO()
+        pickle.dump(preprocessor, preprocessor_buffer)
+        preprocessor_buffer.seek(0)
+        preprocessor_pickle_base64 = base64.b64encode(preprocessor_buffer.getvalue()).decode('utf-8')
         
-        external_preprocessor_buffer = io.BytesIO()
-        pickle.dump(external_preprocessor, external_preprocessor_buffer)
-        external_preprocessor_buffer.seek(0)
-        external_preprocessor_pickle_base64 = base64.b64encode(external_preprocessor_buffer.getvalue()).decode('utf-8')
-        
-
         additional_model_params = {
             'decision_threshold': self.decision_threshold,
-            'featurizer': featurizer_pickle_base64,
-            'external_preprocessor': external_preprocessor_pickle_base64
+            'preprocessor': preprocessor_pickle_base64
         }
 
-        smiles_feature = Feature(
-            name='SMILES',
-            featureDependency='INDEPENDENT',
-            possibleValues=[],
-            featureType='SMILES',
-        )
+        feature_names = preprocessor.new_columns_
+        features = []
 
-        external_feature_names = external_preprocessor.new_columns_
-        external_features = []
-
-        for item in Feature.get_feature_names_and_possible_values_from_column_names(external_feature_names):
+        for item in Feature.get_feature_names_and_possible_values_from_column_names(feature_names):
             feature_name = item['name']
             possibleValues = item['possibleValues']
 
@@ -123,9 +104,9 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
                 featureType='CATEGORICAL' if possibleValues != [] else 'NUMERICAL'
             )
             
-            external_features.append(feature)
+            features.append(feature)
         
-        independentFeatures = [smiles_feature] + external_features
+        independentFeatures = features
 
         dependentFeatures = [
             Feature(name=endpoint_name, featureDependency='DEPENDENT', possibleValues=['0', '1'], featureType='CATEGORICAL')
@@ -146,3 +127,4 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
                                                                  )
         
         return self.json_data_for_deployment
+   
