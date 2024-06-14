@@ -307,10 +307,7 @@ class MolecularModel(Model):
                     data_list.append(d[0])
                 data = np.array(data_list)
             if self.doa:
-                if self.doa.__name__ == 'SmilesLeverage':
-                    self.doa.predict(self._smiles)
-                else:
-                    self.doa.predict(data)
+                self.doa.predict(data)
             try:
                 if self.preprocessing:
                     for f in self.preprocessing:
