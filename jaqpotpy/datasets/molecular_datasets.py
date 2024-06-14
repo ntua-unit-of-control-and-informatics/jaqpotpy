@@ -103,11 +103,11 @@ class JaqpotpyDataset(BaseDataset):
         overlap_smiles_y = smiles_set & y_set
         overlap_x_y = x_set & y_set
 
-        if overlap_smiles_x:
+        if len(overlap_smiles_x)>0:
             raise ValueError(f"Overlap found between smiles_cols and x_cols: {overlap_smiles_x}")
-        if overlap_smiles_y:
+        if len(overlap_smiles_y)>0:
             raise ValueError(f"Overlap found between smiles_cols and y_cols: {overlap_smiles_y}")
-        if overlap_x_y:
+        if len(overlap_x_y)>0:
             raise ValueError(f"Overlap found between x_cols and y_cols: {overlap_x_y}")
 
 
