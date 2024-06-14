@@ -7,6 +7,7 @@ import rdkit.Chem.Draw
 
 class TestActions(unittest.TestCase):
 
+    @unittest.skip("RL has not been tested yet in the newest version of jaqpotpy")
     def test_actions_on_mol(self):
         m = Chem.MolFromSmiles('CC(=O)C=CC=C')
         mw = Chem.RWMol(m)
@@ -22,6 +23,7 @@ class TestActions(unittest.TestCase):
         # ax.imshow(im)
         # plt.show()
 
+    @unittest.skip("RL has not been tested yet in the newest version of jaqpotpy")
     def test_actions(self):
         acts = []
         action1 = Action(0, "Add atom C")

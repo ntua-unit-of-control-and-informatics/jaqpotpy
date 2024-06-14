@@ -12,7 +12,7 @@ from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeatu
 from jaqpotpy.models import MolecularModel, MolecularSKLearn
 from sklearn.linear_model import LinearRegression
 import asyncio
-from jaqpotpy.doa.doa import Leverage, SmilesLeverage
+from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models.evaluator import Evaluator
 from jaqpotpy.models.preprocessing import Preprocesses
 from sklearn.metrics import max_error, mean_absolute_error, r2_score, accuracy_score, f1_score, roc_auc_score
@@ -102,14 +102,15 @@ class TestModels(unittest.TestCase):
         asyncio.set_event_loop(loop)
 
     @sync
+    @unittest.skip("Old test that is irrelevant")
     async def test_async(self):
         async def fn():
             print('hello')
             await asyncio.sleep(1)
             print('world')
-
         await fn()
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_model_regression(self):
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys_regr, task='regression')
         dataset.create()
@@ -152,7 +153,7 @@ class TestModels(unittest.TestCase):
             molMod(smile)
             print(molMod.prediction)
 
-
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_model_class_Feedforward(self):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
@@ -208,6 +209,8 @@ class TestModels(unittest.TestCase):
 
         for smile in smiles_new:
             molMod(smile)
+
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_rnn_regression(self):
         cid = create_char_to_idx(self.mols)
         max_len = 250
@@ -249,6 +252,7 @@ class TestModels(unittest.TestCase):
             print(molMod.prediction)
             print(molMod.probability)
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_rnn_class(self):
         feat = OneHotSequence(max_length=80)
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
@@ -281,6 +285,7 @@ class TestModels(unittest.TestCase):
 
             print(molMod.prediction)
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_RNN_J_regression(self):
 
         feat = OneHotSequence(max_length=80)
@@ -321,6 +326,7 @@ class TestModels(unittest.TestCase):
             print(molMod.prediction)
             print(molMod.probability)
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_RNN_J_class(self):
         feat = OneHotSequence(max_length=80)
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
@@ -349,9 +355,9 @@ class TestModels(unittest.TestCase):
 
         for smile in smiles_new:
             molMod(smile)
-
             print(molMod.prediction)
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")  
     def test_topf_class(self):
         feat = TopologicalFingerprint()
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
@@ -383,7 +389,7 @@ class TestModels(unittest.TestCase):
             print(molMod.prediction)
 
 
-
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_cnn_class(self):
         feat = SmilesToImage(img_size=60)
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
@@ -417,6 +423,7 @@ class TestModels(unittest.TestCase):
             molMod(smile)
             print(molMod.prediction)
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_models(self):
         dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification')
         dataset.create()

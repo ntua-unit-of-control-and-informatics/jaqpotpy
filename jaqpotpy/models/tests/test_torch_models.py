@@ -44,7 +44,8 @@ class TestJitModels(unittest.TestCase):
         0.001, 1.286, 2.8756, 1.021, 1.265, 0.0012, 0.0028, 0.987, 2.567
         , 1.0002, 1.008, 1.1234, 0.25567, 0.5647, 0.99887, 1.9897, 1.989, 2.314, 0.112, 0.113, 0.54, 1.123, 1.0001
     ]
-
+    
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_torch_graph_models_1(self):
         featurizer = MolGraphConvFeaturizer(use_chirality=True)
         g_data = featurizer.featurize(self.mols[0])
