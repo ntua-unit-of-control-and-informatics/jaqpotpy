@@ -139,3 +139,9 @@ jaqpotpy/models/.DS_Store
 jaqpotpy/models/.DS_Store
 .DS_Store
 jaqpotpy/models/tests/.DS_Store
+
+*.pkl
+*.json
+venv-jaqpotpy/
+*.txt
+*.pt
