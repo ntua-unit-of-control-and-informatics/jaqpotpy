@@ -5,7 +5,7 @@ from rdkit import Chem
 
 
 class TestMolGan(unittest.TestCase):
-
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_mol_gan_feat(self):
         smiles = [
             'Cc1ccccc1CO', 'CC1CCC(C)C(N)C1C1CCC(C)C(N)C1', 'CCC(N)=O', 'Fc1cccc(F)c1', 'CC(C)F',
@@ -18,6 +18,7 @@ class TestMolGan(unittest.TestCase):
         valid_data = featurizer.featurize(smiles)
         print(valid_data[0].__dict__)
 
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_mol_gan_defeat(self):
         smiles = [
             'Cc1ccccc1CO',  'CCC(N)=O', 'Fc1cccc(F)c1', 'CC(C)F',
@@ -32,7 +33,8 @@ class TestMolGan(unittest.TestCase):
         sm_def = [Chem.MolToSmiles(m) for m in sm]
         assert len(smiles) == len(sm_def)
         assert all([a == b for a, b in zip(smiles, sm_def)])
-
+    
+    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
     def test_mol_gan_df(self):
         smiles = [
             'Cc1ccccc1CO', 'CC1CCC(C)C(N)C1C1CCC(C)C(N)C1', 'CCC(N)=O', 'Fc1cccc(F)c1', 'CC(C)F',

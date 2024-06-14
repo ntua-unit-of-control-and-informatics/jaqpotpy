@@ -20,7 +20,7 @@ from scipy.spatial import ConvexHull
 from jaqpotpy.utils.rdkit_utils import load_molecule, write_molecule
 
 
-def create_hydrated_pdbqt_pdb(protein_file: str, out_dir: str):
+def create_hydrated_pdbqt_pdb(protein_file: str, out_dir: str = "./"):
   protein_name = os.path.basename(protein_file).split(".")[0]
   protein_hyd = os.path.join(out_dir, "%s_hyd.pdb" % protein_name)
   protein_pdbqt = os.path.join(out_dir, "%s.pdbqt" % protein_name)

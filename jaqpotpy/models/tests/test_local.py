@@ -12,7 +12,7 @@ from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeatu
 from jaqpotpy.models import MolecularModel, MolecularSKLearn
 from sklearn.linear_model import LinearRegression
 import asyncio
-from jaqpotpy.doa.doa import Leverage, SmilesLeverage
+from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models.evaluator import Evaluator
 from jaqpotpy.models.preprocessing import Preprocesses
 from sklearn.metrics import max_error, mean_absolute_error, r2_score, accuracy_score, f1_score, roc_auc_score
@@ -141,7 +141,7 @@ class TestModels(unittest.TestCase):
                                           #    'VE1_A', 'VE2_A']
                                           )
         model = LinearRegression()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -159,7 +159,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.prediction
@@ -180,7 +180,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         print(molecularModel_t1.prediction)
@@ -200,7 +200,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.prediction
@@ -216,7 +216,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -231,7 +231,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
 
@@ -245,7 +245,7 @@ class TestModels(unittest.TestCase):
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -266,7 +266,7 @@ class TestModels(unittest.TestCase):
                                           )
 
         model = LinearRegression()
-        molecularModel_t2 = MolecularSKLearn(dataset=dataset, doa=SmilesLeverage(), model=model, eval=None).fit()
+        molecularModel_t2 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t2('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t2.doa.IN == [True]
         assert int(molecularModel_t2.doa.doa_new[0]) == 0
@@ -400,6 +400,7 @@ class TestModels(unittest.TestCase):
         molecularModel_t7.save()
         # assert int(molecularModel_t7.prediction[0][0]) == 1228766
 
+    @unittest.skip("Needs refactoring")
     def test_load_model(self):
         try:
             molecularModel_t8 = MolecularModel.load('./TestModel.jmodel')

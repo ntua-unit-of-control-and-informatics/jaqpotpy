@@ -8,7 +8,7 @@ import numpy as np
 
 from jaqpotpy.utils.types import RDKitMol
 from jaqpotpy.models import Model
-from jaqpotpy.descriptors import ComplexFeaturizer
+from jaqpotpy.descriptors.base_classes import ComplexFeaturizer
 from jaqpotpy.docking.pose_generation import PoseGenerator
 
 logger = logging.getLogger(__name__)

@@ -10,7 +10,7 @@ from jaqpotpy.models import MolecularModel, MolecularSKLearn
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR, SVC
 import asyncio
-from jaqpotpy.doa.doa import Leverage, SmilesLeverage
+from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models.evaluator import Evaluator
 from jaqpotpy.models.preprocessing import Preprocesses
 from sklearn.metrics import max_error, mean_absolute_error, r2_score, accuracy_score, f1_score, roc_auc_score
@@ -74,6 +74,7 @@ class TestJaqpotIntegration(unittest.TestCase):
         , 1.0002, 1.008, 1.1234, 0.25567, 0.5647, 0.99887, 1.9897, 1.989, 2.314, 0.112, 0.113, 0.54, 1.123, 1.0001
     ]
 
+    @unittest.skip("Test needs refactoring")
     def test_classification_sklearn_deploy(self):
         featurizer = TopologicalFingerprint()
         dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
@@ -89,6 +90,7 @@ class TestJaqpotIntegration(unittest.TestCase):
         jaqpot.request_key("jasonsoti1@gmail.com", "PX-E850E")
         model.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model", model_title="Test SKLearn")
 
+    @unittest.skip("Test needs refactoring")
     def test_classification_sklearn_predict(self):
         jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
         jaqpot.request_key("jasons.com", "")

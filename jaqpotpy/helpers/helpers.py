@@ -87,6 +87,7 @@ def create_molecular_req(model, title, description, type):
     independentFeatures.append("Smiles")
     if model.external_feats:
         independentFeatures.append(model.external_feats)
+        independentFeatures = [item for sublist in independentFeatures for item in (sublist if isinstance(sublist, list) else [sublist])]
     if isinstance(model.Y, list):
         dependendFeatures = model.Y
     else:

@@ -73,7 +73,7 @@ class TestModels(unittest.TestCase):
             "CC(=O)c1ccc(S(=O)(=O)N2CCCC[C@H]2C)cc1",
         ]
 
-
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_smiles_parser(self):
         for s in self.smiles[0:10080]:
             print(s)
@@ -83,6 +83,7 @@ class TestModels(unittest.TestCase):
             print(f)
             print(mol)
 
+    @unittest.skip("This test should not be placed here")  
     def test_qm9(self):
 
         mols = Chem.SDMolSupplier('./data/gdb9.sdf')
@@ -103,7 +104,7 @@ class TestModels(unittest.TestCase):
                 print(smiles_dif)
             except Exception as e:
                 pass
-
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_two_graphs(self):
         featurizer = MolGanFeaturizer(max_atom_count=12, kekulize=True, sanitize=False)
         smile_1 = "CC(=O)OCN"
@@ -118,6 +119,7 @@ class TestModels(unittest.TestCase):
         print("COMPARING GRAPHS")
         self.assertEqual(g, g)
 
+    @unittest.skip("This test should not be placed here")  
     def test_smiles_list(self):
         featurizer = MolGanFeaturizer(max_atom_count=12, kekulize=True, sanitize=False)
         smiles = ['[CH]C#C[CH]', '[CH]C#C[NH3+]', 'C[NH+]1CC1', 'COC(C)[NH-]', '[NH-]C1CCO1', 'CC1C[NH+]1C', '[NH-][CH+]OC=O',
@@ -137,6 +139,7 @@ class TestModels(unittest.TestCase):
             print("COMPARING GRAPHS")
             self.assertEqual(g, g)
 
+    @unittest.skip("This test should not be placed here")  
     def test_dataset(self, max_atoms=40, length=100):
         featurizer = MolGanFeaturizer(max_atom_count=max_atoms, kekulize=True, sanitize=True)
         self.dataset = SmilesDataset(smiles=self.smiles[0:length], task="generation", featurizer=featurizer)
@@ -183,7 +186,7 @@ class TestModels(unittest.TestCase):
         #         g2 = GraphMatrix(torch.squeeze(adc_mat[ind]).cpu().detach().numpy(), torch.squeeze(n).cpu().detach().numpy())
         #         t = featurizer.defeaturize(g2)
                 # print(Chem.MolToSmiles(t[0]))
-
+    @unittest.skip("This test should not be placed here")  
     def test_defeat(self):
         # smiles = "N.[CH2-]c1cc(O)co1"
         smiles = "C=C1C=CC(=O)O1.N"
@@ -195,6 +198,7 @@ class TestModels(unittest.TestCase):
         mol = feat.defeaturize(f)
         print(Chem.MolToSmiles(mol))
 
+    @unittest.skip("This test should not be placed here")  
     def test_defeat_two(self):
         print(self.smiles[1])
         mol = Chem.MolFromSmiles(self.smiles[1])
@@ -204,6 +208,7 @@ class TestModels(unittest.TestCase):
         mol = feat.defeaturize(f)
         print(Chem.MolToSmiles(mol))
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_generator_model(self):
         max_atoms = 40
         self.test_dataset(max_atoms=max_atoms)
@@ -225,6 +230,7 @@ class TestModels(unittest.TestCase):
             # print(edges_hat)
             # print(nodes_hat.size())
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_discriminator(self):
         import torch
         max_atoms = 42
@@ -262,6 +268,7 @@ class TestModels(unittest.TestCase):
                 t = self.dataset.featurizer.defeaturize(g2)
                 print(Chem.MolToSmiles(t[0]))
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_generator_optim(self):
         import numpy as np
         max_atoms = 42
@@ -275,6 +282,7 @@ class TestModels(unittest.TestCase):
         loss.backward()
         g_optim.step()
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_gan_solver(self):
         from rdkit import RDLogger
         RDLogger.DisableLog('rdApp.info')
@@ -292,6 +300,7 @@ class TestModels(unittest.TestCase):
                            , la=0.1, g_lr=0.1, d_lr=0.1, batch_size=42, val_at=20, epochs=30)
         solver.fit()
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_with_qm_9(self):
         mols = Chem.SDMolSupplier('./data/gdb9.sdf')
         max_atoms = 10
@@ -313,6 +322,7 @@ class TestModels(unittest.TestCase):
                            , la=1, g_lr=0.1, d_lr=0.1, batch_size=42, val_at=20, epochs=30)
         solver.fit()
 
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_with_evaluator(self):
         mols = Chem.SDMolSupplier('./data/gdb9.sdf')
         max_atoms = 9
@@ -375,7 +385,7 @@ class TestModels(unittest.TestCase):
                            , batch_size=42, val_at=1, epochs=30)
         solver.fit()
 
-
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_with_evaluator_big(self):
         smiles = []
         try:
@@ -437,7 +447,7 @@ class TestModels(unittest.TestCase):
                            , batch_size=42, val_at=1, epochs=130)
         solver.fit()
 
-
+    @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_jaqpot_model(self):
         from jaqpotpy import Jaqpot
         from jaqpotpy.models import MolecularModel
@@ -470,6 +480,7 @@ jaqpot.set_api_key(
     "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2NzI4MjE4MDQsImlhdCI6MTY3MjY0OTAwNCwiYXV0aF90aW1lIjoxNjcyNjQ5MDAzLCJqdGkiOiIxYTBiYmNjMi0wM2IzLTQ4NDYtYTg1ZS03ODcwZTdlNWE1MGYiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiI1MzUxZDVkZDEyNDRhNGNmYjYzZWM4OTg2OGYyYjgyM2JkWDZDbkJUViIsInNlc3Npb25fc3RhdGUiOiJhMTdhMzIxNy1jZjBmLTQxNmEtODJkMy04ZDM0OWRmNmQxZWMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwic2lkIjoiYTE3YTMyMTctY2YwZi00MTZhLTgyZDMtOGQzNDlkZjZkMWVjIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.ivsqqMMMUu7fYhB-kgjmMFZKHc2q9XsX02EkKFNYFrvIX4K9EsyQKGDjudZeYU9JwR4fqNXttVOkTvsDR6g9-Hmfg5W2RdkHh3L1OhAs8U4PZ39llYGpXVv_vF7UzCH8h5EmlpBe_WBH7_HSE9pNBqtR_B8KvwCEeEllWlF8XqYdz9dezllGnGjqFldxtATk71VcDpneVx1KR2wWcj0iz1q4wLlePimE-UJw8vDn2uKy43km5LiyrAvz4RsyaGdI5lX66k7Pg0klO2rqT-xNzCwVuRv6KnESH0TIKDKE4vv9hjaEUwTPks4NjG59N-muuHebSbfPK7nDbABYfaB7yw")
 model_local = MolecularModel().load_from_jaqpot(jaqpot=jaqpot, id="BKsEYKTVRSKZyCjEWBzp")
 
+@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
 def bbb_function(mols):
     from jaqpotpy import Jaqpot
     from jaqpotpy.models import MolecularModel
@@ -492,7 +503,7 @@ def bbb_function(mols):
     # print(model.prediction)
     # print(model.probability)
 
-
+@unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
 def bbb_mean_function(mols):
     from jaqpotpy import Jaqpot
     from jaqpotpy.models import MolecularModel

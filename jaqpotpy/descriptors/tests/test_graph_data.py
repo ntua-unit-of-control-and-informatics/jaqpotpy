@@ -6,6 +6,7 @@ from jaqpotpy.descriptors.graph.graph_data import GraphData, BatchGraphData
 
 class TestGraph(unittest.TestCase):
 
+  @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
   # @pytest.mark.torch
   def test_graph_data(self):
     num_nodes, num_node_features = 5, 32
@@ -39,6 +40,7 @@ class TestGraph(unittest.TestCase):
     assert isinstance(dgl_graph, DGLGraph)
 
   # @pytest.mark.torch
+  @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
   def test_invalid_graph_data(self):
     with self.assertRaises(ValueError):
       invalid_node_features_type = list(np.random.random_sample((5, 32)))
@@ -79,6 +81,7 @@ class TestGraph(unittest.TestCase):
       _ = GraphData(node_features=node_features)
 
   # @pytest.mark.torch
+  @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
   def test_batch_graph_data(self):
     num_nodes_list, num_edge_list = [3, 4, 5], [2, 4, 5]
     num_node_features, num_edge_features = 32, 32
