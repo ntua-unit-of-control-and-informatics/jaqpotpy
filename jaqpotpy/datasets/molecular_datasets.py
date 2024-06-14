@@ -40,8 +40,10 @@ class JaqpotpyDataset(BaseDataset):
 
         super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task = task)
         
-        # Ensure no overlap between smiles_cols, x_cols, and y_cols
         self._validate_column_overlap(smiles_cols, x_cols, y_cols)
+        self._validate_column_names(smiles_cols, "smiles_cols")
+        self._validate_column_names(x_cols, "x_cols")
+        self._validate_column_names(y_cols, "y_cols")
         
         if isinstance(smiles_cols, str):
             self.smiles_cols = [smiles_cols]
@@ -74,6 +76,23 @@ class JaqpotpyDataset(BaseDataset):
     @x_cols_all.setter
     def x_cols_all(self, value):
         self._x_cols_all = value
+
+    def _validate_column_names(self, cols, col_type):
+        """
+        Validate if the columns specified in cols are present in the DataFrame.
+        
+        """
+        if cols is None:
+            return
+        
+        if isinstance(cols, str):
+            cols = [cols]
+        
+        missing_cols = [col for col in cols if col not in self._df.columns]
+        
+        if missing_cols:
+            raise ValueError(f"The following columns in {col_type} are not present in the DataFrame: {missing_cols}")
+
 
     def _validate_column_overlap(self, smiles_cols, x_cols, y_cols):
         smiles_set = set(smiles_cols) if smiles_cols else set()
