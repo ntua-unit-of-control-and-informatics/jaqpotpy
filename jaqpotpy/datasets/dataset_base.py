@@ -137,6 +137,20 @@ class BaseDataset(ABC):
         Creates the dataset.
         """
         raise NotImplementedError
+    
+    @abstractmethod
+    def __get_X__(self):
+        """
+        Returns the design matrix X.
+        """
+        raise NotImplementedError
+    
+    @abstractmethod
+    def __get_Y__(self):
+        """
+        Returns the response Y.
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def __repr__(self) -> str:

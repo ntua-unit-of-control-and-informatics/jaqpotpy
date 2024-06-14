@@ -99,7 +99,12 @@ class JaqpotpyDataset(BaseDataset):
         self._y = self._df[self.y_cols]
         self._df = pd.concat([self._x, self._y], axis = 1)
 
-
+    def __get_X__(self):
+        return self._x.to_numpy()
+    
+    def __get_Y__(self):
+        return self._y.to_numpy()
+    
     def __get__(self, instance, owner):
         if instance is None:
             return self
