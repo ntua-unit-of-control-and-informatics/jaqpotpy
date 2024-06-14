@@ -4,9 +4,8 @@ Dataset abstract classes
 from abc import ABC, abstractmethod
 import os
 import pickle
-from typing import Any, Iterable, Optional
+from typing import Iterable, Optional
 import pandas as pd
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 
 class BaseDataset(ABC):
     """
@@ -25,25 +24,26 @@ class BaseDataset(ABC):
 
     def __init__(self, df: pd.DataFrame = None, path: Optional[str] = None,
                  y_cols: Iterable[str] = None,
-                 x_cols: Optional[Iterable[str]] = None) -> None:
+                 x_cols: Optional[Iterable[str]] = None,
+                 task: str = None) -> None:
 
         if df is None and path is None:
-            raise ValueError("Either a DataFrame or a path to a file must be provided.")
+            raise TypeError("Either a DataFrame or a path to a file must be provided.")
 
         if df is not None:
             if not isinstance(df, pd.DataFrame):
-                raise ValueError("Provided 'df' must be a pandas DataFrame.")
+                raise TypeError("Provided 'df' must be a pandas DataFrame.")
             else:
                 self._df = df
                 self.path = None
         elif path is not None:
             self.path = path
-            name, extension = os.path.splitext(self.path)
+            extension = os.path.splitext(self.path)[1]
             if extension == '.csv':
                 self._df = pd.read_csv(path)
             else:
                 raise ValueError("The provided file is not a valid CSV file.")
-        
+    
         if isinstance(y_cols, str):
             self.y_cols = y_cols
             self.y_cols_len = 1
@@ -52,9 +52,9 @@ class BaseDataset(ABC):
             self.y_cols_len = len(y_cols)
         else:
             raise TypeError("y_cols must be a string or a list of strings.")
-        
+
         if isinstance(x_cols, str):
-            self.x_cols = y_cols
+            self.x_cols = x_cols
             self.x_cols_len = 1
         elif isinstance(x_cols, list) and all(isinstance(item, str) for item in x_cols):
             self.x_cols = x_cols
@@ -63,9 +63,9 @@ class BaseDataset(ABC):
             self.x_cols = None
             self.x_cols_len = 0
         else:
-            raise TypeError("x_cols must either be a string, a list of strings or a None type.")
+            raise TypeError("x_cols must either be a string, a list of strings or a None.")
 
-        self._task = None
+        self._task = task
         self._dataset_name = None
         self._y = None
         self._x = None
@@ -149,20 +149,6 @@ class BaseDataset(ABC):
     def __len__(self):
         """
         Returns the number of samples in the dataset.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def __get_x__(self):
-        """
-        Gets the feature matrix.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def __get_y__(self):
-        """
-        Gets the label array.
         """
         raise NotImplementedError
 

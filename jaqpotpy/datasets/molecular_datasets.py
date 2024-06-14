@@ -35,7 +35,7 @@ class JaqpotpyDataset(BaseDataset):
                  task:str = None
                  ) -> None:
         
-        if not(isinstance(y_cols, str) or (isinstance(y_cols, list) and isinstance(y_cols[1], str))):
+        if not(isinstance(y_cols, str) or (isinstance(y_cols, list) and isinstance(y_cols[0], str))):
                raise ValueError("y_cols must be provided and should be either a string or a list of strings") 
 
         super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task = task)
@@ -86,8 +86,6 @@ class JaqpotpyDataset(BaseDataset):
             self.smiles = None
             descriptors = []
         
-        self._y = self._df[self.y_cols]
-
         if self.x_cols is None:
             # Estimate x_cols by excluding y_cols and smiles_col
             x_ext =  self._df.drop(columns=self.y_cols + self.smiles_cols)
@@ -98,13 +96,9 @@ class JaqpotpyDataset(BaseDataset):
             self._x =  pd.concat([self._df[self.x_cols] ,  descriptors] , axis=1)
             self.x_cols_all = self._x.columns.tolist()
 
+        self._y = self._df[self.y_cols]
         self._df = pd.concat([self._x, self._y], axis = 1)
 
-    def __get_x__(self):
-        return self._df[self._x].to_numpy()
-
-    def __get_y__(self):
-        return self._df[self._y].to_numpy()
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -112,8 +106,6 @@ class JaqpotpyDataset(BaseDataset):
         return instance.__dict__[self._df]
 
     def __getitem__(self, idx):
-        # print(self.df[self.X].iloc[idx].values)
-        # print(type(self.df[self.X].iloc[idx].values))
         selected_x = self._df[self._x].iloc[idx].values
         selected_y = self._df[self._y].iloc[idx].to_numpy()
         return selected_x, selected_y
