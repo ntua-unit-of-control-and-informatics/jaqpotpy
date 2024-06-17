@@ -50,11 +50,11 @@ class TestDoa(unittest.TestCase):
 
         assert len(calc)==len(mol), f"Expected len(calc) == len(mol), got {len(calc)} != {len(mol)}"
         assert abs(doa.a - 16.434782608695652) < 0.00001, f"Expected doa.a == 16.434782608695652, got {doa.a} != 16.434782608695652"
-        assert calc[0]['IN']==False, f"Expected calc[0]['IN'] == False, got {calc[0]['IN']} != False"
-        assert calc[1]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[1]['IN']} != True"
-        assert calc[2]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[2]['IN']} != True"
+        assert calc[0]['in_doa']==False, f"Expected calc[0]['in_doa'] == False, got {calc[0]['in_doa']} != False"
+        assert calc[1]['in_doa']==True, f"Expected calc[0]['in_doa'] == True, got {calc[1]['in_doa']} != True"
+        assert calc[2]['in_doa']==True, f"Expected calc[0]['in_doa'] == True, got {calc[2]['in_doa']} != True"
         
-    def test_mean_var(self):
+    def test_MeanVar(self):
         mols = [
             'C[C@@](C)(O1)C[C@@H](O)[C@@]1(O2)[C@@H](C)[C@@H]3CC=C4[C@]3(C2)C(=O)C[C@H]5[C@H]4CC[C@@H](C6)[C@]5(C)Cc(n7)c6nc(C[C@@]89(C))c7C[C@@H]8CC[C@@H]%10[C@@H]9C[C@@H](O)[C@@]%11(C)C%10=C[C@H](O%12)[C@]%11(O)[C@H](C)[C@]%12(O%13)[C@H](O)C[C@@]%13(C)CO',
             'O=C1CCCN1Cc1cccc(C(=O)N2CCC(C3CCNC3)CC2)c1'
@@ -88,8 +88,8 @@ class TestDoa(unittest.TestCase):
         diag = np.diag(doa.data)
         
         assert len(calc) == len(mol)
-        assert calc[0]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[0]['IN']} != True"
-        assert calc[1]['IN']==False, f"Expected calc[0]['IN'] == False, got {calc[1]['IN']} != False"
+        assert calc[0]['in_doa']==True, f"Expected calc[0]['in_doa'] == True, got {calc[0]['in_doa']} != True"
+        assert calc[1]['in_doa']==False, f"Expected calc[0]['in_doa'] == False, got {calc[1]['in_doa']} != False"
         assert np.allclose(diag, [1.31511044e+01, 6.69162726e-01, 5.37187947e-03], atol= 1e-5), f"Expected diag == [1.31511044e+01, 6.69162726e-01, 5.37187947e-03], got diag != {diag}"
 
     def test_BoundingBox(self):
@@ -118,7 +118,7 @@ class TestDoa(unittest.TestCase):
         last_feature_bounds = doa.data[-1]
         print('Bounding box')
         assert len(calc) == len(mol)
-        assert calc[0]['IN']==True, f"Expected calc[0]['IN'] == True, got {calc[0]['IN']} != True"
-        assert calc[1]['IN']==False, f"Expected calc[0]['IN'] == False, got {calc[1]['IN']} != False"
+        assert calc[0]['in_doa']==True, f"Expected calc[0]['in_doa'] == True, got {calc[0]['in_doa']} != True"
+        assert calc[1]['in_doa']==False, f"Expected calc[0]['in_doa'] == False, got {calc[1]['in_doa']} != False"
         assert np.allclose(first_feature_bounds, [12.0648171 , 14.92728396], atol= 1e-5), f"Expected first_feature_bounds == [12.0648171 , 14.92728396], got {first_feature_bounds} != [12.0648171 , 14.92728396]"
         assert np.allclose(last_feature_bounds, [7.22405000e+01,  2.40083000e+02], atol= 1e-5), f"Expected last_feature_bounds == [7.22405000e+01,  2.40083000e+02], got {last_feature_bounds} !=  [7.22405000e+01,  2.40083000e+02]"

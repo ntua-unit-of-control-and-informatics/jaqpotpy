@@ -52,11 +52,11 @@ class Leverage(DOA):
         self._doa = value
 
     @property
-    def IN(self):
+    def in_doa(self):
         return self._in
 
-    @IN.setter
-    def IN(self, value):
+    @in_doa.setter
+    def in_doa(self, value):
         self._in = value
 
     @property
@@ -112,7 +112,7 @@ class Leverage(DOA):
                 in_ad = False
             self._doa.append(d2)
             self._in.append(in_ad)
-            doa = {'DOA': d2, 'A': self._a, 'IN': in_ad}
+            doa = {'DOA': d2, 'A': self._a, 'in_doa': in_ad}
             doaAll.append(doa)
         return doaAll
 
@@ -142,11 +142,11 @@ class MeanVar(DOA):
         self._doa = value
 
     @property
-    def IN(self):
+    def in_doa(self):
         return self._in
 
-    @IN.setter
-    def IN(self, value):
+    @in_doa.setter
+    def in_doa(self, value):
         self._in = value
 
 
@@ -180,7 +180,7 @@ class MeanVar(DOA):
                     continue
                 else:
                     in_doa = False
-            doa = {'IN': in_doa}
+            doa = {'in_doa': in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
             self._in.append(in_doa)
@@ -206,11 +206,11 @@ class BoundingBox(DOA):
         self._doa = value
 
     @property
-    def IN(self):
+    def in_doa(self):
         return self._in
 
-    @IN.setter
-    def IN(self, value):
+    @in_doa.setter
+    def in_doa(self, value):
         self._in = value
 
 
@@ -244,7 +244,7 @@ class BoundingBox(DOA):
                     continue
                 else:
                     in_doa = False
-            doa = {'IN': in_doa}
+            doa = {'in_doa': in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
             self._in.append(in_doa)
