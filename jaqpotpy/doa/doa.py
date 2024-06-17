@@ -11,6 +11,33 @@ class DOA(ABC):
     """
     Abstract class for DOA methods
     """
+    @property
+    def __name__(self):
+        return NotImplementedError
+    
+    @property
+    def doa_new(self):
+        return self._doa
+    
+    @doa_new.setter
+    def doa_new(self, value):
+        self._doa = value
+
+    @property
+    def in_doa(self):
+        return self._in_doa
+
+    @in_doa.setter
+    def in_doa(self, value):
+        self._in_doa = value
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
 
     @abstractmethod
     def fit(self, X: np.array):
@@ -28,7 +55,7 @@ class Leverage(DOA):
     Calculates the DOA for a new instance of data or array of data.
     """
     _doa = []
-    _in = []
+    _in_doa = []
 
     @property
     def __name__(self):
@@ -42,30 +69,6 @@ class Leverage(DOA):
 
     def __getitem__(self,key):
         return key
-
-    @property
-    def doa_new(self):
-        return self._doa
-
-    @doa_new.setter
-    def doa_new(self, value):
-        self._doa = value
-
-    @property
-    def in_doa(self):
-        return self._in
-
-    @in_doa.setter
-    def in_doa(self, value):
-        self._in = value
-
-    @property
-    def data(self):
-        return self._data
-
-    @data.setter
-    def data(self, value):
-        self._data = value
 
     @property
     def doa_matrix(self):
@@ -101,7 +104,7 @@ class Leverage(DOA):
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
         self._doa = []
-        self._in = []
+        self._in_doa = []
         for nd in new_data:
             d1 = np.dot(nd, self.doa_matrix)
             ndt = np.transpose(nd)
@@ -111,7 +114,7 @@ class Leverage(DOA):
             else:
                 in_ad = False
             self._doa.append(d2)
-            self._in.append(in_ad)
+            self._in_doa.append(in_ad)
             doa = {'DOA': d2, 'A': self._h_star, 'in_doa': in_ad}
             doaAll.append(doa)
         return doaAll
@@ -124,7 +127,7 @@ class MeanVar(DOA):
     Calculates the mean and variance for a new instance of data or array of data and decides if in AD.
     """
     _doa = []
-    _in = []
+    _in_doa = []
 
     @property
     def __name__(self):
@@ -132,31 +135,6 @@ class MeanVar(DOA):
 
     def __init__(self) -> None:
         self._data: np.array = None
-
-    @property
-    def doa_new(self):
-        return self._doa
-
-    @doa_new.setter
-    def doa_new(self, value):
-        self._doa = value
-
-    @property
-    def in_doa(self):
-        return self._in
-
-    @in_doa.setter
-    def in_doa(self, value):
-        self._in = value
-
-
-    @property
-    def data(self):
-        return self._data
-
-    @data.setter
-    def data(self, value):
-        self._data = value
 
     def fit(self, X: np.array):
         self._data = X
@@ -170,7 +148,7 @@ class MeanVar(DOA):
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
         self._doa = []
-        self._in = []
+        self._in_doa = []
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
@@ -183,12 +161,12 @@ class MeanVar(DOA):
             doa = {'in_doa': in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
-            self._in.append(in_doa)
+            self._in_doa.append(in_doa)
         return doaAll
 
 class BoundingBox(DOA):
     _doa = []
-    _in = []
+    _in_doa = []
 
     @property
     def __name__(self):
@@ -196,31 +174,6 @@ class BoundingBox(DOA):
 
     def __init__(self) -> None:
         self._data: np.array = None
-
-    @property
-    def doa_new(self):
-        return self._doa
-
-    @doa_new.setter
-    def doa_new(self, value):
-        self._doa = value
-
-    @property
-    def in_doa(self):
-        return self._in
-
-    @in_doa.setter
-    def in_doa(self, value):
-        self._in = value
-
-
-    @property
-    def data(self):
-        return self._data
-
-    @data.setter
-    def data(self, value):
-        self._data = value
 
     def fit(self, X: np.array):
         self._data = X
@@ -234,7 +187,7 @@ class BoundingBox(DOA):
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
         self._doa = []
-        self._in = []
+        self._in_doa = []
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
@@ -247,5 +200,5 @@ class BoundingBox(DOA):
             doa = {'in_doa': in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
-            self._in.append(in_doa)
+            self._in_doa.append(in_doa)
         return doaAll
