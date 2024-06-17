@@ -29,6 +29,8 @@ class BaseDataset(ABC):
 
         if df is None and path is None:
             raise TypeError("Either a DataFrame or a path to a file must be provided.")
+        elif (df is not None) and (path is not None):
+            raise TypeError("Either a DataFrame or a path to a file must be provided.")
 
         if df is not None:
             if not isinstance(df, pd.DataFrame):
