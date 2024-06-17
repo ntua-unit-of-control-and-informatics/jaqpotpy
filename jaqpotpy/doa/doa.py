@@ -38,7 +38,7 @@ class Leverage(DOA):
         # self._scaler: BaseEstimator = scaler
         self._data: np.array = None
         self._doa_matrix = None
-        self._a = None
+        self._h_star = None
 
     def __getitem__(self,key):
         return key
@@ -76,17 +76,17 @@ class Leverage(DOA):
         self._doa_matrix = value
 
     @property
-    def a(self):
-        return self._a
+    def h_star(self):
+        return self._h_star
 
-    @a.setter
-    def a(self, value):
-        self._a = value
+    @h_star.setter
+    def h_star(self, value):
+        self._h_star = value
 
     def calculate_threshold(self):
         shape = self._data.shape
-        a = (3 * (shape[1] + 1)) / shape[0]
-        self._a = a
+        h_star = (3 * (shape[1] + 1)) / shape[0]
+        self._h_star = h_star
 
     def calculate_matrix(self):
         x_T = self._data.transpose()
@@ -106,13 +106,13 @@ class Leverage(DOA):
             d1 = np.dot(nd, self.doa_matrix)
             ndt = np.transpose(nd)
             d2 = np.dot(d1, ndt)
-            if d2 < self._a:
+            if d2 < self._h_star:
                 in_ad = True
             else:
                 in_ad = False
             self._doa.append(d2)
             self._in.append(in_ad)
-            doa = {'DOA': d2, 'A': self._a, 'in_doa': in_ad}
+            doa = {'DOA': d2, 'A': self._h_star, 'in_doa': in_ad}
             doaAll.append(doa)
         return doaAll
 

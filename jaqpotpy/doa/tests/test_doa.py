@@ -49,7 +49,7 @@ class TestDoa(unittest.TestCase):
         calc = doa.predict(descriptors)
 
         assert len(calc)==len(mol), f"Expected len(calc) == len(mol), got {len(calc)} != {len(mol)}"
-        assert abs(doa.a - 16.434782608695652) < 0.00001, f"Expected doa.a == 16.434782608695652, got {doa.a} != 16.434782608695652"
+        assert abs(doa.h_star - 16.434782608695652) < 0.00001, f"Expected doa.a == 16.434782608695652, got {doa.h_star} != 16.434782608695652"
         assert calc[0]['in_doa']==False, f"Expected calc[0]['in_doa'] == False, got {calc[0]['in_doa']} != False"
         assert calc[1]['in_doa']==True, f"Expected calc[0]['in_doa'] == True, got {calc[1]['in_doa']} != True"
         assert calc[2]['in_doa']==True, f"Expected calc[0]['in_doa'] == True, got {calc[2]['in_doa']} != True"
