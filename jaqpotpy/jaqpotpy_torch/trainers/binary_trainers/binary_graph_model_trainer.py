@@ -7,6 +7,7 @@ import base64
 import pickle
 from jaqpotpy.schemas import Feature
 from typing import Optional
+import inspect
 
 
 class BinaryGraphModelTrainer(BinaryModelTrainer):
@@ -49,6 +50,9 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
         kwargs['x'] = data.x
         kwargs['edge_index'] = data.edge_index
         kwargs['batch'] = data.batch
+
+        if 'edge_attr' in inspect.signature(self.model.forward).parameters:
+            kwargs['edge_attr'] = data.edge_attr
 
         return kwargs
     
