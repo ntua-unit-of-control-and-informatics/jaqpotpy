@@ -226,10 +226,10 @@ class MulticlassModelTrainer(TorchModelTrainer):
         accuracy = metrics.accuracy_score(y_true, y_pred)
         balanced_accuracy = metrics.balanced_accuracy_score(y_true, y_pred)
         precision_macro = metrics.precision_score(y_true, y_pred, zero_division=0, average='macro', labels=torch.arange(self.model.output_dim))
-        recall_macro = metrics.recall_score(y_true, y_pred, average='macro', labels=torch.arange(self.model.output_dim))
+        recall_macro = metrics.recall_score(y_true, y_pred, zero_division=0, average='macro', labels=torch.arange(self.model.output_dim))
         f1_macro = metrics.f1_score(y_true, y_pred, average='macro', labels=torch.arange(self.model.output_dim))
         precision_micro = metrics.precision_score(y_true, y_pred, zero_division=0, average='micro', labels=torch.arange(self.model.output_dim))
-        recall_micro = metrics.recall_score(y_true, y_pred, average='micro', labels=torch.arange(self.model.output_dim))
+        recall_micro = metrics.recall_score(y_true, y_pred, zero_division=0, average='micro', labels=torch.arange(self.model.output_dim))
         f1_micro = metrics.f1_score(y_true, y_pred, average='micro', labels=torch.arange(self.model.output_dim))
         mcc = metrics.matthews_corrcoef(y_true, y_pred)
 

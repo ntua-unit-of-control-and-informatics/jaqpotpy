@@ -229,7 +229,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         accuracy = metrics.accuracy_score(y_true, y_pred)
         balanced_accuracy = metrics.balanced_accuracy_score(y_true, y_pred)
         precision = metrics.precision_score(y_true, y_pred, zero_division=0)
-        recall = metrics.recall_score(y_true, y_pred)
+        recall = metrics.recall_score(y_true, y_pred, zero_division=0)
         f1 = metrics.f1_score(y_true, y_pred)
         mcc = metrics.matthews_corrcoef(y_true, y_pred)
 
