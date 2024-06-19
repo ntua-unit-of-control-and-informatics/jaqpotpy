@@ -196,6 +196,7 @@ class MulticlassModelTrainer(TorchModelTrainer):
                 outputs = self.model(**model_kwargs)
 
                 probs = F.softmax(outputs, dim=1)
+                # _, preds = torch.max(probs, 1)
                 
                 all_probs.extend(probs.tolist())
         
