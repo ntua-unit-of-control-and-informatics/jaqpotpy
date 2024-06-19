@@ -52,7 +52,7 @@ class CustomOneHotTransformerPipeline(BaseEstimator, TransformerMixin):
         """
         self.pipeline.fit(X, y)
         self.X_columns_ = list(self.one_hot_encoder.X_columns_)
-        self.categories_ = list(self.one_hot_encoder.categories_)
+        self.categories_ = dict(self.one_hot_encoder.categories_)
         self.new_columns_ = list(self.one_hot_encoder.new_columns_)
         self._sklearn_is_fitted = True
         return self

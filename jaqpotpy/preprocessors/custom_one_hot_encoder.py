@@ -93,7 +93,10 @@ class CustomOneHotEncoder(BaseEstimator, TransformerMixin):
                 self.new_columns_.extend([f"{col}{self._CATEGORY_SEPARATOR}{val}" for val in self.categories_[col]])
             else:
                 self.new_columns_.append(col)
-                
+        
+        # for key, value in self.categories_:
+        self.categories_ = {category: list(map(str, unique_values)) for category, unique_values in self.categories_.items()}
+
         self._sklearn_is_fitted = True
         return self
 
@@ -131,7 +134,7 @@ class CustomOneHotEncoder(BaseEstimator, TransformerMixin):
             msg = "X must be of type pd.DataFrame"
             raise ValueError(msg)
         
-        if list(X.columns) != self.X_columns_:
+        if set(X.columns) != set(self.X_columns_):
             msg = "X must have the exact same columns used for fitting."
             raise ValueError(msg)
             
@@ -141,19 +144,19 @@ class CustomOneHotEncoder(BaseEstimator, TransformerMixin):
         for col in self.categorical_columns:
             if col in encoded_df.columns:
                 unique_values = self.categories_[col]
-                
-                unexpected_values = set(encoded_df[col].unique()) - set(unique_values)
+
+                unexpected_values = set(map(str, encoded_df[col])) - set(unique_values)
                 if unexpected_values:
                     msg = f"Column '{col}' contains unexpected values: {unexpected_values}."
                     warnings.warn(msg, UserWarning, stacklevel=2)
-                
+
                 for val in unique_values:
-                    encoded_df[f"{col}{self._CATEGORY_SEPARATOR}{val}"] = (encoded_df[col] == val).astype(int)
+                    encoded_df[f"{col}{self._CATEGORY_SEPARATOR}{val}"] = (encoded_df[col].astype(str) == val).astype(int)
+                
                 encoded_df.drop(col, axis=1, inplace=True)
         
         
         encoded_df = encoded_df[self.new_columns_]
-        
         return encoded_df
     
     def __sklearn_is_fitted__(self):
