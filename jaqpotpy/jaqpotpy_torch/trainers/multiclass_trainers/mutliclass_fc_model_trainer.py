@@ -12,7 +12,7 @@ from typing import Optional
 
 
 class MulticlassFCModelTrainer(MulticlassModelTrainer):
-    model_type = 'binary-fc-model'
+    model_type = 'multiclass-fc-model'
 
     @classmethod
     def get_model_type(cls):
