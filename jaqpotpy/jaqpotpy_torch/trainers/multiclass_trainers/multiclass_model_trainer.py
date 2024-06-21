@@ -108,7 +108,7 @@ class MulticlassModelTrainer(TorchModelTrainer):
         Returns:
             float: Average loss over the validation dataset.
             dict: Dictionary containing evaluation metrics. The keys represent the metric names and the values are floats.
-            numpy.ndarray: Confusion matrix C as a numpy array of shape (num_classes, num_classes), with Cij being equal to 
+            numpy.ndarray: Confusion matrix C as a numpy.ndarray of shape (num_classes, num_classes), with Cij being equal to 
                            the number of observations known to be in group i and predicted to be in group j.
         """
     
@@ -151,7 +151,7 @@ class MulticlassModelTrainer(TorchModelTrainer):
         metrics_dict = self._compute_metrics(all_labels, all_preds)
         # metrics_dict['roc_auc'] = metrics.roc_auc_score(all_labels, all_probs)
         metrics_dict['loss'] = avg_loss
-        conf_mat = metrics.confusion_matrix(all_labels, all_preds)
+        conf_mat = metrics.confusion_matrix(all_labels, all_preds, labels=torch.arange(self.model.output_dim))
 
         #     tn, fp, fn, tp = metrics.confusion_matrix(all_labels, all_preds).ravel()
         #     conf_mat = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp}
@@ -227,10 +227,10 @@ class MulticlassModelTrainer(TorchModelTrainer):
         balanced_accuracy = metrics.balanced_accuracy_score(y_true, y_pred)
         precision_macro = metrics.precision_score(y_true, y_pred, zero_division=0, average='macro', labels=torch.arange(self.model.output_dim))
         recall_macro = metrics.recall_score(y_true, y_pred, zero_division=0, average='macro', labels=torch.arange(self.model.output_dim))
-        f1_macro = metrics.f1_score(y_true, y_pred, average='macro', labels=torch.arange(self.model.output_dim))
+        f1_macro = metrics.f1_score(y_true, y_pred, zero_division=0, average='macro', labels=torch.arange(self.model.output_dim))
         precision_micro = metrics.precision_score(y_true, y_pred, zero_division=0, average='micro', labels=torch.arange(self.model.output_dim))
         recall_micro = metrics.recall_score(y_true, y_pred, zero_division=0, average='micro', labels=torch.arange(self.model.output_dim))
-        f1_micro = metrics.f1_score(y_true, y_pred, average='micro', labels=torch.arange(self.model.output_dim))
+        f1_micro = metrics.f1_score(y_true, y_pred, zero_division=0, average='micro', labels=torch.arange(self.model.output_dim))
         mcc = metrics.matthews_corrcoef(y_true, y_pred)
 
         metrics_dict = {
