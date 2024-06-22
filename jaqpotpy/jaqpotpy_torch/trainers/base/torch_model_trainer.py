@@ -1,3 +1,8 @@
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
+
 from abc import ABC, abstractmethod, ABCMeta
 import torch
 import logging
@@ -6,9 +11,8 @@ import sys
 import jaqpotpy
 import requests
 import os
-from typing import List, Optional, Literal, Union
+from typing import List, Optional, Union
 from jaqpotpy.schemas import Feature, Library, Organization
-from jaqpotpy.utils import enforce_types
 from jaqpotpy.utils import get_installed_packages
 import inspect
 

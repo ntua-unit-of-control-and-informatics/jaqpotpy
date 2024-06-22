@@ -1,11 +1,16 @@
-from .graph_attention_network import GraphAttentionNetwork  # noqa: F401
-from .graph_convolutional_network import GraphConvolutionalNetwork # noqa: F401
-from .graph_sage_network import GraphSAGENetwork # noqa: F401
-from .graph_transformer_network import GraphTransformerNetwork # noqa: F401
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
 
-from .fully_connected_network import FullyConnectedNetwork  # noqa: F401
+from .graph_attention_network import GraphAttentionNetwork
+from .graph_convolutional_network import GraphConvolutionalNetwork
+from .graph_sage_network import GraphSAGENetwork
+from .graph_transformer_network import GraphTransformerNetwork
 
-from .graph_attention_network import GraphAttentionNetworkWithExternal  # noqa: F401
-from .graph_convolutional_network import GraphConvolutionalNetworkWithExternal # noqa: F401
-from .graph_sage_network import GraphSAGENetworkWithExternal # noqa: F401
-from .graph_transformer_network import GraphTransformerNetworkWithExternal # noqa: F401
+from .fully_connected_network import FullyConnectedNetwork
+
+from .graph_attention_network import GraphAttentionNetworkWithExternal
+from .graph_convolutional_network import GraphConvolutionalNetworkWithExternal
+from .graph_sage_network import GraphSAGENetworkWithExternal
+from .graph_transformer_network import GraphTransformerNetworkWithExternal

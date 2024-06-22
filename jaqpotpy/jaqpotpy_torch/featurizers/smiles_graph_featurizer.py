@@ -1,3 +1,8 @@
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
+
 from rdkit import Chem
 import torch
 from torch_geometric.data import Data

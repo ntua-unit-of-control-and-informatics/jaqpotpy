@@ -1,3 +1,8 @@
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
+
 class Library():
     def __init__(self,
                  name: str,

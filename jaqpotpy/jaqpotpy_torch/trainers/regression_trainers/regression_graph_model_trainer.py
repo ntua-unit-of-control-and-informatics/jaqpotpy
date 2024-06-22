@@ -1,3 +1,8 @@
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
+
 from . import RegressionModelTrainer
 
 import torch

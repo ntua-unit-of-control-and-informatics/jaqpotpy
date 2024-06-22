@@ -1,3 +1,8 @@
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
+
 from ..base import TorchModelTrainer
 from abc import abstractmethod
 from tqdm import tqdm

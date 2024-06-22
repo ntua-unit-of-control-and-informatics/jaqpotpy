@@ -1,3 +1,8 @@
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
+
 from torch.utils.data import Dataset
 from ..featurizers import SmilesGraphFeaturizer
 import torch

@@ -1,5 +1,15 @@
-def get_installed_packages():
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
 
+def get_installed_packages() -> dict:
+    """
+    Retrieves a dictionary of installed packages and their versions using pip.freeze.
+
+    Returns:
+        dict: A dictionary with package names as keys and versions as values.
+    """
     try: 
         from pip._internal.operations import freeze
     except ImportError: # pip < 10.0
