@@ -13,6 +13,21 @@ import sklearn.metrics as metrics
 
 
 class BinaryModelTrainer(TorchModelTrainer):
+    """
+    Abstract trainer class for Binary Classification models using PyTorch.
+    
+    Args:
+        model (torch.nn.Module): The torch model to be trained.
+        n_epochs (int): Number of training epochs.
+        optimizer (torch.optim.Optimizer): The optimizer used for training the model.
+        loss_fn (torch.nn.Module): The loss function used for training.
+        device (str, optional): The device on which to train the model. Default is 'cpu'.
+        use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
+        log_enabled (bool, optional): Whether logging is enabled. Default is True.
+        log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
+        decision_threshold (float, optional): Decision threshold for binary classification. Default is 0.5.
+    """
+    
     def __init__(
             self, 
             model, 
@@ -43,14 +58,20 @@ class BinaryModelTrainer(TorchModelTrainer):
     @abstractmethod
     def get_model_kwargs(self, data):
         """
-        data: item returned from dataloader
+        This abstract method should be implemented by subclasses to provide model-specific keyword arguments based on the data.
+        
+        Args:
+            data: Whatever data the respective dataloader fetches.
         Returns:
-            dict with kwargs
+            dict: The kwargs that the forward method of the respective model expects as input.
         """
         pass
 
 
     def train(self, train_loader, val_loader=None):
+        """
+        Train the model.
+        """
 
         for i in range(self.n_epochs):            
             self.current_epoch += 1
@@ -67,7 +88,14 @@ class BinaryModelTrainer(TorchModelTrainer):
                     self._log_metrics(val_loss, metrics_dict=val_metrics_dict, mode='val')
     
     def _train_one_epoch(self, train_loader):
+        """
+        This helper method handles the training loop for a single epoch, updating the model parameters and computing the running loss.
 
+        Args:
+            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
+        Returns:
+            float: The average loss of the current epoch.
+        """
         running_loss = 0
         total_samples = 0
 
@@ -113,7 +141,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         Evaluate the model's performance on the validation set.
 
         Args:
-            val_loader (torch_geometric.loader.DataLoader): DataLoader for the validation dataset.
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
         Returns:
             float: Average loss over the validation dataset.
             dict: Dictionary containing evaluation metrics. The keys represent the metric names and the values are floats.
@@ -168,6 +196,14 @@ class BinaryModelTrainer(TorchModelTrainer):
         return avg_loss, metrics_dict, conf_mat
 
     def predict(self, val_loader):
+        """
+        Provide predictions on the validation set.
+
+        Args:
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
+        Returns:
+            list: List of predictions.
+        """
         all_preds = []
         self.model.eval()
         with torch.no_grad():
@@ -190,6 +226,15 @@ class BinaryModelTrainer(TorchModelTrainer):
         return all_preds
 
     def predict_proba(self, val_loader):
+        """
+        Provide the probabilities of the predictions on the validation set.
+
+        Args:
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
+        Returns:
+            list: List of predictions' probabilities.
+        """
+
         all_probs = []
         self.model.eval()
         with torch.no_grad():

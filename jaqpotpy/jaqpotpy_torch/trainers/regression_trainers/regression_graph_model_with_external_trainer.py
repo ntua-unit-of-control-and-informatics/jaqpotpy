@@ -19,6 +19,22 @@ import inspect
 
 
 class RegressionGraphModelWithExternalTrainer(RegressionModelTrainer):
+    """
+    Trainer class for Regression using both Graph and Fully Connected Neural Networks for SMILES and as well external features.
+    
+    Args:
+        model (torch.nn.Module): The torch model to be trained.
+        n_epochs (int): Number of training epochs.
+        optimizer (torch.optim.Optimizer): The optimizer used for training the model.
+        loss_fn (torch.nn.Module): The loss function used for training.
+        device (str, optional): The device on which to train the model. Default is 'cpu'.
+        use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
+        log_enabled (bool, optional): Whether logging is enabled. Default is True.
+        log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
+        normalization_mean (float): Mean used to normalize the true values of the regression variables before model training. 
+        normalization_std' (float): Standard deviation used to normalize the true values of the regression variables before model training.        
+    """
+
     model_type = 'regression-graph-model-with-external'
 
     @classmethod
@@ -74,11 +90,25 @@ class RegressionGraphModelWithExternalTrainer(RegressionModelTrainer):
                                endpoint_name: str,
                                name: str,
                                description: Optional[str] = None,
-                               visibility='PUBLIC',
-                               reliability=True,
-                               pretrained=False,
-                               meta=dict()
+                               visibility: str = 'PUBLIC',
+                               reliability: Optional[int] = None,
+                               pretrained: bool = False,
+                               meta: dict = dict()
                                ):
+        """
+        Prepare the model for deployment on Jaqpot.
+
+        Args:
+            featurizer (object): The featurizer used to transform the SMILES to graph representations before training the model.
+            external_preprocessor (object): The preprocessor used to transform the external data before training the model.
+            endpoint_name (str): The name of the endpoint for the deployed model.
+            name (str): The name to be assigned to the deployed model.
+            description (str, optional): A description for the model to be deployed. Default is None.
+            visibility (str, optional): Visibility of the deployed model. Can be 'PUBLIC', 'PRIVATE' or 'ORG_SHARED'. Default is 'PUBLIC'.
+            reliability (int, optional): The models reliability. Default is None.
+            pretrained (bool, optional): Indicates if the model is pretrained. Default is False.
+            meta (dict, optional): Additional metadata for the model. Default is an empty dictionary.
+        """
         
         if not external_preprocessor._sklearn_is_fitted:
             msg = (
