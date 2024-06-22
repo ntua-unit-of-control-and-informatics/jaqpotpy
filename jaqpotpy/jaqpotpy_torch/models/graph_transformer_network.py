@@ -17,6 +17,20 @@ from .fully_connected_network import FullyConnectedNetwork
 
 
 class GraphTransformerBlock(nn.Module):
+    """
+    A single Graph Transformer Block consisting of a TransformerConv layer, an activation function,
+    and a dropout layer. Optionally, a graph normalization layer can be applied.
+
+    Args:
+        input_dim (int): Dimension of the input node features.
+        hidden_dim (int): Dimension of the hidden features.
+        heads (int): Number of attention heads.
+        edge_dim (Optional[int]): Dimension of the edge features if any.
+        activation (nn.Module): Activation function to apply after the TransformerConv layer.
+        dropout_probability (float): Dropout probability.
+        graph_norm (bool): Whether to apply graph normalization.
+        jittable (bool): Whether to make the TransformerConv module jittable.
+    """
 
     def __init__(self,
                  input_dim: int,
@@ -54,6 +68,18 @@ class GraphTransformerBlock(nn.Module):
                 edge_index: Tensor,
                 batch: Optional[Tensor],
                 edge_attr: OptTensor = None) -> Tensor:
+        """
+        Passes the input through the layer.
+
+        Args:
+            x (Tensor): Node feature matrix with shape [num_nodes, num_node_features].
+            edge_index (Tensor): Graph connectivity in COO format with shape [2, num_edges].
+            batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
+            edge_attr (OptTensor): Edge feature matrix with shape [num_edges, num_edge_features]. Default is None.
+
+        Returns:
+            Tensor: Output tensor of the layer.
+        """
 
         x = self.hidden_layer(x, edge_index, edge_attr=edge_attr)
         if self.gn_layer is not None:
@@ -66,6 +92,21 @@ class GraphTransformerBlock(nn.Module):
 
 
 class GraphTransformerNetwork(nn.Module):
+    """
+    A Graph Transformer Network consisting of multiple Graph Transformer Blocks followed by a Fully Connected Layer.
+
+    Args:
+        input_dim (int): Dimension of the input node features.
+        hidden_dims (Iterable[int]): Dimensions of the hidden layers.
+        heads (Union[int, Iterable[int]]): Number of attention heads for each layer.
+        edge_dim (Optional[int]): Dimension of the edge features if any.
+        output_dim (int): Dimension of the output features.
+        activation (nn.Module): Activation function to apply after each graph attention block.
+        dropout (Union[float, Iterable[float]]): Dropout probability for each layer.
+        graph_norm (bool): Whether to apply graph normalization.
+        pooling (str): Type of pooling to apply ('mean', 'add', 'max').
+        jittable (bool): Whether to make the TransformerConv modules jittable.
+    """
 
     def __init__(self,
                  input_dim: int,
@@ -181,6 +222,18 @@ class GraphTransformerNetwork(nn.Module):
                 edge_index: Tensor,
                 batch: Optional[Tensor],
                 edge_attr: OptTensor = None) -> Tensor:
+        """
+        Forward pass through the entire network.
+
+        Args:
+            x (Tensor): Node feature matrix with shape [num_nodes, num_node_features].
+            edge_index (Tensor): Graph connectivity in COO format with shape [2, num_edges].
+            batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
+            edge_attr (OptTensor): Edge feature matrix with shape [num_edges, num_edge_features]. Default is None.
+
+        Returns:
+            Tensor: Output tensor after passing through the network.
+        """
         
         x = self._forward_graph(x, edge_index, batch, edge_attr=edge_attr)
         x = self.fc(x)
@@ -192,6 +245,9 @@ class GraphTransformerNetwork(nn.Module):
                        edge_index: Tensor,
                        batch: Optional[Tensor],
                        edge_attr: OptTensor = None) -> Tensor:
+        """
+        Helper method for the forward pass through graph layers and pooling.
+        """
 
         for graph_layer in self.graph_layers:
             x = graph_layer(x, edge_index, batch=batch, edge_attr=edge_attr)
@@ -202,6 +258,9 @@ class GraphTransformerNetwork(nn.Module):
     def _pooling_function(self,
                           x: Tensor, 
                           batch: Optional[Tensor]) -> Tensor:
+        """
+        Helper method for the pooling operation.
+        """
 
         if self.pooling == 'add':
             return global_add_pool(x, batch)
@@ -214,6 +273,29 @@ class GraphTransformerNetwork(nn.Module):
 
 
 class GraphTransformerNetworkWithExternal(nn.Module):
+    """
+    A Graph Transformer Network that integrates external features.
+    Combines the output from a Graph Transformer Network with external features
+    and processes them through a Fully Connected Network.
+
+    Args:
+        graph_input_dim (int): Dimension of the input node features for the graph.
+        num_external_features (int): Number of external features.
+        graph_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the graph.
+        fc_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the fully connected network.
+        graph_output_dim (int): Dimension of the graph output features.
+        output_dim (int): Dimension of the final output features.
+        graph_heads (Union[int, Iterable[int]]): Number of attention heads for each graph layer.
+        graph_edge_dim (Optional[int]): Dimension of the edge features if any.
+        graph_activation (nn.Module): Activation function for graph layers.
+        graph_dropout (Union[float, Iterable[float]]): Dropout probability for graph layers.
+        graph_norm (bool): Whether to apply graph normalization in the graph layers.
+        graph_pooling (str): Type of pooling to apply in the graph layers ('mean', 'add', 'max').
+        fc_dropout (Union[float, Iterable[float]]): Dropout probability for fully connected layers.
+        fc_activation (nn.Module): Activation function for fully connected layers.
+        jittable (bool): Whether to make the TransformerConv modules jittable.
+    """
+
     def __init__(self,
                  graph_input_dim: int,
                  num_external_features: int,
@@ -265,6 +347,19 @@ class GraphTransformerNetworkWithExternal(nn.Module):
                 external: Tensor,
                 batch: Optional[Tensor],
                 edge_attr: OptTensor = None) -> Tensor:
+        """
+        Forward pass through the entire network.
+
+        Args:
+            x (Tensor): Node feature matrix with shape [num_nodes, num_node_features].
+            edge_index (Tensor): Graph connectivity in COO format with shape [2, num_edges].
+            external (Tensor): External feature matrix with shape [num_samples, num_external_features].
+            batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
+            edge_attr (OptTensor): Edge feature matrix with shape [num_edges, num_edge_features]. Default is None.
+
+        Returns:
+            Tensor: Output tensor after passing through the network.
+        """
 
         x = self.graph_model(x, edge_index, batch, edge_attr=edge_attr)
         x = torch.cat((x, external), dim=1)

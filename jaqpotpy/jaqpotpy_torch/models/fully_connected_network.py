@@ -10,6 +10,16 @@ from torch import Tensor
 
 
 class FullyConnectedBlock(nn.Module):
+    """
+    A single fully connected block consisting of a linear layer, an activation function,
+    and a dropout layer. Xavier initialization is applied to the weights.
+
+    Args:
+        input_dim (int): Dimension of the input features.
+        output_dim (int): Dimension of the output features.
+        activation (nn.Module): Activation function to apply after the linear layer.
+        dropout_probability (float): Dropout probability.
+    """
 
     def __init__(self,
                  input_dim: int,
@@ -34,6 +44,15 @@ class FullyConnectedBlock(nn.Module):
     
     def forward(self,
                 x: Tensor) -> Tensor:
+        """
+        Passes the input through the layer.
+
+        Args:
+            x (Tensor): Input tensor.
+
+        Returns:
+            Tensor: Output tensor after applying the fully connected block.
+        """
 
         x = self.fc(x)
         x = self.activation(x)
@@ -41,7 +60,20 @@ class FullyConnectedBlock(nn.Module):
 
         return x
 
+
 class FullyConnectedNetwork(nn.Module):
+    """
+    A fully connected neural network consisting of multiple FullyConnectedBlock layers
+    and a final linear projection. The network can be customized with various activation
+    functions and dropout probabilities for each layer.
+
+    Args:
+        input_dim (int): Dimension of the input features.
+        hidden_dims (Iterable[int]): Dimensions of the hidden layers.
+        output_dim (int): Dimension of the output features.
+        activation (nn.Module): Activation function to apply after each hidden layer.
+        dropout (Union[float, Iterable[float]]): Dropout probabilities for each hidden layer.
+    """
 
     def __init__(self,
                  input_dim: int,
@@ -113,6 +145,15 @@ class FullyConnectedNetwork(nn.Module):
     
     def forward(self,
                 x: Tensor) -> Tensor:
+        """
+        Passes the input through the network layers.
+
+        Args:
+            x (Tensor): Input tensor.
+
+        Returns:
+            Tensor: Output tensor after passing through the network.
+        """
 
         if self.fc_layers is not None:
             for fc_layer in self.fc_layers:
