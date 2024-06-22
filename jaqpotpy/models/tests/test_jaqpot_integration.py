@@ -2,7 +2,7 @@
 Tests for Jaqpot Integration.
 """
 import unittest
-from jaqpotpy.datasets import MolecularTabularDataset, TorchGraphDataset, SmilesDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
     , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
@@ -77,7 +77,7 @@ class TestJaqpotIntegration(unittest.TestCase):
     @unittest.skip("Test needs refactoring")
     def test_classification_sklearn_deploy(self):
         featurizer = TopologicalFingerprint()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
 
         val = Evaluator()
         val.register_scoring_function('Accuracy', accuracy_score)

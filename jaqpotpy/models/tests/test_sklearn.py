@@ -15,7 +15,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from jaqpotpy.descriptors.molecular import MordredDescriptors,RDKitDescriptors,TopologicalFingerprint
-from jaqpotpy.datasets import SmilesDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import MolecularSKLearn
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models import Evaluator
@@ -121,7 +121,7 @@ class TestModels(unittest.TestCase):
         Test the probability prediction of an SVC model using RDKit descriptors for classification.
         """
         featurizer = RDKitDescriptors()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
         model = SVC(probability=True)
         molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
@@ -133,7 +133,7 @@ class TestModels(unittest.TestCase):
         Test the evaluation of an SVC model using various scoring functions for regression.
         """
         featurizer = RDKitDescriptors()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='regression', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='regression', featurizer=featurizer)
         model = SVC(probability=True)
 
         val = Evaluator()
@@ -182,7 +182,7 @@ class TestModels(unittest.TestCase):
         import onnxruntime as rt
 
         featurizer = TopologicalFingerprint()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
 
         regression_estimators = all_estimators(type_filter='regressor')
 
@@ -242,7 +242,7 @@ class TestModels(unittest.TestCase):
         import onnxruntime as rt
 
         featurizer = RDKitDescriptors()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
 
         from sklearn.gaussian_process import GaussianProcessRegressor
         from sklearn.linear_model import LinearRegression, GammaRegressor, ARDRegression
@@ -277,7 +277,7 @@ class TestModels(unittest.TestCase):
         import onnxruntime as rt
 
         featurizer = TopologicalFingerprint()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
 
         classification_estimators = all_estimators(type_filter='classifier')
 
@@ -331,7 +331,7 @@ class TestModels(unittest.TestCase):
         import onnxruntime as rt
 
         featurizer = TopologicalFingerprint()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
         val = Evaluator()
         val.dataset = dataset
 

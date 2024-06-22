@@ -2,7 +2,7 @@
 Tests for Jaqpotpy Models.
 """
 import unittest
-from jaqpotpy.datasets import MolecularTabularDataset, TorchGraphDataset, SmilesDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
     , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
@@ -110,7 +110,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , x_cols=['molregno', 'organism']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
@@ -131,7 +131,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           # , x_cols=['molregno', 'organism']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
@@ -153,7 +153,7 @@ class TestModels(unittest.TestCase):
     def test_model_rdkit_pickle_2(self):
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -174,7 +174,7 @@ class TestModels(unittest.TestCase):
     def test_model_fingerprint_pickle(self):
         featurizer = TopologicalFingerprint()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -194,7 +194,7 @@ class TestModels(unittest.TestCase):
     def test_model_fingerprint_pickle_2(self):
         featurizer = TopologicalFingerprint()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -210,7 +210,7 @@ class TestModels(unittest.TestCase):
     def test_model_topological_fingerprint_pickle(self):
         featurizer = TopologicalFingerprint()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -225,7 +225,7 @@ class TestModels(unittest.TestCase):
     def test_model_rdkit_pickle(self):
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -239,7 +239,7 @@ class TestModels(unittest.TestCase):
     def test_model_top_pickle(self):
         featurizer = TopologicalFingerprint()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -255,7 +255,7 @@ class TestModels(unittest.TestCase):
         featurizer = MordredDescriptors(ignore_3D=True)
         # featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , x_cols=['molregno', 'organism']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
@@ -277,7 +277,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , x_cols=['molregno']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
@@ -296,7 +296,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=False)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -315,7 +315,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=False)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -336,7 +336,7 @@ class TestModels(unittest.TestCase):
     def test_model_pre(self):
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -372,7 +372,7 @@ class TestModels(unittest.TestCase):
     def test_model_save(self):
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -433,7 +433,7 @@ class TestModels(unittest.TestCase):
     def test_model_pre_torch(self):
         featurizer = MordredDescriptors(ignore_3D=True)
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -483,7 +483,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=featurizer, task="classification")
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, featurizer=featurizer, task="classification")
         # dataset = MolecularTabularDataset(path=path
         #                                   , y_cols=['standard_value']
         #                                   , smiles_col='canonical_smiles'

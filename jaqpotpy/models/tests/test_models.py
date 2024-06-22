@@ -2,7 +2,7 @@
 Tests for Jaqpotpy Models.
 """
 import unittest
-from jaqpotpy.datasets import MolecularTabularDataset, TorchGraphDataset, SmilesDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
     , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
@@ -158,7 +158,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=featurizer, task="classification")
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, featurizer=featurizer, task="classification")
         # dataset = MolecularTabularDataset(path=path
         #                                   , y_cols=['standard_value']
         #                                   , smiles_col='canonical_smiles'
@@ -215,7 +215,7 @@ class TestModels(unittest.TestCase):
         cid = create_char_to_idx(self.mols)
         max_len = 250
         feat = OneHotSequence(max_length=80)
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, featurizer=feat, task='regression')
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys_regr, featurizer=feat, task='regression')
         dataset.create()
 
         val = Evaluator()
@@ -255,7 +255,7 @@ class TestModels(unittest.TestCase):
     @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_rnn_class(self):
         feat = OneHotSequence(max_length=80)
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
         dataset.create()
 
         val = Evaluator()
@@ -289,7 +289,7 @@ class TestModels(unittest.TestCase):
     def test_RNN_J_regression(self):
 
         feat = OneHotSequence(max_length=80)
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, featurizer=feat, task='regression')
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys_regr, featurizer=feat, task='regression')
         dataset.create()
 
         val = Evaluator()
@@ -329,7 +329,7 @@ class TestModels(unittest.TestCase):
     @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_RNN_J_class(self):
         feat = OneHotSequence(max_length=80)
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
         dataset.create()
 
         val = Evaluator()
@@ -360,7 +360,7 @@ class TestModels(unittest.TestCase):
     @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")  
     def test_topf_class(self):
         feat = TopologicalFingerprint()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
         dataset.create()
 
         val = Evaluator()
@@ -392,7 +392,7 @@ class TestModels(unittest.TestCase):
     @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     def test_cnn_class(self):
         feat = SmilesToImage(img_size=60)
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, featurizer=feat, task='classification')
         dataset.create()
 
         val = Evaluator()

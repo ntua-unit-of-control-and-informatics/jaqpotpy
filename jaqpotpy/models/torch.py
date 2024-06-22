@@ -4,7 +4,7 @@ from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Union
 import pandas as pd
 import pickle
-from jaqpotpy.datasets import MolecularTabularDataset, Dataset, TorchGraphDataset, SmilesDataset, MolecularDataset, CompositionDataset, StructureDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import Evaluator, Preprocesses
 import torch
 from torch.utils.data import DataLoader

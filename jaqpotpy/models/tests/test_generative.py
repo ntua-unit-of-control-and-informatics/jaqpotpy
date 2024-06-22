@@ -1,5 +1,5 @@
 import unittest
-from jaqpotpy.datasets.molecular_datasets import SmilesDataset
+from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MolGanFeaturizer, GraphMatrix
 from jaqpotpy.models.evaluator import GenerativeEvaluator
 from jaqpotpy.models.generative.models import GanMoleculeGenerator\
@@ -142,7 +142,7 @@ class TestModels(unittest.TestCase):
     @unittest.skip("This test should not be placed here")  
     def test_dataset(self, max_atoms=40, length=100):
         featurizer = MolGanFeaturizer(max_atom_count=max_atoms, kekulize=True, sanitize=True)
-        self.dataset = SmilesDataset(smiles=self.smiles[0:length], task="generation", featurizer=featurizer)
+        self.dataset = JaqpotpyDataset(smiles=self.smiles[0:length], task="generation", featurizer=featurizer)
         self.dataset.create()
         # for s in self.smiles:
         #     from jaqpotpy.cfg import config
@@ -313,7 +313,7 @@ class TestModels(unittest.TestCase):
             except Exception as e:
                 continue
         featurizer = MolGanFeaturizer(max_atom_count=10, kekulize=True, sanitize=True, atom_labels=[0, 6, 7, 8, 9, 5])
-        self.dataset = SmilesDataset(smiles=smiles_gen[1000:5000], task="generation", featurizer=featurizer)
+        self.dataset = JaqpotpyDataset(smiles=smiles_gen[1000:5000], task="generation", featurizer=featurizer)
         self.dataset.create()
         generator = GanMoleculeGenerator([128, 256, 524], 8, max_atoms, 5, atoms_encoded, 0.5)
         discriminator = MoleculeDiscriminator([[128, 64], 128, [128, 64]], atoms_encoded, 5 - 1, 0.5)
@@ -352,7 +352,7 @@ class TestModels(unittest.TestCase):
         for stt in smiles_gen[12000:13969]:
             smiles_test.append(stt)
 
-        self.dataset = SmilesDataset(smiles=smiles_train, task="generation", featurizer=featurizer)
+        self.dataset = JaqpotpyDataset(smiles=smiles_train, task="generation", featurizer=featurizer)
         self.dataset.create()
         generator = GanMoleculeGenerator([128, 256, 524], 8, max_atoms, 5, atoms_encoded, 0.5)
         discriminator = MoleculeDiscriminator([[128, 64], 128, [128, 64]], atoms_encoded, 5 - 1, 0.5)
@@ -414,7 +414,7 @@ class TestModels(unittest.TestCase):
         for stt in smiles_gen[4000:4500]:
             smiles_test.append(stt)
 
-        self.dataset = SmilesDataset(smiles=smiles_train, task="generation", featurizer=featurizer)
+        self.dataset = JaqpotpyDataset(smiles=smiles_train, task="generation", featurizer=featurizer)
         self.dataset.create()
         generator = GanMoleculeGenerator([128, 256, 524], 8, max_atoms, 5, atoms_encoded, 0.5)
         discriminator = MoleculeDiscriminator([[128, 64], 128, [128, 64]], atoms_encoded, 5 - 1, 0.5)
