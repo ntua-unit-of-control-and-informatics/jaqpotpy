@@ -2,7 +2,7 @@
 Tests for Jaqpotpy Models.
 """
 import unittest
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotpyDataset, TorchGraphDataset
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
     , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
