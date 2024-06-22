@@ -273,9 +273,9 @@ class GraphAttentionNetwork(nn.Module):
 
 class GraphAttentionNetworkWithExternal(nn.Module):
     """
-    A graph attention network that integrates external features.
-    Combines the output from a graph attention network with external features
-    and processes them through a fully connected network.
+    A Graph Attention Network that integrates external features.
+    Combines the output from a Graph Attention Network with external features
+    and processes them through a Fully Connected Network.
 
     Args:
         graph_input_dim (int): Dimension of the input node features for the graph.

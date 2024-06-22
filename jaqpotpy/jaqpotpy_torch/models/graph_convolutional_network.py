@@ -239,6 +239,27 @@ class GraphConvolutionalNetwork(nn.Module):
 
 
 class GraphConvolutionalNetworkWithExternal(nn.Module):
+    """
+    A Graph Convolutional Network that integrates external features.
+    Combines the output from a Graph Convolutional Network with external features
+    and processes them through a Fully Connected Network.
+
+    Args:
+        graph_input_dim (int): Dimension of the input node features for the graph.
+        num_external_features (int): Number of external features.
+        graph_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the graph.
+        fc_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the fully connected network.
+        graph_output_dim (int): Dimension of the graph output features.
+        output_dim (int): Dimension of the final output features.
+        graph_activation (nn.Module): Activation function for graph layers.
+        graph_dropout (Union[float, Iterable[float]]): Dropout probability for graph layers.
+        graph_norm (bool): Whether to apply graph normalization in the graph layers.
+        graph_pooling (str): Type of pooling to apply in the graph layers ('mean', 'add', 'max').
+        fc_dropout (Union[float, Iterable[float]]): Dropout probability for fully connected layers.
+        fc_activation (nn.Module): Activation function for fully connected layers.
+        jittable (bool): Whether to make the GCNConv modules jittable.
+    """
+    
     def __init__(self,
                  graph_input_dim: int,
                  num_external_features: int,
