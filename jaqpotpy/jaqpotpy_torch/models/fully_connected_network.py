@@ -1,3 +1,8 @@
+"""
+Author: Ioannis Pitoskas
+Contact: jpitoskas@gmail.com
+"""
+
 import torch.nn as nn
 from typing import Optional, Iterable, Union
 import torch.nn.init as init
