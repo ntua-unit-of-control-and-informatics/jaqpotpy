@@ -17,14 +17,14 @@ import jaqpotpy
 
 class MolecularTorch(Model):
 
-    def __init__(self, dataset: MolecularDataset, model_nn: torch.nn.Module
+    def __init__(self, dataset: JaqpotpyDataset, model_nn: torch.nn.Module
                  , doa: DOA = None
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu', test_metric=(None, 'minimize')):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
-        self.dataset: MolecularDataset = dataset
+        self.dataset: JaqpotpyDataset = dataset
         self.model_nn = model_nn
         self.doa = doa
         self.doa_m = None
@@ -283,7 +283,7 @@ class MaterialTorch(Model):
                  , criterion: torch.nn.Module = None, optimizer: Any = None
                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, device: str = 'cpu'):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
-        self.dataset: MolecularDataset = dataset
+        self.dataset: JaqpotpyDataset = dataset
         self.model_nn = model_nn
         self.doa = doa
         self.doa_m = None

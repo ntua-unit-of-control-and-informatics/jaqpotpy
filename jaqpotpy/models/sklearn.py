@@ -1,7 +1,7 @@
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from typing import Any, Union, Dict, Optional
-from jaqpotpy.datasets import MolecularDataset
+from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 from jaqpotpy.datasets.material_datasets import CompositionDataset, StructureDataset
 from jaqpotpy.models import Evaluator, Preprocesses, MolecularModel, MaterialModel
 import sklearn
@@ -15,7 +15,7 @@ import numpy as np
 
 class MolecularSKLearn(Model):
 
-    def __init__(self, dataset: MolecularDataset, doa: DOA, model: Any
+    def __init__(self, dataset: JaqpotpyDataset, doa: DOA, model: Any
                  , eval: Evaluator = None, preprocess: Preprocesses = None):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
         self.dataset = dataset

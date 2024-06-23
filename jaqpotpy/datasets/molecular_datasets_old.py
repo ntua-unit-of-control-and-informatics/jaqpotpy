@@ -1,5 +1,5 @@
 
-from jaqpotpy.datasets.dataset_base import MolecularDataset
+from jaqpotpy.datasets.dataset_base import BaseDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 try:
     from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer, TorchMolGraphConvFeaturizer
@@ -14,7 +14,7 @@ import pickle
 from torch.utils.data import Dataset
 
 
-class MolecularTabularDataset(MolecularDataset):
+class MolecularTabularDataset(BaseDataset):
     """
     Reads CSV with smiles, experimental features and endpoints
     """
@@ -112,7 +112,7 @@ class MolecularTabularDataset(MolecularDataset):
         return self.__class__.__name__
 
 
-class TorchGraphDataset(MolecularDataset, Dataset):
+class TorchGraphDataset(BaseDataset):
     """
     Init with smiles and y array
     """
@@ -209,7 +209,7 @@ class TorchGraphDataset(MolecularDataset, Dataset):
         return self.__class__.__name__
 
 
-class SmilesDataset(MolecularDataset):
+class SmilesDataset(BaseDataset):
     """
     Init with smiles and y array
     """
