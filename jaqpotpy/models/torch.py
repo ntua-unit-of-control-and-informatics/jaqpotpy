@@ -4,6 +4,7 @@ from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Union
 import pandas as pd
 import pickle
+from jaqpotpy.datasets.dataset_base import BaseDataset
 from jaqpotpy.datasets.material_datasets import CompositionDataset, StructureDataset
 from jaqpotpy.models import Evaluator, Preprocesses
 import torch
@@ -17,7 +18,7 @@ import jaqpotpy
 
 class MolecularTorch(Model):
 
-    def __init__(self, dataset: JaqpotpyDataset, model_nn: torch.nn.Module
+    def __init__(self, dataset: BaseDataset, model_nn: torch.nn.Module
                  , doa: DOA = None
                  , eval: Evaluator = None, preprocess: Preprocesses = None
                  , dataLoaderParams: Any = None, epochs: int = None
