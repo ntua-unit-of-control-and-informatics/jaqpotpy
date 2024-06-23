@@ -473,7 +473,7 @@ class MaterialModel(Model):
                 self._prediction = []
 
             # if self.doa:
-            #     self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+            #     self.doa_fitted = self.doa.fit(X=self.dataset.__get_X__())
 
             try:
                 if self.preprocessing:

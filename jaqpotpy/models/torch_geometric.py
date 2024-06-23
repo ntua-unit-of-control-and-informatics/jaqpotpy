@@ -29,7 +29,7 @@ import jaqpotpy
 #         self.dataset: TorchGraphDataset = dataset
 #         self.model_nn = model_nn
 #         self.doa = doa
-#         self.doa_m = None
+#         self.doa_fitted = None
 #         self.external = None
 #         self.evaluator: Evaluator = eval
 #         self.preprocess: Preprocesses = preprocess
@@ -58,7 +58,7 @@ import jaqpotpy
 #         steps = self.epochs * 0.1
 #         if self.doa:
 #             if self.doa.__name__ == 'SmilesLeverage':
-#                 self.doa_m = self.doa.fit(self.dataset.smiles)
+#                 self.doa_fitted = self.doa.fit(self.dataset.smiles)
 #             else:
 #                 print("Only SmilesLeverage is suported for graph models")
 #         if len(self.dataset.df) > 0:
@@ -199,7 +199,7 @@ class MolecularTorchGeometric(Model):
         self.dataset: TorchGraphDataset = dataset
         self.model_nn = model_nn
         self.doa = doa
-        self.doa_m = None
+        self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
         self.preprocess: Preprocesses = preprocess
@@ -237,7 +237,7 @@ class MolecularTorchGeometric(Model):
         steps = self.epochs * 0.1
         if self.doa:
             if self.doa.__name__ == 'SmilesLeverage':
-                self.doa_m = self.doa.fit(self.dataset.smiles)
+                self.doa_fitted = self.doa.fit(self.dataset.smiles)
             else:
                 print("Only SmilesLeverage is suported for graph models")
         if len(self.dataset.df) > 0:
@@ -501,7 +501,7 @@ class MolecularTorchGeometric(Model):
 #         self.dataset: TorchGraphDataset = dataset
 #         self.model_nn = model_nn
 #         self.doa = doa
-#         self.doa_m = None
+#         self.doa_fitted = None
 #         self.external = None
 #         self.evaluator: Evaluator = eval
 #         self.preprocess: Preprocesses = preprocess
@@ -526,7 +526,7 @@ class MolecularTorchGeometric(Model):
 #     def fit(self):
 #         if self.doa:
 #             if self.doa.__name__ == 'SmilesLeverage':
-#                 self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+#                 self.doa_fitted = self.doa.fit(self.dataset.smiles_strings)
 #             else:
 #                 print("Only SmilesLeverage is suported for graph models")
 #         if self.dataset.df is not None:
@@ -623,7 +623,7 @@ class MolecularTorchGeometric(Model):
 #         self.dataset: TorchGraphDataset = dataset
 #         self.model_nn = model_nn
 #         self.doa = doa
-#         self.doa_m = None
+#         self.doa_fitted = None
 #         self.external = None
 #         self.evaluator: Evaluator = eval
 #         self.preprocess: Preprocesses = preprocess
@@ -648,7 +648,7 @@ class MolecularTorchGeometric(Model):
 #     def fit(self):
 #         if self.doa:
 #             if self.doa.__name__ == 'SmilesLeverage':
-#                 self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+#                 self.doa_fitted = self.doa.fit(self.dataset.smiles_strings)
 #             else:
 #                 print("Only SmilesLeverage is suported for graph models")
 #         if self.dataset.df is not None:

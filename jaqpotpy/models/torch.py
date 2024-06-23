@@ -28,7 +28,7 @@ class MolecularTorch(Model):
         self.dataset: BaseDataset = dataset
         self.model_nn = model_nn
         self.doa = doa
-        self.doa_m = None
+        self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
         self.preprocess: Preprocesses = preprocess
@@ -66,9 +66,9 @@ class MolecularTorch(Model):
         if self.doa:
             if self.doa:
                 if self.doa.__name__ == 'SmilesLeverage':
-                    self.doa_m = self.doa.fit(self.dataset.smiles)
+                    self.doa_fitted = self.doa.fit(self.dataset.smiles)
                 else:
-                    self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+                    self.doa_fitted = self.doa.fit(X=self.dataset.__get_X__())
         if self.dataset.df is not None:
             pass
         else:
@@ -287,7 +287,7 @@ class MaterialTorch(Model):
         self.dataset: BaseDataset = dataset
         self.model_nn = model_nn
         self.doa = doa
-        self.doa_m = None
+        self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
         self.preprocess: Preprocesses = preprocess
@@ -317,9 +317,9 @@ class MaterialTorch(Model):
         if self.doa:
             if self.doa:
                 if self.doa.__name__ == 'SmilesLeverage':
-                    self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+                    self.doa_fitted = self.doa.fit(self.dataset.smiles_strings)
                 else:
-                    self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+                    self.doa_fitted = self.doa.fit(X=self.dataset.__get_X__())
         if self.dataset.df is not None:
             pass
         else:
