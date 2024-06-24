@@ -117,11 +117,11 @@ class BaseDataset(ABC):
         self._dataset_name = value
 
     @property
-    def x(self) -> Iterable[str]:
+    def X(self) -> Iterable[str]:
         return self._x
 
-    @x.setter
-    def x(self, value):
+    @X.setter
+    def X(self, value):
         self._x = value
 
     @property

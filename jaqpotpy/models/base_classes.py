@@ -51,10 +51,6 @@ class Model(object):
         self._smiles = values
 
     @property
-    def external(self):
-        return self._external
-
-    @property
     def descriptors(self):
         return self._descriptors
 
@@ -117,14 +113,6 @@ class Model(object):
     @Y.setter
     def Y(self, value):
         self._Y = value
-
-    @property
-    def external(self) -> dict:
-        return self._external
-
-    @external.setter
-    def external(self, value):
-        self._external = value
 
     @property
     def external_feats(self) -> Iterable[str]:
@@ -226,9 +214,8 @@ class Model(object):
 
 class MolecularModel(Model):
 
-    def __call__(self, smiles, external=None):
+    def __call__(self, smiles):
         self._smiles = smiles
-        self._external = external
         self.infer()
 
     def save(self):
@@ -274,9 +261,6 @@ class MolecularModel(Model):
             else:
                 data = self._descriptors.featurize_dataframe(self._smiles)
 
-            if self.external:
-                ext = pd.DataFrame.from_dict(self.external)
-                data = pd.concat([data, ext], axis=1)
             graph_data_list = []
 
             # if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
@@ -428,7 +412,7 @@ class MolecularModel(Model):
 
 class MaterialModel(Model):
 
-    def __call__(self, compositions: Iterable[str] = None, structures: Union[Iterable[Structure], Iterable[Dict]] = None, external=None):
+    def __call__(self, compositions: Iterable[str] = None, structures: Union[Iterable[Structure], Iterable[Dict]] = None):
         if compositions:
             if structures:
                 raise ValueError('Both compositions and structures were passed. Please provide one of them.')
@@ -438,7 +422,6 @@ class MaterialModel(Model):
         else:
             self.__type_mat__ = 'structure'
             self._materials = structures
-        self._external = external
         self.infer()
 
     def save(self):
@@ -458,7 +441,6 @@ class MaterialModel(Model):
         self._prediction = []
         self._probability = []
         if self._materials:
-            ext = pd.DataFrame.from_dict(self.external)
             data = self._descriptors.featurize_dataframe(self._materials)
             data = pd.concat([data, ext], axis=1)
             graph_data_list = []

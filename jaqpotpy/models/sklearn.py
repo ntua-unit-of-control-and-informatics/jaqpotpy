@@ -15,14 +15,12 @@ import numpy as np
 
 class MolecularSKLearn(Model):
 
-    def __init__(self, dataset: JaqpotpyDataset, doa: DOA, model: Any
-                 , eval: Evaluator = None, preprocess: Preprocesses = None):
-        # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
+    def __init__(self, dataset: JaqpotpyDataset, doa: DOA, model: Any,
+                  eval: Evaluator = None, preprocess: Preprocesses = None):
         self.dataset = dataset
         self.model = model
         self.doa = doa
-        self.doa_m = None
-        self.external = None
+        self.doa_fitted = None
         self.evaluator: Evaluator = eval
         self.preprocess: Preprocesses = preprocess
         self.trained_model = None
@@ -33,19 +31,14 @@ class MolecularSKLearn(Model):
 
     def fit(self):
         model = MolecularModel()
-        if self.dataset.df is not None:
-            pass
-        else:
-            self.dataset.create()
-        # if not self.dataset.df.empy:
-        #     self.dataset.create()
-        # else:
-        #     pass
-        if self.doa:
-            self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
         X = self.dataset.__get_X__()
-        y = self.dataset.__get_Y__()
+        y = self.dataset.__get_Y__().ravel()
+
+        if self.doa:
+            self.doa_fitted = self.doa.fit(X=X)
+        
         if self.preprocess:
+            # Apply preprocessing on design matrix X
             pre_keys = self.preprocess.classes.keys()
             preprocess_names = []
             preprocess_classes = []
@@ -58,6 +51,7 @@ class MolecularSKLearn(Model):
             model.preprocessing = preprocess_classes
             model.preprocessor_names = preprocess_names
 
+            # Apply preprocessing of response vector y
             pre_y_keys = self.preprocess.classes_y.keys()
             preprocess_names_y = []
             preprocess_classes_y = []
@@ -86,7 +80,6 @@ class MolecularSKLearn(Model):
         model.version = [sklearn.__version__]
         model.jaqpotpy_version = jaqpotpy.__version__
         model.jaqpotpy_docker = config.jaqpotpy_docker
-        model.external_feats = self.dataset.external
         model.inference_model = self.__convert_to_onnx__(X.shape[1])
         self.inference_model = model.inference_model
         if self.evaluator:
@@ -102,7 +95,7 @@ class MolecularSKLearn(Model):
                               verbose=0)
         return res
 
-    def __predict__(self, X):
+    def predict(self, X):
         pre_keys = self.preprocess.fitted_classes.keys()
         for pre_key in pre_keys:
             pre_function = self.preprocess.fitted_classes.get(pre_key)
@@ -164,7 +157,7 @@ class MaterialSKLearn(Model):
         self.dataset = dataset
         self.model = model
         self.doa = doa
-        self.doa_m = None
+        self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
         self.preprocess: Preprocesses = preprocess
@@ -185,7 +178,7 @@ class MaterialSKLearn(Model):
         self.dataset.df.fillna(self.fillna, inplace=True)
 
         if self.doa:
-            self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+            self.doa_fitted = self.doa.fit(X=self.dataset.__get_X__())
 
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
@@ -228,7 +221,7 @@ class MaterialSKLearn(Model):
             self.__eval__()
         return model
 
-    def __predict__(self, X):
+    def predict(self, X):
         pre_keys = self.preprocess.fitted_classes.keys()
         for pre_key in pre_keys:
             pre_function = self.preprocess.fitted_classes.get(pre_key)
