@@ -6,7 +6,7 @@ import pandas as pd
 import pickle
 from jaqpotpy.datasets.dataset_base import BaseDataset
 from jaqpotpy.datasets.material_datasets import CompositionDataset, StructureDataset
-from jaqpotpy.models import Evaluator, Preprocesses
+from jaqpotpy.models import Evaluator, Preprocess
 import torch
 from torch.utils.data import DataLoader
 from jaqpotpy.models import MolecularModel, MaterialModel
@@ -20,7 +20,7 @@ class MolecularTorch(Model):
 
     def __init__(self, dataset: BaseDataset, model_nn: torch.nn.Module
                  , doa: DOA = None
-                 , eval: Evaluator = None, preprocess: Preprocesses = None
+                 , eval: Evaluator = None, preprocess: Preprocess = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu', test_metric=(None, 'minimize')):
@@ -31,7 +31,7 @@ class MolecularTorch(Model):
         self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
-        self.preprocess: Preprocesses = preprocess
+        self.preprocess: Preprocess = preprocess
         self.train_batch = train_batch
         self.test_batch = test_batch
         self.trainDataLoaderParams = {'batch_size': self.train_batch, 'shuffle': False, 'num_workers': 0}
@@ -279,7 +279,7 @@ class MaterialTorch(Model):
 
     def __init__(self, dataset: Union[CompositionDataset, StructureDataset], model_nn: torch.nn.Module
                  , doa: DOA = None
-                 , eval: Evaluator = None, preprocess: Preprocesses = None
+                 , eval: Evaluator = None, preprocess: Preprocess = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, device: str = 'cpu'):
@@ -290,7 +290,7 @@ class MaterialTorch(Model):
         self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
-        self.preprocess: Preprocesses = preprocess
+        self.preprocess: Preprocess = preprocess
         self.train_batch = train_batch
         self.test_batch = test_batch
         self.trainDataLoaderParams = {'batch_size': self.train_batch, 'shuffle': False, 'num_workers': 0}

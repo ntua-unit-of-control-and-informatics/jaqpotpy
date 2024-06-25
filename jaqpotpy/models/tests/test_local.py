@@ -14,7 +14,7 @@ from sklearn.linear_model import LinearRegression
 import asyncio
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models.evaluator import Evaluator
-from jaqpotpy.models.preprocessing import Preprocesses
+from jaqpotpy.models.preprocessing import Preprocess
 from sklearn.metrics import max_error, mean_absolute_error, r2_score, accuracy_score, f1_score, roc_auc_score
 from sklearn.preprocessing import StandardScaler
 import torch
@@ -346,7 +346,7 @@ class TestModels(unittest.TestCase):
         val.register_scoring_function('Max Error', max_error)
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
-        pre = Preprocesses()
+        pre = Preprocess()
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
         model = LinearRegression()
@@ -382,7 +382,7 @@ class TestModels(unittest.TestCase):
         val.register_scoring_function('Max Error', max_error)
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
-        pre = Preprocesses()
+        pre = Preprocess()
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         model = LinearRegression()
         molecularModel_t7 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=val,
