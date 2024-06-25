@@ -1,7 +1,7 @@
 from typing import Dict, Callable
 
 
-class Preprocesses:
+class Preprocess:
 
     classes: Dict[str, Callable] = {}
     fitted_classes:  Dict[str, Callable] = {}
