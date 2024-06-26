@@ -35,6 +35,7 @@ class RegressionModelTrainer(TorchModelTrainer):
             n_epochs, 
             optimizer, 
             loss_fn, 
+            scheduler=None, 
             device='cpu', 
             use_tqdm=True,
             log_enabled=True,
@@ -48,6 +49,7 @@ class RegressionModelTrainer(TorchModelTrainer):
             n_epochs=n_epochs,
             optimizer=optimizer,
             loss_fn=loss_fn,
+            scheduler=scheduler,
             device=device,
             use_tqdm=use_tqdm,
             log_enabled=log_enabled,
@@ -89,6 +91,9 @@ class RegressionModelTrainer(TorchModelTrainer):
                 val_loss, val_metrics_dict = self.evaluate(val_loader)
                 if self.log_enabled:
                     self._log_metrics(val_loss, metrics_dict=val_metrics_dict, mode='val')
+            
+            self.scheduler.step()
+            
 
     def _train_one_epoch(self, train_loader):
         """
