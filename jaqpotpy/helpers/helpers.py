@@ -5,7 +5,8 @@ from jaqpotpy.cfg import config
 
 from jaqpotpy.helpers.builders import FeatureBuilder,\
     FeatureDirector, DataEntryBuilder, DataEntryDirector,\
-    PretrainedNeedsDirector, PretrainedNeedsBuilder, DoaDirector, DoaBuilder
+    PretrainedNeedsDirector, PretrainedNeedsDirector_v2,\
+    PretrainedNeedsBuilder, PretrainedNeedsBuilder_v2, DoaDirector, DoaBuilder
 
 
 def create_feature(feat_title, creator):
@@ -105,6 +106,26 @@ def create_molecular_req(model, title, description, type):
     pnb.setType(type)
     pnb.setRuntime('jaqpotpy')
     director = PretrainedNeedsDirector()
+    return director.construct(pnb)
+
+def create_molecular_req_v2(model, title, description):
+    pnb = PretrainedNeedsBuilder_v2()
+    independentFeatures = []
+    independentFeatures.append("Smiles")
+    if isinstance(model.Y, list):
+        dependentFeatures = model.Y
+    else:
+        dependentFeatures = [model.Y]
+    pnb.setActualModel(model)
+    pnb.setJaqpotPyVersion(jaqpotpy.__version__)
+    pnb.setLibraries(model.library)
+    pnb.setDependentFeatures(dependentFeatures)
+    pnb.setVisibility('PUBLIC')
+    pnb.setIndependentFeatures(independentFeatures)
+    pnb.setDescription(description)
+    pnb.setName(title)
+    pnb.setType("SKLEARN")
+    director = PretrainedNeedsDirector_v2()
     return director.construct(pnb)
 
 
