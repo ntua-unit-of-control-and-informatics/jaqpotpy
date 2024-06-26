@@ -15,6 +15,7 @@ from typing import List, Optional, Union
 from jaqpotpy.schemas import Feature, Library, Organization
 from jaqpotpy.utils import get_installed_packages
 import inspect
+from torch.optim.lr_scheduler import LambdaLR
 
 
 class TorchModelTrainerMeta(ABCMeta):
@@ -38,6 +39,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         n_epochs (int): Number of training epochs.
         optimizer (torch.optim.Optimizer): The optimizer used for training the model.
         loss_fn (torch.nn.Module): The loss function used for training.
+        scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
         device (str, optional): The device on which to train the model. Default is 'cpu'.
         use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
         log_enabled (bool, optional): Whether logging is enabled. Default is True.
@@ -57,6 +59,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
                  n_epochs,
                  optimizer,
                  loss_fn,
+                 scheduler=None,
                  device='cpu',
                  use_tqdm=True,
                  log_enabled=True,
@@ -67,6 +70,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
             loss_fn (torch.nn.Module): The loss function used for training.
+            scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
             device (str, optional): The device on which to train the model. Default is 'cpu'.
             use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
             log_enabled (bool, optional): Whether logging is enabled. Default is True.
@@ -76,6 +80,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         self.model = model
         self.n_epochs = n_epochs
         self.optimizer = optimizer
+        self.scheduler = scheduler if scheduler is not None else LambdaLR(optimizer, lr_lambda=lambda epoch: 1)
         self.loss_fn = loss_fn
         self.device = torch.device(device)
         self.use_tqdm = use_tqdm
