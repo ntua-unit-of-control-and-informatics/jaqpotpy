@@ -190,8 +190,8 @@ class GraphTransformerNetwork(nn.Module):
         self.graph_layers = nn.ModuleList() 
         graph_layer = GraphTransformerBlock(input_dim, hidden_dims[0],
                                           heads=self.heads[0],
-                                          activation=activation,
                                           edge_dim=edge_dim,
+                                          activation=activation,
                                           dropout_probability=self.dropout_probabilities[0],
                                           graph_norm=graph_norm,
                                           jittable=jittable)

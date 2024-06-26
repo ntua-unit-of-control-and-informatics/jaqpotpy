@@ -179,6 +179,7 @@ class GraphAttentionNetwork(nn.Module):
         self.input_dim = input_dim
         self.hidden_dims = hidden_dims
         self.heads = [heads]*len(hidden_dims) if isinstance(heads, int) else heads
+        self.edge_dim = edge_dim
         self.output_dim = output_dim
         self.dropout_probabilities = [dropout]*len(hidden_dims) if isinstance(dropout, float) else dropout
         self.graph_norm = graph_norm
@@ -200,8 +201,8 @@ class GraphAttentionNetwork(nn.Module):
         for i in range(len(hidden_dims) - 1):
             graph_layer = GraphAttentionBlock(hidden_dims[i]*self.heads[i], hidden_dims[i+1],
                                               heads=self.heads[i+1],
-                                              activation=activation,
                                               edge_dim=edge_dim,
+                                              activation=activation,
                                               dropout_probability=self.dropout_probabilities[i],
                                               graph_norm=graph_norm,
                                               jittable=jittable)
@@ -247,7 +248,7 @@ class GraphAttentionNetwork(nn.Module):
         """
         Helper method for the forward pass through graph layers and pooling.
         """
-
+        
         for graph_layer in self.graph_layers:
             x = graph_layer(x, edge_index, batch=batch, edge_attr=edge_attr)
         x = self._pooling_function(x, batch)
