@@ -9,7 +9,27 @@ import pandas as pd
 
 
 class TabularDataset(Dataset):
+    """
+    A PyTorch Dataset class for handling tabular data.
+
+    Attributes:
+        X (torch.tensor): A 2D tensor containing the feature data.
+        y (torch.tensor): A 1D tensor containing the target data.
+    """
     def __init__(self, X, y=None):
+        """
+        Initializes the TabularDataset object.
+
+        Args:
+            X (numpy.ndarray or pandas.DataFrame): Feature data.
+            y (numpy.ndarray or pandas.DataFrame, optional): Target data.
+
+        Raises:
+            ValueError: If X is not a 2D array.
+            ValueError: If y is not a 1D array.
+            ValueError: If X and y have different numbers of rows.
+        """
+        
         super().__init__()
 
         if isinstance(X, pd.DataFrame):
@@ -30,11 +50,31 @@ class TabularDataset(Dataset):
             raise ValueError("X and y must of have the same number of rows")
 
     def get_num_features(self):
+        """
+        Returns the number of features in the dataset.
+
+        Returns:
+            int: Number of features.
+        """
         return self.X.size(1)
     
     def __getitem__(self, idx):
+        """
+        Retrieves the feature and target data for a given index.
+
+        Args:
+            idx (int): Index of the data to retrieve.
+
+        Returns:
+            tuple: A tuple containing the feature and target data for the given index.
+        """
         return self.X[idx], self.y[idx]
-        # return {'X': self.X[idx], 'y': self.y[idx]}
     
     def __len__(self):
+        """
+        Returns the number of samples in the dataset.
+
+        Returns:
+            int: Number of samples.
+        """
         return self.X.size(0)
