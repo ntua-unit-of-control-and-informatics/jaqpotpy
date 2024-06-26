@@ -41,11 +41,14 @@ class SmilesGraphFeaturizer(Featurizer):
                                       "implicit_valence": lambda atom: atom.GetImplicitValence(),
                                       "chiral_tag": lambda atom: atom.GetChiralTag(), 
                                       "mass": lambda atom: (atom.GetMass()-14.5275)/9.4154}
+    """dict: Dictionary mapping atom characteristics to their respective featurization functions."""
+    
 
     SUPPORTED_BOND_CHARACTERISTICS = {"bond_type": lambda bond: bond.GetBondType(),
                                       "is_conjugated": lambda bond: bond.GetIsConjugated(),
                                       "is_in_ring": lambda bond: bond.IsInRing(),
                                       "stereo": lambda bond: bond.GetStereo()}
+    """dict: Dictionary mapping bond characteristics to their respective featurization functions."""
     
     NON_ONE_HOT_ENCODED = [
         # "formal_charge",
@@ -55,6 +58,7 @@ class SmilesGraphFeaturizer(Featurizer):
                            "is_conjugated",
                            "is_in_ring",
                            "mass"]
+    """list: Characteristics that are not categorical, and cannot be one-hot encoded"""
 
     def __init__(self, include_edge_features=True, warnings_enabled=True):
         """
@@ -63,6 +67,7 @@ class SmilesGraphFeaturizer(Featurizer):
         Args:
             include_edge_features (bool): Whether to include edge features in the featurization.
             warnings_enabled (bool): Whether to enable warnings.
+        ```
         """
         
         self.include_edge_features = include_edge_features
@@ -81,42 +86,28 @@ class SmilesGraphFeaturizer(Featurizer):
         """Returns the names of the supported bond characteristics."""
         return self.SUPPORTED_BOND_CHARACTERISTICS.keys()
     
-    def config_from_other_featurizer(self, featurizer):
-        """
-        Configures the featurizer from another SmilesGraphFeaturizer instance.
+    # def config_from_other_featurizer(self, featurizer):
+    #     """
+    #     Configures the featurizer from another SmilesGraphFeaturizer instance.
 
-        Args:
-            featurizer (Featurizer): Another SmilesGraphFeaturizer instance.
+    #     Args:
+    #         featurizer (Featurizer): Another SmilesGraphFeaturizer instance.
 
-        Returns:
-            SmilesGraphFeaturizer: The configured featurizer.
-        """
+    #     Returns:
+    #         SmilesGraphFeaturizer: The configured featurizer.
+    #     """
         
-        self.include_edge_features = featurizer.include_edge_features
+    #     self.include_edge_features = featurizer.include_edge_features
         
-        self.warnings_enabled = featurizer.warnings_enabled
+    #     self.warnings_enabled = featurizer.warnings_enabled
         
-        self.set_atom_allowable_sets(featurizer.atom_allowable_sets)
+    #     self.set_atom_allowable_sets(featurizer.atom_allowable_sets)
 
-        self.set_bond_allowable_sets(featurizer.bond_allowable_sets)
+    #     self.set_bond_allowable_sets(featurizer.bond_allowable_sets)
         
-        return self
+    #     return self
         
-    
-    # def set_atom_characteristics(self, atom_characteristics):
-    #     for key in atom_characteristics:
-    #         if key not in self.SUPPORTED_ATOM_CHARACTERISTICS.keys(): 
-    #             raise ValueError(f"Invalid atom characteristic '{key}'")
-    #     self.atom_characteristics = list(atom_characteristics)
-        
-        
-    # def set_bond_characteristics(self, bond_characteristics):
-    #     for key in bond_characteristics:
-    #         if key not in self.SUPPORTED_BOND_CHARACTERISTICS.keys(): 
-    #             raise ValueError(f"Invalid bond characteristic '{key}'")
-    #     self.bond_characteristics = list(bond_characteristics)
-    
-    
+
     def set_atom_allowable_sets(self, atom_allowable_sets_dict):
         """
         Sets the allowable sets for atom characteristics.
@@ -148,6 +139,20 @@ class SmilesGraphFeaturizer(Featurizer):
         Args:
             atom_characteristic (str): The atom characteristic name to be added.
             allowable_set (list or None): The allowable set for the atom characteristic.
+        
+        Example:
+        ```
+        >>> featurizer = SmilesGraphFeaturizer()
+        >>> featurizer.add_atom_characteristic('symbol', ['C', 'O', 'Na', 'Cl']) # categorical characteristics need allowable set of categories
+        >>> featurizer.add_atom_characteristic('is_in_ring') # allowable set is set to Nonefor non-categorical
+        >>> featurizer.atom_allowable_sets
+        {'symbol': ['C', 'O', 'Na', 'Cl'], 'is_in_ring': None}
+        ```
+
+        Notes:
+            'UNK' is used as a special keyword. When an atom characteristic is encoded and an unknown 
+            value (not in the allowable set) is encountered during featurization, it will be encoded as 'UNK'.
+            This allows handling of unexpected values by mapping them to a default or placeholder category.
         """
 
         if atom_characteristic not in self.get_supported_atom_characteristics():
@@ -175,6 +180,26 @@ class SmilesGraphFeaturizer(Featurizer):
         Args:
             bond_characteristic (str): The bond characteristic to add.
             allowable_set (list or None): The allowable set for the bond characteristic.
+
+        Example:
+        ```
+        >>> from rdkit.Chem.rdchem.BondType import SINGLE, DOUBLE, TRIPLE
+        >>> featurizer = SmilesGraphFeaturizer()
+        >>> featurizer.add_bond_characteristic('bond_type', [Chem.rdchem.BondType.SINGLE,
+                                                             Chem.rdchem.BondType.DOUBLE,
+                                                             Chem.rdchem.BondType.TRIPLE])
+        >>> featurizer.add_bond_characteristic('is_conjugated')
+        >>> featurizer.bond_allowable_sets
+        {'bond_type': [rdkit.Chem.rdchem.BondType.SINGLE,
+        rdkit.Chem.rdchem.BondType.DOUBLE,
+        rdkit.Chem.rdchem.BondType.TRIPLE],
+        'is_conjugated': None}
+        ```
+
+        Notes:
+            'UNK' is used as a special keyword. When a bond characteristic is encoded and an unknown 
+            value (not in the allowable set) is encountered during featurization, it will be encoded as 'UNK'.
+            This allows handling of unexpected values by mapping them to a default or placeholder category.
         """
 
         if bond_characteristic not in self.get_supported_bond_characteristics():
@@ -210,7 +235,7 @@ class SmilesGraphFeaturizer(Featurizer):
             if characteristic in self.NON_ONE_HOT_ENCODED:
                 atom_feature_labels.append(characteristic)
             else:
-                atom_feature_labels += [f"{characteristic}_{value}" for value in self.atom_allowable_sets[characteristic]]
+                atom_feature_labels += [f"{characteristic}.{value}" for value in self.atom_allowable_sets[characteristic]]
         
         return atom_feature_labels
     
@@ -229,7 +254,7 @@ class SmilesGraphFeaturizer(Featurizer):
             if characteristic in self.NON_ONE_HOT_ENCODED:
                 bond_feature_labels.append(characteristic)
             else:
-                bond_feature_labels += [f"{characteristic}_{value}" for value in self.bond_allowable_sets[characteristic]]
+                bond_feature_labels += [f"{characteristic}.{value}" for value in self.bond_allowable_sets[characteristic]]
         
         return bond_feature_labels
     
@@ -243,6 +268,7 @@ class SmilesGraphFeaturizer(Featurizer):
 
         Returns:
             list: The default allowable set for the atom characteristic.
+       
         """
 
         match atom_characteristic:
@@ -572,21 +598,6 @@ class SmilesGraphFeaturizer(Featurizer):
         """
         with open(filepath, "wb") as file:
             pickle.dump(self, file)
-    
-
-    def __call__(self, sm, y=None):
-        """
-        Featurizes a SMILES string into graph data.
-
-        Args:
-            sm (str): The SMILES string.
-            y: The target value (optional).
-
-        Returns:
-            torch_geometric.data.Data: The featurized data.
-        """
-        return self.featurize(sm, y)
-    
 
     def __repr__(self):
         """
