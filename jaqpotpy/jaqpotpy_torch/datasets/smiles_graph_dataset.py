@@ -10,8 +10,26 @@ import pandas as pd
 
 
 class SmilesGraphDataset(Dataset):
+    """
+    A PyTorch Dataset class for handling SMILES strings as graphs.
+
+    Attributes:
+        smiles (list): A list of SMILES strings.
+        y (list, optional): A list of target values.
+        featurizer (SmilesGraphFeaturizer): The object to transform SMILES strings into graph representations.
+        precomputed_features (list, optional): A list of precomputed features. If precompute_featurization() is not called, this attribute remains None.
+    """
 
     def __init__(self, smiles, y=None, featurizer=None):
+        """
+        Initializes the SmilesGraphDataset object.
+
+        Args:
+            smiles (list): A list of SMILES strings.
+            y (list, optional): A list of target values. Default is None
+            featurizer (SmilesGraphFeaturizer, optional): A featurizer object for to create graph representations from SMILES strings.
+        """
+
         super().__init__()
         
         self.smiles = smiles
@@ -27,19 +45,43 @@ class SmilesGraphDataset(Dataset):
 
 
     def config_from_other_dataset(self, dataset):
+        """
+        Configures the dataset instance from another dataset.
+
+        Args:
+            dataset (SmilesGraphDataset): Another dataset to copy the configuration.
+
+        Returns:
+            SmilesGraphDataset: The configured dataset.
+        """
         self.featurizer = SmilesGraphFeaturizer().config_from_other_featurizer(dataset.featurizer)
         return self
 
 
-    def get_atom_feature_labels(self):        
+    def get_atom_feature_labels(self):
+        """
+        Returns the atom feature labels.
+
+        Returns:
+            list: A list of atom feature labels.
+        """
         return self.featurizer.get_atom_feature_labels()
 
 
     def get_bond_feature_labels(self):
+        """
+        Returns the bond feature labels.
+
+        Returns:
+            list: A list of bond feature labels.
+        """
         return self.featurizer.get_bond_feature_labels()
 
 
     def precompute_featurization(self):
+        """
+        Precomputes the featurization of the dataset.
+        """
         if self.y:
             self.precomputed_features = [self.featurizer(sm, y) for sm, y, in zip(self.smiles, self.y)]
         else:
@@ -47,15 +89,40 @@ class SmilesGraphDataset(Dataset):
 
 
     def get_num_node_features(self):
+        """
+        Returns the number of node features.
+
+        Returns:
+            int: Number of node features.
+        """
         return len(self.get_atom_feature_labels())
 
 
     def get_num_edge_features(self):
+        """
+        Returns the number of edge features.
+
+        Returns:
+            int: Number of edge features.
+        """
         return len(self.get_bond_feature_labels())
 
 
     def __getitem__(self, idx):
-        
+        """
+        Retrieves the featurized graph Data object (and target value) for a given index.
+
+        Args:
+            idx (int): Index of the data to retrieve.
+
+        Returns:
+            torch_geometric.data.Data: A torch_geometric.data.Data object for this single sample containing:
+                - x (torch.Tensor): Node feature matrix with shape [num_nodes, num_node_features].
+                - edge_index (LongTensor): Graph connectivity in COO format with shape [2, num_edges].
+                - edge_attr (torch.Tensor, optional): Edge feature matrix with shape [num_edges, num_edge_features].
+                - y (torch.Tensor): Graph-level or node-level ground-truth labels with arbitrary shape.
+                - smiles (str): The SMILES string corresponding to the particular sample.
+        """
         if self.precomputed_features:
             return self.precomputed_features[idx]
         
@@ -67,13 +134,40 @@ class SmilesGraphDataset(Dataset):
 
 
     def __len__(self):
+        """
+        Returns the number of samples in the dataset.
+
+        Returns:
+            int: Number of samples.
+        """
         return len(self.smiles)
 
 
 
 
 class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
+    """
+    A PyTorch Dataset class for handling SMILES strings as graphs, along with additional external features.
+    This class inherits from SmilesGraphDataset.
+
+    Attributes:
+        smiles (list): A list of SMILES strings.
+        y (list, optional): A list of target values.
+        featurizer (SmilesGraphFeaturizer): The object to transform SMILES strings into graph representations.
+        precomputed_features (list, optional): A list of precomputed features. If precompute_featurization() is not called, this attribute remains None.
+        external (torch.Tensor): A 2D tensor containing the external features.
+    """
+
     def __init__(self, smiles, external, y=None, featurizer=None):
+        """
+        Initializes the SmilesGraphDatasetWithExternal object.
+
+        Args:
+            smiles (list): A list of SMILES strings.
+            external (numpy.ndarray or pandas.DataFrame): External feature data 2D matrix.
+            y (list, optional): A list of target values. Default is None.
+            featurizer (SmilesGraphFeaturizer, optional): A featurizer object for to create graph representations from SMILES strings. Default is None.
+        """
         super().__init__(smiles, y=y, featurizer=featurizer)
 
         if isinstance(external, pd.DataFrame):
@@ -86,52 +180,36 @@ class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
 
         if self.external.shape[0] != len(smiles):
             raise ValueError("External data must have the same number of rows as smiles strings.")
-        
 
-        # self.external_feature_labels = None
-
-
-        # if external_normalization_mean is None:
-        #     self.external_normalization_mean = torch.zeros(self.external.shape[1])
-        # else:
-        #     self.external_normalization_mean = torch.tensor(external_normalization_mean)
-        #     if self.external.ndim != 1:
-        #         raise ValueError("external_normalization_mean must be a 1D array.")
-        #     if self.external_normalization_mean.shape[0] != external.shape[1]:
-        #         raise ValueError("external_normalization_mean must have the same number of elements as external features")
-
-
-        # if external_normalization_std is None:
-        #     self.external_normalization_std = torch.ones(self.external.shape[1])
-        # else:
-        #     self.external_normalization_std = torch.tensor(external_normalization_std)
-        #     if self.external.ndim != 1:
-        #         raise ValueError("external_normalization_std data must be a 1D array.")
-        #     if self.external_normalization_std.shape[0] != external.shape[1]:
-        #         raise ValueError("external_normalization_std must have the same number of elements as external features")
 
     def get_num_external_features(self):
+        """
+        Returns the number of external features.
+
+        Returns:
+            int: Number of external features.
+        """
         return self.external.size(1)
     
-    # def set_external_feature_labels(self, external_feature_labels):
-    #     if 'SMILES' in external_feature_labels:
-    #         raise ValueError("The 'SMILES' keyword is in a protected namespace and should not be used for external features.")
-    #     if len(external_feature_labels) != self.get_num_external_features:
-    #         raise ValueError("Number of external feature labels must match the number of columns in the external data.")
-    #     self.external_feature_labels = list(external_feature_labels)
-
-    # def get_external_feature_labels(self):
-    #     for label in self.external_feature_labels:
-    #         if label.upper():
-    #             raise ValueError("The 'SMILES' keyword is in a protected namespace and should not be used for external features.")
-    #     return self.external_feature_labels
-    
-    # def _normalize_external(self, external_row):
-    #     normalized_external_row = (external_row - self.external_normalization_mean) / self.external_normalization_std
-    #     return normalized_external_row
 
     def __getitem__(self, idx):
+        """
+        Retrieves the features and target value for a given index.
 
+        Args:
+            idx (int): Index of the data to retrieve.
+
+        Returns:
+            torch_geometric.data.Data: A torch_geometric.data.Data object for this single sample containing:
+                - x (torch.Tensor): Node feature matrix with shape [num_nodes, num_node_features].
+                - edge_index (LongTensor): Graph connectivity in COO format with shape [2, num_edges].
+                - edge_attr (torch.Tensor, optional): Edge feature matrix with shape [num_edges, num_edge_features].
+                - y (torch.Tensor): Graph-level or node-level ground-truth labels with arbitrary shape.
+                - smiles (str): The SMILES string corresponding to the particular sample.
+                - external (torch.Tensor): The external feature vector of the particular sample with shape (1, num_external_features)
+        """
+
+        # data = self.__getitem__(idx)
         if self.precomputed_features:
             data = self.precomputed_features[idx]
         else:
@@ -143,3 +221,12 @@ class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
         # data.external = self._normalize_external(external_row=external).unsqueeze(0)
 
         return data
+    
+    def __len__(self):
+        """
+        Returns the number of samples in the dataset.
+
+        Returns:
+            int: Number of samples.
+        """
+        return self.__len__()
