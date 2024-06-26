@@ -4,7 +4,7 @@ Contact: jpitoskas@gmail.com
 """
 
 from torch.utils.data import Dataset
-from ..featurizers import SmilesGraphFeaturizer
+from ..featurizers.smiles_graph_featurizer import SmilesGraphFeaturizer
 import torch
 import pandas as pd
 
@@ -25,10 +25,28 @@ class SmilesGraphDataset(Dataset):
         Initializes the SmilesGraphDataset object.
 
         Args:
-            smiles (list): A list of SMILES strings.
-            y (list, optional): A list of target values. Default is None
+            smiles (list): A list of SMILES strings. 
+            y (list, optional): A list of target values. Default is None.
             featurizer (SmilesGraphFeaturizer, optional): A featurizer object for to create graph representations from SMILES strings.
+        
+        Example:
+        ```
+        >>> from jaqpotpy.jaqpotpy_torch.featurizers import SmilesGraphFeaturizer
+        >>> from rdkit import Chem
+        >>>
+        >>> smiles = ['C1=CN=CN1', 'CCCCCCC']
+        >>> y = [0, 1]
+        >>> featurizer = SmilesGraphFeaturizer()
+        >>> featurizer.add_atom_characteristic('symbol', ['C', 'O', 'Na', 'Cl', 'UNK'])
+        >>> featurizer.add_atom_characteristic('is_in_ring')
+        >>> featurizer.add_bond_characteristic('bond_type', [Chem.rdchem.BondType.SINGLE, Chem.rdchem.BondType.DOUBLE, Chem.rdchem.BondType.TRIPLE])
+        >>>
+        >>> dataset = SmilesGraphDataset(smiles, y=y, featurizer=featurizer)
+        >>> dataset[0]
+        Data(x=[5, 6], edge_index=[2, 10], edge_attr=[10, 3], y=0, smiles='C1=CN=CN1')
+        ```
         """
+
 
         super().__init__()
         
@@ -44,18 +62,18 @@ class SmilesGraphDataset(Dataset):
         self.precomputed_features = None
 
 
-    def config_from_other_dataset(self, dataset):
-        """
-        Configures the dataset instance from another dataset.
+    # def config_from_other_dataset(self, dataset):
+    #     """
+    #     Configures the dataset instance from another dataset.
 
-        Args:
-            dataset (SmilesGraphDataset): Another dataset to copy the configuration.
+    #     Args:
+    #         dataset (SmilesGraphDataset): Another dataset to copy the configuration.
 
-        Returns:
-            SmilesGraphDataset: The configured dataset.
-        """
-        self.featurizer = SmilesGraphFeaturizer().config_from_other_featurizer(dataset.featurizer)
-        return self
+    #     Returns:
+    #         SmilesGraphDataset: The configured dataset.
+    #     """
+    #     self.featurizer = SmilesGraphFeaturizer().config_from_other_featurizer(dataset.featurizer)
+    #     return self
 
 
     def get_atom_feature_labels(self):
@@ -120,7 +138,7 @@ class SmilesGraphDataset(Dataset):
                 - x (torch.Tensor): Node feature matrix with shape [num_nodes, num_node_features].
                 - edge_index (LongTensor): Graph connectivity in COO format with shape [2, num_edges].
                 - edge_attr (torch.Tensor, optional): Edge feature matrix with shape [num_edges, num_edge_features].
-                - y (torch.Tensor): Graph-level or node-level ground-truth labels with arbitrary shape.
+                - y (float): Graph-level ground-truth label.
                 - smiles (str): The SMILES string corresponding to the particular sample.
         """
         if self.precomputed_features:
@@ -204,7 +222,7 @@ class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
                 - x (torch.Tensor): Node feature matrix with shape [num_nodes, num_node_features].
                 - edge_index (LongTensor): Graph connectivity in COO format with shape [2, num_edges].
                 - edge_attr (torch.Tensor, optional): Edge feature matrix with shape [num_edges, num_edge_features].
-                - y (torch.Tensor): Graph-level or node-level ground-truth labels with arbitrary shape.
+                - y (float): Graph-level ground-truth label.
                 - smiles (str): The SMILES string corresponding to the particular sample.
                 - external (torch.Tensor): The external feature vector of the particular sample with shape (1, num_external_features)
         """

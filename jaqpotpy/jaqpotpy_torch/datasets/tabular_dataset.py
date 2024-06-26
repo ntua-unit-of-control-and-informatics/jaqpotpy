@@ -16,18 +16,24 @@ class TabularDataset(Dataset):
         X (torch.tensor): A 2D tensor containing the feature data.
         y (torch.tensor): A 1D tensor containing the target data.
     """
+
     def __init__(self, X, y=None):
         """
         Initializes the TabularDataset object.
 
         Args:
-            X (numpy.ndarray or pandas.DataFrame): Feature data.
-            y (numpy.ndarray or pandas.DataFrame, optional): Target data.
-
-        Raises:
-            ValueError: If X is not a 2D array.
-            ValueError: If y is not a 1D array.
-            ValueError: If X and y have different numbers of rows.
+            X (numpy.ndarray or pandas.DataFrame): Feature data matrix of shape (n_samples, n_features).
+            y (numpy.ndarray or pandas.DataFrame, optional): Target data of shape (n_samples,).
+        
+        Example:
+        ```
+        >>> import numpy as np
+        >>> X = np.random.rand(3, 2)
+        >>> y = np.random.rand(3, 2)
+        >>> dataset = TabularDataset(X, y=y)
+        >>> dataset[0]
+        (tensor([0.7778, 0.3400]), tensor(0.4730))
+        ```
         """
         
         super().__init__()

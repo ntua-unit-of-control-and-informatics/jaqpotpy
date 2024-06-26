@@ -143,10 +143,10 @@ class SmilesGraphFeaturizer(Featurizer):
         Example:
         ```
         >>> featurizer = SmilesGraphFeaturizer()
-        >>> featurizer.add_atom_characteristic('symbol', ['C', 'O', 'Na', 'Cl']) # categorical characteristics need allowable set of categories
+        >>> featurizer.add_atom_characteristic('symbol', ['C', 'O', 'N', 'Cl']) # categorical characteristics need allowable set of categories
         >>> featurizer.add_atom_characteristic('is_in_ring') # allowable set is set to Nonefor non-categorical
         >>> featurizer.atom_allowable_sets
-        {'symbol': ['C', 'O', 'Na', 'Cl'], 'is_in_ring': None}
+        {'symbol': ['C', 'O', 'N', 'Cl'], 'is_in_ring': None}
         ```
 
         Notes:
@@ -183,11 +183,9 @@ class SmilesGraphFeaturizer(Featurizer):
 
         Example:
         ```
-        >>> from rdkit.Chem.rdchem.BondType import SINGLE, DOUBLE, TRIPLE
+        >>> from rdkit import Chem
         >>> featurizer = SmilesGraphFeaturizer()
-        >>> featurizer.add_bond_characteristic('bond_type', [Chem.rdchem.BondType.SINGLE,
-                                                             Chem.rdchem.BondType.DOUBLE,
-                                                             Chem.rdchem.BondType.TRIPLE])
+        >>> featurizer.add_bond_characteristic('bond_type', [Chem.rdchem.BondType.SINGLE, Chem.rdchem.BondType.DOUBLE, Chem.rdchem.BondType.TRIPLE])
         >>> featurizer.add_bond_characteristic('is_conjugated')
         >>> featurizer.bond_allowable_sets
         {'bond_type': [rdkit.Chem.rdchem.BondType.SINGLE,
