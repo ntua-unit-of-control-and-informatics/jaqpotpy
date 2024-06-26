@@ -13,6 +13,15 @@ import json
 from .featurizer import Featurizer
 
 class SmilesGraphFeaturizer(Featurizer):
+    """
+    Featurizes SMILES strings into graph data suitable for graph neural networks.
+
+    Attributes:
+        include_edge_features (bool): Whether to include edge features in the featurization.
+        warnings_enabled (bool): Whether to enable warnings.
+        atom_allowable_sets (dict): Allowable sets for atom features.
+        bond_allowable_sets (dict): Allowable sets for bond features.
+    """
     
     SUPPORTED_ATOM_CHARACTERISTICS = {"symbol": lambda atom: atom.GetSymbol(),
                                       "degree": lambda atom: atom.GetDegree(),
@@ -48,6 +57,13 @@ class SmilesGraphFeaturizer(Featurizer):
                            "mass"]
 
     def __init__(self, include_edge_features=True, warnings_enabled=True):
+        """
+        Initializes the SmilesGraphFeaturizer.
+
+        Args:
+            include_edge_features (bool): Whether to include edge features in the featurization.
+            warnings_enabled (bool): Whether to enable warnings.
+        """
         
         self.include_edge_features = include_edge_features
         
@@ -58,12 +74,23 @@ class SmilesGraphFeaturizer(Featurizer):
         
     
     def get_supported_atom_characteristics(self):
+        """Returns the names of the supported atom characteristics."""
         return self.SUPPORTED_ATOM_CHARACTERISTICS.keys()
     
     def get_supported_bond_characteristics(self):
+        """Returns the names of the supported bond characteristics."""
         return self.SUPPORTED_BOND_CHARACTERISTICS.keys()
     
     def config_from_other_featurizer(self, featurizer):
+        """
+        Configures the featurizer from another SmilesGraphFeaturizer instance.
+
+        Args:
+            featurizer (Featurizer): Another SmilesGraphFeaturizer instance.
+
+        Returns:
+            SmilesGraphFeaturizer: The configured featurizer.
+        """
         
         self.include_edge_features = featurizer.include_edge_features
         
@@ -91,18 +118,37 @@ class SmilesGraphFeaturizer(Featurizer):
     
     
     def set_atom_allowable_sets(self, atom_allowable_sets_dict):
+        """
+        Sets the allowable sets for atom characteristics.
+
+        Args:
+            atom_allowable_sets_dict (dict): Dictionary of allowable sets per atom characteristic.
+        """
         
         self.atom_allowable_sets = dict()
         for atom_characteristic, allowable_set in atom_allowable_sets_dict.items():
             self.add_atom_characteristic(atom_characteristic, allowable_set)
     
     def set_bond_allowable_sets(self, bond_allowable_sets_dict):
+        """
+        Sets the allowable sets for bond characteristics.
+
+        Args:
+            bond_allowable_sets_dict (dict): Dictionary of allowable sets per bond characteristic.
+        """
         
         self.bond_allowable_sets = dict()
         for bond_characteristic, allowable_set in bond_allowable_sets_dict.items():
             self.add_bond_characteristic(bond_characteristic, allowable_set)
 
     def add_atom_characteristic(self, atom_characteristic, allowable_set=None):
+        """
+        Adds an atom characteristic to the featurizer.
+
+        Args:
+            atom_characteristic (str): The atom characteristic name to be added.
+            allowable_set (list or None): The allowable set for the atom characteristic.
+        """
 
         if atom_characteristic not in self.get_supported_atom_characteristics():
             raise ValueError(f"Unsupported atom characteristic '{atom_characteristic}'")
@@ -123,6 +169,13 @@ class SmilesGraphFeaturizer(Featurizer):
             self.atom_allowable_sets[atom_characteristic] = list(allowable_set)
 
     def add_bond_characteristic(self, bond_characteristic, allowable_set=None):
+        """
+        Adds a bond characteristic to the featurizer.
+
+        Args:
+            bond_characteristic (str): The bond characteristic to add.
+            allowable_set (list or None): The allowable set for the bond characteristic.
+        """
 
         if bond_characteristic not in self.get_supported_bond_characteristics():
             raise ValueError(f"Unsupported bond characteristic '{bond_characteristic}'")
@@ -144,6 +197,12 @@ class SmilesGraphFeaturizer(Featurizer):
     
 
     def get_atom_feature_labels(self):
+        """
+        Returns the labels for the atom features.
+
+        Returns:
+            list: The labels for the atom features.
+        """
         
         atom_feature_labels = []
         
@@ -157,6 +216,12 @@ class SmilesGraphFeaturizer(Featurizer):
     
     
     def get_bond_feature_labels(self):
+        """
+        Returns the labels for the bond features.
+
+        Returns:
+            list: The labels for the bond features.
+        """
         
         bond_feature_labels = []
         
@@ -170,6 +235,16 @@ class SmilesGraphFeaturizer(Featurizer):
     
 
     def get_default_atom_allowable_set(self, atom_characteristic):
+        """
+        Returns the default allowable set for an atom characteristic.
+
+        Args:
+            atom_characteristic (str): The atom characteristic.
+
+        Returns:
+            list: The default allowable set for the atom characteristic.
+        """
+
         match atom_characteristic:
             case "symbol":
                 return ['C', 'O', 'N', 'Cl', 'S', 'F', 'Na', 'P', 'Br', 'Si', 'K', 'Sn', 'UNK'],
@@ -193,6 +268,16 @@ class SmilesGraphFeaturizer(Featurizer):
 
     
     def get_default_bond_allowable_set(self, bond_characteristic):
+        """
+        Returns the default allowable set for a bond characteristic.
+
+        Args:
+            bond_characteristic (str): The bond characteristic.
+
+        Returns:
+            list: The default allowable set for the bond characteristic.
+        """
+
         match bond_characteristic:
             case "bond_type":
                 return [Chem.rdchem.BondType.SINGLE,
@@ -204,6 +289,9 @@ class SmilesGraphFeaturizer(Featurizer):
         
 
     def set_default_config(self):
+        """
+        Sets the default configuration for the featurizer.
+        """
 
         atom_allowable_sets = {
             "symbol": self.get_default_atom_allowable_set("symbol"),
@@ -231,6 +319,15 @@ class SmilesGraphFeaturizer(Featurizer):
     
     
     def extract_molecular_features(self, mol):
+        """
+        Extracts molecular features from a molecule.
+
+        Args:
+            mol (rdkit.Chem.Mol): The molecule to extract features from.
+
+        Returns:
+            tuple: The atom features and bond features as tensors.
+        """
         
         mol_atom_features = []
         for atom in mol.GetAtoms():
@@ -250,6 +347,15 @@ class SmilesGraphFeaturizer(Featurizer):
         
         
     def atom_features(self, atom):
+        """
+        Extracts features for an atom.
+
+        Args:
+            atom (rdkit.Chem.Atom): The atom to extract features from.
+
+        Returns:
+            list: The features for the atom.
+        """
         
         feats = []
         for characteristic in self.atom_allowable_sets.keys():
@@ -269,6 +375,15 @@ class SmilesGraphFeaturizer(Featurizer):
     
 
     def bond_features(self, bond):
+        """
+        Extracts features for a bond.
+
+        Args:
+            bond (rdkit.Chem.Bond): The bond to extract features from.
+
+        Returns:
+            list: The features for the bond.
+        """
 
         feats = []
         for characteristic in self.bond_allowable_sets.keys():
@@ -288,6 +403,17 @@ class SmilesGraphFeaturizer(Featurizer):
 
                 
     def one_of_k_encoding(self, x, allowable_set, characteristic_name=None):
+        """
+        One-hot encodes a value based on an allowable set.
+
+        Args:
+            x: The value to encode.
+            allowable_set (list): The allowable set for the value.
+            characteristic_name (str): The name of the characteristic (optional).
+
+        Returns:
+            list: The one-hot encoded vector.
+        """
         if x not in allowable_set:
             characteristic_text = f"{characteristic_name} " if characteristic_name else ""
             self.warning(f"Ignoring input {characteristic_text}{x}, not in allowable set {allowable_set}")
@@ -295,13 +421,31 @@ class SmilesGraphFeaturizer(Featurizer):
 
 
     def one_of_k_encoding_unk(self, x, allowable_set):
-        """Maps inputs not in the allowable set to UNK."""
+        """
+        One-hot encodes a value based on an allowable set, mapping unknown values to 'UNK'.
+
+        Args:
+            x: The value to encode.
+            allowable_set (list): The allowable set for the value.
+
+        Returns:
+            list: The one-hot encoded value.
+        """
         if x not in allowable_set:
             x = 'UNK'
         return [x == s for s in allowable_set]
     
     
     def adjacency_matrix(self, mol):
+        """
+        Computes the adjacency matrix for a molecule.
+
+        Args:
+            mol (rdkit.Chem.Mol): The molecule to compute the adjacency matrix for.
+
+        Returns:
+            torch.Tensor: The adjacency matrix.
+        """
     
         ix1, ix2 = [], []
         for bond in mol.GetBonds():
@@ -315,22 +459,56 @@ class SmilesGraphFeaturizer(Featurizer):
         
         
     def get_num_node_features(self):
+        """
+        Returns the number of node features.
+
+        Returns:
+            int: The number of node features.
+        """
         return len(self.get_atom_feature_labels())
     
 
     def get_num_edge_features(self):
+        """
+        Returns the number of edge features.
+
+        Returns:
+            int: The number of edge features.
+        """
         return len(self.get_bond_feature_labels())
     
     
     def warning(self, message):
+        """
+        Issues a warning if warnings are enabled.
+
+        Args:
+            message (str): The warning message.
+        """
         if self.warnings_enabled:
             warnings.warn(message)
     
     def enable_warnings(self, enable=True):
+        """
+        Enables or disables warnings.
+
+        Args:
+            enable (bool): Whether to enable warnings.
+        """
         self.warnings_enabled = enable
     
     
     def featurize(self, sm, y=None):
+        """
+        Featurizes a SMILES string into graph data.
+
+        Args:
+            sm (str): The SMILES string.
+            y: The target value (optional).
+
+        Returns:
+            torch_geometric.data.Data: The featurized data.
+        """
         
         mol = Chem.MolFromSmiles(sm)
         adjacency_matrix = self.adjacency_matrix(mol)
@@ -344,6 +522,12 @@ class SmilesGraphFeaturizer(Featurizer):
         
     
     def save_config(self, config_file="featurizer_config.pkl"):
+        """
+        Saves the featurizer configuration to a file.
+
+        Args:
+            config_file (str): The file to save the configuration to.
+        """
         config = {
             'warnings_enabled': self.warnings_enabled,
             'include_edge_features': self.include_edge_features,
@@ -356,6 +540,15 @@ class SmilesGraphFeaturizer(Featurizer):
 
         
     def load_config(self, config_file):
+        """
+        Loads the featurizer configuration from a file.
+
+        Args:
+            config_file (str): The file to load the configuration from.
+
+        Returns:
+            SmilesGraphFeaturizer: The configured featurizer.
+        """
 
         with open(config_file, 'rb') as f:
             config = pickle.load(f)
@@ -371,15 +564,37 @@ class SmilesGraphFeaturizer(Featurizer):
     
 
     def save(self, filepath='featurizer.pkl'):
+        """
+        Saves the featurizer to a file.
+
+        Args:
+            filepath (str): The file to save the featurizer to.
+        """
         with open(filepath, "wb") as file:
             pickle.dump(self, file)
     
 
     def __call__(self, sm, y=None):
+        """
+        Featurizes a SMILES string into graph data.
+
+        Args:
+            sm (str): The SMILES string.
+            y: The target value (optional).
+
+        Returns:
+            torch_geometric.data.Data: The featurized data.
+        """
         return self.featurize(sm, y)
     
 
     def __repr__(self):
+        """
+        Returns the string representation of the featurizer.
+
+        Returns:
+            str: The string representation of the featurizer.
+        """
         attributes = {
             'atom_allowable_sets': self.atom_allowable_sets,
             'bond_allowable_sets': self.bond_allowable_sets,
@@ -387,4 +602,10 @@ class SmilesGraphFeaturizer(Featurizer):
         return type(self).__name__ + '(' + json.dumps(attributes, indent=4) + ')'
     
     def __str__(self):
+        """
+        Returns the string representation of the featurizer.
+
+        Returns:
+            str: The string representation of the featurizer.
+        """
         return self.__repr__()
