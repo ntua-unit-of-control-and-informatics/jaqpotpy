@@ -24,7 +24,7 @@ def post_model_part(baseurl, api_key, modelid, json_request, logger):
 
 
 def post_pretrained_model(baseurl, api_key, json_request, logger):
-    uri = baseurl + model_path
+    uri = baseurl #+ model_path
     h = {'Content-Type': 'application/json',
          'Accept': 'application/json',
          'Authorization': "Bearer " + api_key}
