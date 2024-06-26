@@ -244,8 +244,11 @@ class MolecularModel(Model):
         with open(filename, 'rb') as f:
             return pickle.load(f)
 
-    def deploy_on_jaqpot(self, jaqpot, description, model_title: str = None):
-        jaqpot.deploy_jaqpotpy_molecular_model(self, description=description, title=model_title)
+    # def deploy_on_jaqpot(self, jaqpot, description, model_title: str = None):
+    #     jaqpot.deploy_jaqpotpy_molecular_model(self, description=description, title=model_title)
+
+    def deploy_on_jaqpot(self, jaqpot, title, description):
+        jaqpot.deploy_on_newapi(self, title = title, description = description)
 
     @classmethod
     def load_from_jaqpot(cls, jaqpot, id: str):
