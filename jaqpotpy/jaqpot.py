@@ -461,6 +461,41 @@ class Jaqpot:
                     return modid
             # print("Not supported")
 
+
+
+    def deploy_on_newapi(self, model, title: str, description: str):
+        """
+        Deploys a model on the Jaqpot API using the new API version.
+
+        Args:
+            model: The model to be deployed.
+            title (str): The title of the model.
+            description (str): The description of the model.
+
+        Returns:
+            None
+
+        Raises:
+            None
+        """
+        if title is None:
+            raise Exception("Please submit title of the model")
+        
+        pretrained = help.create_molecular_req_v2(model, title=title, description=description)
+        j = json.dumps(pretrained, cls=JaqpotSerializer)
+        response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+        if response.status_code < 300:
+            resp = response.headers
+            self.log.info("Model with title: \"" + title + "\" has been created. Please find the model at the following link: " + resp['Location'] + ".")
+            return
+        else:
+            self.log.error("Error code: " + str(response.status_code))
+            return
+
+
+
+
+
     def deploy_jaqpotpy_molecular_model(self, model, description: str, title: str = None):
         if model.model_title != None:
             title = model.model_title
