@@ -247,4 +247,4 @@ class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
         Returns:
             int: Number of samples.
         """
-        return self.__len__()
+        return super().__len__()
