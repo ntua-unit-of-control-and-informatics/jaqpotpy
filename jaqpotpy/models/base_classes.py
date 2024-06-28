@@ -3,6 +3,8 @@ from jaqpotpy.descriptors.molecular import RDKitDescriptors, MACCSKeysFingerprin
 from jaqpotpy.descriptors.base_classes import Featurizer #MolecularFeaturizer, MaterialFeaturizer,
 from typing import Any, Iterable, Union, Dict
 from jaqpotpy.datasets.image_datasets import default_loader
+from jaqpotpy.datasets import JaqpotpyDataset
+
 try:
     from pymatgen.core.structure import Lattice, Structure
 except ModuleNotFoundError:
@@ -202,20 +204,21 @@ class Model(object):
     def jaqpotpy_docker(self, value):
         self._jaqpotpy_docker = value
 
-    def __train__(self):
-        raise NotImplemented("Not implemented")
+    def fit(self):
+        raise NotImplementedError("Not implemented")
 
-    def __eval__(self):
-        raise NotImplemented("Not implemented")
+    def eval(self):
+        raise NotImplementedError("Not implemented")
 
-    def infer(self):
-        raise NotImplemented("Not implemented")
+    def predict(self, X):
+        raise NotImplementedError("Not implemented")
 
 
 class MolecularModel(Model):
 
-    def __call__(self, smiles):
-        self._smiles = smiles
+    def __call__(self, dataset:JaqpotpyDataset):
+        self.X =  dataset.__get_X__()
+        self.y = dataset.__get_Y__().ravel()
         self.infer()
 
     def save(self):
@@ -442,7 +445,7 @@ class MaterialModel(Model):
         self._probability = []
         if self._materials:
             data = self._descriptors.featurize_dataframe(self._materials)
-            data = pd.concat([data, ext], axis=1)
+            #data = pd.concat([data, ext], axis=1)
             graph_data_list = []
             if self._descriptors.__name__ == 'CrystalGraphCNN':
                 for g in data['MaterialGraph'].to_list():
