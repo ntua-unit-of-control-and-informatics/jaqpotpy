@@ -7,7 +7,6 @@ import torch
 import logging
 import sys
 
-import jaqpotpy
 import requests
 import os
 from typing import List, Optional, Union
@@ -452,7 +451,8 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
             }
         
         # TODO: Replace with the appropriate url for model uploading
-        url = "http://localhost:8006/api/v1/models/upload/"
+        # url = "http://localhost:8006/api/v1/models/upload/" # for jaqpotpy-torch-inference repo
+        url = "http://localhost:8002/upload/" # for jaqpotpy-inference repo
 
         # TODO: Add whatever else is needed in the POST request
         response = requests.post(url, json=self.json_data_for_deployment, headers=headers)
