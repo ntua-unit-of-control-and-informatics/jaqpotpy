@@ -3,30 +3,24 @@ from typing import Dict, Callable
 
 class Preprocess:
 
-    classes: Dict[str, Callable] = {}
-    fitted_classes:  Dict[str, Callable] = {}
-
-    classes_y: Dict[str, Callable] = {}
-    fitted_classes_y:  Dict[str, Callable] = {}
-
     def __init__(self):
-        pass
+        self.classes: Dict[str, Callable] = {}
+        self.fitted_classes:  Dict[str, Callable] = {}
 
-    @classmethod
-    def register_preprocess_class(cls, class_name, class_):
-        cls.classes[class_name] = class_
+        self.classes_y: Dict[str, Callable] = {}
+        self.fitted_classes_y:  Dict[str, Callable] = {}
 
-    @classmethod
-    def register_fitted_class(cls, class_name, class_):
-        cls.fitted_classes[class_name] = class_
+    def register_preprocess_class(self, class_name, class_):
+        self.classes[class_name] = class_
 
-    @classmethod
-    def register_preprocess_class_y(cls, class_name, class_):
-        cls.classes_y[class_name] = class_
+    def register_fitted_class(self, class_name, class_):
+        self.fitted_classes[class_name] = class_
 
-    @classmethod
-    def register_fitted_class_y(cls, class_name, class_):
-        cls.fitted_classes_y[class_name] = class_
+    def register_preprocess_class_y(self, class_name, class_):
+        self.classes_y[class_name] = class_
+
+    def register_fitted_class_y(self, class_name, class_):
+        self.fitted_classes_y[class_name] = class_
 
     def __getitem__(self):
         return self
