@@ -1,29 +1,100 @@
 """
-Dataset base classes
+Dataset abstract classes
 """
-from typing import Any
-import inspect
-from typing import Iterable
+from abc import ABC, abstractmethod
+import os
 import pickle
+from typing import Iterable, Optional
+import pandas as pd
 
+class BaseDataset(ABC):
+    """
+    Abstract class for datasets. This class defines the common interface and basic functionality 
+    for dataset manipulation and handling.
 
-class BaseDataset(object):
+    Attributes:
+        _df (pd.DataFrame): The underlying DataFrame holding the dataset.
+        x_cols (Optional[Iterable[str]]): The columns to be used as features.
+        y_cols (Optional[Iterable[str]]): The columns to be used as labels.
+        _task (str): The task type, either 'regression' or 'classification'.
+        _dataset_name (str): The name of the dataset.
+        _y (Iterable[str]): The labels of the dataset.
+        _x (Iterable[str]): The features of the dataset.
     """
-    Astract class for datasets
-    """
-    def __init__(self, path=None, x_cols=None, y_cols=None) -> None:
-        self._Y = None
-        self._X = None
+
+    def __init__(self, df: pd.DataFrame = None, path: Optional[str] = None,
+                 y_cols: Iterable[str] = None,
+                 x_cols: Optional[Iterable[str]] = None,
+                 task: str = None) -> None:
+
+        if df is None and path is None:
+            raise TypeError("Either a DataFrame or a path to a file must be provided.")
+        elif (df is not None) and (path is not None):
+            raise TypeError("Either a DataFrame or a path to a file must be provided.")
+
+        if df is not None:
+            if not isinstance(df, pd.DataFrame):
+                raise TypeError("Provided 'df' must be a pandas DataFrame.")
+            else:
+                self._df = df
+                self.path = None
+        elif path is not None:
+            self.path = path
+            extension = os.path.splitext(self.path)[1]
+            if extension == '.csv':
+                self._df = pd.read_csv(path)
+            else:
+                raise ValueError("The provided file is not a valid CSV file.")
+            
+        if not(isinstance(y_cols, str) or 
+               (isinstance(y_cols, list) and all(isinstance(item, str) for item in y_cols))
+               ):
+               raise TypeError("y_cols must be provided and should be either" 
+                               "a string or a list of strings") 
+        
+        if not(isinstance(x_cols, str) or 
+              (isinstance(x_cols, list) and all(isinstance(item, str) for item in x_cols)) or
+              (isinstance(x_cols, list) and len(x_cols) == 0) or
+              (x_cols is None)):
+               raise TypeError("x_cols should be either a string, an empty list"
+                               "a list of strings, or None") 
+
+        #Find the length of each provided column name vector and put everything in lists
+        if isinstance(y_cols, str):
+            self.y_cols = [y_cols]
+            self.y_cols_len = 1
+        elif isinstance(y_cols, list) :
+            self.y_cols = y_cols
+            self.x_cols_len = len(y_cols)
+
+        if isinstance(x_cols, str):
+            self.x_cols = [x_cols]
+            self.y_cols_len = 1
+        elif isinstance(x_cols, list) :
+            self.x_cols = x_cols
+            self.x_cols_len = len(x_cols)
+        elif x_cols is None:
+            self.x_cols= []
+            self.x_cols_len = 0
+        
+        self.task = task
         self._dataset_name = None
-        self._df = None
-        self._x_cols_all = None
-        self.path = path
-        self.x_cols = x_cols
-        self.y_cols = y_cols
-        self._task = "regression"
-        self.featurizer = None
-        self._featurizer_name = None
-        self._external = None
+        self._y = None
+        self._x = None
+
+    @property
+    def df(self) -> pd.DataFrame:
+        return self._df
+
+    @df.setter
+    def df(self, value: pd.DataFrame):
+        if not isinstance(value, pd.DataFrame):
+            raise ValueError("The value must be a pandas DataFrame.")
+        self._df = value
+
+    @df.deleter
+    def df(self):
+        del self._df
 
     @property
     def task(self):
@@ -31,6 +102,10 @@ class BaseDataset(object):
 
     @task.setter
     def task(self, value):
+        if value is None:
+            raise ValueError("Task must be either 'regression' or 'classification'")
+        elif value.lower() not in ['regression', 'classification']:
+            raise ValueError("Task must be either 'regression' or 'classification'")
         self._task = value
 
     @property
@@ -40,18 +115,6 @@ class BaseDataset(object):
     @dataset_name.setter
     def dataset_name(self, value):
         self._dataset_name = value
-
-    @property
-    def featurizer_name(self) -> Iterable[Any]:
-        return self.featurizer.__name__
-
-    @property
-    def x_colls_all(self) -> Iterable[str]:
-        return self._x_cols_all
-
-    @x_colls_all.setter
-    def x_colls_all(self, value):
-        self._x_cols_all = value
 
     @property
     def X(self) -> Iterable[str]:
@@ -69,57 +132,6 @@ class BaseDataset(object):
     def y(self, value):
         self._y = value
 
-    @property
-    def external(self) -> Iterable[str]:
-        return self._external
-
-    @external.setter
-    def external(self, value):
-        self._external = value
-
-    @property
-    def df(self) -> Any:
-        return self._df
-
-    @df.setter
-    def df(self, value):
-        self._df = value
-
-    @featurizer_name.setter
-    def featurizer_name(self, value):
-        self._featurizer_name = value
-
-    def create(self):
-        raise NotImplementedError("Need implementation")
-
-    def __repr__(self) -> str:
-        # args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
-        # args_names = [arg for arg in args_spec.args if arg != 'self']
-        # args_info = ''
-        # for arg_name in args_names:
-        #   value = self.__dict__[arg_name]
-        #   # for str
-        #   if isinstance(value, str):
-        #     value = "'" + value + "'"
-        #   # for list
-        return self.__class__.__name__
-
-
-class MolecularDataset(BaseDataset):
-    def __init__(self, path=None, smiles_col=None, x_cols=None, y_cols=None, smiles=None) -> None:
-        self.smiles = smiles
-        self._smiles_strings = None
-        self.smiles_col = smiles_col
-        super().__init__(path, x_cols, y_cols)
-
-    @property
-    def smiles_strings(self) -> Iterable[str]:
-        return self._smiles_strings
-
-    @smiles_strings.setter
-    def smiles_strings(self, value):
-        self._smiles_strings = value
-
     def save(self):
         if self._dataset_name:
             with open(self._dataset_name + ".jdata", 'wb') as f:
@@ -133,14 +145,65 @@ class MolecularDataset(BaseDataset):
         with open(filename, 'rb') as f:
             return pickle.load(f)
 
+    @abstractmethod
+    def create(self):
+        """
+        Creates the dataset.
+        """
+        raise NotImplementedError
+    
+    @abstractmethod
+    def __get_X__(self):
+        """
+        Returns the design matrix X.
+        """
+        raise NotImplementedError
+    
+    @abstractmethod
+    def __get_Y__(self):
+        """
+        Returns the response Y.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of the dataset.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def __len__(self):
+        """
+        Returns the number of samples in the dataset.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def __get__(self, instance, owner):
+        """
+        Gets an attribute of the dataset.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def __getitem__(self, idx):
+        """
+        Gets a sample by index.
+        """
+        raise NotImplementedError
+
 
 class MaterialDataset(BaseDataset):
-    def __init__(self, path=None, materials_col=None, x_cols=None, y_cols=None, materials=None) -> None:
+    def __init__(self, df: pd.DataFrame = None, path:  Optional[str] = None,
+                 y_cols: Iterable[str] = None,
+                 x_cols: Optional[Iterable[str]] =None, materials_col=None,
+                 materials=None) -> None:
+        super().__init__(df = df, path = path, y_cols = y_cols, x_cols = x_cols)
         self.materials = materials
         self._materials_strings = None
         self.materials_col = materials_col
-        super().__init__(path, x_cols, y_cols)
-
 
     @property
     def materials_strings(self) -> Iterable[str]:
@@ -150,32 +213,13 @@ class MaterialDataset(BaseDataset):
     def materials_strings(self, value):
         self._materials_strings = value
 
-    def save(self):
-        if self._dataset_name:
-            with open(self._dataset_name + ".jdata", 'wb') as f:
-                pickle.dump(self, f)
-        else:
-            with open("jaqpot_dataset" + ".jdata", 'wb') as f:
-                pickle.dump(self, f)
-
-    @classmethod
-    def load(cls, filename):
-        with open(filename, 'rb') as f:
-            return pickle.load(f)
 
 class ImageDataset(BaseDataset):
-    def __init__(self, path=None,  x_cols=None, y_cols=None) -> None:
-        super().__init__(path=path, x_cols=x_cols, y_cols=y_cols)
+    def __init__(self,  df: pd.DataFrame = None, path:  Optional[str] = None,
+                  y_cols: Iterable[str] = None,
+                 x_cols: Optional[Iterable[str]] =None) -> None:
+        super().__init__(df = df, path = path, y_cols = y_cols, x_cols = x_cols)
 
-    def save(self):
-        if self._dataset_name:
-            with open(self._dataset_name + ".jdata", 'wb') as f:
-                pickle.dump(self, f)
-        else:
-            with open("jaqpot_dataset" + ".jdata", 'wb') as f:
-                pickle.dump(self, f)
 
-    @classmethod
-    def load(cls, filename):
-        with open(filename, 'rb') as f:
-            return pickle.load(f)
+if __name__ == '__main__':
+    ...
