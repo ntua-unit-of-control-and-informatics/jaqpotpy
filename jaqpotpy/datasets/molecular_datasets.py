@@ -67,6 +67,7 @@ class JaqpotpyDataset(BaseDataset):
         self._validate_column_names(self.x_cols, "x_cols")
         self._validate_column_names(self.y_cols, "y_cols")
         
+        self.init_df = self._df
         self.featurizer = featurizer
         self._featurizer_name = None
         self.smiles = None
@@ -154,9 +155,8 @@ class JaqpotpyDataset(BaseDataset):
         Create a copy of the dataset, including a deep copy of the underlying DataFrame
         and all relevant attributes.
         """
-        copied_df = self._df.copy(deep=True)
         copied_instance = JaqpotpyDataset(
-            df=copied_df,
+            df= self.init_df,
             path=self.path,
             y_cols=self.y_cols,
             x_cols=self.x_cols,
@@ -167,10 +167,10 @@ class JaqpotpyDataset(BaseDataset):
         return copied_instance
 
     def __get_X__(self):
-        return self._x
+        return self._x.copy()
     
     def __get_Y__(self):
-        return self._y
+        return self._y.copy()
     
     def __get__(self, instance, owner):
         if instance is None:
@@ -183,7 +183,7 @@ class JaqpotpyDataset(BaseDataset):
         return selected_x, selected_y
 
     def __len__(self):
-        return len(self._df)
+        return len(self.x_cols_all)
 
     def __repr__(self) -> str:
         return (f"{self.__class__.__name__}"
