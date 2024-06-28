@@ -52,7 +52,7 @@ class Feature():
         if meta is not None and not isinstance(meta, dict):
             raise ValueError("'meta' should be of type dict")
         
-        featureType_allowed_values = ['CATEGORICAL', 'NUMERICAL', 'SMILES']
+        featureType_allowed_values = ['CATEGORICAL', 'SMILES', 'INTEGER', 'FLOAT', "TEXT"]
         if featureType is not None and featureType not in featureType_allowed_values:
             raise ValueError(f"possible values for 'featureType' are {featureType_allowed_values}")
             
@@ -67,10 +67,10 @@ class Feature():
 
         
         if self.possibleValues==[] and featureType is None:
-            self.featureType = 'NUMERICAL'
+            self.featureType = 'FLOAT'
         if self.possibleValues!=[] and featureType is None:
             self.featureType = 'CATEGORICAL'
-        if self.possibleValues!=[] and featureType in ['NUMERICAL', 'SMILES']:
+        if self.possibleValues!=[] and featureType in ['FLOAT', 'SMILES']:
             raise ValueError(f"Feature of featureType '{featureType}' cannot have a finite set of possible values")
         if self.possibleValues==[] and featureType in ['CATEGORICAL']:
             raise ValueError(f"Feature of featureType '{featureType}' must have a non-empty set of possible values")

@@ -171,7 +171,7 @@ class RegressionFCModelTrainer(RegressionModelTrainer):
                 name=feature_name,
                 featureDependency='INDEPENDENT',
                 possibleValues=possibleValues,
-                featureType='CATEGORICAL' if possibleValues != [] else 'NUMERICAL'
+                featureType='CATEGORICAL' if possibleValues != [] else 'FLOAT'
             )
             
             features.append(feature)

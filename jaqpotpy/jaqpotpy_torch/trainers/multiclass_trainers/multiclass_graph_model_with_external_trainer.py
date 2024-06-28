@@ -192,7 +192,7 @@ class MulticlassGraphModelWithExternalTrainer(MulticlassModelTrainer):
                 name=feature_name,
                 featureDependency='INDEPENDENT',
                 possibleValues=possibleValues,
-                featureType='CATEGORICAL' if possibleValues != [] else 'NUMERICAL'
+                featureType='CATEGORICAL' if possibleValues != [] else 'FLOAT'
             )
             
             external_features.append(feature)

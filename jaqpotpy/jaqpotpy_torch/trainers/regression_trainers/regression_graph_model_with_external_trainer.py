@@ -198,7 +198,7 @@ class RegressionGraphModelWithExternalTrainer(RegressionModelTrainer):
                 name=feature_name,
                 featureDependency='INDEPENDENT',
                 possibleValues=possibleValues,
-                featureType='CATEGORICAL' if possibleValues != [] else 'NUMERICAL'
+                featureType='CATEGORICAL' if possibleValues != [] else 'FLOAT'
             )
             
             external_features.append(feature)
@@ -206,7 +206,7 @@ class RegressionGraphModelWithExternalTrainer(RegressionModelTrainer):
         independentFeatures = [smiles_feature] + external_features
 
         dependentFeatures = [
-            Feature(name=endpoint_name, featureDependency='DEPENDENT', possibleValues=[], featureType='NUMERICAL')
+            Feature(name=endpoint_name, featureDependency='DEPENDENT', possibleValues=[], featureType='FLOAT')
         ]
 
 
