@@ -15,10 +15,23 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from jaqpotpy.descriptors.molecular import MordredDescriptors,RDKitDescriptors,TopologicalFingerprint
-from jaqpotpy.datasets import SmilesDataset
-from jaqpotpy.models import MolecularSKLearn
+from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models import Evaluator
+
+
+# Add the following tests:
+# 1.regression model
+#  1.a. x and y preprocessed 
+#  1.b. only x preprocessed 
+#  1.c. only y preprocessed 
+#  1.d. no preprocessesing 
+# 1.Classification model
+#  1.a. x and y preprocessed 
+#  1.b. only x preprocessed 
+#  1.c. only y preprocessed 
+#  1.d. no preprocessesing 
 
 class TestModels(unittest.TestCase):
     """
@@ -110,7 +123,7 @@ class TestModels(unittest.TestCase):
         Test RandomForestClassifier on a molecular dataset with MACCSKeys fingerprints for classification.
         """
         model = RandomForestClassifier(n_estimators=5, random_state=42)
-        molecularModel_t1 = MolecularSKLearn(dataset=None, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=None, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.Y = 'DILI'
         assert molecularModel_t1.doa.in_doa == [True]
@@ -121,9 +134,9 @@ class TestModels(unittest.TestCase):
         Test the probability prediction of an SVC model using RDKit descriptors for classification.
         """
         featurizer = RDKitDescriptors()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
         model = SVC(probability=True)
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.probability
 
@@ -133,7 +146,7 @@ class TestModels(unittest.TestCase):
         Test the evaluation of an SVC model using various scoring functions for regression.
         """
         featurizer = RDKitDescriptors()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='regression', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='regression', featurizer=featurizer)
         model = SVC(probability=True)
 
         val = Evaluator()
@@ -147,7 +160,7 @@ class TestModels(unittest.TestCase):
         val.register_scoring_function("Recall", recall_score)
         val.register_scoring_function("Confusion Matrix", confusion_matrix)
 
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         print(molecularModel_t1.probability)
 
@@ -167,7 +180,7 @@ class TestModels(unittest.TestCase):
     #                                          'VE1_A', 'VE2_A']
     #                                       )
     #     model = LinearRegression()
-    #     molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+    #     molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
     #     molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
     #     assert molecularModel_t1.doa.in_doa == [False]
     #     assert int(molecularModel_t1.doa.doa_new[0]) == 271083
@@ -182,7 +195,7 @@ class TestModels(unittest.TestCase):
         import onnxruntime as rt
 
         featurizer = TopologicalFingerprint()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
 
         regression_estimators = all_estimators(type_filter='regressor')
 
@@ -215,7 +228,7 @@ class TestModels(unittest.TestCase):
                     pass
                 else:
                     # print(name)
-                    molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+                    molecular_model = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
 
                     new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
                                , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
@@ -242,7 +255,7 @@ class TestModels(unittest.TestCase):
         import onnxruntime as rt
 
         featurizer = RDKitDescriptors()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys_regr, task='regression', featurizer=featurizer)
 
         from sklearn.gaussian_process import GaussianProcessRegressor
         from sklearn.linear_model import LinearRegression, GammaRegressor, ARDRegression
@@ -250,7 +263,7 @@ class TestModels(unittest.TestCase):
         from sklearn.neighbors import KNeighborsRegressor
 
         model = ARDRegression()
-        molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecular_model = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
         input_name = sess.get_inputs()[0].name
         label_name = sess.get_outputs()[0].name
@@ -277,7 +290,7 @@ class TestModels(unittest.TestCase):
         import onnxruntime as rt
 
         featurizer = TopologicalFingerprint()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
 
         classification_estimators = all_estimators(type_filter='classifier')
 
@@ -308,7 +321,7 @@ class TestModels(unittest.TestCase):
                     pass
                 else:
                     # print(name)
-                    molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+                    molecular_model = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
 
                     new_mols = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
                                , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
@@ -331,7 +344,7 @@ class TestModels(unittest.TestCase):
         import onnxruntime as rt
 
         featurizer = TopologicalFingerprint()
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, task='classification', featurizer=featurizer)
         val = Evaluator()
         val.dataset = dataset
 
@@ -350,7 +363,7 @@ class TestModels(unittest.TestCase):
         from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
         model = QuadraticDiscriminantAnalysis()
-        molecular_model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
+        molecular_model = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
         # sess = rt.InferenceSession(molecular_model.inference_model.SerializeToString())
         # input_name = sess.get_inputs()[0].name
 

@@ -4,8 +4,9 @@ from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Union
 import pandas as pd
 import pickle
-from jaqpotpy.datasets import MolecularTabularDataset, Dataset, TorchGraphDataset, SmilesDataset, MolecularDataset, CompositionDataset, StructureDataset
-from jaqpotpy.models import Evaluator, Preprocesses
+from jaqpotpy.datasets.dataset_base import BaseDataset
+from jaqpotpy.datasets.material_datasets import CompositionDataset, StructureDataset
+from jaqpotpy.models import Evaluator, Preprocess
 import torch
 from torch.utils.data import DataLoader
 from jaqpotpy.models import MolecularModel, MaterialModel
@@ -17,20 +18,20 @@ import jaqpotpy
 
 class MolecularTorch(Model):
 
-    def __init__(self, dataset: MolecularDataset, model_nn: torch.nn.Module
+    def __init__(self, dataset: BaseDataset, model_nn: torch.nn.Module
                  , doa: DOA = None
-                 , eval: Evaluator = None, preprocess: Preprocesses = None
+                 , eval: Evaluator = None, preprocess: Preprocess = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu', test_metric=(None, 'minimize')):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
-        self.dataset: MolecularDataset = dataset
+        self.dataset: BaseDataset = dataset
         self.model_nn = model_nn
         self.doa = doa
-        self.doa_m = None
+        self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
-        self.preprocess: Preprocesses = preprocess
+        self.preprocess: Preprocess = preprocess
         self.train_batch = train_batch
         self.test_batch = test_batch
         self.trainDataLoaderParams = {'batch_size': self.train_batch, 'shuffle': False, 'num_workers': 0}
@@ -65,9 +66,9 @@ class MolecularTorch(Model):
         if self.doa:
             if self.doa:
                 if self.doa.__name__ == 'SmilesLeverage':
-                    self.doa_m = self.doa.fit(self.dataset.smiles)
+                    self.doa_fitted = self.doa.fit(self.dataset.smiles)
                 else:
-                    self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+                    self.doa_fitted = self.doa.fit(X=self.dataset.__get_X__())
         if self.dataset.df is not None:
             pass
         else:
@@ -278,18 +279,18 @@ class MaterialTorch(Model):
 
     def __init__(self, dataset: Union[CompositionDataset, StructureDataset], model_nn: torch.nn.Module
                  , doa: DOA = None
-                 , eval: Evaluator = None, preprocess: Preprocesses = None
+                 , eval: Evaluator = None, preprocess: Preprocess = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, device: str = 'cpu'):
         # super(InMemMolModel, self).__init__(dataset=dataset, doa=doa, model=model)
-        self.dataset: MolecularDataset = dataset
+        self.dataset: BaseDataset = dataset
         self.model_nn = model_nn
         self.doa = doa
-        self.doa_m = None
+        self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
-        self.preprocess: Preprocesses = preprocess
+        self.preprocess: Preprocess = preprocess
         self.train_batch = train_batch
         self.test_batch = test_batch
         self.trainDataLoaderParams = {'batch_size': self.train_batch, 'shuffle': False, 'num_workers': 0}
@@ -316,9 +317,9 @@ class MaterialTorch(Model):
         if self.doa:
             if self.doa:
                 if self.doa.__name__ == 'SmilesLeverage':
-                    self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+                    self.doa_fitted = self.doa.fit(self.dataset.smiles_strings)
                 else:
-                    self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+                    self.doa_fitted = self.doa.fit(X=self.dataset.__get_X__())
         if self.dataset.df is not None:
             pass
         else:

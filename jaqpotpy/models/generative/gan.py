@@ -5,7 +5,7 @@ import time
 import rdkit
 
 from jaqpotpy.models.generative.models import GanMoleculeGenerator, MoleculeDiscriminator
-from jaqpotpy.datasets.molecular_datasets import SmilesDataset
+from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -27,7 +27,7 @@ class GanSolver(object):
 
     def __init__(self, generator: GanMoleculeGenerator
                  , discriminator: MoleculeDiscriminator
-                 , dataset: SmilesDataset
+                 , dataset: JaqpotpyDataset
                  , evaluator: GenerativeEvaluator
                  , g_lr
                  , d_lr

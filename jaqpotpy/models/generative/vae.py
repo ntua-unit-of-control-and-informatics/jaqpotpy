@@ -1,5 +1,5 @@
 from jaqpotpy.cfg import config
-from jaqpotpy.datasets import SmilesDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MolGanFeaturizer, GraphMatrix
 import torch
 from torch_geometric.nn import GCNConv
@@ -34,7 +34,7 @@ smiles = df['smiles'].to_list()[0:1000]
 
 feat = MolGanFeaturizer(max_atom_count=40)
 
-dataset = SmilesDataset(smiles=smiles, featurizer=feat, task="generation")
+dataset = JaqpotpyDataset(smiles=smiles, featurizer=feat, task="generation")
 dataset = dataset.create()
 gm: GraphMatrix = dataset.df['MolGanGraphs'][0]
 

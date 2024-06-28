@@ -3,6 +3,8 @@ from jaqpotpy.descriptors.molecular import RDKitDescriptors, MACCSKeysFingerprin
 from jaqpotpy.descriptors.base_classes import Featurizer #MolecularFeaturizer, MaterialFeaturizer,
 from typing import Any, Iterable, Union, Dict
 from jaqpotpy.datasets.image_datasets import default_loader
+from jaqpotpy.datasets import JaqpotpyDataset
+
 try:
     from pymatgen.core.structure import Lattice, Structure
 except ModuleNotFoundError:
@@ -49,10 +51,6 @@ class Model(object):
     @smiles.setter
     def smiles(self, values):
         self._smiles = values
-
-    @property
-    def external(self):
-        return self._external
 
     @property
     def descriptors(self):
@@ -117,14 +115,6 @@ class Model(object):
     @Y.setter
     def Y(self, value):
         self._Y = value
-
-    @property
-    def external(self) -> dict:
-        return self._external
-
-    @external.setter
-    def external(self, value):
-        self._external = value
 
     @property
     def external_feats(self) -> Iterable[str]:
@@ -214,21 +204,21 @@ class Model(object):
     def jaqpotpy_docker(self, value):
         self._jaqpotpy_docker = value
 
-    def __train__(self):
-        raise NotImplemented("Not implemented")
+    def fit(self):
+        raise NotImplementedError("Not implemented")
 
-    def __eval__(self):
-        raise NotImplemented("Not implemented")
+    def eval(self):
+        raise NotImplementedError("Not implemented")
 
-    def infer(self):
-        raise NotImplemented("Not implemented")
+    def predict(self, X):
+        raise NotImplementedError("Not implemented")
 
 
 class MolecularModel(Model):
 
-    def __call__(self, smiles, external=None):
-        self._smiles = smiles
-        self._external = external
+    def __call__(self, dataset:JaqpotpyDataset):
+        self.X =  dataset.__get_X__()
+        self.y = dataset.__get_Y__().ravel()
         self.infer()
 
     def save(self):
@@ -277,9 +267,6 @@ class MolecularModel(Model):
             else:
                 data = self._descriptors.featurize_dataframe(self._smiles)
 
-            if self.external:
-                ext = pd.DataFrame.from_dict(self.external)
-                data = pd.concat([data, ext], axis=1)
             graph_data_list = []
 
             # if self._descriptors.__name__ == 'MolGraphConvFeaturizer':
@@ -431,7 +418,7 @@ class MolecularModel(Model):
 
 class MaterialModel(Model):
 
-    def __call__(self, compositions: Iterable[str] = None, structures: Union[Iterable[Structure], Iterable[Dict]] = None, external=None):
+    def __call__(self, compositions: Iterable[str] = None, structures: Union[Iterable[Structure], Iterable[Dict]] = None):
         if compositions:
             if structures:
                 raise ValueError('Both compositions and structures were passed. Please provide one of them.')
@@ -441,7 +428,6 @@ class MaterialModel(Model):
         else:
             self.__type_mat__ = 'structure'
             self._materials = structures
-        self._external = external
         self.infer()
 
     def save(self):
@@ -461,9 +447,8 @@ class MaterialModel(Model):
         self._prediction = []
         self._probability = []
         if self._materials:
-            ext = pd.DataFrame.from_dict(self.external)
             data = self._descriptors.featurize_dataframe(self._materials)
-            data = pd.concat([data, ext], axis=1)
+            #data = pd.concat([data, ext], axis=1)
             graph_data_list = []
             if self._descriptors.__name__ == 'CrystalGraphCNN':
                 for g in data['MaterialGraph'].to_list():
@@ -476,7 +461,7 @@ class MaterialModel(Model):
                 self._prediction = []
 
             # if self.doa:
-            #     self.doa_m = self.doa.fit(X=self.dataset.__get_X__())
+            #     self.doa_fitted = self.doa.fit(X=self.dataset.__get_X__())
 
             try:
                 if self.preprocessing:

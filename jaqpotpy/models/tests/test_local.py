@@ -2,19 +2,19 @@
 Tests for Jaqpotpy Models.
 """
 import unittest
-from jaqpotpy.datasets import MolecularTabularDataset, TorchGraphDataset, SmilesDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
     , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
 
 from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeaturizer\
   , PagtnMolGraphFeaturizer, TorchMolGraphConvFeaturizer, AttentiveFPFeaturizer
-from jaqpotpy.models import MolecularModel, MolecularSKLearn
+from jaqpotpy.models import MolecularModel, SklearnModel
 from sklearn.linear_model import LinearRegression
 import asyncio
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models.evaluator import Evaluator
-from jaqpotpy.models.preprocessing import Preprocesses
+from jaqpotpy.models.preprocessing import Preprocess
 from sklearn.metrics import max_error, mean_absolute_error, r2_score, accuracy_score, f1_score, roc_auc_score
 from sklearn.preprocessing import StandardScaler
 import torch
@@ -110,7 +110,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , x_cols=['molregno', 'organism']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
@@ -120,7 +120,7 @@ class TestModels(unittest.TestCase):
                                              'VE1_A', 'VE2_A']
                                           )
         model = LinearRegression()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa.in_doa == [False]
         molecularModel_t1.prediction[0]
@@ -131,7 +131,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           # , x_cols=['molregno', 'organism']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
@@ -141,7 +141,7 @@ class TestModels(unittest.TestCase):
                                           #    'VE1_A', 'VE2_A']
                                           )
         model = LinearRegression()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -153,13 +153,13 @@ class TestModels(unittest.TestCase):
     def test_model_rdkit_pickle_2(self):
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.prediction
@@ -174,13 +174,13 @@ class TestModels(unittest.TestCase):
     def test_model_fingerprint_pickle(self):
         featurizer = TopologicalFingerprint()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         print(molecularModel_t1.prediction)
@@ -194,13 +194,13 @@ class TestModels(unittest.TestCase):
     def test_model_fingerprint_pickle_2(self):
         featurizer = TopologicalFingerprint()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.prediction
@@ -210,13 +210,13 @@ class TestModels(unittest.TestCase):
     def test_model_topological_fingerprint_pickle(self):
         featurizer = TopologicalFingerprint()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -225,13 +225,13 @@ class TestModels(unittest.TestCase):
     def test_model_rdkit_pickle(self):
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
 
@@ -239,13 +239,13 @@ class TestModels(unittest.TestCase):
     def test_model_top_pickle(self):
         featurizer = TopologicalFingerprint()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           )
         model = svm.SVC()
-        molecularModel_t1 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
@@ -255,7 +255,7 @@ class TestModels(unittest.TestCase):
         featurizer = MordredDescriptors(ignore_3D=True)
         # featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , x_cols=['molregno', 'organism']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
@@ -266,7 +266,7 @@ class TestModels(unittest.TestCase):
                                           )
 
         model = LinearRegression()
-        molecularModel_t2 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t2 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t2('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t2.doa.in_doa == [True]
         assert int(molecularModel_t2.doa.doa_new[0]) == 0
@@ -277,14 +277,14 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , x_cols=['molregno']
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           )
         model = LinearRegression()
-        molecularModel_t3 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t3 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         ext = {'molregno': [100]}
         molecularModel_t3('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1', ext)
         assert molecularModel_t3.external_feats == ['molregno']
@@ -296,13 +296,13 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=False)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
                                           )
         model = LinearRegression()
-        molecularModel_t4 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
+        molecularModel_t4 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t4('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t4.doa.in_doa
         molecularModel_t4.doa.doa_new
@@ -315,7 +315,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=False)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -327,7 +327,7 @@ class TestModels(unittest.TestCase):
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
         model = LinearRegression()
-        molecularModel_t5 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
+        molecularModel_t5 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=val).fit()
         molecularModel_t5('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         print(molecularModel_t5.prediction)
         # assert int(molecularModel_t5.prediction[0][0]) == 21232
@@ -336,7 +336,7 @@ class TestModels(unittest.TestCase):
     def test_model_pre(self):
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -346,11 +346,11 @@ class TestModels(unittest.TestCase):
         val.register_scoring_function('Max Error', max_error)
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
-        pre = Preprocesses()
+        pre = Preprocess()
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
         model = LinearRegression()
-        molecularModel_t6 = MolecularSKLearn(dataset=dataset
+        molecularModel_t6 = SklearnModel(dataset=dataset
                                              , doa=Leverage()
                                              , model=model
                                              , eval=val
@@ -372,7 +372,7 @@ class TestModels(unittest.TestCase):
     def test_model_save(self):
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -382,10 +382,10 @@ class TestModels(unittest.TestCase):
         val.register_scoring_function('Max Error', max_error)
         val.register_scoring_function('Mean Absolute Error', mean_absolute_error)
         val.register_scoring_function('R 2 score', r2_score)
-        pre = Preprocesses()
+        pre = Preprocess()
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         model = LinearRegression()
-        molecularModel_t7 = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=model, eval=val,
+        molecularModel_t7 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=val,
                                              preprocess=pre).fit()
         molecularModel_t7(['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
                               , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
@@ -433,7 +433,7 @@ class TestModels(unittest.TestCase):
     def test_model_pre_torch(self):
         featurizer = MordredDescriptors(ignore_3D=True)
         path = '../../test_data/data.csv'
-        dataset = MolecularTabularDataset(path=path
+        dataset = JaqpotpyDataset(path=path
                                           , y_cols=['standard_value']
                                           , smiles_col='canonical_smiles'
                                           , featurizer=featurizer
@@ -483,7 +483,7 @@ class TestModels(unittest.TestCase):
         # featurizer = MordredDescriptors(ignore_3D=True)
         featurizer = RDKitDescriptors()
         path = '../../test_data/data.csv'
-        dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=featurizer, task="classification")
+        dataset = JaqpotpyDataset(smiles=self.mols, y=self.ys, featurizer=featurizer, task="classification")
         # dataset = MolecularTabularDataset(path=path
         #                                   , y_cols=['standard_value']
         #                                   , smiles_col='canonical_smiles'
