@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from torch.utils.data import Dataset
@@ -19,7 +18,7 @@ class TabularDataset(Dataset):
 
     def __init__(self, X, y=None):
         """
-        Initializes the TabularDataset object.
+        The TabularDataset constructor.
 
         Args:
             X (numpy.ndarray or pandas.DataFrame): Feature data matrix of shape (n_samples, n_features).

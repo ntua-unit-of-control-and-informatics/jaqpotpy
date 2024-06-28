@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 import torch
@@ -20,13 +19,13 @@ class GraphConvBlock(nn.Module):
     A single Graph Convolutional Block consisting of a GCNConv layer, an activation function,
     and a dropout layer. Optionally, a graph normalization layer can be applied.
 
-    Args:
-        input_dim (int): Dimension of the input node features.
-        hidden_dim (int): Dimension of the hidden features.
-        activation (nn.Module): Activation function to apply after the GCNConv layer.
-        dropout_probability (float): Dropout probability.
+    Attributes:
+        hidden_layer (torch_geometric.nn.GCNConv): The GCNConv layer.
         graph_norm (bool): Whether to apply graph normalization.
-        jittable (bool): Whether to make the GCNConv module jittable.
+        gn_layer (nn.Module or None): The graph normalisation layer.
+        activation (nn.Module): Activation function to apply after the hidden layer.
+        dropout (nn.Dropout): The dropout layer.
+        jittable (bool): Whether to make the hidden module jittable.
     """
 
     def __init__(self,
@@ -38,7 +37,15 @@ class GraphConvBlock(nn.Module):
                  jittable: bool = True,
                  *args,
                  **kwargs):
-        
+        """
+        Arguments:
+            input_dim (int): Dimension of the input node features.
+            hidden_dim (int): Dimension of the hidden features.
+            activation (nn.Module): Activation function to apply after the hidden layer. Default is nn.ReLU().
+            dropout_probability (float): Dropout probability. Default is 0.5.
+            graph_norm (bool): Whether to apply graph normalization. Default is False.
+            jittable (bool): Whether to make the hidden module jittable. Default is True.
+        """
         super(GraphConvBlock, self).__init__()
 
         self.jittable = jittable
@@ -73,7 +80,6 @@ class GraphConvBlock(nn.Module):
         Returns:
             Tensor: Output tensor of the layer.
         """
-
         x = self.hidden_layer(x, edge_index)
         if self.gn_layer is not None:
             x = self.gn_layer(x, batch)
@@ -88,15 +94,15 @@ class GraphConvolutionalNetwork(nn.Module):
     """
     A Graph Convolutional Network consisting of multiple Graph Convolutional Blocks followed by a Fully Connected Layer.
 
-    Args:
+    Attributes:
         input_dim (int): Dimension of the input node features.
         hidden_dims (Iterable[int]): Dimensions of the hidden layers.
-        output_dim (int, optional): Dimension of the output. Default: 1
-        activation (nn.Module, optional): Activation function to apply after each GCNConv layer. Default: nn.ReLU()
-        dropout (Union[float, Iterable[float]], optional): Dropout probability(s) after each layer. Default: 0.5
-        graph_norm (bool, optional): Whether to apply graph normalization. Default: False
-        pooling (str, optional): Type of graph pooling operation ['mean', 'add', 'max']. Default: 'mean'
-        jittable (bool, optional): Whether to make the GCNConv modules jittable. Default: True
+        output_dim (int): Dimension of the network's output.
+        activation (nn.Module): Activation function to apply after each hidden layer.
+        dropout_probabilities (list): List of dropout probabilities after each hidden layer.
+        graph_norm (bool): Whether to apply graph normalization.
+        pooling (str): Type of pooling to apply ('mean', 'add', 'max').
+        jittable (bool): Whether to make the hidden modules jittable.
     """
 
     def __init__(self,
@@ -110,7 +116,19 @@ class GraphConvolutionalNetwork(nn.Module):
                  jittable: bool = True,
                  *args,
                  **kwargs):
-        
+        """
+        Arguments:
+            input_dim (int): Dimension of the input node features.
+            hidden_dims (Iterable[int]): Dimensions of the hidden layers.
+            heads (Union[int, Iterable[int]]): Number of attention heads for each layer. Default is 1.
+            edge_dim (Optional[int]): Dimension of the edge features if any. Default is None.
+            output_dim (int): Dimension of the network's output. Default is 1.
+            activation (nn.Module): Activation function to apply after each hidden layer. Default is nn.ReLU().
+            dropout (Union[float, Iterable[float]]): Dropout probability for each layer. Default is 0.5.
+            graph_norm (bool): Whether to apply graph normalization. Default is False.
+            pooling (str): Type of pooling to apply ('mean', 'add', 'max'). Default is 'mean'.
+            jittable (bool): Whether to make the hidden modules jittable. Default is True.
+        """
         super(GraphConvolutionalNetwork, self).__init__()
         
         # Input types check
@@ -226,6 +244,13 @@ class GraphConvolutionalNetwork(nn.Module):
                           batch: Optional[Tensor]) -> Tensor:
         """
         Helper method for the pooling operation.
+        
+        Arguments:
+            x (Tensor): Node feature matrix with shape [num_nodes, ?].
+            batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
+
+        Returns:
+            Tensor: Output tensor after batch-level aggregation.
         """
 
         if self.pooling == 'add':
@@ -243,23 +268,14 @@ class GraphConvolutionalNetworkWithExternal(nn.Module):
     A Graph Convolutional Network that integrates external features.
     Combines the output from a Graph Convolutional Network with external features
     and processes them through a Fully Connected Network.
-
-    Args:
-        graph_input_dim (int): Dimension of the input node features for the graph.
-        num_external_features (int): Number of external features.
-        graph_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the graph.
-        fc_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the fully connected network.
-        graph_output_dim (int): Dimension of the graph output features.
-        output_dim (int): Dimension of the final output features.
-        graph_activation (nn.Module): Activation function for graph layers.
-        graph_dropout (Union[float, Iterable[float]]): Dropout probability for graph layers.
-        graph_norm (bool): Whether to apply graph normalization in the graph layers.
-        graph_pooling (str): Type of pooling to apply in the graph layers ('mean', 'add', 'max').
-        fc_dropout (Union[float, Iterable[float]]): Dropout probability for fully connected layers.
-        fc_activation (nn.Module): Activation function for fully connected layers.
-        jittable (bool): Whether to make the GCNConv modules jittable.
-    """
     
+    Attributes:
+        graph_model (jaqpotpy.jaqpotpy_torch.models.GraphConvolutionalNetwork): The graph network to treat the graph features.
+        num_external_features (int): Number of external features.
+        output_dim (int): Dimension of the network's output.
+        fc_net (jaqpotpy.jaqpotpy_torch.models.FullyConnectedNetwork): The fc network to treat the external features.
+    """
+
     def __init__(self,
                  graph_input_dim: int,
                  num_external_features: int,
@@ -276,7 +292,22 @@ class GraphConvolutionalNetworkWithExternal(nn.Module):
                  jittable: bool = True,
                  *args,
                  **kwargs):
-        
+        """
+        Arguments:
+            graph_input_dim (int): Dimension of the input node features for the graph.
+            num_external_features (int): Number of external features.
+            graph_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the graph.
+            fc_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the fully connected network.
+            graph_output_dim (int): Dimension of the graph output features.
+            output_dim (int): Dimension of the network's output. Default is 1.
+            graph_activation (nn.Module): Activation function for graph layers. Default is nn.ReLU().
+            graph_dropout (Union[float, Iterable[float]]): Dropout probability for graph layers. Default is 0.5
+            graph_norm (bool): Whether to apply graph normalization in the graph layers. Default is False.
+            graph_pooling (str): Type of pooling to apply in the graph layers ('mean', 'add', 'max'). Default is 'mean'.
+            fc_dropout (Union[float, Iterable[float]]): Dropout probability for fully connected layers. Default is 0.5.
+            fc_activation (nn.Module): Activation function for fully connected layers. Default is nn.ReLU().
+            jittable (bool): Whether to make the hidden modules jittable. Default is True.
+        """
         super().__init__()
         
         if not isinstance(num_external_features, int):

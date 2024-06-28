@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from .graph_attention_network import GraphAttentionNetwork

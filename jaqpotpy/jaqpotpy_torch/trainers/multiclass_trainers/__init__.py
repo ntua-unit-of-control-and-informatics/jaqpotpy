@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from .multiclass_model_trainer import MulticlassModelTrainer

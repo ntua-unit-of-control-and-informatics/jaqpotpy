@@ -19,16 +19,6 @@ from typing import Optional
 class MulticlassFCModelTrainer(MulticlassModelTrainer):
     """
     Trainer class for Multiclass Classification using a Fully Connected Network on tabular data.
-    
-    Args:
-        model (torch.nn.Module): The torch model to be trained.
-        n_epochs (int): Number of training epochs.
-        optimizer (torch.optim.Optimizer): The optimizer used for training the model.
-        loss_fn (torch.nn.Module): The loss function used for training.
-        device (str, optional): The device on which to train the model. Default is 'cpu'.
-        use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
-        log_enabled (bool, optional): Whether logging is enabled. Default is True.
-        log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
     """
 
     model_type = 'multiclass-fc-model'
@@ -49,7 +39,36 @@ class MulticlassFCModelTrainer(MulticlassModelTrainer):
             log_enabled=True,
             log_filepath=None,
             ):
+        """
+        The MulticlassFCModelTrainer constructor.
+
+        Args:
+            model (torch.nn.Module): The torch model to be trained.
+            n_epochs (int): Number of training epochs.
+            optimizer (torch.optim.Optimizer): The optimizer used for training the model.
+            loss_fn (torch.nn.Module): The loss function used for training.
+            scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
+            device (str, optional): The device on which to train the model. Default is 'cpu'.
+            use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
+            log_enabled (bool, optional): Whether logging is enabled. Default is True.
+            log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
         
+        Example:
+        ```
+        >>> import torch
+        >>> from jaqpotpy.jaqpotpy_torch.models import FullyConnectedNetwork
+        >>> from jaqpotpy.jaqpotpy_torch.trainers import MulticlassFCModelTrainer
+        >>> 
+        >>> num_classes = 10
+        >>> model = FullyConnectedNetwork(input_dim=10,
+        ...                               hidden_dims=[32, 32]
+        ...                               output_dim=num_classes)
+        >>> optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
+        >>> loss_fn = torch.nn.CrossEntropyLoss()
+        >>>
+        >>> trainer = MulticlassFCModelTrainer(model, n_epochs=50, optimizer=optimizer, loss_fn=loss_fn)
+        ```
+        """
         super().__init__(
             model=model,
             n_epochs=n_epochs,
@@ -63,6 +82,15 @@ class MulticlassFCModelTrainer(MulticlassModelTrainer):
             )
     
     def get_model_kwargs(self, data):
+        """
+        Fetch the model's keyword arguments.
+
+        Args:
+            data (tuple): Tuple returned by the Dataloader.
+
+        Returns:
+            dict: The required model kwargs. Set of keywords: {'x'}.
+        """
 
         kwargs = {}
 
@@ -93,6 +121,10 @@ class MulticlassFCModelTrainer(MulticlassModelTrainer):
             reliability (int, optional): The models reliability. Default is None.
             pretrained (bool, optional): Indicates if the model is pretrained. Default is False.
             meta (dict, optional): Additional metadata for the model. Default is an empty dictionary.
+        
+        Returns:
+            dict: The data to be sent to the API of Jaqpot in JSON format.
+                  Note that in this case, the '*additional_model_params*' key contains a nested dictionary with they keys: {'*preprocessor*'}.
         """
         
         if not preprocessor._sklearn_is_fitted:

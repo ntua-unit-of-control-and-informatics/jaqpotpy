@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from .custom_one_hot_encoder import CustomOneHotEncoder
@@ -13,16 +12,98 @@ from sklearn.exceptions import NotFittedError
 class CustomOneHotTransformerPipeline(BaseEstimator, TransformerMixin):
     """
     A custom pipeline that starts with a CustomOneHotEncoder and then applies a series of user-defined steps.
-
-    Parameters
+    
+    Parameters:
     ----------
-    categorical_columns : list of str, optional
+    categorical_columns : list of str, default=None
         List of column names to be treated as categorical and to be one-hot encoded.
-    steps : list of tuples, optional
+
+    steps : list of tuples, default=None
         List of (name, transform) tuples (implementing fit/transform) that are chained, in the order in which they are passed.
+    
+
+    Attributes:
+    ----------
+    _sklearn_is_fitted : bool 
+        Whether the transformer is fitted or not.
+
+    categorical_columns : list of str or None
+        List of column names to be treated as categorical and to be one-hot encoded.
+
+    steps : list of tuples or None
+        List of (name, transform) tuples (implementing fit/transform) that are chained, in the order in which they are passed.
+
+
+    one_hot_encoder : jaqpotpy.preprocessors.CustomOneHotEncoder
+        The one hot encoder to be used as first step of the Pipeline
+
+    pipeline : sklearn.pipeline.Pipeline
+        Pipeline that starts with the `one_hot_encoder` and then follows the transforms in `steps`
+    
+    X_columns_ : list of str
+        The list of columns names of the dataframe provided for fitting
+
+    categories_ : dict
+        A dictionary that has as keys the category names given by `categorical_columns`, and as values the set of categorical values found in the dataframe provided for fitting
+    
+    new_columns_ : list of str
+        The list of column names of the dataframe produced after the one-hot encoding in the format "column_name.category1"
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from jaqpotpy.preprocessors import CustomOneHotTransformerPipeline
+    >>> from sklearn.preprocessing import StandardScaler
+    >>>
+    >>> df = pd.DataFrame({
+    ...     'Temperature': [18.3, 4.3, 10.3, -4.0], # Numerical
+    ...     'Solvent': ['Water', 'Ethanol', 'Methanol', 'Acetone'], # Categorical
+    ...     'Lab_ID': [0, 1, 2, 0], # Categorical
+    ...     'isContaminationMonitored': [0, 1, 0, 0] # Booelan (numerical)
+    ... })
+    >>>
+    >>> scaler = StandardScaler()
+    >>> preprocessor = CustomOneHotTransformerPipeline(categorical_columns=['Solvent', 'Lab_ID'],
+    ...                                             steps=[
+    ...                                                 ('scaler', scaler),
+    ...                                                 ])
+    >>> preprocessor.fit(df)
+    >>> transformed = preprocessor.transform(df)
+    >>> transformed
+    array([[ 1.35640283,  1.73205081, -0.57735027, -0.57735027, -0.57735027,
+         1.        , -0.57735027, -0.57735027, -0.57735027],
+       [-0.35823732, -0.57735027,  1.73205081, -0.57735027, -0.57735027,
+        -1.        ,  1.73205081, -0.57735027,  1.73205081],
+       [ 0.37660846, -0.57735027, -0.57735027,  1.73205081, -0.57735027,
+        -1.        , -0.57735027,  1.73205081, -0.57735027],
+       [-1.37477397, -0.57735027, -0.57735027, -0.57735027,  1.73205081,
+         1.        , -0.57735027, -0.57735027, -0.57735027]])
+    >>>
+    >>> preprocessor.categories_
+    {'Solvent': ['Water', 'Ethanol', 'Methanol', 'Acetone'],
+    'Lab_ID': ['0', '1', '2']}
+    >>>
+    >>> preprocessor.new_columns_
+    ['Temperature',
+    'Solvent.Water',
+    'Solvent.Ethanol',
+    'Solvent.Methanol',
+    'Solvent.Acetone',
+    'Lab_ID.0',
+    'Lab_ID.1',
+    'Lab_ID.2',
+    'isContaminationMonitored']
     """
 
     def __init__(self, categorical_columns=[], steps=None):
+        """
+        A custom pipeline that starts with a CustomOneHotEncoder and then applies a series of user-defined steps.
+
+        Arguments:
+            categorical_columns (list or None): List of column names to be treated as categorical and to be one-hot encoded. Default is None.
+            steps: (list of tuples or None): List of (name, transform) tuples (implementing fit/transform) that are chained, in the order in which they are passed. Default is None.
+        """
+
         self._sklearn_is_fitted = False
         self.categorical_columns = categorical_columns
         self.steps = steps if steps is not None else []
