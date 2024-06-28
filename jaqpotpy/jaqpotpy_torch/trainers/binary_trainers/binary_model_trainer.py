@@ -35,7 +35,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         """
         The BinaryModelTrainer constructor.
 
-        Arguments:
+        Args:
             model (torch.nn.Module): The torch model to be trained.
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
@@ -67,7 +67,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         """
         This abstract method should be implemented by subclasses to provide model-specific keyword arguments based on the data.
         
-        Arguments:
+        Args:
             data: Whatever data the respective dataloader fetches.
         Returns:
             dict: The kwargs that the forward method of the respective model expects as input.
@@ -79,7 +79,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         """
         Train the model.
 
-        Arguments:
+        Args:
             train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.            
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional): DataLoader for the validation dataset.
         Returns:
@@ -107,7 +107,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         """
         This helper method handles the training loop for a single epoch, updating the model parameters and computing the running loss.
 
-        Arguments:
+        Args:
             train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
         Returns:
             float: The average loss of the current epoch.
@@ -156,7 +156,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         """
         Evaluate the model's performance on the validation set.
 
-        Arguments:
+        Args:
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
         Returns:
             float: Average loss over the validation dataset.
@@ -215,7 +215,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         """
         Provide predictions on the validation set.
 
-        Arguments:
+        Args:
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
         Returns:
             list: List of predictions.
@@ -245,7 +245,7 @@ class BinaryModelTrainer(TorchModelTrainer):
         """
         Provide the probabilities of the predictions on the validation set.
 
-        Arguments:
+        Args:
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
         Returns:
             list: List of predictions' probabilities.

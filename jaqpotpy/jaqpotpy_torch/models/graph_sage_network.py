@@ -38,7 +38,7 @@ class GraphSAGEBlock(nn.Module):
                  *args,
                  **kwargs):
         """
-        Arguments:
+        Args:
             input_dim (int): Dimension of the input node features.
             hidden_dim (int): Dimension of the hidden features.
             activation (nn.Module): Activation function to apply after the hidden layer. Default is nn.ReLU().
@@ -123,7 +123,7 @@ class GraphSAGENetwork(nn.Module):
                  *args,
                  **kwargs):
         """
-        Arguments:
+        Args:
             input_dim (int): Dimension of the input node features.
             hidden_dims (Iterable[int]): Dimensions of the hidden layers.
             heads (Union[int, Iterable[int]]): Number of attention heads for each layer. Default is 1.
@@ -253,7 +253,7 @@ class GraphSAGENetwork(nn.Module):
         """
         Helper method for the pooling operation.
         
-        Arguments:
+        Args:
             x (Tensor): Node feature matrix with shape [num_nodes, ?].
             batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
 
@@ -301,7 +301,7 @@ class GraphSAGENetworkWithExternal(nn.Module):
                  *args,
                  **kwargs):
         """
-        Arguments:
+        Args:
             graph_input_dim (int): Dimension of the input node features for the graph.
             num_external_features (int): Number of external features.
             graph_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the graph.

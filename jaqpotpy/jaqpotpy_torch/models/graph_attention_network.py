@@ -41,7 +41,7 @@ class GraphAttentionBlock(nn.Module):
                  *args,
                  **kwargs):
         """
-        Arguments:
+        Args:
             input_dim (int): Dimension of the input node features.
             hidden_dim (int): Dimension of the hidden features.
             heads (int): Number of attention heads. Default is 1.
@@ -78,7 +78,7 @@ class GraphAttentionBlock(nn.Module):
         """
         Passes the input through the layer.
 
-        Arguments:
+        Args:
             x (Tensor): Node feature matrix with shape [num_nodes, num_node_features].
             edge_index (Tensor): Graph connectivity in COO format with shape [2, num_edges].
             batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
@@ -119,7 +119,7 @@ class GraphAttentionNetwork(nn.Module):
                  *args,
                  **kwargs):
         """
-        Arguments:
+        Args:
             input_dim (int): Dimension of the input node features.
             hidden_dims (Iterable[int]): Dimensions of the hidden layers.
             heads (Union[int, Iterable[int]]): Number of attention heads for each layer. Default is 1.
@@ -234,7 +234,7 @@ class GraphAttentionNetwork(nn.Module):
         """
         Forward pass through the entire network.
 
-        Arguments:
+        Args:
             x (Tensor): Node feature matrix with shape [num_nodes, num_node_features].
             edge_index (Tensor): Graph connectivity in COO format with shape [2, num_edges].
             batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
@@ -257,7 +257,7 @@ class GraphAttentionNetwork(nn.Module):
         """
         Helper method for the forward pass through graph layers and pooling.
         
-        Arguments:
+        Args:
             x (Tensor): Node feature matrix with shape [num_nodes, num_node_features].
             edge_index (Tensor): Graph connectivity in COO format with shape [2, num_edges].
             batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
@@ -279,7 +279,7 @@ class GraphAttentionNetwork(nn.Module):
         """
         Helper method for the pooling operation.
         
-        Arguments:
+        Args:
             x (Tensor): Node feature matrix with shape [num_nodes, ?].
             batch (Optional[Tensor]): The batch vector of shape [num_samples,] which assigns each element to a specific example.
 
@@ -329,7 +329,7 @@ class GraphAttentionNetworkWithExternal(nn.Module):
                  *args,
                  **kwargs):
         """
-        Arguments:
+        Args:
             graph_input_dim (int): Dimension of the input node features for the graph.
             num_external_features (int): Number of external features.
             graph_hidden_dims (Iterable[int]): Dimensions of the hidden layers in the graph.
@@ -383,7 +383,7 @@ class GraphAttentionNetworkWithExternal(nn.Module):
         """
         Forward pass through the entire network.
 
-        Arguments:
+        Args:
             x (Tensor): Node feature matrix with shape [num_nodes, num_node_features].
             edge_index (Tensor): Graph connectivity in COO format with shape [2, num_edges].
             external (Tensor): External feature matrix with shape [num_samples, num_external_features].

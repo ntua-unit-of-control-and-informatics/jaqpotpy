@@ -16,7 +16,7 @@ class RegressionModelTrainer(TorchModelTrainer):
     
     Attributes:
         normalization_mean (float): Mean used to normalize the true values of the regression variables before model training. 
-        normalization_std' (float): Standard deviation used to normalize the true values of the regression variables before model training.  
+        normalization_std (float): Standard deviation used to normalize the true values of the regression variables before model training.  
     """
 
     def __init__(
@@ -36,7 +36,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         The RegressionModelTrainer constructor.
 
-        Arguments:
+        Args:
             model (torch.nn.Module): The torch model to be trained.
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
@@ -47,7 +47,7 @@ class RegressionModelTrainer(TorchModelTrainer):
             log_enabled (bool, optional): Whether logging is enabled. Default is True.
             log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
             normalization_mean (float, optional): Mean used to normalize the true values of the regression variables before model training. Default is 0.
-            normalization_std' (float, optinal): Standard deviation used to normalize the true values of the regression variables before model training. Default is 1. 
+            normalization_std (float, optinal): Standard deviation used to normalize the true values of the regression variables before model training. Default is 1. 
         """
         super().__init__(
             model=model,
@@ -70,7 +70,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         This abstract method should be implemented by subclasses to provide model-specific keyword arguments based on the data.
         
-        Arguments:
+        Args:
             data: Whatever data the respective dataloader fetches.
         Returns:
             dict: The kwargs that the forward method of the respective model expects as input.
@@ -81,7 +81,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         Train the model.
 
-        Arguments:
+        Args:
             train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.            
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional): DataLoader for the validation dataset.
         Returns:
@@ -110,7 +110,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         This helper method handles the training loop for a single epoch, updating the model parameters and computing the running loss.
 
-        Arguments:
+        Args:
             train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
         Returns:
             float: The average loss of the current epoch.
@@ -161,7 +161,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         Evaluate the model's performance on the validation set.
 
-        Arguments:
+        Args:
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
         Returns:
             float: Average loss over the validation dataset.
@@ -212,7 +212,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         Provide predictions on the validation set.
 
-        Arguments:
+        Args:
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
         Returns:
             list: List of predictions.

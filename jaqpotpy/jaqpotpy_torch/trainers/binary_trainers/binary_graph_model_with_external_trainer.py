@@ -47,7 +47,7 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
         """
         The BinaryGraphModelWithExternalTrainer constructor.
 
-        Arguments:
+        Args:
             model (torch.nn.Module): The torch model to be trained.
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
@@ -94,7 +94,7 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
         """
         Fetch the model's keyword arguments.
 
-        Arguments:
+        Args:
             data (torch_geometric.data.Data): Data object returned as returned by the Dataloader
 
         Returns:
@@ -128,7 +128,7 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
         """
         Prepare the model for deployment on Jaqpot.
 
-        Arguments:
+        Args:
             featurizer (object): The featurizer used to transform the SMILES to graph representations before training the model.
             external_preprocessor (object): The preprocessor used to transform the external data before training the model.
             endpoint_name (str): The name of the endpoint for the deployed model.

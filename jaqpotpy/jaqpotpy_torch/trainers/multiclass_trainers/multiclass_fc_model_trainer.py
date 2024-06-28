@@ -42,7 +42,7 @@ class MulticlassFCModelTrainer(MulticlassModelTrainer):
         """
         The MulticlassFCModelTrainer constructor.
 
-        Arguments:
+        Args:
             model (torch.nn.Module): The torch model to be trained.
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
@@ -85,7 +85,7 @@ class MulticlassFCModelTrainer(MulticlassModelTrainer):
         """
         Fetch the model's keyword arguments.
 
-        Arguments:
+        Args:
             data (tuple): Tuple returned by the Dataloader.
 
         Returns:
@@ -112,7 +112,7 @@ class MulticlassFCModelTrainer(MulticlassModelTrainer):
         """
         Prepare the model for deployment on Jaqpot.
         
-        Arguments:
+        Args:
             preprocessor (object): The preprocessor used to transform the tabular data before training the model.
             endpoint_name (str): The name of the endpoint for the deployed model.
             name (str): The name to be assigned to the deployed model.

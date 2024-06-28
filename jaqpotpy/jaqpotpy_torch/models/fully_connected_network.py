@@ -28,7 +28,7 @@ class FullyConnectedBlock(nn.Module):
                  *args,
                  **kwargs):
         """
-        Arguments:
+        Args:
             input_dim (int): Dimension of the input features.
             output_dim (int): Dimension of the output features.
             activation (nn.Module): Activation function to apply after the linear layer.
@@ -90,7 +90,7 @@ class FullyConnectedNetwork(nn.Module):
                  *args,
                  **kwargs):
         """
-        Arguments:
+        Args:
             input_dim (int): Dimension of the input features.
             hidden_dims (Iterable[int]): Dimensions of the hidden layers.
             output_dim (int): Dimension of the output features. Default is 1.

@@ -68,7 +68,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
                  log_enabled: bool = True,
                  log_filepath: Optional[str] = None):
         """
-        Arguments:
+        Args:
             model (torch.nn.Module): The torch model to be trained.
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
@@ -156,7 +156,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Train the model.
 
-        Arguments:
+        Args:
             train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.            
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional): DataLoader for the validation dataset.
         Returns:
@@ -169,7 +169,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Evaluate the model.
 
-        Arguments:
+        Args:
             loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the evaluation dataset.
         """
         pass
@@ -200,7 +200,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Create a JSON representation of the model data for deployment.
 
-        Arguments:
+        Args:
             actualModel (str): The actual model.
             name (str): The name of the model.
             description (Union[str, None]): The description of the model.
@@ -325,7 +325,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Set the meta attribute for an input feature in the JSON data for deployment.
 
-        Arguments:
+        Args:
             feature_name (str): The name of the input feature.
             meta (dict): The meta data to set for the input feature.
         """
@@ -341,7 +341,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Set the meta attribute for an output feature in the JSON data for deployment.
 
-        Arguments:
+        Args:
             feature_name (str): The name of the output feature.
             meta (dict): The meta data to set for the output feature.
         """
@@ -357,7 +357,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Set the description attribute for an input feature in the JSON data for deployment.
 
-        Arguments:
+        Args:
             feature_name (str): The name of the input feature.
             description (str): The description to set for the input feature.
         """
@@ -373,7 +373,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Set the description attribute for an output feature in the JSON data for deployment.
 
-        Arguments:
+        Args:
             feature_name (str): The name of the output feature.
             description (str): The description to set for the output feature.
         """
@@ -395,7 +395,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Set an attribute for a feature in the JSON data for deployment.
 
-        Arguments:
+        Args:
             feature_name (str): The name of the feature.
             attr_name (str): The name of the attribute.
             attr_value: The value of the attribute.
@@ -422,7 +422,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         Deploy the model to Jaqpot.
 
-        Arguments:
+        Args:
             token (str): The authorization token.
 
         Returns:
