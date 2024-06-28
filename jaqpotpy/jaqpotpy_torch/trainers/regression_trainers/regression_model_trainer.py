@@ -36,7 +36,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         The RegressionModelTrainer constructor.
 
-        Args:
+        Arguments:
             model (torch.nn.Module): The torch model to be trained.
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
@@ -70,7 +70,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         This abstract method should be implemented by subclasses to provide model-specific keyword arguments based on the data.
         
-        Args:
+        Arguments:
             data: Whatever data the respective dataloader fetches.
         Returns:
             dict: The kwargs that the forward method of the respective model expects as input.
@@ -80,6 +80,12 @@ class RegressionModelTrainer(TorchModelTrainer):
     def train(self, train_loader, val_loader=None):
         """
         Train the model.
+
+        Arguments:
+            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.            
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional): DataLoader for the validation dataset.
+        Returns:
+            None
         """
 
         for i in range(self.n_epochs):      
@@ -104,7 +110,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         This helper method handles the training loop for a single epoch, updating the model parameters and computing the running loss.
 
-        Args:
+        Arguments:
             train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
         Returns:
             float: The average loss of the current epoch.
@@ -155,7 +161,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         Evaluate the model's performance on the validation set.
 
-        Args:
+        Arguments:
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
         Returns:
             float: Average loss over the validation dataset.
@@ -206,7 +212,7 @@ class RegressionModelTrainer(TorchModelTrainer):
         """
         Provide predictions on the validation set.
 
-        Args:
+        Arguments:
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
         Returns:
             list: List of predictions.
