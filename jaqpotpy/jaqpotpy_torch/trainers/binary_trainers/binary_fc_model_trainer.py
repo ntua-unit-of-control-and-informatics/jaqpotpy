@@ -23,11 +23,12 @@ class BinaryFCModelTrainer(BinaryModelTrainer):
         decision_threshold (float): Decision threshold for binary classification.
     """
 
-    model_type = 'binary-fc-model'
+    MODEL_TYPE = 'binary-fc-model'
+    """'binary-fc-model'"""
 
     @classmethod
     def get_model_type(cls):
-        return cls.model_type
+        return cls.MODEL_TYPE
     
     def __init__(
             self, 

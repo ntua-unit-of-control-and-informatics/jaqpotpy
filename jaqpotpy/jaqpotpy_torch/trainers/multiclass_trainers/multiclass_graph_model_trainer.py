@@ -19,11 +19,12 @@ class MulticlassGraphModelTrainer(MulticlassModelTrainer):
     Trainer class for Multiclass Classification using Graph Neural Networks for SMILES and external features.
     """
 
-    model_type = 'multiclass-graph-model'
+    MODEL_TYPE = 'multiclass-graph-model'
+    """'multiclass-graph-model'"""
 
     @classmethod
     def get_model_type(cls):
-        return cls.model_type
+        return cls.MODEL_TYPE
 
     def __init__(
             self, 

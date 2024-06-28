@@ -71,7 +71,7 @@ class FullyConnectedNetwork(nn.Module):
     and a final linear projection. The network can be customized with various activation
     functions and dropout probabilities for each layer.
     
-    Attributes:        
+    Attributes:
         input_dim (int): Dimension of the input features.
         output_dim (int): Dimension of the output features.
         hidden_dims (Iterable[int]): Dimensions of the hidden layers.

@@ -25,11 +25,12 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
         decision_threshold (float): Decision threshold for binary classification.
     """
 
-    model_type = 'binary-graph-model-with-external'
+    MODEL_TYPE = 'binary-graph-model-with-external'
+    """'binary-graph-model-with-external'"""
 
     @classmethod
     def get_model_type(cls):
-        return cls.model_type
+        return cls.MODEL_TYPE
     
     def __init__(
             self, 

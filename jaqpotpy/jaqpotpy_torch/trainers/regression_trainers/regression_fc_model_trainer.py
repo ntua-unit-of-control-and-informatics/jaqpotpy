@@ -20,11 +20,12 @@ class RegressionFCModelTrainer(RegressionModelTrainer):
     Trainer class for Regression using a Fully Connected Network on tabular data.
     """
 
-    model_type = 'regression-fc-model'
+    MODEL_TYPE = 'regression-fc-model'
+    """'regression-fc-model'"""
 
     @classmethod
     def get_model_type(cls):
-        return cls.model_type
+        return cls.MODEL_TYPE
     
     def __init__(
             self, 

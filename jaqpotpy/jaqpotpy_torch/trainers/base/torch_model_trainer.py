@@ -54,6 +54,9 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
     def get_model_type(cls):
         """
         Return the type of the model as a string.
+
+        Returns:
+            str: The model type.
         """
         pass
 
@@ -147,6 +150,12 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
 
     @classmethod
     def get_subclass_model_types(cls):
+        """
+        Return the list of all the types of models that inherit from TorchModelTrainer and are implemented in the jaqpotpy_torch.trainers submodule.
+        
+        Returns:
+            list: A list of model types as strings.
+        """
         return [v['model_type'] for v in cls.collect_subclass_info().values() if not v['is_abstract'] and v['model_type'] is not None]
     
 

@@ -102,7 +102,17 @@ class GraphAttentionNetwork(nn.Module):
     """
     A Graph Attention Network consisting of multiple Graph Attention Blocks followed by a Fully Connected Layer.
 
-    
+    Attributes:
+        input_dim (int): Dimension of the input node features.
+        hidden_dims (Iterable[int]): Dimensions of the hidden layers.
+        heads (Iterable[int]): List of number of attention heads for each layer.
+        edge_dim (int or None): Dimension of the edge features if any.
+        output_dim (int): Dimension of the network's output.
+        activation (nn.Module): Activation function to apply after each hidden layer.
+        dropout_probabilities (list): List of dropout probabilities after each hidden layer.
+        graph_norm (bool): Whether to apply graph normalization.
+        pooling (str): Type of pooling to apply ('mean', 'add', 'max').
+        jittable (bool): Whether to make the hidden modules jittable.
     """
 
     def __init__(self,

@@ -21,11 +21,12 @@ class MulticlassFCModelTrainer(MulticlassModelTrainer):
     Trainer class for Multiclass Classification using a Fully Connected Network on tabular data.
     """
 
-    model_type = 'multiclass-fc-model'
+    MODEL_TYPE = 'multiclass-fc-model'
+    """'multiclass-fc-model'"""
 
     @classmethod
     def get_model_type(cls):
-        return cls.model_type
+        return cls.MODEL_TYPE
     
     def __init__(
             self, 

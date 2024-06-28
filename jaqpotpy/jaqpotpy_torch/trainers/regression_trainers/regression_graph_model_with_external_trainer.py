@@ -22,11 +22,12 @@ class RegressionGraphModelWithExternalTrainer(RegressionModelTrainer):
     Trainer class for Regression using both Graph and Fully Connected Neural Networks for SMILES and as well external features.
     """
 
-    model_type = 'regression-graph-model-with-external'
+    MODEL_TYPE = 'regression-graph-model-with-external'
+    """'regression-graph-model-with-external'"""
 
     @classmethod
     def get_model_type(cls):
-        return cls.model_type
+        return cls.MODEL_TYPE
 
     def __init__(
             self, 

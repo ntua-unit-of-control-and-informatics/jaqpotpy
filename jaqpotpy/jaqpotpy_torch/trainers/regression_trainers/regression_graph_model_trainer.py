@@ -19,11 +19,12 @@ class RegressionGraphModelTrainer(RegressionModelTrainer):
     Trainer class for Regression using Graph Neural Networks for SMILES and external features. 
     """
 
-    model_type = 'regression-graph-model'
+    MODEL_TYPE = 'regression-graph-model'
+    """'regression-graph-model'"""
 
     @classmethod
     def get_model_type(cls):
-        return cls.model_type
+        return cls.MODEL_TYPE
 
     def __init__(
             self, 
