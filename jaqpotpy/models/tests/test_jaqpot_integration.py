@@ -6,7 +6,7 @@ from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
     , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
-from jaqpotpy.models import MolecularModel, MolecularSKLearn
+from jaqpotpy.models import MolecularModel, SklearnModel
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR, SVC
 import asyncio
@@ -85,7 +85,7 @@ class TestJaqpotIntegration(unittest.TestCase):
         val.register_scoring_function('ROC', roc_auc_score)
         val.dataset = dataset
 
-        model = MolecularSKLearn(dataset=dataset, doa=Leverage(), model=SVC(probability=True), eval=val).fit()
+        model = SklearnModel(dataset=dataset, doa=Leverage(), model=SVC(probability=True), eval=val).fit()
         jaqpot = Jaqpot("https://api.jaqpot.org/jaqpot/services/")
         jaqpot.request_key("jasonsoti1@gmail.com", "PX-E850E")
         model.deploy_on_jaqpot(jaqpot=jaqpot, description="Test molecular model", model_title="Test SKLearn")

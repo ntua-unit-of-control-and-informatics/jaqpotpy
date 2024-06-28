@@ -9,7 +9,7 @@ from jaqpotpy.descriptors.molecular import MordredDescriptors\
 
 from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeaturizer\
   , PagtnMolGraphFeaturizer, TorchMolGraphConvFeaturizer, AttentiveFPFeaturizer
-from jaqpotpy.models import MolecularModel, MolecularSKLearn
+from jaqpotpy.models import MolecularModel, SklearnModel
 from sklearn.linear_model import LinearRegression
 import asyncio
 from jaqpotpy.doa.doa import Leverage
