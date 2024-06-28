@@ -126,7 +126,7 @@ class TestModels(unittest.TestCase):
         molecularModel_t1 = SklearnModel(dataset=None, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         molecularModel_t1.Y = 'DILI'
-        assert molecularModel_t1.doa.IN == [True]
+        assert molecularModel_t1.doa.in_doa == [True]
 
     @unittest.skip("This needs refactoring, as it is it doesn't test anything")
     def test_predict_proba(self):
@@ -182,7 +182,7 @@ class TestModels(unittest.TestCase):
     #     model = LinearRegression()
     #     molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
     #     molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
-    #     assert molecularModel_t1.doa.IN == [False]
+    #     assert molecularModel_t1.doa.in_doa == [False]
     #     assert int(molecularModel_t1.doa.doa_new[0]) == 271083
     #     assert int(molecularModel_t1.prediction[0][0]) == -2873819
 

@@ -122,7 +122,7 @@ class TestModels(unittest.TestCase):
         model = LinearRegression()
         molecularModel_t1 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
-        assert molecularModel_t1.doa.IN == [False]
+        assert molecularModel_t1.doa.in_doa == [False]
         molecularModel_t1.prediction[0]
         # [[-3196989.37288455]]
 
@@ -145,7 +145,7 @@ class TestModels(unittest.TestCase):
         molecularModel_t1.save()
         molecularModel_t1('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
         assert molecularModel_t1.doa is not None
-        # assert molecularModel_t1.doa.IN == [False]
+        # assert molecularModel_t1.doa.in_doa == [False]
         # assert molecularModel_t1.doa.doa_new == [271083.32573286095]
         # assert int(molecularModel_t1.prediction[0]) == -2873819
 
@@ -268,7 +268,7 @@ class TestModels(unittest.TestCase):
         model = LinearRegression()
         molecularModel_t2 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t2('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
-        assert molecularModel_t2.doa.IN == [True]
+        assert molecularModel_t2.doa.in_doa == [True]
         assert int(molecularModel_t2.doa.doa_new[0]) == 0
         # [[-3196989.37288455]]
 
@@ -304,7 +304,7 @@ class TestModels(unittest.TestCase):
         model = LinearRegression()
         molecularModel_t4 = SklearnModel(dataset=dataset, doa=Leverage(), model=model, eval=None).fit()
         molecularModel_t4('COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1')
-        molecularModel_t4.doa.IN
+        molecularModel_t4.doa.in_doa
         molecularModel_t4.doa.doa_new
         molecularModel_t4.doa.a
         molecularModel_t4.prediction
@@ -360,7 +360,7 @@ class TestModels(unittest.TestCase):
                               , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
                               , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
                               , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'])
-        # print(molecularModel.doa.IN)
+        # print(molecularModel.doa.in_doa)
         # print(molecularModel.doa.doa_new)
         # print(molecularModel.doa.a)
         # print(molecularModel.prediction)
@@ -392,7 +392,7 @@ class TestModels(unittest.TestCase):
                               , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
                               , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
                               , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'])
-        # print(molecularModel_t7.doa.IN)
+        # print(molecularModel_t7.doa.in_doa)
         # print(molecularModel_t7.doa.doa_new)
         # print(molecularModel_t7.doa.a)
         print(molecularModel_t7.prediction)
@@ -409,7 +409,7 @@ class TestModels(unittest.TestCase):
                                   , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
                                   , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
                                   , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'])
-            print(molecularModel_t8.doa.IN)
+            print(molecularModel_t8.doa.in_doa)
             print(molecularModel_t8.doa.doa_new)
             print(molecularModel_t8.doa.a)
             print(molecularModel_t8.prediction)
@@ -423,7 +423,7 @@ class TestModels(unittest.TestCase):
                 , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21']
             for s in smiles_new:
                 molecularModel_t8(s)
-                print(molecularModel_t8.doa.IN)
+                print(molecularModel_t8.doa.in_doa)
                 print(molecularModel_t8.prediction)
         except FileNotFoundError:
             print("A File is missing in load model")

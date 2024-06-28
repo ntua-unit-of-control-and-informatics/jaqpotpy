@@ -1,3 +1,1 @@
 from .jaqpot import Jaqpot
-
-
