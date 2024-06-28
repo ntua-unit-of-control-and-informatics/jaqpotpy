@@ -58,15 +58,15 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         pass
 
     def __init__(self,
-                 model,
-                 n_epochs,
-                 optimizer,
-                 loss_fn,
-                 scheduler=None,
-                 device='cpu',
-                 use_tqdm=True,
-                 log_enabled=True,
-                 log_filepath=None):
+                 model: torch.nn.Module,
+                 n_epochs: int,
+                 optimizer: torch.optim.Optimizer,
+                 loss_fn: torch.nn.Module,
+                 scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None,
+                 device: str = 'cpu',
+                 use_tqdm: bool = True,
+                 log_enabled: bool = True,
+                 log_filepath: Optional[str] = None):
         """
         Args:
             model (torch.nn.Module): The torch model to be trained.
@@ -92,6 +92,8 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         self.json_data_for_deployment = None
 
         self.logger = self._setup_logger()
+        
+        self.model.to(self.device)
 
 
     def _setup_logger(self):
