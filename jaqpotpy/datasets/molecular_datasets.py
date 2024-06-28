@@ -167,10 +167,10 @@ class JaqpotpyDataset(BaseDataset):
         return copied_instance
 
     def __get_X__(self):
-        return self._x.to_numpy()
+        return self._x
     
     def __get_Y__(self):
-        return self._y.to_numpy()
+        return self._y
     
     def __get__(self, instance, owner):
         if instance is None:
