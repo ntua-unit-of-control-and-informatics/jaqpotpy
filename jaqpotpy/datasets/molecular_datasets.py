@@ -148,6 +148,23 @@ class JaqpotpyDataset(BaseDataset):
 
         self._y = self._df[self.y_cols]
         self._df = pd.concat([self._x, self._y], axis = 1)
+    
+    def copy(self):
+        """
+        Create a copy of the dataset, including a deep copy of the underlying DataFrame
+        and all relevant attributes.
+        """
+        copied_df = self._df.copy(deep=True)
+        copied_instance = JaqpotpyDataset(
+            df=copied_df,
+            path=self.path,
+            y_cols=self.y_cols,
+            x_cols=self.x_cols,
+            smiles_cols=self.smiles_cols,
+            featurizer=self.featurizer,
+            task=self.task
+        )
+        return copied_instance
 
     def __get_X__(self):
         return self._x.to_numpy()
