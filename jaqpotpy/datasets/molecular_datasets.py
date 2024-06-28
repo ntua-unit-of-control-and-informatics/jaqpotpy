@@ -183,7 +183,7 @@ class JaqpotpyDataset(BaseDataset):
         return selected_x, selected_y
 
     def __len__(self):
-        return len(self.x_cols_all)
+        return self.df.shape[0]
 
     def __repr__(self) -> str:
         return (f"{self.__class__.__name__}"
