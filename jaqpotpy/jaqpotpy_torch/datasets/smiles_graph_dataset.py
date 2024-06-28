@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from torch.utils.data import Dataset
@@ -12,6 +11,7 @@ import pandas as pd
 class SmilesGraphDataset(Dataset):
     """
     A PyTorch Dataset class for handling SMILES strings as graphs.
+    This class overrides `__getitem__` and `__len__` (check source code for methods' docstrings).
 
     Attributes:
         smiles (list): A list of SMILES strings.
@@ -22,7 +22,7 @@ class SmilesGraphDataset(Dataset):
 
     def __init__(self, smiles, y=None, featurizer=None):
         """
-        Initializes the SmilesGraphDataset object.
+        The SmilesGraphDataset constructor.
 
         Args:
             smiles (list): A list of SMILES strings. 
@@ -166,7 +166,7 @@ class SmilesGraphDataset(Dataset):
 class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
     """
     A PyTorch Dataset class for handling SMILES strings as graphs, along with additional external features.
-    This class inherits from SmilesGraphDataset.
+    This class inherits from SmilesGraphDataset and overrides `__getitem__` and `__len__` (check source code for methods' docstrings).
 
     Attributes:
         smiles (list): A list of SMILES strings.
@@ -178,7 +178,7 @@ class SmilesGraphDatasetWithExternal(SmilesGraphDataset):
 
     def __init__(self, smiles, external, y=None, featurizer=None):
         """
-        Initializes the SmilesGraphDatasetWithExternal object.
+        The SmilesGraphDatasetWithExternal constructor.
 
         Args:
             smiles (list): A list of SMILES strings.

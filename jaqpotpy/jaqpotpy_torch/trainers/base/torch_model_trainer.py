@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from abc import ABC, abstractmethod, ABCMeta
@@ -21,7 +20,8 @@ from torch.optim.lr_scheduler import LambdaLR
 class TorchModelTrainerMeta(ABCMeta):
     def __new__(cls, name, bases, dct):
         """
-        A metaclass to ensure that the 'get_model_type' method is defined as a class method
+        A metaclass for torch model training, ensuring:
+        - 'get_model_type' method is defined as a class method
         """
         if 'get_model_type' in dct:
             method = dct['get_model_type']
@@ -34,16 +34,19 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
     """
     An abstract class for training a model and deploying it on Jaqpot.
 
-    Args:
+    Attributes:
         model (torch.nn.Module): The torch model to be trained.
         n_epochs (int): Number of training epochs.
         optimizer (torch.optim.Optimizer): The optimizer used for training the model.
         loss_fn (torch.nn.Module): The loss function used for training.
-        scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
-        device (str, optional): The device on which to train the model. Default is 'cpu'.
-        use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
-        log_enabled (bool, optional): Whether logging is enabled. Default is True.
-        log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
+        scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training.
+        device (torch.device): The device on which to train the model.
+        use_tqdm (bool): Whether to use tqdm for progress bars.
+        current_epoch (int): The epoch on which the trainer has currently reached.
+        log_enabled (bool): Whether logging is enabled.
+        log_filepath (os.path.relpath or None): Relative path to the log file.
+        json_data_for_deployment (dict or None): The data to be sent to the API of Jaqpot in JSON format. Note that `prepare_for_deployment` must be called to compute this attribute. 
+        logger (logging.Logger): The logger object at INFO level used for logging during model training.
     """
     
     @classmethod
@@ -76,7 +79,6 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
             log_enabled (bool, optional): Whether logging is enabled. Default is True.
             log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
         """
-
         self.model = model
         self.n_epochs = n_epochs
         self.optimizer = optimizer
@@ -173,7 +175,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
     @abstractmethod
     def prepare_for_deployment(self, *args, **kwargs):
         """
-        Prepare the model for deployment on Jaqpot.
+        Prepare the model data in JSON format for deployment on Jaqpot.
         """
         pass
     

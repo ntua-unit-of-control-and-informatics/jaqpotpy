@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from rdkit import Chem
@@ -62,7 +61,7 @@ class SmilesGraphFeaturizer(Featurizer):
 
     def __init__(self, include_edge_features=True, warnings_enabled=True):
         """
-        Initializes the SmilesGraphFeaturizer.
+        The SmilesGraphFeaturizer constructor.
 
         Args:
             include_edge_features (bool): Whether to include edge features in the featurization.

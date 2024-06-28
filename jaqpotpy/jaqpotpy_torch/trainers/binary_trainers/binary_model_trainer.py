@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from ..base import TorchModelTrainer
@@ -16,16 +15,8 @@ class BinaryModelTrainer(TorchModelTrainer):
     """
     Abstract trainer class for Binary Classification models using PyTorch.
     
-    Args:
-        model (torch.nn.Module): The torch model to be trained.
-        n_epochs (int): Number of training epochs.
-        optimizer (torch.optim.Optimizer): The optimizer used for training the model.
-        loss_fn (torch.nn.Module): The loss function used for training.
-        device (str, optional): The device on which to train the model. Default is 'cpu'.
-        use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
-        log_enabled (bool, optional): Whether logging is enabled. Default is True.
-        log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
-        decision_threshold (float, optional): Decision threshold for binary classification. Default is 0.5.
+    Attributes:
+        decision_threshold (float): Decision threshold for binary classification.
     """
     
     def __init__(
@@ -41,7 +32,21 @@ class BinaryModelTrainer(TorchModelTrainer):
             log_filepath=None,
             decision_threshold=0.5,
             ):
-        
+        """
+        The BinaryModelTrainer constructor.
+
+        Args:
+            model (torch.nn.Module): The torch model to be trained.
+            n_epochs (int): Number of training epochs.
+            optimizer (torch.optim.Optimizer): The optimizer used for training the model.
+            loss_fn (torch.nn.Module): The loss function used for training.
+            scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
+            device (str, optional): The device on which to train the model. Default is 'cpu'.
+            use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
+            log_enabled (bool, optional): Whether logging is enabled. Default is True.
+            log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
+            decision_threshold (float, optional): Decision threshold for binary classification. Default is 0.5.
+        """
         super().__init__(
             model=model,
             n_epochs=n_epochs,

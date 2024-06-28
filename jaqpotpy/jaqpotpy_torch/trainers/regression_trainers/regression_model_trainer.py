@@ -1,13 +1,11 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from ..base import TorchModelTrainer
 from abc import abstractmethod
 from tqdm import tqdm
 import torch
-import torch.nn.functional as F
 import sklearn.metrics as metrics
 
 
@@ -16,15 +14,7 @@ class RegressionModelTrainer(TorchModelTrainer):
     """
     Abstract trainer class for Regression models using PyTorch.
     
-    Args:
-        model (torch.nn.Module): The torch model to be trained.
-        n_epochs (int): Number of training epochs.
-        optimizer (torch.optim.Optimizer): The optimizer used for training the model.
-        loss_fn (torch.nn.Module): The loss function used for training.
-        device (str, optional): The device on which to train the model. Default is 'cpu'.
-        use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
-        log_enabled (bool, optional): Whether logging is enabled. Default is True.
-        log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
+    Attributes:
         normalization_mean (float): Mean used to normalize the true values of the regression variables before model training. 
         normalization_std' (float): Standard deviation used to normalize the true values of the regression variables before model training.  
     """
@@ -43,7 +33,22 @@ class RegressionModelTrainer(TorchModelTrainer):
             normalization_mean=0.0,
             normalization_std=1.0
             ):
-        
+        """
+        The RegressionModelTrainer constructor.
+
+        Args:
+            model (torch.nn.Module): The torch model to be trained.
+            n_epochs (int): Number of training epochs.
+            optimizer (torch.optim.Optimizer): The optimizer used for training the model.
+            loss_fn (torch.nn.Module): The loss function used for training.
+            scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
+            device (str, optional): The device on which to train the model. Default is 'cpu'.
+            use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
+            log_enabled (bool, optional): Whether logging is enabled. Default is True.
+            log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
+            normalization_mean (float, optional): Mean used to normalize the true values of the regression variables before model training. Default is 0.
+            normalization_std' (float, optinal): Standard deviation used to normalize the true values of the regression variables before model training. Default is 1. 
+        """
         super().__init__(
             model=model,
             n_epochs=n_epochs,

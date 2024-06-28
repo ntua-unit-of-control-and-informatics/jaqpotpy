@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 import torch.nn as nn
@@ -14,11 +13,10 @@ class FullyConnectedBlock(nn.Module):
     A single fully connected block consisting of a linear layer, an activation function,
     and a dropout layer. Xavier initialization is applied to the weights.
 
-    Args:
-        input_dim (int): Dimension of the input features.
-        output_dim (int): Dimension of the output features.
-        activation (nn.Module): Activation function to apply after the linear layer.
-        dropout_probability (float): Dropout probability.
+    Attributes:
+        fc (nn.Linear): The Fully Connected linear layer.
+        activation (nn.Module): The activation function.
+        dropout (nn.Dropout): The dropout layer.
     """
 
     def __init__(self,
@@ -29,7 +27,13 @@ class FullyConnectedBlock(nn.Module):
                 #  norm: Optional[bool] = False,
                  *args,
                  **kwargs):
-        
+        """
+        Arguments:
+            input_dim (int): Dimension of the input features.
+            output_dim (int): Dimension of the output features.
+            activation (nn.Module): Activation function to apply after the linear layer.
+            dropout_probability (float): Dropout probability.
+        """
         super().__init__()
         
         
@@ -66,15 +70,16 @@ class FullyConnectedNetwork(nn.Module):
     A fully connected neural network consisting of multiple FullyConnectedBlock layers
     and a final linear projection. The network can be customized with various activation
     functions and dropout probabilities for each layer.
-
-    Args:
+    
+    Attributes:        
         input_dim (int): Dimension of the input features.
-        hidden_dims (Iterable[int]): Dimensions of the hidden layers.
         output_dim (int): Dimension of the output features.
+        hidden_dims (Iterable[int]): Dimensions of the hidden layers.
         activation (nn.Module): Activation function to apply after each hidden layer.
-        dropout (Union[float, Iterable[float]]): Dropout probabilities for each hidden layer.
+        dropout_probabilities (list): List of dropout probabilities after each FC layer
+        fc_layers (nn.ModuleList): ModuleList of FullyConnectedBlock layers of the network
+        fc_head (nn.Linear): The final linear projection layer.
     """
-
     def __init__(self,
                  input_dim: int,
                  hidden_dims: Iterable[int],
@@ -84,7 +89,14 @@ class FullyConnectedNetwork(nn.Module):
                 #  norm: Optional[bool] = False,
                  *args,
                  **kwargs):
-        
+        """
+        Arguments:
+            input_dim (int): Dimension of the input features.
+            hidden_dims (Iterable[int]): Dimensions of the hidden layers.
+            output_dim (int): Dimension of the output features. Default is 1.
+            activation (nn.Module): Activation function to apply after each hidden layer. Default is nn.ReLU().
+            dropout (Union[float, Iterable[float]]): Dropout probabilities for each hidden layer. Default is 0.5.
+        """
         super().__init__()
 
         # Input types check
@@ -154,7 +166,6 @@ class FullyConnectedNetwork(nn.Module):
         Returns:
             Tensor: Output tensor after passing through the network.
         """
-
         if self.fc_layers is not None:
             for fc_layer in self.fc_layers:
                 x = fc_layer(x)

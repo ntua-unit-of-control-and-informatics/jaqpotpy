@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 from . import BinaryModelTrainer
@@ -19,16 +18,8 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
     """
     Trainer class for Binary Classification using Graph Neural Networks for SMILES and external features.
     
-    Args:
-        model (torch.nn.Module): The torch model to be trained.
-        n_epochs (int): Number of training epochs.
-        optimizer (torch.optim.Optimizer): The optimizer used for training the model.
-        loss_fn (torch.nn.Module): The loss function used for training.
-        device (str, optional): The device on which to train the model. Default is 'cpu'.
-        use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
-        log_enabled (bool, optional): Whether logging is enabled. Default is True.
-        log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
-        decision_threshold (float, optional): Decision threshold for binary classification. Default is 0.5.
+    Attributes:
+        decision_threshold (float): Decision threshold for binary classification.
     """
 
     model_type = 'binary-graph-model'
@@ -50,7 +41,37 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
             log_filepath=None,
             decision_threshold=0.5,
             ):
-        
+        """
+        The BinaryGraphModelTrainer constructor.
+
+        Args:
+            model (torch.nn.Module): The torch model to be trained.
+            n_epochs (int): Number of training epochs.
+            optimizer (torch.optim.Optimizer): The optimizer used for training the model.
+            loss_fn (torch.nn.Module): The loss function used for training.
+            scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
+            device (str, optional): The device on which to train the model. Default is 'cpu'.
+            use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
+            log_enabled (bool, optional): Whether logging is enabled. Default is True.
+            log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
+            decision_threshold (float, optional): Decision threshold for binary classification. Default is 0.5.
+
+        Example:
+        ```
+        >>> import torch
+        >>> from jaqpotpy.jaqpotpy_torch.models import GraphAttentionNetwork
+        >>> from jaqpotpy.jaqpotpy_torch.trainers import BinaryGraphModelTrainer
+        >>> 
+        >>> model = GraphAttentionNetwork(input_dim=10,
+        ...                               hidden_dims=[32, 32]
+        ...                               edge_dim=5,
+        ...                               output_dim=1)
+        >>> optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
+        >>> loss_fn = torch.nn.BCEWithLogitsLoss()
+        >>>
+        >>> trainer = BinaryGraphModelTrainer(model, n_epochs=50, optimizer=optimizer, loss_fn=loss_fn)
+        ```
+        """
         super().__init__(
             model=model,
             n_epochs=n_epochs,
@@ -66,6 +87,15 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
         
     
     def get_model_kwargs(self, data):
+        """
+        Fetch the model's keyword arguments.
+
+        Args:
+            data (torch_geometric.data.Data): Data object returned as returned by the Dataloader
+
+        Returns:
+            dict: The required model kwargs. Set of keywords: {'*x*', '*edge_index*', '*batch*', '*edge_attr*'}. Note that '*edge_attr*' is only present if the model supports edge features.
+        """
 
         kwargs = {}
 
@@ -101,6 +131,10 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
             reliability (int, optional): The models reliability. Default is None.
             pretrained (bool, optional): Indicates if the model is pretrained. Default is False.
             meta (dict, optional): Additional metadata for the model. Default is an empty dictionary.
+        
+        Returns:
+            dict: The data to be sent to the API of Jaqpot in JSON format.
+                  Note that in this case, the '*additional_model_params*' key contains a nested dictionary with they keys: {'*decision_threshold*', '*featurizer*'}.
         """
         
         model_scripted = torch.jit.script(self.model)
