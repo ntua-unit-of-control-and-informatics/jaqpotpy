@@ -20,6 +20,19 @@ from jaqpotpy.models import MolecularSKLearn
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models import Evaluator
 
+
+# Add the following tests:
+# 1.regression model
+#  1.a. x and y preprocessed 
+#  1.b. only x preprocessed 
+#  1.c. only y preprocessed 
+#  1.d. no preprocessesing 
+# 1.Classification model
+#  1.a. x and y preprocessed 
+#  1.b. only x preprocessed 
+#  1.c. only y preprocessed 
+#  1.d. no preprocessesing 
+
 class TestModels(unittest.TestCase):
     """
     TestModels is a unit testing class for validating various machine learning models applied to molecular datasets.
