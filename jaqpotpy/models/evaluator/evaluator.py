@@ -1,5 +1,5 @@
 from typing import Dict, Callable, Any, Iterable
-from jaqpotpy.datasets.molecular_datasets import SmilesDataset
+from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 
 
 class Evaluator:
@@ -14,7 +14,7 @@ class Evaluator:
         cls.functions[function_name] = function
 
     @classmethod
-    def register_dataset(cls, dataset: SmilesDataset):
+    def register_dataset(cls, dataset: JaqpotpyDataset):
         dataset = dataset
 
     def __getitem__(self):
@@ -69,7 +69,7 @@ class GenerativeReward:
         cls.functions[function_name] = function
 
     @classmethod
-    def register_dataset(cls, dataset: SmilesDataset):
+    def register_dataset(cls, dataset: JaqpotpyDataset):
         dataset = dataset
 
     def __getitem__(self):

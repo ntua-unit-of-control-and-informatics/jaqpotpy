@@ -2,7 +2,7 @@ from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from typing import Any
 from jaqpotpy.datasets import TorchGraphDataset
-from jaqpotpy.models import Evaluator, Preprocesses
+from jaqpotpy.models import Evaluator, Preprocess
 try:
     from torch_geometric.loader import DataLoader
     import torch_geometric
@@ -21,7 +21,7 @@ import jaqpotpy
 #
 #     def __init__(self, dataset: TorchGraphDataset, model_nn: torch.nn.Module
 #                  , doa: DOA = None
-#                  , eval: Evaluator = None, preprocess: Preprocesses = None
+#                  , eval: Evaluator = None, preprocess: Preprocess = None
 #                  , dataLoaderParams: Any = None, epochs: int = None
 #                  , criterion: torch.nn.Module = None, optimizer: Any = None
 #                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu'):
@@ -29,10 +29,10 @@ import jaqpotpy
 #         self.dataset: TorchGraphDataset = dataset
 #         self.model_nn = model_nn
 #         self.doa = doa
-#         self.doa_m = None
+#         self.doa_fitted = None
 #         self.external = None
 #         self.evaluator: Evaluator = eval
-#         self.preprocess: Preprocesses = preprocess
+#         self.preprocess: Preprocess = preprocess
 #         self.train_batch = train_batch
 #         self.test_batch = test_batch
 #         self.trainDataLoaderParams = {'batch_size': self.train_batch, 'shuffle': False, 'num_workers': 0}
@@ -58,7 +58,7 @@ import jaqpotpy
 #         steps = self.epochs * 0.1
 #         if self.doa:
 #             if self.doa.__name__ == 'SmilesLeverage':
-#                 self.doa_m = self.doa.fit(self.dataset.smiles)
+#                 self.doa_fitted = self.doa.fit(self.dataset.smiles)
 #             else:
 #                 print("Only SmilesLeverage is suported for graph models")
 #         if len(self.dataset.df) > 0:
@@ -191,7 +191,7 @@ class MolecularTorchGeometric(Model):
 
     def __init__(self, dataset: TorchGraphDataset, model_nn: torch.nn.Module
                  , doa: DOA = None
-                 , eval: Evaluator = None, preprocess: Preprocesses = None
+                 , eval: Evaluator = None, preprocess: Preprocess = None
                  , dataLoaderParams: Any = None, epochs: int = None
                  , criterion: torch.nn.Module = None, optimizer: Any = None
                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1, model_dir: str = "./", device: str = 'cpu', test_metric=(None, 'minimize')):
@@ -199,10 +199,10 @@ class MolecularTorchGeometric(Model):
         self.dataset: TorchGraphDataset = dataset
         self.model_nn = model_nn
         self.doa = doa
-        self.doa_m = None
+        self.doa_fitted = None
         self.external = None
         self.evaluator: Evaluator = eval
-        self.preprocess: Preprocesses = preprocess
+        self.preprocess: Preprocess = preprocess
         self.train_batch = train_batch
         self.test_batch = test_batch
         self.trainDataLoaderParams = {'batch_size': self.train_batch, 'shuffle': False, 'num_workers': 0}
@@ -237,7 +237,7 @@ class MolecularTorchGeometric(Model):
         steps = self.epochs * 0.1
         if self.doa:
             if self.doa.__name__ == 'SmilesLeverage':
-                self.doa_m = self.doa.fit(self.dataset.smiles)
+                self.doa_fitted = self.doa.fit(self.dataset.smiles)
             else:
                 print("Only SmilesLeverage is suported for graph models")
         if len(self.dataset.df) > 0:
@@ -493,7 +493,7 @@ class MolecularTorchGeometric(Model):
 #
 #     def __init__(self, dataset: TorchGraphDataset, model_nn: torch.nn.Module
 #                  , doa: DOA = None
-#                  , eval: Evaluator = None, preprocess: Preprocesses = None
+#                  , eval: Evaluator = None, preprocess: Preprocess = None
 #                  , dataLoaderParams: Any = None, epochs: int = None
 #                  , criterion: torch.nn.Module = None, optimizer: Any = None
 #                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1):
@@ -501,10 +501,10 @@ class MolecularTorchGeometric(Model):
 #         self.dataset: TorchGraphDataset = dataset
 #         self.model_nn = model_nn
 #         self.doa = doa
-#         self.doa_m = None
+#         self.doa_fitted = None
 #         self.external = None
 #         self.evaluator: Evaluator = eval
-#         self.preprocess: Preprocesses = preprocess
+#         self.preprocess: Preprocess = preprocess
 #         self.train_batch = train_batch
 #         self.test_batch = test_batch
 #         self.trainDataLoaderParams = {'batch_size': self.train_batch, 'shuffle': False, 'num_workers': 0}
@@ -526,7 +526,7 @@ class MolecularTorchGeometric(Model):
 #     def fit(self):
 #         if self.doa:
 #             if self.doa.__name__ == 'SmilesLeverage':
-#                 self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+#                 self.doa_fitted = self.doa.fit(self.dataset.smiles_strings)
 #             else:
 #                 print("Only SmilesLeverage is suported for graph models")
 #         if self.dataset.df is not None:
@@ -615,7 +615,7 @@ class MolecularTorchGeometric(Model):
 #
 #     def __init__(self, dataset: TorchGraphDataset, model_nn: torch.nn.Module
 #                  , doa: DOA = None
-#                  , eval: Evaluator = None, preprocess: Preprocesses = None
+#                  , eval: Evaluator = None, preprocess: Preprocess = None
 #                  , dataLoaderParams: Any = None, epochs: int = None
 #                  , criterion: torch.nn.Module = None, optimizer: Any = None
 #                  , train_batch: int = 50, test_batch: int = 50, log_steps: int = 1):
@@ -623,10 +623,10 @@ class MolecularTorchGeometric(Model):
 #         self.dataset: TorchGraphDataset = dataset
 #         self.model_nn = model_nn
 #         self.doa = doa
-#         self.doa_m = None
+#         self.doa_fitted = None
 #         self.external = None
 #         self.evaluator: Evaluator = eval
-#         self.preprocess: Preprocesses = preprocess
+#         self.preprocess: Preprocess = preprocess
 #         self.train_batch = train_batch
 #         self.test_batch = test_batch
 #         self.trainDataLoaderParams = {'batch_size': self.train_batch, 'shuffle': False, 'num_workers': 0}
@@ -648,7 +648,7 @@ class MolecularTorchGeometric(Model):
 #     def fit(self):
 #         if self.doa:
 #             if self.doa.__name__ == 'SmilesLeverage':
-#                 self.doa_m = self.doa.fit(self.dataset.smiles_strings)
+#                 self.doa_fitted = self.doa.fit(self.dataset.smiles_strings)
 #             else:
 #                 print("Only SmilesLeverage is suported for graph models")
 #         if self.dataset.df is not None:
