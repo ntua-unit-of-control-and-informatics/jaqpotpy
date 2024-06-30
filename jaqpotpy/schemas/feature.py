@@ -1,6 +1,5 @@
 """
-Author: Ioannis Pitoskas
-Contact: jpitoskas@gmail.com
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 class Feature():
@@ -52,7 +51,7 @@ class Feature():
         if meta is not None and not isinstance(meta, dict):
             raise ValueError("'meta' should be of type dict")
         
-        featureType_allowed_values = ['CATEGORICAL', 'SMILES', 'INTEGER', 'FLOAT', "TEXT"]
+        featureType_allowed_values = ['CATEGORICAL', 'SMILES', 'INTEGER', 'FLOAT', 'TEXT']
         if featureType is not None and featureType not in featureType_allowed_values:
             raise ValueError(f"possible values for 'featureType' are {featureType_allowed_values}")
             
