@@ -179,7 +179,7 @@ class RegressionFCModelTrainer(RegressionModelTrainer):
         independentFeatures = features
 
         dependentFeatures = [
-            Feature(name=endpoint_name, featureDependency='DEPENDENT', possibleValues=[], featureType='NUMERICAL')
+            Feature(name=endpoint_name, featureDependency='DEPENDENT', possibleValues=[], featureType='FLOAT')
         ]
 
 
