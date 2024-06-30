@@ -136,6 +136,7 @@ class RegressionGraphModelTrainer(RegressionModelTrainer):
                   Note that in this case, the '*additional_model_params*' key contains a nested dictionary with they keys: {'*normalization_mean*', '*normalization_std*', '*featurizer*'}.
         """
         
+        self.model = self.model.cpu()
         model_scripted = torch.jit.script(self.model)
         model_buffer = io.BytesIO()
         torch.jit.save(model_scripted, model_buffer)
@@ -159,7 +160,7 @@ class RegressionGraphModelTrainer(RegressionModelTrainer):
         ]
 
         dependentFeatures = [
-            Feature(name=endpoint_name, featureDependency='DEPENDENT', possibleValues=[], featureType='NUMERICAL')
+            Feature(name=endpoint_name, featureDependency='DEPENDENT', possibleValues=[], featureType='FLOAT')
         ]
 
         self.json_data_for_deployment = self._model_data_as_json(actualModel=model_scripted_base64,

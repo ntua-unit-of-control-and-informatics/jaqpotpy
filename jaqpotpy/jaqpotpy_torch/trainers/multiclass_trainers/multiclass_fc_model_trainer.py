@@ -138,7 +138,7 @@ class MulticlassFCModelTrainer(MulticlassModelTrainer):
         if len(preprocessor.new_columns_) != self.model.input_dim:
             raise ValueError(f"Size {len(preprocessor.new_columns_)} of 'preprocessor.new_columns_' must match the number of {self.model.num_features} features that the model expects as input.")
 
-
+        self.model = self.model.cpu()
         model_scripted = torch.jit.script(self.model)
         model_buffer = io.BytesIO()
         torch.jit.save(model_scripted, model_buffer)

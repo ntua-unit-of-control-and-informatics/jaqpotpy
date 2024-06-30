@@ -131,6 +131,7 @@ class MulticlassGraphModelTrainer(MulticlassModelTrainer):
                   Note that in this case, the '*additional_model_params*' key contains a nested dictionary with they keys: {'*featurizer*'}.
         """
         
+        self.model = self.model.cpu()
         model_scripted = torch.jit.script(self.model)
         model_buffer = io.BytesIO()
         torch.jit.save(model_scripted, model_buffer)

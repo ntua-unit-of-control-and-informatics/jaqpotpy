@@ -155,7 +155,7 @@ class BinaryGraphModelWithExternalTrainer(BinaryModelTrainer):
         if len(external_preprocessor.new_columns_) != self.model.num_external_features:
             raise ValueError(f"Size {len(external_preprocessor.new_columns_)} of 'external_preprocessor.new_columns_' must match the number of {self.model.num_external_features} external features that the model expects as input.")
 
-
+        self.model = self.model.cpu()
         model_scripted = torch.jit.script(self.model)
         model_buffer = io.BytesIO()
         torch.jit.save(model_scripted, model_buffer)
