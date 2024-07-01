@@ -7,9 +7,9 @@ from jaqpotpy.models import Evaluator, Preprocess, MolecularModel, MaterialModel
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
-from skl2onnx import convert_sklearn
+from skl2onnx import to_onnx
 from skl2onnx.common.data_types import FloatTensorType
-import onnxruntime as rt
+from onnxruntime import InferenceSession
 import numpy as np
 
 
@@ -31,6 +31,7 @@ class SklearnModel(Model):
         self.jaqpotpy_version = jaqpotpy.__version__
         self.jaqpotpy_docker = config.jaqpotpy_docker
         self.task = self.dataset.task
+        self.onnx_model = None
 
     def fit(self):
         #Get X and y from dataset
@@ -81,19 +82,15 @@ class SklearnModel(Model):
             X_scaled = X.to_numpy()
             y_scaled = y.to_numpy().ravel()
         self.trained_model = self.model.fit(X_scaled, y_scaled)
-        #self.inference_model = self.__convert_to_onnx__(X.shape[1])
+        onnx_model = self.__convert_to_onnx__(X_scaled)
+        self.onnx_model = onnx_model
         if self.evaluator:
             self.__eval__()
         return self
 
-    def __convert_to_onnx__(self, num_columns):
-
+    def __convert_to_onnx__(self, X):
         name = self.model.__class__.__name__ + "_ONNX"
-        initial_types = [('float_input',FloatTensorType([None, num_columns]))]
-        res = convert_sklearn(self.model, initial_types=initial_types, name=name, target_opset=None,
-                              options=None, black_op=None, white_op=None, final_types=None,
-                              verbose=0)
-        return res
+        return to_onnx(model = self.model, X = X.astype('float64'), name=name)
 
     def predict(self,  dataset: JaqpotpyDataset):
         
@@ -103,14 +100,23 @@ class SklearnModel(Model):
             for preprocessing_key in pre_keys:
                 preprocessing_function = self.preprocess.fitted_classes.get(preprocessing_key)
                 X_scaled = preprocessing_function.transform(dataset.X)
-            #data = self.dataset.featurizer.featurize(X)
-            #sess = rt.InferenceSession(self.model.inference_model.SerializeToString())
-            #input_name = sess.get_inputs()[0].name
-            #pred_onx = sess.run(None, {input_name: data.astype(np.float32)})
-            #return pred_onx[0].flatten()
         else:
              X_scaled = dataset.X.to_numpy()
         return self.model.predict(X_scaled)
+    
+    def predict_onnx(self,  dataset: JaqpotpyDataset):
+         #if preprocessing was applied to X
+        if self.preprocess is not None:
+            pre_keys = self.preprocess.fitted_classes.keys()
+            for preprocessing_key in pre_keys:
+                preprocessing_function = self.preprocess.fitted_classes.get(preprocessing_key)
+                X_scaled = preprocessing_function.transform(dataset.X)
+        else:
+            X_scaled = dataset.X.to_numpy()
+        
+        sess = InferenceSession(self.onnx_model.SerializeToString())
+        onnx_prediction = sess.run(None, {"X": X_scaled.astype('float64')})
+        return onnx_prediction[0]
 
     def __eval__(self):
         if self.evaluator.dataset.df is not None:
