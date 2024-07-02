@@ -1,3 +1,4 @@
+import sklearn.pipeline
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from typing import Any, Union, Dict, Optional
@@ -21,6 +22,9 @@ class SklearnModel(Model):
         self.dataset = dataset
         self.descriptors = dataset.featurizer
         self.model = model
+        self.pipeline = None
+        self.pipeline_y = None
+        self.pipeline_y_onnx = None
         self.trained_model = None
         self.doa = doa
         self.trained_doa = None
@@ -37,7 +41,6 @@ class SklearnModel(Model):
         #Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
-        
 
         if self.doa:
             self.trained_doa = self.doa.fit(X=X)
@@ -46,76 +49,67 @@ class SklearnModel(Model):
         if self.preprocess is not None:
             # Apply preprocessing on design matrix X
             pre_keys = self.preprocess.classes.keys()
-            if len(pre_keys) == 0:
-                X_scaled = X.to_numpy()
+            if len(pre_keys) > 0:
+                pipeline = sklearn.pipeline.Pipeline(steps = list(self.preprocess.classes.items()))
+                print('x pipeline is created')
             else:
-                preprocess_names = []
-                preprocess_classes = []
-                for pre_key in pre_keys:
-                    pre_function = self.preprocess.classes.get(pre_key)
-                    X_scaled = pre_function.fit_transform(X)
-                    self.preprocess.register_fitted_class(pre_key, pre_function)
-                    preprocess_names.append(pre_key)
-                    preprocess_classes.append(pre_function)
-                self.preprocessing = preprocess_classes
-                self.preprocessor_names = preprocess_names
+                print('no x transformations are requested')
+            pipeline.steps.append(('model', self.model))
+            self.pipeline = pipeline
 
             # Apply preprocessing of response vector y
             pre_y_keys = self.preprocess.classes_y.keys()
-            if len(pre_y_keys) == 0:
-                y_scaled = y.to_numpy().ravel()
-            else:
+            if len(pre_y_keys) > 0:
                 if self.task == "classification":
                     raise ValueError("Classification levels cannot be preprocessed")
-                preprocess_names_y = []
-                preprocess_classes_y = []
-                for pre_y_key in pre_y_keys:
-                    pre_y_function = self.preprocess.classes_y.get(pre_y_key)
-                    y_scaled = pre_y_function.fit_transform(y).ravel()
-                    self.preprocess.register_fitted_class_y(pre_y_key, pre_y_function)
-                    preprocess_names_y.append(pre_y_key)
-                    preprocess_classes_y.append(pre_y_function)
-                self.preprocessing_y = preprocess_classes_y
-                self.preprocessor_y_names = preprocess_names_y
+                else:
+                    preprocess_names_y = []
+                    preprocess_classes_y = []
+                    for pre_y_key in pre_y_keys:
+                        pre_y_function = self.preprocess.classes_y.get(pre_y_key)
+                        y_scaled = pre_y_function.fit_transform(y).ravel()
+                        self.preprocess.register_fitted_class_y(pre_y_key, pre_y_function)
+                        preprocess_names_y.append(pre_y_key)
+                        preprocess_classes_y.append(pre_y_function)
+                    self.preprocessing_y = preprocess_classes_y
+                    self.preprocessor_y_names = preprocess_names_y
+
+                    self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
+                    print('y pipeline is created')
+            else:
+                self.trained_model = self.pipeline.fit(X.to_numpy(), y.to_numpy().ravel())   
+                print('no y transformations are requested, only x tranformations are applied')
         #case where no preprocessing was provided
         else:
-            X_scaled = X.to_numpy()
-            y_scaled = y.to_numpy().ravel()
-        self.trained_model = self.model.fit(X_scaled, y_scaled)
-        onnx_model = self.__convert_to_onnx__(X_scaled)
+            self.trained_model = self.model.fit(X.to_numpy(), y.to_numpy().ravel())
+            print('no preprocessing is requested')
+        
+        onnx_model = self.__convert_to_onnx__(X.to_numpy())
         self.onnx_model = onnx_model
+        print('model is converted to onnx')
         if self.evaluator:
             self.__eval__()
         return self
 
     def __convert_to_onnx__(self, X):
         name = self.model.__class__.__name__ + "_ONNX"
-        return to_onnx(model = self.model, X = X.astype('float64'), name=name)
+        return to_onnx(model = self.trained_model, X = X[:1].astype(np.float32), name=name)
 
     def predict(self,  dataset: JaqpotpyDataset):
-        
-         #if preprocessing was applied to X
-        if self.preprocess is not None:
-            pre_keys = self.preprocess.fitted_classes.keys()
-            for preprocessing_key in pre_keys:
-                preprocessing_function = self.preprocess.fitted_classes.get(preprocessing_key)
-                X_scaled = preprocessing_function.transform(dataset.X)
-        else:
-             X_scaled = dataset.X.to_numpy()
-        return self.model.predict(X_scaled)
+        sklearn_prediction = self.trained_model.predict(dataset.X.to_numpy())
+        if self.preprocessing_y:
+            for f in self.preprocessing_y:
+                sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1))
+
+        return sklearn_prediction
     
     def predict_onnx(self,  dataset: JaqpotpyDataset):
-         #if preprocessing was applied to X
-        if self.preprocess is not None:
-            pre_keys = self.preprocess.fitted_classes.keys()
-            for preprocessing_key in pre_keys:
-                preprocessing_function = self.preprocess.fitted_classes.get(preprocessing_key)
-                X_scaled = preprocessing_function.transform(dataset.X)
-        else:
-            X_scaled = dataset.X.to_numpy()
-        
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        onnx_prediction = sess.run(None, {"X": X_scaled.astype('float64')})
+        onnx_prediction = sess.run(None, {"X": dataset.X.to_numpy().astype(np.float32)})
+
+        if self.preprocessing_y:
+            for f in self.preprocessing_y:
+                onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
         return onnx_prediction[0]
 
     def __eval__(self):
