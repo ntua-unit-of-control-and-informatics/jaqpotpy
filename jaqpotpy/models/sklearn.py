@@ -30,6 +30,8 @@ class SklearnModel(Model):
         self.trained_doa = None
         self.evaluator = evaluator
         self.preprocess = preprocessor
+        self.preprocessing_y = None
+        self.preprocessor_y_names = None
         self.library = ['sklearn']
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
@@ -89,20 +91,21 @@ class SklearnModel(Model):
 
     def predict(self,  dataset: JaqpotpyDataset):
         sklearn_prediction = self.trained_model.predict(dataset.X.to_numpy())
-        if self.preprocessing_y:
-            for f in self.preprocessing_y:
-                sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1))
+        if self.preprocess is not None:
+            if self.preprocessing_y:
+                for f in self.preprocessing_y:
+                    sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1))[0].flatten()
 
         return sklearn_prediction
     
     def predict_onnx(self,  dataset: JaqpotpyDataset):
         sess = InferenceSession(self.onnx_model.SerializeToString())
         onnx_prediction = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
-
-        if self.preprocessing_y:
-            for f in self.preprocessing_y:
-                onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
-        return onnx_prediction[0]
+        if self.preprocess is not None:
+            if self.preprocessing_y:
+                for f in self.preprocessing_y:
+                    onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
+        return onnx_prediction[0].flatten()
 
     def __eval__(self):
         if self.evaluator.dataset.df is not None:
