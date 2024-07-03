@@ -31,7 +31,6 @@ class SklearnModel(Model):
         self.evaluator = evaluator
         self.preprocess = preprocessor
         self.preprocessing_y = None
-        self.preprocessor_y_names = None
         self.library = ['sklearn']
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
@@ -61,7 +60,7 @@ class SklearnModel(Model):
             pre_y_keys = self.preprocess.classes_y.keys()
             if len(pre_y_keys) > 0:
                 if self.task == "classification":
-                    raise ValueError("Classification levels cannot be preprocessed")
+                    raise ValueError("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y.")
                 else:
                     preprocess_names_y = []
                     preprocess_classes_y = []
@@ -72,7 +71,6 @@ class SklearnModel(Model):
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
                     self.preprocessing_y = preprocess_classes_y
-                    self.preprocessor_y_names = preprocess_names_y
 
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
             else:
