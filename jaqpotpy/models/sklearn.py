@@ -8,7 +8,7 @@ from jaqpotpy.models import Evaluator, Preprocess, MolecularModel, MaterialModel
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
-from skl2onnx import to_onnx
+from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
 from onnxruntime import InferenceSession
 import numpy as np
@@ -36,6 +36,7 @@ class SklearnModel(Model):
         self.jaqpotpy_docker = config.jaqpotpy_docker
         self.task = self.dataset.task
         self.onnx_model = None
+        self.onnx_opset = None
 
     def fit(self):
         #Get X and y from dataset
@@ -51,9 +52,6 @@ class SklearnModel(Model):
             pre_keys = self.preprocess.classes.keys()
             if len(pre_keys) > 0:
                 pipeline = sklearn.pipeline.Pipeline(steps = list(self.preprocess.classes.items()))
-                print('x pipeline is created')
-            else:
-                print('no x transformations are requested')
             pipeline.steps.append(('model', self.model))
             self.pipeline = pipeline
 
@@ -75,25 +73,19 @@ class SklearnModel(Model):
                     self.preprocessor_y_names = preprocess_names_y
 
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
-                    print('y pipeline is created')
             else:
                 self.trained_model = self.pipeline.fit(X.to_numpy(), y.to_numpy().ravel())   
-                print('no y transformations are requested, only x tranformations are applied')
         #case where no preprocessing was provided
         else:
             self.trained_model = self.model.fit(X.to_numpy(), y.to_numpy().ravel())
-            print('no preprocessing is requested')
         
-        onnx_model = self.__convert_to_onnx__(X.to_numpy())
-        self.onnx_model = onnx_model
-        print('model is converted to onnx')
+        name = self.model.__class__.__name__ + "_ONNX"
+        self.onnx_model = convert_sklearn(self.trained_model, initial_types=[('float_input', FloatTensorType([None, X.to_numpy().shape[1]]))], name=name)
+        self.onnx_opset = self.onnx_model.opset_import[0].version
+
         if self.evaluator:
             self.__eval__()
         return self
-
-    def __convert_to_onnx__(self, X):
-        name = self.model.__class__.__name__ + "_ONNX"
-        return to_onnx(model = self.trained_model, X = X[:1].astype(np.float32), name=name)
 
     def predict(self,  dataset: JaqpotpyDataset):
         sklearn_prediction = self.trained_model.predict(dataset.X.to_numpy())
@@ -105,7 +97,7 @@ class SklearnModel(Model):
     
     def predict_onnx(self,  dataset: JaqpotpyDataset):
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        onnx_prediction = sess.run(None, {"X": dataset.X.to_numpy().astype(np.float32)})
+        onnx_prediction = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
 
         if self.preprocessing_y:
             for f in self.preprocessing_y:
