@@ -40,6 +40,8 @@ class SklearnModel(Model):
         self.onnx_opset = None
 
     def fit(self):
+        if self.dataset.y is None:
+            raise TypeError("dataset.y is None. Please provide a target variable for the model.")
         #Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
