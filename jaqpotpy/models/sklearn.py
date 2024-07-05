@@ -92,9 +92,15 @@ class SklearnModel(Model):
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
-                    sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1))[0].flatten()
-
+                    sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1)).flatten()
         return sklearn_prediction
+    
+    def predict_proba(self, dataset: JaqpotpyDataset):
+        if self.task == "regression":
+            raise ValueError("predict_proba is available only for classification tasks")
+        sklearn_probs = self.trained_model.predict_proba(dataset.X.to_numpy())
+        sklearn_probs_list = [max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))]
+        return sklearn_probs_list
     
     def predict_onnx(self,  dataset: JaqpotpyDataset):
         sess = InferenceSession(self.onnx_model.SerializeToString())
@@ -104,6 +110,14 @@ class SklearnModel(Model):
                 for f in self.preprocessing_y:
                     onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
         return onnx_prediction[0].flatten()
+    
+    def predict_proba_onnx(self, dataset: JaqpotpyDataset):
+        if self.task == "regression":
+            raise ValueError("predict_onnx_proba is available only for classification tasks")
+        sess = InferenceSession(self.onnx_model.SerializeToString())
+        onnx_probs = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
+        onnx_probs_list = [max(onnx_probs[1][instance].values()) for  instance in range(len(onnx_probs[1]))]
+        return onnx_probs_list
 
     def __eval__(self):
         if self.evaluator.dataset.df is not None:
