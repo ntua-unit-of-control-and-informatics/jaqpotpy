@@ -23,8 +23,6 @@ class SklearnModel(Model):
         self.descriptors = dataset.featurizer
         self.model = model
         self.pipeline = None
-        self.pipeline_y = None
-        self.pipeline_y_onnx = None
         self.trained_model = None
         self.doa = doa
         self.trained_doa = None
@@ -96,7 +94,9 @@ class SklearnModel(Model):
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
+                    print(sklearn_prediction)
                     sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1)).flatten()
+                    print(sklearn_prediction)
         return sklearn_prediction
     
     def predict_proba(self, dataset: JaqpotpyDataset):
