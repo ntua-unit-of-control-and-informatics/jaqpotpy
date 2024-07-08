@@ -58,11 +58,15 @@ class TestModels(unittest.TestCase):
         script_dir = os.path.dirname(__file__)
         test_data_dir = os.path.abspath(os.path.join(script_dir, '../../test_data'))
         clasification_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_classification.csv')
+        multi_classification_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_multi_classification.csv')
         regression_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_regression.csv')
         prediction_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset.csv')
+        multiclass_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset_multiclass.csv')
         self.classification_df = pd.read_csv(clasification_csv_file_path)
+        self.multi_classification_df = pd.read_csv(multi_classification_csv_file_path)
         self.regression_df = pd.read_csv(regression_csv_file_path)
         self.prediction_df = pd.read_csv(prediction_csv_file_path)
+        self.prediction_multiclass_df = pd.read_csv(multiclass_csv_file_path)
 
     def test_SklearnModel_classification_no_preprocessing(self):
         """
@@ -181,6 +185,130 @@ class TestModels(unittest.TestCase):
         jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
                                     evaluator=None, preprocessor = pre)
         
+        with self.assertRaises(ValueError) as context:
+            jaqpot_model.fit()
+        self.assertTrue("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y." in str(context.exception))
+
+    def test_SklearnModel_multi_classification_no_preprocessing(self):
+        """
+        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint fingerprints for multi-classification.
+        No preprocessing is applied on the data.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df=self.multi_classification_df, y_cols=['ACTIVITY'],
+                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  task='classification', featurizer=featurizer)
+        model = RandomForestClassifier(random_state=42)
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = None)
+        jaqpot_model.fit()
+        validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_multiclass_df, y_cols=None,
+                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  task='classification', featurizer=featurizer)
+        
+        skl_predictions = jaqpot_model.predict(validation_dataset)
+        skl_probabilities = jaqpot_model.predict_proba(validation_dataset)
+        onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
+        onnx_probabilities = jaqpot_model.predict_proba_onnx(validation_dataset)
+
+        assert np.array_equal(skl_predictions, [0, 2, 0, 1, 0]), f"Expected skl_predictions == [0, 2, 0, 1, 0], got {skl_predictions}"
+        assert np.allclose(skl_probabilities, [0.54, 0.72, 0.52, 0.72, 0.51],
+                           atol=1e-3), (
+            f"Expected skl_probabilities == [0.54, 0.72, 0.52, 0.72, 0.51]"
+            f"got {skl_probabilities}"
+        )
+
+        assert np.array_equal(onnx_predictions, [0, 2, 0, 1, 0]), f"Expected onnx_predictions == [0, 2, 0, 1, 0], got {onnx_predictions}"
+        assert np.allclose(
+            onnx_probabilities, 
+            [0.539999783039093, 0.7199996113777161, 0.5199998021125793, 0.7199996113777161, 0.5099998116493225], 
+            atol=1e-3
+        ), (
+            f"Expected onnx_probabilities == [0.539999783039093, 0.7199996113777161, 0.5199998021125793, 0.7199996113777161, 0.5099998116493225], got {onnx_probabilities}"
+        )
+
+    def test_SklearnModel_multi_classification_x_preprocessing(self):
+        """
+        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint fingerprints for multi-classification.
+        Preprocessing is applied only on x features.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df=self.multi_classification_df, y_cols=['ACTIVITY'],
+                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  task='classification', featurizer=featurizer)
+        model = RandomForestClassifier(random_state=42)
+        pre = Preprocess()
+        pre.register_preprocess_class("Standard Scaler", StandardScaler())
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+        jaqpot_model.fit()
+        validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_multiclass_df, y_cols=None,
+                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  task='classification', featurizer=featurizer)
+        
+        skl_predictions = jaqpot_model.predict(validation_dataset)
+        skl_probabilities = jaqpot_model.predict_proba(validation_dataset)
+        onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
+        onnx_probabilities = jaqpot_model.predict_proba_onnx(validation_dataset)
+
+        assert np.array_equal(skl_predictions, [0, 2, 0, 1, 0]), f"Expected skl_predictions == [0, 2, 0, 1, 0], got {skl_predictions}"
+        assert np.allclose(skl_probabilities, [0.54, 0.72, 0.52, 0.72, 0.51],
+                           atol=1e-3), (
+            f"Expected skl_probabilities == [0.54, 0.72, 0.52, 0.72, 0.51]"
+            f"got {skl_probabilities}"
+        )
+
+        assert np.array_equal(onnx_predictions, [0, 2, 0, 1, 0]), f"Expected onnx_predictions == [0, 2, 0, 1, 0], got {onnx_predictions}"
+        assert np.allclose(
+            onnx_probabilities, 
+            [0.539999783039093, 0.7199996113777161, 0.5199998021125793, 0.7199996113777161, 0.5099998116493225], 
+            atol=1e-3
+        ), (
+            f"Expected onnx_probabilities == [0.539999783039093, 0.7199996113777161, 0.5199998021125793, 0.7199996113777161, 0.5099998116493225], got {onnx_probabilities}"
+        )
+
+    def test_SklearnModel_multi_classification_y_preprocessing(self):
+        """
+        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for multi-classification.
+
+        This test is for checking the error handling regarding the transformations of y labels in
+        classification tasks. Specifically, if any scaling method is selected for y labels, an 
+        error must be raised.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df=self.multi_classification_df, y_cols=['ACTIVITY'],
+                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  task='classification', featurizer=featurizer)
+        model = RandomForestClassifier(random_state=42)
+        pre = Preprocess()
+        pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+
+        with self.assertRaises(ValueError) as context:
+            jaqpot_model.fit()
+        self.assertTrue("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y." in str(context.exception))
+
+    def test_SklearnModel_multi_classification_xy_preprocessing(self):
+        """
+        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for multi-classification.
+
+        This test is for checking the error handling regarding the transformations of y labels in
+        classification tasks. Specifically, if any scaling method is selected for y labels, an 
+        error must be raised. This test is different from the previous one, as it checks the case
+        where both x and y columns are preprocessed.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df=self.multi_classification_df, y_cols=['ACTIVITY'],
+                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  task='classification', featurizer=featurizer)
+        model = RandomForestClassifier(random_state=42)
+        pre = Preprocess()
+        pre.register_preprocess_class("Standard Scaler", StandardScaler())
+        pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+
         with self.assertRaises(ValueError) as context:
             jaqpot_model.fit()
         self.assertTrue("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y." in str(context.exception))
