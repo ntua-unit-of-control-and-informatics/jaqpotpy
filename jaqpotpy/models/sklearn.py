@@ -96,7 +96,6 @@ class SklearnModel(Model):
                 for f in self.preprocessing_y:
                     print(sklearn_prediction)
                     sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1)).flatten()
-                    print(sklearn_prediction)
         return sklearn_prediction
     
     def predict_proba(self, dataset: JaqpotpyDataset):
