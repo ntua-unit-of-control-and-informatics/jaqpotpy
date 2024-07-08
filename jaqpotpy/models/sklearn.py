@@ -94,7 +94,6 @@ class SklearnModel(Model):
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
-                    print(sklearn_prediction)
                     sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1)).flatten()
         return sklearn_prediction
     

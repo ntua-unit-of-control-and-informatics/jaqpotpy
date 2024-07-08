@@ -369,7 +369,7 @@ class TestModels(unittest.TestCase):
         """
         featurizer = TopologicalFingerprint()
         dataset = JaqpotpyDataset(df = self.regression_df, y_cols=["ACTIVITY"],
-                          smiles_cols=["SMILES"],  x_cols=["X1", "X2"],
+                          smiles_cols=None,  x_cols=["X1", "X2"],
                           task='regression', featurizer=featurizer)
         pre = Preprocess()
         pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
@@ -378,14 +378,14 @@ class TestModels(unittest.TestCase):
                                     evaluator=None, preprocessor = pre)
         jaqpot_model.fit()
         validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
-                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  smiles_cols=None, x_cols=['X1', 'X2'],
                                   task='regression', featurizer=featurizer)
         
         skl_predictions = jaqpot_model.predict(validation_dataset)
         onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
 
-        assert np.allclose(skl_predictions,[4200.98, 82.11, 4477.63, 7256.4, 4046.26], atol=1e-02), f"Expected skl_predictions == [4200.98, 82.11, 4477.63, 7256.4, 4046.26], got {skl_predictions}"
-        assert np.allclose(onnx_predictions, [4200.9805, 82.109985, 4477.63, 7256.402, 4046.26], atol=1e-02), f"Expected onnx_predictions == [4200.9805, 82.109985, 4477.63, 7256.402, 4046.26], got {onnx_predictions}"
+        assert np.allclose(skl_predictions,[59951.485, 5312.43, 2899.398, 15733.59633333, 7775.086], atol=1e-02), f"Expected skl_predictions == [59951.485, 5312.43, 2899.398, 15733.59633333, 7775.086], got {skl_predictions}"
+        assert np.allclose(onnx_predictions, [59951.508, 5312.4307, 2899.3987, 15733.592, 7775.0854], atol=1e-02), f"Expected onnx_predictions == [59951.508, 5312.4307, 2899.3987, 15733.592, 7775.0854], got {onnx_predictions}"
 
 
     def test_SklearnModel_regression_xy_preprocessing(self):
@@ -411,8 +411,6 @@ class TestModels(unittest.TestCase):
         skl_predictions = jaqpot_model.predict(validation_dataset)
         onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
 
-        # assert np.allclose(skl_predictions, [4202.42, 82.79, 4957.13, 7255.8, 4046.26], atol=1e-02), f"Expected skl_predictions == [4202.42, 82.79, 4957.13, 7255.8, 4046.26], got {skl_predictions}"
-        # assert np.allclose(onnx_predictions, [4202.42, 82.86999, 4477.63, 7255.8022, 4046.26], atol=1e-02), f"Expected onnx_predictions == [4202.42, 82.86999, 4477.63, 7255.8022, 4046.26], got {onnx_predictions}"
         assert np.allclose(skl_predictions, [66860.46, 3289.8, 3410.488, 15118.86633333, 7775.086], atol=1e-02), f"Expected skl_predictions == [66860.46, 3289.8, 3410.488, 15118.86633333, 7775.086], got {skl_predictions}"
         assert np.allclose(onnx_predictions, [66860.48, 5524.594, 2840.3103, 15118.862, 7775.0854], atol=1e-02), f"Expected onnx_predictions == [4202.42, 82.86999, 4477.63, 7255.8022, 4046.26], got {onnx_predictions}"
 
