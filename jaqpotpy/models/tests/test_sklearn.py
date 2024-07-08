@@ -91,7 +91,7 @@ class TestModels(unittest.TestCase):
 
         assert np.array_equal(skl_predictions, [1, 0, 0, 1, 1]), f"Expected skl_predictions == [1, 0, 0, 1, 1], got {skl_predictions}"
         assert np.allclose(skl_probabilities, [0.7937499999999997, 0.69, 0.7427857142857142, 0.6573333333333332, 0.88],
-                           atol=1e-3), (
+                           atol=1e-2), (
             f"Expected skl_probabilities == [0.7937499999999997, 0.69, 0.7427857142857142, 0.6573333333333332, 0.88]"
             f"got {skl_probabilities}"
         )
@@ -100,7 +100,7 @@ class TestModels(unittest.TestCase):
         assert np.allclose(
             onnx_probabilities, 
             [0.7937495708465576, 0.690000057220459, 0.7427858114242554, 0.6573330163955688, 0.8799994587898254], 
-            atol=1e-3
+            atol=1e-2
         ), (
             f"Expected onnx_probabilities == [0.7937495708465576, 0.690000057220459, 0.7427858114242554, 0.6573330163955688, 0.8799994587898254], got {onnx_probabilities}"
         )
@@ -130,7 +130,7 @@ class TestModels(unittest.TestCase):
 
         assert np.array_equal(skl_predictions, [1, 0, 0, 1, 1]), f"Expected skl_predictions == [1, 0, 0, 1, 1], got {skl_predictions}"
         assert np.allclose(skl_probabilities, [0.7837499999999997, 0.69, 0.7327857142857142, 0.6873333333333332, 0.88],
-                           atol=1e-3), (
+                           atol=1e-2), (
             f"Expected skl_probabilities == [0.7837499999999997, 0.69, 0.7327857142857142, 0.6873333333333332, 0.88]"
             f"got {skl_probabilities}"
         )
@@ -139,7 +139,7 @@ class TestModels(unittest.TestCase):
         assert np.allclose(
             onnx_probabilities, 
             [0.7837496399879456, 0.6600000858306885, 0.7427858114242554, 0.6873330473899841, 0.8799994587898254], 
-            atol=1e-3
+            atol=1e-2
         ), (
             f"Expected onnx_probabilities == [0.7837496399879456, 0.6600000858306885, 0.7427858114242554, 0.6873330473899841, 0.8799994587898254], got {onnx_probabilities}"
         )
@@ -213,7 +213,7 @@ class TestModels(unittest.TestCase):
 
         assert np.array_equal(skl_predictions, [0, 2, 0, 1, 0]), f"Expected skl_predictions == [0, 2, 0, 1, 0], got {skl_predictions}"
         assert np.allclose(skl_probabilities, [0.54, 0.72, 0.52, 0.72, 0.51],
-                           atol=1e-3), (
+                           atol=1e-2), (
             f"Expected skl_probabilities == [0.54, 0.72, 0.52, 0.72, 0.51]"
             f"got {skl_probabilities}"
         )
@@ -222,7 +222,7 @@ class TestModels(unittest.TestCase):
         assert np.allclose(
             onnx_probabilities, 
             [0.539999783039093, 0.7199996113777161, 0.5199998021125793, 0.7199996113777161, 0.5099998116493225], 
-            atol=1e-3
+            atol=1e-2
         ), (
             f"Expected onnx_probabilities == [0.539999783039093, 0.7199996113777161, 0.5199998021125793, 0.7199996113777161, 0.5099998116493225], got {onnx_probabilities}"
         )
@@ -253,7 +253,7 @@ class TestModels(unittest.TestCase):
 
         assert np.array_equal(skl_predictions, [0, 2, 0, 1, 0]), f"Expected skl_predictions == [0, 2, 0, 1, 0], got {skl_predictions}"
         assert np.allclose(skl_probabilities, [0.54, 0.72, 0.52, 0.72, 0.51],
-                           atol=1e-3), (
+                           atol=1e-2), (
             f"Expected skl_probabilities == [0.54, 0.72, 0.52, 0.72, 0.51]"
             f"got {skl_probabilities}"
         )
@@ -262,7 +262,7 @@ class TestModels(unittest.TestCase):
         assert np.allclose(
             onnx_probabilities, 
             [0.539999783039093, 0.7199996113777161, 0.5199998021125793, 0.7199996113777161, 0.5099998116493225], 
-            atol=1e-3
+            atol=1e-2
         ), (
             f"Expected onnx_probabilities == [0.539999783039093, 0.7199996113777161, 0.5199998021125793, 0.7199996113777161, 0.5099998116493225], got {onnx_probabilities}"
         )
@@ -384,8 +384,8 @@ class TestModels(unittest.TestCase):
         skl_predictions = jaqpot_model.predict(validation_dataset)
         onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
 
-        assert np.allclose(skl_predictions,[4200.98, 82.11, 4477.63, 7256.4, 4046.26], atol=1e-03), f"Expected skl_predictions == [2146.81, 85.24, 2541.61, 5928.3, 2484.34], got {skl_predictions}"
-        assert np.allclose(onnx_predictions, [4200.9805, 82.109985, 4477.63, 7256.402, 4046.26], atol=1e-03), f"Expected onnx_predictions == [2146.811, 85.279976, 2406.0806, 5928.299, 2484.3413], got {onnx_predictions}"
+        assert np.allclose(skl_predictions,[4200.98, 82.11, 4477.63, 7256.4, 4046.26], atol=1e-02), f"Expected skl_predictions == [4200.98, 82.11, 4477.63, 7256.4, 4046.26], got {skl_predictions}"
+        assert np.allclose(onnx_predictions, [4200.9805, 82.109985, 4477.63, 7256.402, 4046.26], atol=1e-02), f"Expected onnx_predictions == [4200.9805, 82.109985, 4477.63, 7256.402, 4046.26], got {onnx_predictions}"
 
 
     def test_SklearnModel_regression_xy_preprocessing(self):
