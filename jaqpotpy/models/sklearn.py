@@ -134,7 +134,7 @@ class SklearnModel(Model):
             for pre_key in pre_keys:
                 preprocess_func = self.preprocess.fitted_classes.get(pre_key)
                 X = preprocess_func.transform(X)
-        sess = rt.InferenceSession(self.inference_model.SerializeToString())
+        sess = InferenceSession(self.onnx_model.SerializeToString())
         input_name = sess.get_inputs()[0].name
         X = np.array(X.astype(float).copy())
         preds = sess.run(None, {input_name: X.astype(np.float32)})
