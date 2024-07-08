@@ -51,12 +51,14 @@ class SklearnModel(Model):
         
         #if preprocessing was applied to either X,y or both
         if self.preprocess is not None:
+            self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             # Apply preprocessing on design matrix X
             pre_keys = self.preprocess.classes.keys()
             if len(pre_keys) > 0:
-                pipeline = sklearn.pipeline.Pipeline(steps = list(self.preprocess.classes.items()))
-            pipeline.steps.append(('model', self.model))
-            self.pipeline = pipeline
+                for preprocessor in pre_keys:
+                    self.pipeline.steps.append((preprocessor, self.preprocess.classes.get(preprocessor)))
+                #self.pipeline = sklearn.pipeline.Pipeline(steps = list(self.preprocess.classes.items()))
+            self.pipeline.steps.append(('model', self.model))
 
             # Apply preprocessing of response vector y
             pre_y_keys = self.preprocess.classes_y.keys()
