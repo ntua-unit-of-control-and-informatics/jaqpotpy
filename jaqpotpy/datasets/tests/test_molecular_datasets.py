@@ -92,18 +92,6 @@ class TestDatasets(unittest.TestCase):
 
         self.assertEqual(dataset.df.shape[1], 3, "DataFrame should have 170 columns")
         self.assertEqual(dataset.df.shape[0], 139, "DataFrame should have 139 rows")
-
-    def test_dataset_no_y(self):
-        # Assert that a TypeError is thrown if no y is provided
-        with self.assertRaises(TypeError):
-            JaqpotpyDataset(
-                df=self.single_smiles_df,
-                y_cols=None, # No y
-                smiles_cols=["SMILES"], 
-                x_cols=self.x_cols,
-                task='classification',
-                featurizer=self.featurizer
-            )
         
 
     def test_dataset_no_x_no_smiles_none(self):

@@ -23,8 +23,6 @@ class SklearnModel(Model):
         self.descriptors = dataset.featurizer
         self.model = model
         self.pipeline = None
-        self.pipeline_y = None
-        self.pipeline_y_onnx = None
         self.trained_model = None
         self.doa = doa
         self.trained_doa = None
@@ -40,6 +38,8 @@ class SklearnModel(Model):
         self.onnx_opset = None
 
     def fit(self):
+        if self.dataset.y is None:
+            raise TypeError("dataset.y is None. Please provide a target variable for the model.")
         #Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
@@ -49,12 +49,14 @@ class SklearnModel(Model):
         
         #if preprocessing was applied to either X,y or both
         if self.preprocess is not None:
+            self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             # Apply preprocessing on design matrix X
             pre_keys = self.preprocess.classes.keys()
             if len(pre_keys) > 0:
-                pipeline = sklearn.pipeline.Pipeline(steps = list(self.preprocess.classes.items()))
-            pipeline.steps.append(('model', self.model))
-            self.pipeline = pipeline
+                for preprocessor in pre_keys:
+                    self.pipeline.steps.append((preprocessor, self.preprocess.classes.get(preprocessor)))
+                #self.pipeline = sklearn.pipeline.Pipeline(steps = list(self.preprocess.classes.items()))
+            self.pipeline.steps.append(('model', self.model))
 
             # Apply preprocessing of response vector y
             pre_y_keys = self.preprocess.classes_y.keys()
@@ -92,9 +94,15 @@ class SklearnModel(Model):
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
-                    sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1))[0].flatten()
-
+                    sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1)).flatten()
         return sklearn_prediction
+    
+    def predict_proba(self, dataset: JaqpotpyDataset):
+        if self.task == "regression":
+            raise ValueError("predict_proba is available only for classification tasks")
+        sklearn_probs = self.trained_model.predict_proba(dataset.X.to_numpy())
+        sklearn_probs_list = [max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))]
+        return sklearn_probs_list
     
     def predict_onnx(self,  dataset: JaqpotpyDataset):
         sess = InferenceSession(self.onnx_model.SerializeToString())
@@ -104,6 +112,14 @@ class SklearnModel(Model):
                 for f in self.preprocessing_y:
                     onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
         return onnx_prediction[0].flatten()
+    
+    def predict_proba_onnx(self, dataset: JaqpotpyDataset):
+        if self.task == "regression":
+            raise ValueError("predict_onnx_proba is available only for classification tasks")
+        sess = InferenceSession(self.onnx_model.SerializeToString())
+        onnx_probs = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
+        onnx_probs_list = [max(onnx_probs[1][instance].values()) for  instance in range(len(onnx_probs[1]))]
+        return onnx_probs_list
 
     def __eval__(self):
         if self.evaluator.dataset.df is not None:
@@ -116,7 +132,7 @@ class SklearnModel(Model):
             for pre_key in pre_keys:
                 preprocess_func = self.preprocess.fitted_classes.get(pre_key)
                 X = preprocess_func.transform(X)
-        sess = rt.InferenceSession(self.inference_model.SerializeToString())
+        sess = InferenceSession(self.onnx_model.SerializeToString())
         input_name = sess.get_inputs()[0].name
         X = np.array(X.astype(float).copy())
         preds = sess.run(None, {input_name: X.astype(np.float32)})
