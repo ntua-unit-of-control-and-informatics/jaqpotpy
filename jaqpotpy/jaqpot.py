@@ -8,12 +8,16 @@ import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.helpers.jwt as jwtok
 import jaqpotpy.helpers.helpers as help
 import jaqpotpy.helpers.dataset_deserializer as ds
-# from jaqpotpy.helpers.logging import ColoredFormatter
+from jaqpotpy.api.types.api.model import create_model
+from jaqpotpy.api.types.models import Model
+from jaqpotpy.api.types.models.model_visibility import ModelVisibility
+from jaqpotpy.api.types.models.feature import Feature
+from jaqpotpy.api.types.client import AuthenticatedClient
+from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.helpers.logging import init_logger
 import json
 import jaqpotpy.api.feature_api as featapi
 from jaqpotpy.helpers.serializer import JaqpotSerializer
-# from tornado.ioloop import IOLoop
 from jaqpotpy.entities.dataset import Dataset
 from jaqpotpy.entities.meta import MetaInfo
 from jaqpotpy.entities.featureinfo import FeatureInfo
@@ -52,7 +56,7 @@ class Jaqpot:
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = 'https://api.jaqpot.org/jaqpot/services/'
+            self.base_url = 'https://app.appv2.jaqpot.org/'
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
@@ -463,7 +467,7 @@ class Jaqpot:
 
 
 
-    def deploy_on_newapi(self, model, title: str, description: str):
+    def deploy_on_newapi(self, model, title: str, description: str, visibility: str):
         """
         Deploys a model on the Jaqpot API using the new API version.
 
@@ -481,7 +485,7 @@ class Jaqpot:
         if title is None:
             raise Exception("Please submit title of the model")
         
-        pretrained = help.create_molecular_req_v2(model, title=title, description=description)
+        pretrained = help.create_molecular_req_v2(model, title=title, description=description, visibility=visibility)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
         response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
         if response.status_code < 300:
@@ -492,9 +496,27 @@ class Jaqpot:
             self.log.error("Error code: " + str(response.status_code))
             return
 
+    def deploy_SklearnModel(self, model, name, description, visibility):
 
-
-
+        auth_client = AuthenticatedClient(base_url=self.base_url, token=self.api_key)
+        actual_model = model_to_b64encoding(model.copy())
+        body_model = Model(name = name, 
+                            type=model.type, 
+                            jaqpotpy_version=model.jaqpotpy_version,
+                            libraries = model.libraries, 
+                            dependent_features=[Feature(key=feature_i['name'], name=feature_i['name'], feature_type=feature_i['featureType']) for feature_i in model.dependentFeatures],
+                            independent_features=[Feature(key=feature_i['name'], name=feature_i['name'], feature_type=feature_i['featureType']) for feature_i in model.independentFeatures],
+                            visibility=ModelVisibility(visibility), 
+                            actual_model=actual_model,
+                            description = description)
+        
+        response = create_model.sync_detailed(client=auth_client, body=body_model)
+        if response.status_code < 300:
+            self.log.info("Model has been successfully uploaded. The url of the model is " + response.headers.get('Location'))
+        else:
+            error = response.headers.get('error')
+            error_description = response.headers.get('error_description')
+            self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_jaqpotpy_molecular_model(self, model, description: str, title: str = None):
         if model.model_title != None:
