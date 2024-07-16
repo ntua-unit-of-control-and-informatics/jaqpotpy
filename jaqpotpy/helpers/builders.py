@@ -3,7 +3,7 @@ from jaqpotpy.entities.feature import Feature
 from jaqpotpy.entities.meta import MetaInfo
 from jaqpotpy.entities.entryid import EntryId
 from jaqpotpy.entities.dataentry import DataEntry
-from jaqpotpy.dto.pretrained_requirements import PretrainedRequirements, PretrainedRequirements_v2
+from jaqpotpy.dto.pretrained_requirements import PretrainedRequirements
 from jaqpotpy.entities.doa import Doa
 from base64 import b64encode
 import pickle
@@ -244,25 +244,6 @@ class PretrainedNeedsDirector:
         pretrained_needs.runtime = self._builder.getRuntime()
         return pretrained_needs
     
-class PretrainedNeedsDirector_v2:
-
-    def __init__(self):
-        self._builder = None
-
-    def construct(self, builder):
-        pretrained_needs = PretrainedRequirements_v2()
-        self._builder = builder
-        pretrained_needs.name = self._builder.getName()
-        pretrained_needs.description = self._builder.getDescription()
-        pretrained_needs.type = self._builder.getType()
-        pretrained_needs.jaqpotpyVersion = self._builder.getJaqpotPyVersion()
-        pretrained_needs.libraries = self._builder.getLibraries()
-        pretrained_needs.dependentFeatures = self._builder.getDependentFeatures()
-        pretrained_needs.independentFeatures = self._builder.getIndependentFeatures()
-        pretrained_needs.visibility = self._builder.getVisibility()
-        pretrained_needs.actualModel = self._builder.getActualModel()
-        return pretrained_needs
-    
 class PretrainedNeedsBuilder:
     ENCODING = 'utf-8'
     independendFeatures = None
@@ -387,130 +368,7 @@ class PretrainedNeedsBuilder:
     def getVersions(self):
         return self.versions
     
-class PretrainedNeedsBuilder_v2:
-    ENCODING = 'utf-8'
-    id = None
-    name = None
-    description = None
-    type = None
-    jaqpotpyVersion = None
-    libraries = None
-    dependentFeatures = None
-    independentFeatures = None
-    organizatiopns = None
-    visibility = None
-    reliability = None
-    pretrained = None
-    actualModel = None
-    creator  = None
-    canEdit = None
-    createdAt = None
-    updatedAt = None
 
-    def setid(self, id):
-        self.id = id
-    
-    def getid(self):
-        return self.id
-
-    def setName(self, name):
-        self.name = name
-    
-    def getName(self):
-        return self.name
-    
-    def setDescription(self, description):
-        self.description = description
-
-    def getDescription(self):
-        return self.description
-    
-    def setType(self, type):
-        self.type = type
-
-    def getType(self):
-        return self.type
-    
-    def setJaqpotPyVersion(self, jaqpotpyVersion):
-        self.jaqpotpyVersion = jaqpotpyVersion
-
-    def getJaqpotPyVersion(self):
-        return self.jaqpotpyVersion
-    
-    def setLibraries(self, libraries):
-        self.libraries = [{"name": item, "version": getattr(__import__(item), '__version__', 'Version not found')} for item in libraries]
-
-    def getLibraries(self):
-        return self.libraries
-    
-    def setDependentFeatures(self, dependentFeatures):
-        self.DependentFeatures = [{"name": item, 'description':"", "featureType": "NUMERICAL"} for item in dependentFeatures]
-
-    def getDependentFeatures(self):
-        return self.DependentFeatures
-    
-    def setIndependentFeatures(self, independentFeatures):
-        self.independentFeatures = [{"name": item, 'description':"", "featureType": "NUMERICAL"} for item in independentFeatures]
-
-    def getIndependentFeatures(self):
-        return self.independentFeatures
-    
-    def setOrganizations(self, organizations):
-        self.organizations = organizations
-    
-    def getOrganizations(self):
-        return self.organizations
-    
-    def setVisibility(self, visibility):
-        self.visibility = visibility
-
-    def getVisibility(self):
-        return self.visibility
-    
-    def setReliability(self, reliability):
-        self.reliability = reliability
-
-    def getReliability(self):
-        return self.reliability
-    
-    def setPretrained(self, pretrained):
-        self.pretrained = pretrained
-
-    def getPretrained(self):
-        return self.pretrained
-    
-    def setActualModel(self, actualModel):
-        p_mod = pickle.dumps(actualModel)
-        raw = b64encode(p_mod)
-        actualModel = raw.decode(self.ENCODING)
-        self.actualModel = actualModel
-
-    def getActualModel(self):
-        return self.actualModel
-    
-    def setCreator(self, creator):
-        self.creator = creator
-
-    def getCreator(self):
-        return self.creator
-    
-    def setCanEdit(self, canEdit):
-        self.canEdit = canEdit
-
-    def getCanEdit(self):
-        return self.canEdit
-    
-    def setCreatedAt(self, createdAt):
-        self.createdAt = createdAt
-
-    def getCreatedAt(self):
-        return self.createdAt
-    
-    def setUpdatedAt(self, updatedAt):
-        self.updatedAt = updatedAt
-
-    def getUpdatedAt(self):
-        return self.updatedAt
 
 class DOABuilder(metaclass=abc.ABCMeta):
 
