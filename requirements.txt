@@ -15,7 +15,6 @@ skl2onnx==1.16.0
 onnxruntime==1.18.0
 httpx==0.27.0
 attrs==23.2.0
-typing==3.10.0.0
 # Torch requirements
 torch==2.3.0
 torch-geometric==2.3.1
