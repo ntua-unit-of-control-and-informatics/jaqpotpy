@@ -1,10 +1,14 @@
 import sklearn.pipeline
+import copy
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from typing import Any, Union, Dict, Optional
 from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 from jaqpotpy.datasets.material_datasets import CompositionDataset, StructureDataset
-from jaqpotpy.models import Evaluator, Preprocess, MolecularModel, MaterialModel
+from jaqpotpy.models import Evaluator, Preprocess, MaterialModel
+from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.types.models import FeatureType
+from jaqpotpy.api.types.models import ModelType
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
@@ -20,7 +24,7 @@ class SklearnModel(Model):
                   preprocessor: Preprocess = None,  evaluator: Evaluator = None):
         self.x_cols = dataset.x_cols
         self.dataset = dataset
-        self.descriptors = dataset.featurizer
+        self.featurizer = dataset.featurizer
         self.model = model
         self.pipeline = None
         self.trained_model = None
@@ -29,15 +33,31 @@ class SklearnModel(Model):
         self.evaluator = evaluator
         self.preprocess = preprocessor
         self.preprocessing_y = None
-        self.library = ['sklearn']
+        self.libraries = None
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
         self.jaqpotpy_docker = config.jaqpotpy_docker
         self.task = self.dataset.task
         self.onnx_model = None
         self.onnx_opset = None
+        self.type = ModelType('SKLEARN')
+        self.independentFeatures = None
+        self.dependentFeatures = None
+
+    def __dtypes_to_jaqpotypes__(self):
+        for feature in self.independentFeatures + self.dependentFeatures:
+            if feature['featureType'] in ['SMILES']:
+                feature['featureType'] = FeatureType.SMILES
+            elif feature['featureType'] in ['int', 'int64']:
+                feature['featureType'] = FeatureType.INTEGER
+            elif feature['featureType'] in ['float', 'float64']:
+                feature['featureType'] = FeatureType.FLOAT
+            elif feature['featureType'] in ['string, object']:
+                feature['featureType'] = FeatureType.STRING
 
     def fit(self):
+        self.libraries = get_installed_libraries()
+
         if self.dataset.y is None:
             raise TypeError("dataset.y is None. Please provide a target variable for the model.")
         #Get X and y from dataset
@@ -55,7 +75,6 @@ class SklearnModel(Model):
             if len(pre_keys) > 0:
                 for preprocessor in pre_keys:
                     self.pipeline.steps.append((preprocessor, self.preprocess.classes.get(preprocessor)))
-                #self.pipeline = sklearn.pipeline.Pipeline(steps = list(self.preprocess.classes.items()))
             self.pipeline.steps.append(('model', self.model))
 
             # Apply preprocessing of response vector y
@@ -81,15 +100,26 @@ class SklearnModel(Model):
         else:
             self.trained_model = self.model.fit(X.to_numpy(), y.to_numpy().ravel())
         
+        if self.dataset.smiles_cols:
+            self.independentFeatures = list({"key": self.dataset.smiles_cols[smiles_col_i], "name": self.dataset.smiles_cols[smiles_col_i], "featureType": "SMILES"} for smiles_col_i in range(len(self.dataset.smiles_cols)))
+        else:
+            self.independentFeatures = list()
+        if self.dataset.x_cols:
+            self.independentFeatures += list({"key": feature, "name": feature, "featureType": X[feature].dtype} for feature in self.dataset.x_cols)
+        self.dependentFeatures = list({"key": feature, "name": feature, "featureType": y[feature].dtype} for feature in self.dataset.y_cols)
+        self.__dtypes_to_jaqpotypes__()
+
         name = self.model.__class__.__name__ + "_ONNX"
         self.onnx_model = convert_sklearn(self.trained_model, initial_types=[('float_input', FloatTensorType([None, X.to_numpy().shape[1]]))], name=name)
         self.onnx_opset = self.onnx_model.opset_import[0].version
-
+        
         if self.evaluator:
             self.__eval__()
         return self
 
     def predict(self,  dataset: JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotpyDataset):
+            raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sklearn_prediction = self.trained_model.predict(dataset.X.to_numpy())
         if self.preprocess is not None:
             if self.preprocessing_y:
@@ -98,6 +128,8 @@ class SklearnModel(Model):
         return sklearn_prediction
     
     def predict_proba(self, dataset: JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotpyDataset):
+            raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
         sklearn_probs = self.trained_model.predict_proba(dataset.X.to_numpy())
@@ -105,6 +137,8 @@ class SklearnModel(Model):
         return sklearn_probs_list
     
     def predict_onnx(self,  dataset: JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotpyDataset):
+            raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
         onnx_prediction = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
         if self.preprocess is not None:
@@ -114,6 +148,8 @@ class SklearnModel(Model):
         return onnx_prediction[0].flatten()
     
     def predict_proba_onnx(self, dataset: JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotpyDataset):
+            raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_onnx_proba is available only for classification tasks")
         sess = InferenceSession(self.onnx_model.SerializeToString())
@@ -162,7 +198,13 @@ class SklearnModel(Model):
             # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
             #print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
 
-
+    def copy(self):
+        copied_model = copy.deepcopy(self)
+        copied_model.dataset = None
+        return copied_model
+    
+    def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
+        jaqpot.deploy_SklearnModel(model = self, name = name, description = description, visibility = visibility)
 
 class MaterialSKLearn(Model):
 
