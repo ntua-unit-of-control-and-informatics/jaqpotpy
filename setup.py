@@ -35,7 +35,7 @@ setup(name='jaqpotpy',
             'pymatgen==2024.5.1',
             'skl2onnx==1.16.0',
             'onnxruntime==1.18.0',
-            'httpx'==0.27.0
+            'httpx==0.27.0',
             'torch==2.3.0',
             'torch-geometric==2.3.1',
             'torchvision==0.18.0',
