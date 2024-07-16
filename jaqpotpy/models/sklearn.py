@@ -23,6 +23,7 @@ class SklearnModel(Model):
     def __init__(self, dataset: JaqpotpyDataset, doa: DOA, model: Any,
                   preprocessor: Preprocess = None,  evaluator: Evaluator = None):
         self.x_cols = dataset.x_cols
+        self.y_cols = dataset.y_cols
         self.dataset = dataset
         self.featurizer = dataset.featurizer
         self.model = model
@@ -67,6 +68,9 @@ class SklearnModel(Model):
         if self.doa:
             self.trained_doa = self.doa.fit(X=X)
         
+        if len(self.dataset.y_cols) == 1:
+            y = y.to_numpy().ravel()
+
         #if preprocessing was applied to either X,y or both
         if self.preprocess is not None:
             self.pipeline = sklearn.pipeline.Pipeline(steps=[])
@@ -79,6 +83,8 @@ class SklearnModel(Model):
 
             # Apply preprocessing of response vector y
             pre_y_keys = self.preprocess.classes_y.keys()
+
+            
             if len(pre_y_keys) > 0:
                 if self.task == "classification":
                     raise ValueError("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y.")
@@ -87,7 +93,7 @@ class SklearnModel(Model):
                     preprocess_classes_y = []
                     for pre_y_key in pre_y_keys:
                         pre_y_function = self.preprocess.classes_y.get(pre_y_key)
-                        y_scaled = pre_y_function.fit_transform(y).ravel()
+                        y_scaled = pre_y_function.fit_transform(y)#.ravel()
                         self.preprocess.register_fitted_class_y(pre_y_key, pre_y_function)
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
@@ -95,10 +101,10 @@ class SklearnModel(Model):
 
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
             else:
-                self.trained_model = self.pipeline.fit(X.to_numpy(), y.to_numpy().ravel())   
+                self.trained_model = self.pipeline.fit(X.to_numpy(), y)#.to_numpy().ravel())   
         #case where no preprocessing was provided
         else:
-            self.trained_model = self.model.fit(X.to_numpy(), y.to_numpy().ravel())
+            self.trained_model = self.model.fit(X.to_numpy(), y)#.to_numpy().ravel())
         
         if self.dataset.smiles_cols:
             self.independentFeatures = list({"key": self.dataset.smiles_cols[smiles_col_i], "name": self.dataset.smiles_cols[smiles_col_i], "featureType": "SMILES"} for smiles_col_i in range(len(self.dataset.smiles_cols)))
@@ -106,7 +112,7 @@ class SklearnModel(Model):
             self.independentFeatures = list()
         if self.dataset.x_cols:
             self.independentFeatures += list({"key": feature, "name": feature, "featureType": X[feature].dtype} for feature in self.dataset.x_cols)
-        self.dependentFeatures = list({"key": feature, "name": feature, "featureType": y[feature].dtype} for feature in self.dataset.y_cols)
+        self.dependentFeatures = list({"key": feature, "name": feature, "featureType": self.dataset.__get_Y__()[feature].dtype} for feature in self.dataset.y_cols)
         self.__dtypes_to_jaqpotypes__()
 
         name = self.model.__class__.__name__ + "_ONNX"
@@ -140,12 +146,14 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        onnx_prediction = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
+        onnx_prediction = sess.run(None, {sess.get_inputs()[0].name: dataset.X.to_numpy().astype(np.float32)})
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
                     onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
-        return onnx_prediction[0].flatten()
+        if len(self.y_cols) == 1:
+            return onnx_prediction[0].flatten()
+        return onnx_prediction[0]
     
     def predict_proba_onnx(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
