@@ -10,8 +10,13 @@ from sklearn.svm import SVC, SVR
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from jaqpotpy.descriptors.molecular import TopologicalFingerprint
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
+from jaqpotpy.models.preprocessing import Preprocess
+
 from jaqpotpy.models.preprocessing import Preprocess
 
 
@@ -59,10 +64,14 @@ class TestModels(unittest.TestCase):
         test_data_dir = os.path.abspath(os.path.join(script_dir, '../../test_data'))
         clasification_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_classification.csv')
         multi_classification_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_multi_classification.csv')
+        multi_classification_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_multi_classification.csv')
         regression_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_regression.csv')
         prediction_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset.csv')
         multiclass_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset_multiclass.csv')
+        prediction_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset.csv')
+        multiclass_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset_multiclass.csv')
         self.classification_df = pd.read_csv(clasification_csv_file_path)
+        self.multi_classification_df = pd.read_csv(multi_classification_csv_file_path)
         self.multi_classification_df = pd.read_csv(multi_classification_csv_file_path)
         self.regression_df = pd.read_csv(regression_csv_file_path)
         self.prediction_df = pd.read_csv(prediction_csv_file_path)
@@ -151,6 +160,11 @@ class TestModels(unittest.TestCase):
         This test is for checking the error handling regarding the transformations of y labels in
         classification tasks. Specifically, if any scaling method is selected for y labels, an 
         error must be raised.
+        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for classification.
+
+        This test is for checking the error handling regarding the transformations of y labels in
+        classification tasks. Specifically, if any scaling method is selected for y labels, an 
+        error must be raised.
         """
         featurizer = TopologicalFingerprint()
         dataset = JaqpotpyDataset(df=self.classification_df, y_cols=['ACTIVITY'],
@@ -166,7 +180,27 @@ class TestModels(unittest.TestCase):
         self.assertTrue("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y." in str(context.exception))
 
     def test_SklearnModel_classification_xy_preprocessing(self):
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df=self.classification_df, y_cols=['ACTIVITY'],
+                                  smiles_cols=None, x_cols=['X1', 'X2'],
+                                  task='classification', featurizer=featurizer)
+        model = RandomForestClassifier(random_state=42)
+        pre = Preprocess()
+        pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+        with self.assertRaises(ValueError) as context:
+            jaqpot_model.fit()
+        self.assertTrue("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y." in str(context.exception))
+
+    def test_SklearnModel_classification_xy_preprocessing(self):
         """
+        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for classification.
+
+        This test is for checking the error handling regarding the transformations of y labels in
+        classification tasks. Specifically, if any scaling method is selected for y labels, an 
+        error must be raised. This test is different from the previous one, as it checks the case
+        where both x and y columns are preprocessed.
         Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for classification.
 
         This test is for checking the error handling regarding the transformations of y labels in
@@ -190,7 +224,25 @@ class TestModels(unittest.TestCase):
         self.assertTrue("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y." in str(context.exception))
 
     def test_SklearnModel_multi_classification_no_preprocessing(self):
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df=self.classification_df, y_cols=['ACTIVITY'],
+                                  smiles_cols=None, x_cols=['X1', 'X2'],
+                                  task='classification', featurizer=featurizer)
+        model = RandomForestClassifier(random_state=42)
+        pre = Preprocess()
+        pre.register_preprocess_class("Standard Scaler", StandardScaler())
+        pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+        
+        with self.assertRaises(ValueError) as context:
+            jaqpot_model.fit()
+        self.assertTrue("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y." in str(context.exception))
+
+    def test_SklearnModel_multi_classification_no_preprocessing(self):
         """
+        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint fingerprints for multi-classification.
+        No preprocessing is applied on the data.
         Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint fingerprints for multi-classification.
         No preprocessing is applied on the data.
         """
@@ -368,6 +420,31 @@ class TestModels(unittest.TestCase):
         applied only on the output variables.
         """
         featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df = self.regression_df, y_cols=["ACTIVITY"],
+                          smiles_cols=None,  x_cols=["X1", "X2"],
+                          task='regression', featurizer=featurizer)
+        pre = Preprocess()
+        pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
+        model = RandomForestRegressor(random_state=42)
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+        jaqpot_model.fit()
+        validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
+                                  smiles_cols=None, x_cols=['X1', 'X2'],
+                                  task='regression', featurizer=featurizer)
+        
+        skl_predictions = jaqpot_model.predict(validation_dataset)
+        onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
+
+        assert np.allclose(skl_predictions,[59951.485, 5312.43, 2899.398, 15733.59633333, 7775.086], atol=1e-02), f"Expected skl_predictions == [59951.485, 5312.43, 2899.398, 15733.59633333, 7775.086], got {skl_predictions}"
+        assert np.allclose(onnx_predictions, [59951.508, 5312.4307, 2899.3987, 15733.592, 7775.0854], atol=1e-02), f"Expected onnx_predictions == [59951.508, 5312.4307, 2899.3987, 15733.592, 7775.0854], got {onnx_predictions}"
+
+
+    def test_SklearnModel_regression_xy_preprocessing(self):
+        """
+        Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
+        applied on the input and output variables.
+        """
         dataset = JaqpotpyDataset(df = self.regression_df, y_cols=["ACTIVITY"],
                           smiles_cols=None,  x_cols=["X1", "X2"],
                           task='regression', featurizer=featurizer)

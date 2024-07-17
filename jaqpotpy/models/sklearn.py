@@ -15,6 +15,7 @@ import jaqpotpy
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
 from onnxruntime import InferenceSession
+from onnxruntime import InferenceSession
 import numpy as np
 
 class SklearnModel(Model):
@@ -26,6 +27,7 @@ class SklearnModel(Model):
         self.dataset = dataset
         self.featurizer = dataset.featurizer
         self.model = model
+        self.pipeline = None
         self.pipeline = None
         self.trained_model = None
         self.doa = doa
@@ -72,6 +74,7 @@ class SklearnModel(Model):
 
         #if preprocessing was applied to either X,y or both
         if self.preprocess is not None:
+            self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             # Apply preprocessing on design matrix X
             pre_keys = self.preprocess.classes.keys()
@@ -177,6 +180,7 @@ class SklearnModel(Model):
             for pre_key in pre_keys:
                 preprocess_func = self.preprocess.fitted_classes.get(pre_key)
                 X = preprocess_func.transform(X)
+        sess = InferenceSession(self.onnx_model.SerializeToString())
         sess = InferenceSession(self.onnx_model.SerializeToString())
         input_name = sess.get_inputs()[0].name
         X = np.array(X.astype(float).copy())
