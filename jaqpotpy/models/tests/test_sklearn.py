@@ -558,7 +558,7 @@ class TestModels(unittest.TestCase):
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
                                     evaluator=None, preprocessor = pre)
-        jaqpot_model.fit()
+        jaqpot_model.fit({StandardScaler : {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
                                 smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
                                 task='regression', featurizer=featurizer)
@@ -620,7 +620,6 @@ class TestModels(unittest.TestCase):
 
         assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
         assert np.allclose(onnx_predictions, onnx_expected, atol=1e-02), f"Expected onnx_predictions == {onnx_expected}, got {onnx_predictions}"
-
 
 if __name__ == '__main__':
     unittest.main()
