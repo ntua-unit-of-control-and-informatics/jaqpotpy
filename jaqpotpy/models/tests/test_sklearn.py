@@ -445,6 +445,7 @@ class TestModels(unittest.TestCase):
         Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
         applied on the input and output variables.
         """
+        featurizer = TopologicalFingerprint()
         dataset = JaqpotpyDataset(df = self.regression_df, y_cols=["ACTIVITY"],
                           smiles_cols=None,  x_cols=["X1", "X2"],
                           task='regression', featurizer=featurizer)
