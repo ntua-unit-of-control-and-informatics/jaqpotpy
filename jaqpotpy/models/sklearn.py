@@ -92,9 +92,10 @@ class SklearnModel(Model):
                 else:
                     preprocess_names_y = []
                     preprocess_classes_y = []
+                    y_scaled = self.dataset.__get_Y__()
                     for pre_y_key in pre_y_keys:
                         pre_y_function = self.preprocess.classes_y.get(pre_y_key)
-                        y_scaled = pre_y_function.fit_transform(self.dataset.__get_Y__())
+                        y_scaled = pre_y_function.fit_transform(y_scaled)
                         if len(self.dataset.y_cols) == 1:
                             y_scaled = y_scaled.ravel()
                         self.preprocess.register_fitted_class_y(pre_y_key, pre_y_function)
@@ -134,7 +135,10 @@ class SklearnModel(Model):
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
-                    sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1)).flatten()
+                    if len(self.y_cols) == 1:
+                        sklearn_prediction = f.inverse_transform(sklearn_prediction.reshape(1, -1)).flatten()
+                    else:
+                        sklearn_prediction = f.inverse_transform(sklearn_prediction)
         return sklearn_prediction
     
     def predict_proba(self, dataset: JaqpotpyDataset):
@@ -154,7 +158,7 @@ class SklearnModel(Model):
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
-                    onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])#.reshape(1, -1))
+                    onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
         if len(self.y_cols) == 1:
             return onnx_prediction[0].flatten()
         return onnx_prediction[0]
