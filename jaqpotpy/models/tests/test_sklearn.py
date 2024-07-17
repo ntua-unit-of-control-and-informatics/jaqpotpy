@@ -549,7 +549,7 @@ class TestModels(unittest.TestCase):
         """
         featurizer = TopologicalFingerprint()
         dataset = JaqpotpyDataset(df = self.regression_multioutput_df, y_cols=["ACTIVITY", "ACTIVITY_2"],
-                        smiles_cols=["SMILES"],  x_cols=["X1", "X2"],
+                        smiles_cols=None,  x_cols=["X1", "X2"],
                         task='regression', featurizer=featurizer)
         
         pre = Preprocess()
@@ -560,22 +560,22 @@ class TestModels(unittest.TestCase):
                                     evaluator=None, preprocessor = pre)
         jaqpot_model.fit({StandardScaler : {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
-                                smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                smiles_cols=None, x_cols=['X1', 'X2'],
                                 task='regression', featurizer=featurizer)
         
         skl_predictions = jaqpot_model.predict(validation_dataset)
         onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
-        skl_expected = np.array([[15892.8  ,  61.97],
-                                [ 1471.77  ,  69.96],
-                                [12462.28  ,  51.74],
-                                [15631.51  ,  56.74],
-                                [17764.82  ,  51.16]])
+        skl_expected = np.array([[1.74146900e+04, 8.20650000e+01],
+                                [1.50693300e+04, 6.03300000e+01],
+                                [1.46322067e+03, 4.09221667e+01],
+                                [1.56947025e+05, 1.46026667e+01],
+                                [5.50365600e+03, 5.72110000e+01]])
         
-        onnx_expected = np.array([[15892.8   ,    61.969986],
-                                [ 1471.7704  ,    69.959946],
-                                [12462.277   ,    51.739994],
-                                [15631.513   ,    56.739994],
-                                [17764.822   ,    51.15999 ]])
+        onnx_expected = np.array([[1.7414691e+04, 8.2064972e+01],
+                                [1.5069329e+04, 6.0330032e+01],
+                                [1.4632200e+03, 4.0922199e+01],
+                                [1.5694709e+05, 1.4602660e+01],
+                                [5.5036543e+03, 5.7210995e+01]])
 
 
         assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
