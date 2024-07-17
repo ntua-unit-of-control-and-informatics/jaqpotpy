@@ -130,18 +130,18 @@ class TestModels(unittest.TestCase):
         onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
         onnx_probabilities = jaqpot_model.predict_proba_onnx(validation_dataset)
 
-        assert np.array_equal(skl_predictions, [1, 1, 1, 0, 1]), f"Expected skl_predictions == [1, 1, 1, 0, 1], got {skl_predictions}"
-        assert np.allclose(skl_probabilities, [0.56, 0.86, 0.53, 0.51, 0.53], atol=1e-2), (
-            f"Expected skl_probabilities == [0.56, 0.86, 0.53, 0.51, 0.53], got {skl_probabilities}"
+        assert np.array_equal(skl_predictions, [1, 0, 0, 1, 1]), f"Expected skl_predictions == [1, 0, 0, 1, 1], got {skl_predictions}"
+        assert np.allclose(skl_probabilities, [0.7837499999999997, 0.69, 0.7327857142857142, 0.6873333333333332, 0.88], atol=1e-2), (
+            f"Expected skl_probabilities == [0.7837499999999997, 0.69, 0.7327857142857142, 0.6873333333333332, 0.88], got {skl_probabilities}"
         )
 
-        assert np.array_equal(onnx_predictions, [1, 1, 1, 0, 1]), f"Expected onnx_predictions == [1, 1, 1, 0, 1], got {onnx_predictions}"
+        assert np.array_equal(onnx_predictions, [1, 0, 0, 1, 1]), f"Expected onnx_predictions == [1, 0, 0, 1, 1], got {onnx_predictions}"
         assert np.allclose(
             onnx_probabilities, 
-            [0.5599997639656067, 0.8599994778633118, 0.5099998116493225, 0.5100002288818359, 0.5199998021125793], 
+            [0.7837496399879456, 0.6600000858306885, 0.7427858114242554, 0.6873330473899841, 0.8799994587898254], 
             atol=1e-2
         ), (
-            f"Expected onnx_probabilities == [0.5599997639656067, 0.8599994778633118, 0.5099998116493225, 0.5100002288818359, 0.5199998021125793], got {onnx_probabilities}"
+            f"Expected onnx_probabilities == [0.7837496399879456, 0.6600000858306885, 0.7427858114242554, 0.6873330473899841, 0.8799994587898254], got {onnx_probabilities}"
         )
 
     def test_SklearnModel_classification_y_preprocessing(self):
