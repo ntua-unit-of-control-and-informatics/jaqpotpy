@@ -581,45 +581,45 @@ class TestModels(unittest.TestCase):
         assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
         assert np.allclose(onnx_predictions, onnx_expected, atol=1e-02), f"Expected onnx_predictions == {onnx_expected}, got {onnx_predictions}"
 
-    # def test_SklearnModel_multiple_regression_xy_preprocessing(self):
-    #     """
-    #     Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for multiple output regression,
-    #     with preprocessing X and Y data.
-    #     """
-    #     featurizer = TopologicalFingerprint()
-    #     dataset = JaqpotpyDataset(df = self.regression_multioutput_df, y_cols=["ACTIVITY", "ACTIVITY_2"],
-    #                     smiles_cols=["SMILES"],  x_cols=["X1", "X2"],
-    #                     task='regression', featurizer=featurizer)
+    def test_SklearnModel_multiple_regression_xy_preprocessing(self):
+        """
+        Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for multiple output regression,
+        with preprocessing X and Y data.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df = self.regression_multioutput_df, y_cols=["ACTIVITY", "ACTIVITY_2"],
+                        smiles_cols=None,  x_cols=["X1", "X2"],
+                        task='regression', featurizer=featurizer)
         
-    #     pre = Preprocess()
-    #     pre.register_preprocess_class("Standard Scaler", StandardScaler())
-    #     pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
+        pre = Preprocess()
+        pre.register_preprocess_class("Standard Scaler", StandardScaler())
+        pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
 
-    #     model = RandomForestRegressor(random_state=42)
-    #     jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
-    #                                 evaluator=None, preprocessor = pre)
-    #     jaqpot_model.fit({StandardScaler : {"div": "div_cast"}})
-    #     validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
-    #                             smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
-    #                             task='regression', featurizer=featurizer)
+        model = RandomForestRegressor(random_state=42)
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+        jaqpot_model.fit({StandardScaler : {"div": "div_cast"}})
+        validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
+                                smiles_cols=None, x_cols=['X1', 'X2'],
+                                task='regression', featurizer=featurizer)
         
-    #     skl_predictions = jaqpot_model.predict(validation_dataset)
-    #     onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
-    #     skl_expected = np.array([[15889.01 ,   62.17],
-    #                             [ 1474.26  ,  71.27],
-    #                             [12462.31  ,  51.74],
-    #                             [15603.46  ,  55.92],
-    #                             [17764.82  ,  51.16]])
+        skl_predictions = jaqpot_model.predict(validation_dataset)
+        onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
+        skl_expected = np.array([[1.77626300e+04, 8.14450000e+01],
+                                [1.03573300e+04, 6.71550000e+01],
+                                [1.46322067e+03, 4.09221667e+01],
+                                [1.55443981e+05, 1.60260000e+01],
+                                [5.50365600e+03, 5.72110000e+01]])
         
-    #     onnx_expected = np.array([[15889.01     ,   62.16998 ],
-    #                                 [ 1474.2603 ,     71.26995 ],
-    #                                 [12462.308  ,     51.739994],
-    #                                 [15603.463  ,     55.919994],
-    #                                 [17764.822  ,     51.15999 ]])
+        onnx_expected = np.array([[1.7762631e+04, 8.1444969e+01],
+                                [1.0357326e+04, 6.7155022e+01],
+                                [1.4632200e+03, 4.0922199e+01],
+                                [1.5544403e+05, 1.6025997e+01],
+                                [5.5036543e+03, 5.7210995e+01]])
 
 
-    #     assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
-    #     assert np.allclose(onnx_predictions, onnx_expected, atol=1e-02), f"Expected onnx_predictions == {onnx_expected}, got {onnx_predictions}"
+        assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
+        assert np.allclose(onnx_predictions, onnx_expected, atol=1e-02), f"Expected onnx_predictions == {onnx_expected}, got {onnx_predictions}"
 
 if __name__ == '__main__':
     unittest.main()
