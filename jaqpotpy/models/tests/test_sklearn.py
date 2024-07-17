@@ -113,7 +113,7 @@ class TestModels(unittest.TestCase):
         """
         featurizer = TopologicalFingerprint()
         dataset = JaqpotpyDataset(df=self.classification_df, y_cols=['ACTIVITY'],
-                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  smiles_cols=None, x_cols=['X1', 'X2'],
                                   task='classification', featurizer=featurizer)
         model = RandomForestClassifier(random_state=42)
         pre = Preprocess()
@@ -122,7 +122,7 @@ class TestModels(unittest.TestCase):
                                     evaluator=None, preprocessor = pre)
         jaqpot_model.fit(onnx_options={StandardScaler : {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
-                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                  smiles_cols=None, x_cols=['X1', 'X2'],
                                   task='classification', featurizer=featurizer)
         
         skl_predictions = jaqpot_model.predict(validation_dataset)
