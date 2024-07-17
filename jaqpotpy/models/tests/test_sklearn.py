@@ -542,5 +542,85 @@ class TestModels(unittest.TestCase):
         assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
         assert np.allclose(onnx_predictions, onnx_expected, atol=1e-02), f"Expected onnx_predictions == {onnx_expected}, got {onnx_predictions}"
 
+    def test_SklearnModel_multiple_regression_y_preprocessing(self):
+        """
+        Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for multiple output regression,
+        with preprocessing only on Y data.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df = self.regression_multioutput_df, y_cols=["ACTIVITY", "ACTIVITY_2"],
+                        smiles_cols=["SMILES"],  x_cols=["X1", "X2"],
+                        task='regression', featurizer=featurizer)
+        
+        pre = Preprocess()
+        pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
+
+        model = RandomForestRegressor(random_state=42)
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+        jaqpot_model.fit()
+        validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
+                                smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                task='regression', featurizer=featurizer)
+        
+        skl_predictions = jaqpot_model.predict(validation_dataset)
+        onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
+        skl_expected = np.array([[15892.8  ,   61.97],
+                                [ 1471.77  ,  69.96],
+                                [12462.28  ,  51.74],
+                                [15631.51  ,  56.74],
+                                [17764.82  ,  51.16]])
+        
+        onnx_expected = np.array([[15892.8   ,      61.969986],
+                                [ 1471.7704  ,    69.959946],
+                                [12462.277   ,    51.739994],
+                                [15631.513   ,    56.739994],
+                                [17764.822   ,    51.15999 ]])
+
+
+        assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
+        assert np.allclose(onnx_predictions, onnx_expected, atol=1e-02), f"Expected onnx_predictions == {onnx_expected}, got {onnx_predictions}"
+
+    def test_SklearnModel_multiple_regression_xy_preprocessing(self):
+        """
+        Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for multiple output regression,
+        with preprocessing X and Y data.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(df = self.regression_multioutput_df, y_cols=["ACTIVITY", "ACTIVITY_2"],
+                        smiles_cols=["SMILES"],  x_cols=["X1", "X2"],
+                        task='regression', featurizer=featurizer)
+        
+        pre = Preprocess()
+        pre.register_preprocess_class("Standard Scaler", StandardScaler())
+        pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
+
+        model = RandomForestRegressor(random_state=42)
+        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                    evaluator=None, preprocessor = pre)
+        jaqpot_model.fit({StandardScaler : {"div": "div_cast"}})
+        validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
+                                smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
+                                task='regression', featurizer=featurizer)
+        
+        skl_predictions = jaqpot_model.predict(validation_dataset)
+        onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
+        skl_expected = np.array([[15889.01 ,   62.17],
+                                [ 1474.26  ,  71.27],
+                                [12462.31  ,  51.74],
+                                [15603.46  ,  55.92],
+                                [17764.82  ,  51.16]])
+        
+        onnx_expected = np.array([[15889.01     ,   62.16998 ],
+                                    [ 1474.2603 ,     71.26995 ],
+                                    [12462.308  ,     51.739994],
+                                    [15603.463  ,     55.919994],
+                                    [17764.822  ,     51.15999 ]])
+
+
+        assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
+        assert np.allclose(onnx_predictions, onnx_expected, atol=1e-02), f"Expected onnx_predictions == {onnx_expected}, got {onnx_predictions}"
+
+
 if __name__ == '__main__':
     unittest.main()
