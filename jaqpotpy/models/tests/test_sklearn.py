@@ -70,10 +70,12 @@ class TestModels(unittest.TestCase):
         multiclass_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset_multiclass.csv')
         prediction_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset.csv')
         multiclass_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_prediction_dataset_multiclass.csv')
+        multioutput_regression_csv_file_path = os.path.join(test_data_dir, 'test_data_smiles_regression_multioutput.csv')
+        
         self.classification_df = pd.read_csv(clasification_csv_file_path)
         self.multi_classification_df = pd.read_csv(multi_classification_csv_file_path)
-        self.multi_classification_df = pd.read_csv(multi_classification_csv_file_path)
         self.regression_df = pd.read_csv(regression_csv_file_path)
+        self.regression_multioutput_df = pd.read_csv(multioutput_regression_csv_file_path)
         self.prediction_df = pd.read_csv(prediction_csv_file_path)
         self.prediction_multiclass_df = pd.read_csv(multiclass_csv_file_path)
 
@@ -464,6 +466,42 @@ class TestModels(unittest.TestCase):
 
         assert np.allclose(skl_predictions, [66860.46, 3289.8, 3410.488, 15118.86633333, 7775.086], atol=1e-02), f"Expected skl_predictions == [66860.46, 3289.8, 3410.488, 15118.86633333, 7775.086], got {skl_predictions}"
         assert np.allclose(onnx_predictions, [66860.48, 3289.8005, 3410.4897, 15118.862, 7775.0854], atol=1e-02), f"Expected onnx_predictions == [66860.48, 3289.8005, 3410.4897, 15118.862, 7775.0854], got {onnx_predictions}"
+
+        def test_SklearnModel_multiple_regression_no_preprocessing(self):
+            """
+            Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for multiple output regression,
+            without any preprocessing on data.
+            """
+            featurizer = TopologicalFingerprint()
+            dataset = JaqpotpyDataset(df = self.regression_df, y_cols=["ACTIVITY", "ACTIVITY_2"],
+                            smiles_cols=["SMILES"],  x_cols=["X1", "X2"],
+                            task='regression', featurizer=featurizer)
+
+            model = RandomForestRegressor(random_state=42)
+            jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
+                                        evaluator=None, preprocessor = None)
+            jaqpot_model.fit()
+            validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
+                                    smiles_cols=None, x_cols=['X1', 'X2'],
+                                    task='regression', featurizer=featurizer)
+            
+            skl_predictions = jaqpot_model.predict(validation_dataset)
+            onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
+            skl_expected = np.array([[1978.8, 54.75],
+                                     [79.76, 67.75],
+                                     [2901.02, 56.84],
+                                     [6655.53, 56.79],
+                                     [3021.47, 51.88]])
+            
+            onnx_expected = np.array([[1978.8008  ,   54.74999 ],
+                                      [  79.76001 ,   67.75001 ],
+                                      [2901.02    ,   56.83998 ],
+                                      [6655.531   ,   56.78998 ],
+                                      [3021.4714  ,   51.879993]])
+
+
+            assert np.allclose(skl_predictions, skl_expected, atol=1e-02), f"Expected skl_predictions == {skl_expected}, got {skl_predictions}"
+            assert np.allclose(onnx_predictions, onnx_expected, atol=1e-02), f"Expected onnx_predictions == {onnx_expected}, got {onnx_predictions}"
 
 if __name__ == '__main__':
     unittest.main()
