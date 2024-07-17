@@ -439,33 +439,6 @@ class TestModels(unittest.TestCase):
         assert np.allclose(skl_predictions,[59951.485, 5312.43, 2899.398, 15733.59633333, 7775.086], atol=1e-02), f"Expected skl_predictions == [59951.485, 5312.43, 2899.398, 15733.59633333, 7775.086], got {skl_predictions}"
         assert np.allclose(onnx_predictions, [59951.508, 5312.4307, 2899.3987, 15733.592, 7775.0854], atol=1e-02), f"Expected onnx_predictions == [59951.508, 5312.4307, 2899.3987, 15733.592, 7775.0854], got {onnx_predictions}"
 
-
-    def test_SklearnModel_regression_xy_preprocessing(self):
-        """
-        Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
-        applied on the input and output variables.
-        """
-        featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(df = self.regression_df, y_cols=["ACTIVITY"],
-                          smiles_cols=None,  x_cols=["X1", "X2"],
-                          task='regression', featurizer=featurizer)
-        pre = Preprocess()
-        pre.register_preprocess_class_y('minmax_y', MinMaxScaler())
-        model = RandomForestRegressor(random_state=42)
-        jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
-                                    evaluator=None, preprocessor = pre)
-        jaqpot_model.fit()
-        validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
-                                  smiles_cols=None, x_cols=['X1', 'X2'],
-                                  task='regression', featurizer=featurizer)
-        
-        skl_predictions = jaqpot_model.predict(validation_dataset)
-        onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
-
-        assert np.allclose(skl_predictions,[59951.485, 5312.43, 2899.398, 15733.59633333, 7775.086], atol=1e-02), f"Expected skl_predictions == [59951.485, 5312.43, 2899.398, 15733.59633333, 7775.086], got {skl_predictions}"
-        assert np.allclose(onnx_predictions, [59951.508, 5312.4307, 2899.3987, 15733.592, 7775.0854], atol=1e-02), f"Expected onnx_predictions == [59951.508, 5312.4307, 2899.3987, 15733.592, 7775.0854], got {onnx_predictions}"
-
-
     def test_SklearnModel_regression_xy_preprocessing(self):
         """
         Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
