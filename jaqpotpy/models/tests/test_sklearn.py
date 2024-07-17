@@ -131,10 +131,8 @@ class TestModels(unittest.TestCase):
         onnx_probabilities = jaqpot_model.predict_proba_onnx(validation_dataset)
 
         assert np.array_equal(skl_predictions, [1, 1, 1, 0, 1]), f"Expected skl_predictions == [1, 1, 1, 0, 1], got {skl_predictions}"
-        assert np.allclose(skl_probabilities, [0.56, 0.86, 0.53, 0.51, 0.53],
-                           atol=1e-2), (
-            f"Expected skl_probabilities == [0.7837499999999997, 0.69, 0.7327857142857142, 0.6873333333333332, 0.88]"
-            f"got {skl_probabilities}"
+        assert np.allclose(skl_probabilities, [0.56, 0.86, 0.53, 0.51, 0.53], atol=1e-2), (
+            f"Expected skl_probabilities == [0.56, 0.86, 0.53, 0.51, 0.53], got {skl_probabilities}"
         )
 
         assert np.array_equal(onnx_predictions, [1, 1, 1, 0, 1]), f"Expected onnx_predictions == [1, 1, 1, 0, 1], got {onnx_predictions}"
