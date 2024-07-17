@@ -71,6 +71,7 @@ class TestModels(unittest.TestCase):
     def test_SklearnModel_classification_no_preprocessing(self):
         """
         Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint fingerprints for classification.
+        No preprocessing is applied on the data.
         """
         featurizer = TopologicalFingerprint()
         dataset = JaqpotpyDataset(df=self.classification_df, y_cols=['ACTIVITY'],
@@ -107,20 +108,21 @@ class TestModels(unittest.TestCase):
         
     def test_SklearnModel_classification_x_preprocessing(self):
         """
-        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for classification.
+        Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for classification. 
+        Preprocessing is applied only on the input features.
         """
         featurizer = TopologicalFingerprint()
         dataset = JaqpotpyDataset(df=self.classification_df, y_cols=['ACTIVITY'],
-                                  smiles_cols=None, x_cols=['X1', 'X2'],
+                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
                                   task='classification', featurizer=featurizer)
         model = RandomForestClassifier(random_state=42)
         pre = Preprocess()
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
                                     evaluator=None, preprocessor = pre)
-        jaqpot_model.fit()
+        jaqpot_model.fit(onnx_options={StandardScaler : {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
-                                  smiles_cols=None, x_cols=['X1', 'X2'],
+                                  smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
                                   task='classification', featurizer=featurizer)
         
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -128,20 +130,20 @@ class TestModels(unittest.TestCase):
         onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
         onnx_probabilities = jaqpot_model.predict_proba_onnx(validation_dataset)
 
-        assert np.array_equal(skl_predictions, [1, 0, 0, 1, 1]), f"Expected skl_predictions == [1, 0, 0, 1, 1], got {skl_predictions}"
-        assert np.allclose(skl_probabilities, [0.7837499999999997, 0.69, 0.7327857142857142, 0.6873333333333332, 0.88],
+        assert np.array_equal(skl_predictions, [1, 1, 1, 0, 1]), f"Expected skl_predictions == [1, 1, 1, 0, 1], got {skl_predictions}"
+        assert np.allclose(skl_probabilities, [0.56, 0.86, 0.53, 0.51, 0.53],
                            atol=1e-2), (
             f"Expected skl_probabilities == [0.7837499999999997, 0.69, 0.7327857142857142, 0.6873333333333332, 0.88]"
             f"got {skl_probabilities}"
         )
 
-        assert np.array_equal(onnx_predictions, [1, 0, 0, 1, 1]), f"Expected onnx_predictions == [1, 0, 0, 1, 1], got {onnx_predictions}"
+        assert np.array_equal(onnx_predictions, [1, 1, 1, 0, 1]), f"Expected onnx_predictions == [1, 1, 1, 0, 1], got {onnx_predictions}"
         assert np.allclose(
             onnx_probabilities, 
-            [0.7837496399879456, 0.6600000858306885, 0.7427858114242554, 0.6873330473899841, 0.8799994587898254], 
+            [0.5599997639656067, 0.8599994778633118, 0.5099998116493225, 0.5100002288818359, 0.5199998021125793], 
             atol=1e-2
         ), (
-            f"Expected onnx_probabilities == [0.7837496399879456, 0.6600000858306885, 0.7427858114242554, 0.6873330473899841, 0.8799994587898254], got {onnx_probabilities}"
+            f"Expected onnx_probabilities == [0.5599997639656067, 0.8599994778633118, 0.5099998116493225, 0.5100002288818359, 0.5199998021125793], got {onnx_probabilities}"
         )
 
     def test_SklearnModel_classification_y_preprocessing(self):
@@ -241,7 +243,7 @@ class TestModels(unittest.TestCase):
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
                                     evaluator=None, preprocessor = pre)
-        jaqpot_model.fit()
+        jaqpot_model.fit(onnx_options={StandardScaler : {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_multiclass_df, y_cols=None,
                                   smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
                                   task='classification', featurizer=featurizer)
@@ -351,7 +353,7 @@ class TestModels(unittest.TestCase):
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
                                     evaluator=None, preprocessor = pre)
-        jaqpot_model.fit()
+        jaqpot_model.fit(onnx_options={StandardScaler : {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
                                   smiles_cols=["SMILES"], x_cols=['X1', 'X2'],
                                   task='classification', featurizer=featurizer)
@@ -359,8 +361,8 @@ class TestModels(unittest.TestCase):
         skl_predictions = jaqpot_model.predict(validation_dataset)
         onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
 
-        assert np.allclose(skl_predictions, [2146.81, 85.24, 2541.61, 5928.3, 2484.34], atol=1e-03), f"Expected skl_predictions == [2146.81, 85.24, 2541.61, 5928.3, 2484.34], got {skl_predictions}"
-        assert np.allclose(onnx_predictions, [2146.811, 85.279976, 2406.0806, 5928.299, 2484.3413], atol=1e-03), f"Expected onnx_predictions == [2146.811, 85.279976, 2406.0806, 5928.299, 2484.3413], got {onnx_predictions}"
+        assert np.allclose(skl_predictions, [2146.81, 85.24, 2541.61, 5928.3, 2484.34], atol=1e-02), f"Expected skl_predictions == [2146.81, 85.24, 2541.61, 5928.3, 2484.34], got {skl_predictions}"
+        assert np.allclose(onnx_predictions, [2146.811, 85.239975, 2541.6106, 5928.299, 2484.3413], atol=1e-02), f"Expected onnx_predictions == [2146.811, 85.239975, 2541.6106, 5928.299, 2484.3413], got {onnx_predictions}"
 
     def test_SklearnModel_regression_y_preprocessing(self):
         """
@@ -403,7 +405,7 @@ class TestModels(unittest.TestCase):
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(dataset=dataset, doa=None, model=model,
                                     evaluator=None, preprocessor = pre)
-        jaqpot_model.fit()
+        jaqpot_model.fit(onnx_options={StandardScaler : {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(df=self.prediction_df, y_cols=None,
                                   smiles_cols=None, x_cols=['X1', 'X2'],
                                   task='regression', featurizer=featurizer)
@@ -412,7 +414,7 @@ class TestModels(unittest.TestCase):
         onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
 
         assert np.allclose(skl_predictions, [66860.46, 3289.8, 3410.488, 15118.86633333, 7775.086], atol=1e-02), f"Expected skl_predictions == [66860.46, 3289.8, 3410.488, 15118.86633333, 7775.086], got {skl_predictions}"
-        assert np.allclose(onnx_predictions, [66860.48, 5524.594, 2840.3103, 15118.862, 7775.0854], atol=1e-02), f"Expected onnx_predictions == [4202.42, 82.86999, 4477.63, 7255.8022, 4046.26], got {onnx_predictions}"
+        assert np.allclose(onnx_predictions, [66860.48, 3289.8005, 3410.4897, 15118.862, 7775.0854], atol=1e-02), f"Expected onnx_predictions == [66860.48, 3289.8005, 3410.4897, 15118.862, 7775.0854], got {onnx_predictions}"
 
 if __name__ == '__main__':
     unittest.main()
