@@ -17,7 +17,6 @@ from skl2onnx.common.data_types import FloatTensorType
 from onnxruntime import InferenceSession
 import numpy as np
 
-
 class SklearnModel(Model):
 
     def __init__(self, dataset: JaqpotpyDataset, doa: DOA, model: Any,
@@ -56,7 +55,7 @@ class SklearnModel(Model):
             elif feature['featureType'] in ['string, object']:
                 feature['featureType'] = FeatureType.STRING
 
-    def fit(self):
+    def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
 
         if self.dataset.y is None:
@@ -84,7 +83,6 @@ class SklearnModel(Model):
             # Apply preprocessing of response vector y
             pre_y_keys = self.preprocess.classes_y.keys()
 
-            
             if len(pre_y_keys) > 0:
                 if self.task == "classification":
                     raise ValueError("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y.")
@@ -93,7 +91,9 @@ class SklearnModel(Model):
                     preprocess_classes_y = []
                     for pre_y_key in pre_y_keys:
                         pre_y_function = self.preprocess.classes_y.get(pre_y_key)
-                        y_scaled = pre_y_function.fit_transform(y)#.ravel()
+                        y_scaled = pre_y_function.fit_transform(self.dataset.__get_Y__())
+                        if len(self.dataset.y_cols) == 1:
+                            y_scaled = y_scaled.ravel()
                         self.preprocess.register_fitted_class_y(pre_y_key, pre_y_function)
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
@@ -116,7 +116,8 @@ class SklearnModel(Model):
         self.__dtypes_to_jaqpotypes__()
 
         name = self.model.__class__.__name__ + "_ONNX"
-        self.onnx_model = convert_sklearn(self.trained_model, initial_types=[('float_input', FloatTensorType([None, X.to_numpy().shape[1]]))], name=name)
+        self.onnx_model = convert_sklearn(self.trained_model, initial_types=[('float_input', FloatTensorType([None, X.to_numpy().shape[1]]))], name=name,
+                                          options=onnx_options)
         self.onnx_opset = self.onnx_model.opset_import[0].version
         
         if self.evaluator:
@@ -126,7 +127,7 @@ class SklearnModel(Model):
     def predict(self,  dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        sklearn_prediction = self.trained_model.predict(dataset.X.to_numpy())
+        sklearn_prediction = self.trained_model.predict(dataset.X.to_numpy().astype(np.float32))
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
@@ -146,11 +147,11 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        onnx_prediction = sess.run(None, {sess.get_inputs()[0].name: dataset.X.to_numpy().astype(np.float32)})
+        onnx_prediction = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
-                    onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
+                    onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])#.reshape(1, -1))
         if len(self.y_cols) == 1:
             return onnx_prediction[0].flatten()
         return onnx_prediction[0]
