@@ -147,7 +147,11 @@ class JaqpotpyDataset(BaseDataset):
             self._x =  pd.concat([self._df[self.x_cols] ,  pd.DataFrame(descriptors)] , axis=1)
             self.x_cols_all = self._x.columns.tolist()
 
-        self._y = self._df[self.y_cols]
+        if not self.y_cols:
+            self._y = None
+        else:
+            self._y = self._df[self.y_cols]
+
         self._df = pd.concat([self._x, self._y], axis = 1)
     
     def copy(self):
