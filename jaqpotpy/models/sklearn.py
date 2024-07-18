@@ -155,6 +155,8 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
         onnx_prediction = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
+        if len(self.y_cols) == 1:
+            onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y:
