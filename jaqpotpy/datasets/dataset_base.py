@@ -47,10 +47,10 @@ class BaseDataset(ABC):
                 raise ValueError("The provided file is not a valid CSV file.")
             
         if not(isinstance(y_cols, str) or 
-               (isinstance(y_cols, list) and all(isinstance(item, str) for item in y_cols))
-               ):
+               (isinstance(y_cols, list) and all(isinstance(item, str) for item in y_cols)) or
+               (y_cols is None)):
                raise TypeError("y_cols must be provided and should be either" 
-                               "a string or a list of strings") 
+                               "a string or a list of strings, or None") 
         
         if not(isinstance(x_cols, str) or 
               (isinstance(x_cols, list) and all(isinstance(item, str) for item in x_cols)) or
@@ -65,11 +65,14 @@ class BaseDataset(ABC):
             self.y_cols_len = 1
         elif isinstance(y_cols, list) :
             self.y_cols = y_cols
-            self.x_cols_len = len(y_cols)
+            self.y_cols_len = len(y_cols)
+        elif y_cols is None:
+            self.y_cols= []
+            self.y_cols_len = 0
 
         if isinstance(x_cols, str):
             self.x_cols = [x_cols]
-            self.y_cols_len = 1
+            self.x_cols_len = 1
         elif isinstance(x_cols, list) :
             self.x_cols = x_cols
             self.x_cols_len = len(x_cols)
