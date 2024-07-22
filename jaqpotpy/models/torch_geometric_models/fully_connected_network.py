@@ -1,3 +1,7 @@
+"""
+Author: Ioannis Pitoskas (jpitoskas@gmail.com)
+"""
+
 import torch.nn as nn
 from typing import Optional, Iterable, Union
 import torch.nn.init as init
@@ -20,10 +24,9 @@ class FullyConnectedBlock(nn.Module):
                  output_dim: int,
                  activation: nn.Module = nn.ReLU(),
                  dropout_probability: float = 0.5,
-                 #  norm: Optional[bool] = False,
-                 #*args,
-                 #**kwargs
-                 ):
+                #  norm: Optional[bool] = False,
+                 *args,
+                 **kwargs):
         """
         Args:
             input_dim (int): Dimension of the input features.
@@ -33,6 +36,7 @@ class FullyConnectedBlock(nn.Module):
         """
         super().__init__()
         
+        
         self.fc = nn.Linear(input_dim, output_dim)            
         self.activation = activation
         self.dropout = nn.Dropout(p=dropout_probability)
@@ -40,6 +44,7 @@ class FullyConnectedBlock(nn.Module):
         # Apply Xavier initialization to fc
         init.xavier_uniform_(self.fc.weight)
         init.zeros_(self.fc.bias)
+        
     
     def forward(self,
                 x: Tensor) -> Tensor:
@@ -58,6 +63,7 @@ class FullyConnectedBlock(nn.Module):
         x = self.dropout(x)
 
         return x
+
 
 class FullyConnectedNetwork(nn.Module):
     """
@@ -81,9 +87,8 @@ class FullyConnectedNetwork(nn.Module):
                  activation: nn.Module = nn.ReLU(),
                  dropout: Union[float, Iterable[float]] = 0.5,
                 #  norm: Optional[bool] = False,
-                # *args,
-                 #**kwargs
-                ):
+                 *args,
+                 **kwargs):
         """
         Args:
             input_dim (int): Dimension of the input features.
@@ -138,13 +143,17 @@ class FullyConnectedNetwork(nn.Module):
                                         activation=activation,
                                         dropout_probability=self.dropout_probabilities[0])
             self.fc_layers.append(fc_layer)
-                        
+            
+
+            
             for i in range(len(hidden_dims) - 1):
                 fc_layer = FullyConnectedBlock(self.hidden_dims[i], hidden_dims[i+1],
                                                 activation=activation,
                                                 dropout_probability=self.dropout_probabilities[i])
                 self.fc_layers.append(fc_layer)
+            
             self.fc_head = nn.Linear(hidden_dims[-1], output_dim)
+        
     
     def forward(self,
                 x: Tensor) -> Tensor:
@@ -160,6 +169,8 @@ class FullyConnectedNetwork(nn.Module):
         if self.fc_layers is not None:
             for fc_layer in self.fc_layers:
                 x = fc_layer(x)
+        
         x = self.fc_head(x)
 
         return x
+    
