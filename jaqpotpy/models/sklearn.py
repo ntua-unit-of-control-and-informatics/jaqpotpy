@@ -4,8 +4,7 @@ from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from typing import Any, Union, Dict, Optional
 from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
-from jaqpotpy.datasets.material_datasets import CompositionDataset, StructureDataset
-from jaqpotpy.models import Evaluator, Preprocess, MaterialModel
+from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.types.models import FeatureType
 from jaqpotpy.api.types.models import ModelType
