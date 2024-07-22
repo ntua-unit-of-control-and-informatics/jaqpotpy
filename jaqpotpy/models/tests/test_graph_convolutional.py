@@ -69,5 +69,33 @@ class TestGraphConvolutionalNetwork(unittest.TestCase):
         output = model(batch.x, batch.edge_index, batch.batch)
         self.assertEqual(output.shape, (5, self.output_dim))
 
+    def test_no_dropout(self):
+        "Test the forward pass of the model with no dropout"
+        model = GraphConvolutionalNetwork(self.input_dim, self.hidden_dims, self.output_dim, dropout=0.0)
+        data = Data(x=self.x, edge_index=self.edge_index, batch=self.batch)
+        output = model(data.x, data.edge_index, data.batch)
+        self.assertEqual(output.shape, (self.batch_size, self.output_dim))
+
+    def test_with_graph_norm(self):
+        "Test the forward pass of the model without graphnorm"
+        model = GraphConvolutionalNetwork(self.input_dim, self.hidden_dims, self.output_dim, graph_norm=True)
+        data = Data(x=self.x, edge_index=self.edge_index, batch=self.batch)
+        output = model(data.x, data.edge_index, data.batch)
+        self.assertEqual(output.shape, (self.batch_size, self.output_dim))
+
+    def test_different_activation(self):
+        "Test the forward pass of the model without the default activation ReLU"
+        model = GraphConvolutionalNetwork(self.input_dim, self.hidden_dims, self.output_dim, activation=nn.LeakyReLU())
+        data = Data(x=self.x, edge_index=self.edge_index, batch=self.batch)
+        output = model(data.x, data.edge_index, data.batch)
+        self.assertEqual(output.shape, (self.batch_size, self.output_dim))
+
+    def test_not_default_pooling_function(self):
+        "Test the forward pass of the model without the default pooling function"
+        model = GraphConvolutionalNetwork(self.input_dim, self.hidden_dims, self.output_dim, pooling='add')
+        data = Data(x=self.x, edge_index=self.edge_index, batch=self.batch)
+        pooled_output = model._pooling_function(data.x, data.batch)
+        self.assertEqual(pooled_output.shape[0], self.batch_size)
+
 if __name__ == '__main__':
     unittest.main()

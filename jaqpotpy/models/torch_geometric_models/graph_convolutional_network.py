@@ -13,7 +13,6 @@ from torch import Tensor
 
 from .fully_connected_network import FullyConnectedNetwork
 
-
 class GraphConvBlock(nn.Module):
     """
     A single Graph Convolutional Block consisting of a GCNConv layer, an activation function,
