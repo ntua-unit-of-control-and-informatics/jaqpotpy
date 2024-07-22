@@ -1,7 +1,7 @@
 from jaqpotpy.models.evaluator import Evaluator
 from jaqpotpy.models.preprocessing import Preprocess
 from jaqpotpy.models.base_classes import MolecularModel, Model, MaterialModel
-from jaqpotpy.models.sklearn import SklearnModel, MaterialSKLearn
+from jaqpotpy.models.sklearn import SklearnModel
 try:
     from jaqpotpy.models.torch_geometric import MolecularTorchGeometric
     from jaqpotpy.models.torch import MolecularTorch

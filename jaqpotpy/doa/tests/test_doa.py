@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from jaqpotpy.descriptors.molecular import RDKitDescriptors, MordredDescriptors
 from jaqpotpy.doa.doa import Leverage, MeanVar, BoundingBox
+from jaqpotpy.doa.doa import Leverage, MeanVar, BoundingBox
 
 
 class TestDoa(unittest.TestCase):

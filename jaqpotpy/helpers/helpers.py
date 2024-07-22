@@ -5,7 +5,8 @@ from jaqpotpy.cfg import config
 
 from jaqpotpy.helpers.builders import FeatureBuilder,\
     FeatureDirector, DataEntryBuilder, DataEntryDirector,\
-    PretrainedNeedsDirector, PretrainedNeedsBuilder, DoaDirector, DoaBuilder
+    PretrainedNeedsDirector,\
+    PretrainedNeedsBuilder, DoaDirector, DoaBuilder
 
 
 def create_feature(feat_title, creator):

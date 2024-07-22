@@ -21,22 +21,3 @@ class PretrainedRequirements:
         self.type = type
         self.libraries = libraries
         self.versions = versions
-
-        # if rawModel is not None:
-        #     self.rawModel = rawModel
-        # if independentFeatures is not None:
-        #     self.independentFeatures = independentFeatures
-        # if predictedFeatures is not None:
-        #     self.predictedFeatures = predictedFeatures
-        # if title is not None:
-        #     self.title = title
-        # if implementedWith is not None:
-        #     self.implementedWith = implementedWith
-        # if algorithm is not None:
-        #     self.algorithm = algorithm
-        # if implementedIn is not None:
-        #     self.implementedIn = implementedIn
-        # if description is not None:
-        #     self.description = description
-        # if dependentFeatures is not None:
-        #     self.dependentFeatures = dependentFeatures
