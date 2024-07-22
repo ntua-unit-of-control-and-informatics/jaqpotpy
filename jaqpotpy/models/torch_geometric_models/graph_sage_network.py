@@ -3,6 +3,7 @@ Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 import torch
+import numpy as np
 import torch.nn as nn
 from typing import Optional, Iterable, Union
 from torch_geometric.nn import SAGEConv
@@ -122,6 +123,8 @@ class GraphSAGENetwork(nn.Module):
                  jittable: bool = True,
                  *args,
                  **kwargs):
+        torch.manual_seed(42)
+        np.random.seed(42)
         """
         Args:
             input_dim (int): Dimension of the input node features.

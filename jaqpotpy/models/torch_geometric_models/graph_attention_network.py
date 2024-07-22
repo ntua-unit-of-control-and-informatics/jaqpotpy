@@ -3,6 +3,7 @@ Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
 import torch
+import numpy as np
 import torch.nn as nn
 from typing import Optional, Iterable, Union
 from torch_geometric.nn import GATConv
@@ -12,7 +13,7 @@ import torch.nn.init as init
 from torch import Tensor
 from torch_geometric.typing import OptTensor
 
-from .fully_connected_network import FullyConnectedNetwork
+from jaqpotpy.models.torch_geometric_models. fully_connected_network import FullyConnectedNetwork
 
 
 class GraphAttentionBlock(nn.Module):
@@ -128,6 +129,8 @@ class GraphAttentionNetwork(nn.Module):
                  jittable: bool = True,
                  *args,
                  **kwargs):
+        torch.manual_seed(42)
+        np.random.seed(42)  
         """
         Args:
             input_dim (int): Dimension of the input node features.
@@ -234,7 +237,6 @@ class GraphAttentionNetwork(nn.Module):
         # Apply Xavier initialization to fc
         init.xavier_uniform_(self.fc.weight)
         init.zeros_(self.fc.bias)
-    
     
     def forward(self,
                 x: Tensor,
