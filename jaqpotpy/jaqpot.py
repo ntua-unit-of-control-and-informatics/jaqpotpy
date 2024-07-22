@@ -327,8 +327,8 @@ class Jaqpot:
                             type=model.type, 
                             jaqpotpy_version=model.jaqpotpy_version,
                             libraries = model.libraries, 
-                            dependent_features=[Feature(key=feature_i['name'], name=feature_i['name'], feature_type=feature_i['featureType']) for feature_i in model.dependentFeatures],
-                            independent_features=[Feature(key=feature_i['name'], name=feature_i['name'], feature_type=feature_i['featureType']) for feature_i in model.independentFeatures],
+                            dependent_features=[Feature(key=feature_i['key'], name=feature_i['name'], feature_type=feature_i['featureType']) for feature_i in model.dependentFeatures],
+                            independent_features=[Feature(key=feature_i['key'], name=feature_i['name'], feature_type=feature_i['featureType']) for feature_i in model.independentFeatures],
                             visibility=ModelVisibility(visibility), 
                             actual_model=actual_model,
                             description = description)
