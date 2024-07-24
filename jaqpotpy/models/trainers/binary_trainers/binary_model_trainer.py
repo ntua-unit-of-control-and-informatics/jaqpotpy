@@ -9,8 +9,6 @@ import torch
 import torch.nn.functional as F
 import sklearn.metrics as metrics
 
-
-
 class BinaryModelTrainer(TorchModelTrainer):
     """
     Abstract trainer class for Binary Classification models using PyTorch.

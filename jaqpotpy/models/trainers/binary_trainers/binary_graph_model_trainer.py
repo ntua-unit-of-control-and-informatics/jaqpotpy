@@ -13,7 +13,6 @@ from jaqpotpy.schemas import Feature
 from typing import Optional
 import inspect
 
-
 class BinaryGraphModelTrainer(BinaryModelTrainer):
     """
     Trainer class for Binary Classification using Graph Neural Networks for SMILES and external features.
@@ -139,13 +138,15 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
         """
         
         self.model = self.model.cpu()
+        # Compile model and return a ScriptModule object (C++ Wrapper)
         model_scripted = torch.jit.script(self.model)
         model_buffer = io.BytesIO()
+        # First argument is scripted module, second argument is the binary buffer
         torch.jit.save(model_scripted, model_buffer)
+        # Start reading at the beginning of the binary buffer
         model_buffer.seek(0)
+        # Retrieve binary data from file, encode to base64 and convert base64 to UTF-8
         model_scripted_base64 = base64.b64encode(model_buffer.getvalue()).decode('utf-8')
-
-
         featurizer_buffer = io.BytesIO()
         pickle.dump(featurizer, featurizer_buffer)
         featurizer_buffer.seek(0)
