@@ -243,8 +243,7 @@ class PretrainedNeedsDirector:
         pretrained_needs.type = self._builder.getType()
         pretrained_needs.runtime = self._builder.getRuntime()
         return pretrained_needs
-
-
+    
 class PretrainedNeedsBuilder:
     ENCODING = 'utf-8'
     independendFeatures = None
@@ -368,6 +367,7 @@ class PretrainedNeedsBuilder:
 
     def getVersions(self):
         return self.versions
+    
 
 
 class DOABuilder(metaclass=abc.ABCMeta):

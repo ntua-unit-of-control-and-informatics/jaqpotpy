@@ -8,12 +8,16 @@ import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.helpers.jwt as jwtok
 import jaqpotpy.helpers.helpers as help
 import jaqpotpy.helpers.dataset_deserializer as ds
-# from jaqpotpy.helpers.logging import ColoredFormatter
+from jaqpotpy.api.types.api.model import create_model
+from jaqpotpy.api.types.models import Model
+from jaqpotpy.api.types.models.model_visibility import ModelVisibility
+from jaqpotpy.api.types.models.feature import Feature
+from jaqpotpy.api.types.client import AuthenticatedClient
+from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.helpers.logging import init_logger
 import json
 import jaqpotpy.api.feature_api as featapi
 from jaqpotpy.helpers.serializer import JaqpotSerializer
-# from tornado.ioloop import IOLoop
 from jaqpotpy.entities.dataset import Dataset
 from jaqpotpy.entities.meta import MetaInfo
 from jaqpotpy.entities.featureinfo import FeatureInfo
@@ -52,7 +56,7 @@ class Jaqpot:
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = 'https://api.jaqpot.org/jaqpot/services/'
+            self.base_url = 'https://app.appv2.jaqpot.org/'
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
@@ -314,309 +318,29 @@ class Jaqpot:
         df, predicts = ds.decode_predicted(dataset)
         return df, predicts
 
-    def deploy_sklearn(self, model, X, y, title, description, model_meta=False, doa=None):
-        """
-        Deploys sklearn model or pipeline to Jaqpot.
 
-        Extended description of function.
+    def deploy_SklearnModel(self, model, name, description, visibility):
 
-        Parameters
-        ----------
-        model : sklearn trained model
-            model is a trained model that occurs from the sklearn.linear_model family of algorithms
-        X : pandas dataframe
-            The dataframe that is used to train the model (X variables).
-        y : pandas dataframe
-            The dataframe that is used to train the model (y variables).
-        title: String
-            The title of the model
-        description: String
-            The description of the model
-        doa: pandas dataframe
-            The dataset used to create the domain of applicability of the model
-
-        Returns
-        -------
-        string
-            The id of the model that uploaded
-        """
-
-        algorithm = type(model).__name__
-        sk_version = model.__getstate__()['_sklearn_version']
-
-        splited = sk_version.split(".")
-        if int(splited[0]) == 1 and int(splited[1]) == 5:
-            runtime = "jaqpotpy"
+        auth_client = AuthenticatedClient(base_url=self.base_url, token=self.api_key)
+        actual_model = model_to_b64encoding(model.copy())
+        body_model = Model(name = name, 
+                            type=model.type, 
+                            jaqpotpy_version=model.jaqpotpy_version,
+                            libraries = model.libraries, 
+                            dependent_features=[Feature(key=feature_i['key'], name=feature_i['name'], feature_type=feature_i['featureType']) for feature_i in model.dependentFeatures],
+                            independent_features=[Feature(key=feature_i['key'], name=feature_i['name'], feature_type=feature_i['featureType']) for feature_i in model.independentFeatures],
+                            visibility=ModelVisibility(visibility), 
+                            actual_model=actual_model,
+                            description = description)
+        
+        response = create_model.sync_detailed(client=auth_client, body=body_model)
+        if response.status_code < 300:
+            self.log.info("Model has been successfully uploaded. The url of the model is " + response.headers.get('Location'))
         else:
-            raise Exception('Only Scikit-Learn 1.5.0 is supported. Please update your scikit-learn version to 1.5.0')
+            error = response.headers.get('error')
+            error_description = response.headers.get('error_description')
+            self.log.error("Error code: " + str(response.status_code.value))
 
-        if isinstance(X, pd.DataFrame) is False and isinstance(X, pd.Series) is False:
-            raise Exception('Function deploy_sklearn supports pandas dataframe or series. X is not one')
-        if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
-            raise Exception('Function deploy_sklearn supports pandas dataframe or series. Y is not one')
-
-        additionalInfo = {}
-        if model_meta is True:
-            additionalInfo['meta'] = model.__getstate__()
-        else:
-            additionalInfo['meta'] = {}
-            additionalInfo['meta']['_sklearn_version'] = sk_version
-        additionalInfo['meta']['algorithm'] = algorithm
-        if isinstance(X, pd.DataFrame):
-            additionalInfo['inputSeries'] = list(X)
-        if isinstance(X, pd.Series):
-            additionalInfo['inputSeries'] = X.name
-        pretrained = help.create_pretrain_req(model, X, y, title, description,
-                                              algorithm, "Scikit learn model or pipeline", runtime,
-                                              additionalInfo)
-        size = getsizeof(pretrained.rawModel[0])
-        if size < 2000000:
-            j = json.dumps(pretrained, cls=JaqpotSerializer)
-            if doa is None:
-                response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-                if response.status_code < 300:
-                    resp = response.json()
-                    self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
-                    return resp['modelId']
-                else:
-                    resp = response.json()
-                    self.log.error("Some error occured: " + resp['message'])
-                    return
-            else:
-                response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-                if response.status_code < 300:
-                    resp = response.json()
-                    self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
-                    modid = resp['modelId']
-                else:
-                    resp = response.json()
-                    self.log.error("Some error occured: " + resp['message'])
-                    return
-                # loop = asyncio.get_event_loop()
-                # a = loop.create_task(jha.calculate_a(X))
-                # b = loop.create_task(jha.calculate_doa_matrix(X))
-                a = jha.calculate_a(X)
-                b = jha.calculate_doa_matrix(X)
-                # all_groups = asyncio.gather(a, b)
-                # results = loop.run_until_complete(all_groups)
-                doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
-                j = json.dumps(doa, cls=JaqpotSerializer)
-                resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
-                if resp == 201:
-                    self.log.info("Stored Domain of applicability. Visit the application to proceed")
-                    return modid
-        else:
-            rawModel = pretrained.rawModel[0]
-            rawModel = str(rawModel)
-            n = 1000000
-            chunks = [rawModel[i:i + n] for i in range(0, len(rawModel), n)]
-            del pretrained.rawModel
-            j = json.dumps(pretrained, cls=JaqpotSerializer)
-            if doa is None:
-                response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-                if response.status_code < 300:
-                    resp = response.json()
-                    model_id = resp['modelId']
-                    parts = []
-                    i = 0
-                    for c in chunks:
-                        part = {}
-                        part['modelId'] = model_id
-                        part['partNumber'] = i
-                        part['totalParts'] = len(chunks)
-                        part['part'] = c
-                        parts.append(part)
-                        i += 1
-                    for j in tqdm(range(len(chunks))):
-                        part = parts[j]
-                        json_r = json.dumps(part, cls=JaqpotSerializer)
-                        resp = models_api.post_model_part(self.base_url, self.api_key, model_id, json_r, self.log)
-                        # pass
-                    # resp = response.json()
-                    self.log.info("Model with id: " + model_id + " created. Please visit the application to proceed")
-                    return model_id
-                else:
-                    resp = response.json()
-                    self.log.error("Some error occured: " + resp['message'])
-                    return
-            else:
-                response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-                resp = response.json()
-                if response.status_code < 300:
-                    resp = response.json()
-                    model_id = resp['modelId']
-                    self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
-                    modid = resp['modelId']
-                else:
-                    resp = response.json()
-                    self.log.error("Some error occured: " + resp['message'])
-                    return
-                a = jha.calculate_a(X)
-                b = jha.calculate_doa_matrix(X)
-                doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
-                j = json.dumps(doa, cls=JaqpotSerializer)
-                resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
-                if resp == 201:
-                    self.log.info("Stored Domain of applicability. Visit the application to proceed")
-                    return modid
-            # print("Not supported")
-
-    def deploy_jaqpotpy_molecular_model(self, model, description: str, title: str = None):
-        if model.model_title != None:
-            title = model.model_title
-        pretrained = help.create_molecular_req(model, title=title, description=description, type="MolecularModel")
-        size = getsizeof(pretrained.rawModel[0])
-        if size < 2000000:
-            j = json.dumps(pretrained, cls=JaqpotSerializer)
-            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-            if response.status_code < 300:
-                resp = response.json()
-                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
-                return resp['modelId']
-            else:
-                resp = response.json()
-                self.log.error("Some error occured: " + resp['message'])
-                return
-        else:
-            rawModel = pretrained.rawModel[0]
-            rawModel = str(rawModel)
-            n = 2000000
-            chunks = [rawModel[i:i + n] for i in range(0, len(rawModel), n)]
-            del pretrained.rawModel
-            j = json.dumps(pretrained, cls=JaqpotSerializer)
-            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-            if response.status_code < 300:
-                resp = response.json()
-                model_id = resp['modelId']
-                parts = []
-                i = 0
-                for c in chunks:
-                    part = {}
-                    part['modelId'] = model_id
-                    part['partNumber'] = i
-                    part['totalParts'] = len(chunks)
-                    part['part'] = c
-                    parts.append(part)
-                    i += 1
-                for j in tqdm(range(len(chunks))):
-                    part = parts[j]
-                    json_r = json.dumps(part, cls=JaqpotSerializer)
-                    resp = models_api.post_model_part(self.base_url, self.api_key, model_id, json_r, self.log)
-                    # pass
-                # resp = response.json()
-                self.log.info("Model with id: " + model_id + " created. Please visit the application to proceed")
-                return model_id
-            else:
-                resp = response.json()
-                self.log.error("Some error occured: " + resp['message'])
-                return
-
-    def deploy_sklearn_unsupervised(self, model, X, title, description, model_meta=False, doa=None):
-        """
-        Deploys sklearn model or pipeline to Jaqpot.
-
-        Extended description of function.
-
-        Parameters
-        ----------
-        model : sklearn trained model
-            model is a trained model that occurs from the sklearn.linear_model family of algorithms
-        X : pandas dataframe
-            The dataframe that is used to train the model (X variables).
-        title: String
-            The title of the model
-        description: String
-            The description of the model
-        doa: pandas dataframe
-            The dataset used to create the domain of applicability of the model
-
-        Returns
-        -------
-        string
-            The id of the model that uploaded
-        """
-
-        algorithm = type(model).__name__
-        sk_version = model.__getstate__()['_sklearn_version']
-
-        splited = sk_version.split(".")
-        if int(splited[1]) < 21 and int(splited[0]) == 0:
-            runtime = "scikit-learn-legacy"
-        if int(splited[1]) == 22:
-            runtime = "scikit-learn-0-22"
-        if int(splited[1]) == 23:
-            runtime = "scikit-learn-0-23"
-        if int(splited[1]) == 24:
-            runtime = "scikit-learn-0-24"
-        if int(splited[1]) > 24:
-            runtime = "scikit-learn-0-24"
-        if int(splited[0]) == 1 and int(splited[1]) == 0:
-            runtime = "scikit-learn-1-0"
-        if int(splited[0]) == 1 and int(splited[1]) == 1:
-            runtime = "scikit-learn-1-1"
-
-        if isinstance(X, pd.DataFrame) is False:
-            raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
-        # if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
-        #     raise Exception('Function deploy_glm supports pandas dataframe or series. Y is not one')
-
-        y = pd.Series(data=None, index=['y'])
-
-        additionalInfo = {}
-        if model_meta is True:
-            additionalInfo['meta'] = model.__getstate__()
-        else:
-            additionalInfo['meta'] = {}
-            additionalInfo['meta']['_sklearn_version'] = sk_version
-        additionalInfo['meta']['algorithm'] = algorithm
-        if isinstance(X, pd.DataFrame):
-            additionalInfo['inputSeries'] = list(X)
-        if isinstance(X, pd.Series):
-            additionalInfo['inputSeries'] = X.name
-        pretrained = help.create_pretrain_req(model, X, y, title, description,
-                                              algorithm, "Scikit learn model or pipeline", runtime,
-                                              additionalInfo)
-        j = json.dumps(pretrained, cls=JaqpotSerializer)
-        if doa is None:
-            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-            if response.status_code < 300:
-                resp = response.json()
-                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
-                return resp['modelId']
-            else:
-                resp = response.json()
-                self.log.error("Some error occured: " + resp['message'])
-                return
-        else:
-            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
-            if response.status_code < 300:
-                resp = response.json()
-                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
-                modid = resp['modelId']
-            else:
-                resp = response.json()
-                self.log.error("Some error occured: " + resp['message'])
-                return
-            # loop = asyncio.get_event_loop()
-            # a = loop.create_task(jha.calculate_a(X))
-            # b = loop.create_task(jha.calculate_doa_matrix(X))
-            # all_groups = asyncio.gather(a, b)
-            # results = loop.run_until_complete(all_groups)
-            a = jha.calculate_a(X)
-            b = jha.calculate_doa_matrix(X)
-            doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
-            j = json.dumps(doa, cls=JaqpotSerializer)
-            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
-            if resp == 201:
-                self.log.info("Stored Domain of applicability. Visit the application to proceed")
-                return modid
-
-    def api_key(self):
-        return self.api_key
-
-    def check_key(self):
-        if self.api_key is None:
-            raise Exception("Api key not present!")
 
     def deploy_XGBoost(self, model, X, y, title, description, algorithm, doa=None):
         """
