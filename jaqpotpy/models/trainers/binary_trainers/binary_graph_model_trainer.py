@@ -137,16 +137,39 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
                   Note that in this case, the '*additional_model_params*' key contains a nested dictionary with they keys: {'*decision_threshold*', '*featurizer*'}.
         """
         
-        self.model = self.model.cpu()
-        # Compile model and return a ScriptModule object (C++ Wrapper)
-        model_scripted = torch.jit.script(self.model)
-        model_buffer = io.BytesIO()
-        # First argument is scripted module, second argument is the binary buffer
-        torch.jit.save(model_scripted, model_buffer)
-        # Start reading at the beginning of the binary buffer
-        model_buffer.seek(0)
-        # Retrieve binary data from file, encode to base64 and convert base64 to UTF-8
-        model_scripted_base64 = base64.b64encode(model_buffer.getvalue()).decode('utf-8')
+        # self.model = self.model.cpu()
+        # # Compile model and return a ScriptModule object (C++ Wrapper)
+        # model_scripted = torch.jit.script(self.model)
+        # model_buffer = io.BytesIO()
+        # # First argument is scripted module, second argument is the binary buffer
+        # torch.jit.save(model_scripted, model_buffer)
+        # # Start reading at the beginning of the binary buffer
+        # model_buffer.seek(0)
+        # # Retrieve binary data from file, encode to base64 and convert base64 to UTF-8
+        # model_scripted_base64 = base64.b64encode(model_buffer.getvalue()).decode('utf-8')
+
+        if self.model.training:
+            self.model.eval()
+            self.model = self.model.cpu()
+            
+        dummy_smile = 'CCC'
+        dummy_input = featurizer.featurize(dummy_smile)
+        x = dummy_input.x
+        edge_index = dummy_input.edge_index
+        batch = torch.zeros(x.shape[0],dtype=torch.int64)
+        torch.onnx.export(self.model, # model being run
+                  args = (x, edge_index, batch),
+                  f = 'model.onnx',
+                  input_names=['x', 'edge_index', 'batch'],
+                  dynamic_axes = {"x": {0: 'nodes'},
+                                  'edge_index':{1: 'edges'},
+                                  'batch':[0]})
+        with open("model.onnx", "rb") as f:
+            onnx_model_bytes = f.read()
+        model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode('utf-8')
+        import os
+        os.remove("model.onnx")
+
         featurizer_buffer = io.BytesIO()
         pickle.dump(featurizer, featurizer_buffer)
         featurizer_buffer.seek(0)
