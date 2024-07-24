@@ -170,14 +170,15 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
         import os
         os.remove("model.onnx")
 
-        featurizer_buffer = io.BytesIO()
-        pickle.dump(featurizer, featurizer_buffer)
-        featurizer_buffer.seek(0)
-        featurizer_pickle_base64 = base64.b64encode(featurizer_buffer.getvalue()).decode('utf-8')
+        # featurizer_buffer = io.BytesIO()
+        # pickle.dump(featurizer, featurizer_buffer)
+        # featurizer_buffer.seek(0)
+        # featurizer_pickle_base64 = base64.b64encode(featurizer_buffer.getvalue()).decode('utf-8')
         
+        featurizer_json = featurizer.get_json_rep()
         additional_model_params = {
             'decision_threshold': self.decision_threshold,
-            'featurizer': featurizer_pickle_base64
+            'featurizer': featurizer_json
         }
 
         independentFeatures = [

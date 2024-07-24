@@ -544,7 +544,28 @@ class SmilesGraphFeaturizer(Featurizer):
                     edge_attr=mol_bond_features,
                     y=y,
                     smiles=sm)
-        
+    def get_json_rep(self):
+        config = {
+        'warnings_enabled': self.warnings_enabled,
+        'include_edge_features': self.include_edge_features,
+        'atom_allowable_sets': self.atom_allowable_sets,
+        'bond_allowable_sets': self.bond_allowable_sets,
+    }
+
+    # Convert the configuration dictionary to a JSON string
+        config_json = json.dumps(config, indent=4)  # `indent=4` for pretty-printing
+        return config_json
+    
+    def load_json_rep(self, json_config):
+        data = json.loads(json_config)
+        self.warnings_enabled = data.get('warnings_enabled')
+        self.include_edge_features = data.get('include_edge_features')
+
+        self.set_atom_allowable_sets(data.get('atom_allowable_sets'))
+
+        self.set_bond_allowable_sets(data.get('bond_allowable_sets'))
+
+        return self
     
     def save_config(self, config_file="featurizer_config.pkl"):
         """
