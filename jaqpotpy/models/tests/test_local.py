@@ -7,8 +7,8 @@ from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
     , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
 
-from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeaturizer\
-  , PagtnMolGraphFeaturizer, TorchMolGraphConvFeaturizer, AttentiveFPFeaturizer
+#from jaqpotpy.descriptors.molecular.molecule_graph_conv import MolGraphConvFeaturizer\
+#  , PagtnMolGraphFeaturizer, TorchMolGraphConvFeaturizer, AttentiveFPFeaturizer
 from jaqpotpy.models import MolecularModel, SklearnModel
 from sklearn.linear_model import LinearRegression
 import asyncio
@@ -23,15 +23,15 @@ from torch_geometric.nn import GCNConv
 from torch.nn import Linear
 from torch_geometric.nn import global_mean_pool
 from torch.autograd import Variable
-from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
-from jaqpotpy.models.torch_models import AttentiveFP_V1
+#from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
+#from jaqpotpy.models.torch_models import AttentiveFP_V1
 import jaqpotpy.utils.pytorch_utils as ptu
-from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
+#from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
 from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 import torch_geometric
-from jaqpotpy.models.torch_models import GCN_V1 as GCN_J
+#from jaqpotpy.models.torch_models import GCN_V1 as GCN_J
 from jaqpotpy import Jaqpot
 from sklearn import svm
 from rdkit import Chem
@@ -449,33 +449,33 @@ class TestModels(unittest.TestCase):
         optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.L1Loss()
 
-        m = MolecularTorch(dataset=dataset
-                           , model_nn=model_nn, eval=val
-                           , train_batch=4, test_batch=4
-                           , epochs=30, optimizer=optimizer, criterion=criterion).fit()
-        m.eval()
-        molMod = m.create_molecular_model()
-        molMod.model_title = "test_regression"
-        molMod.save()
-        molMod.load("./test_regression.jmodel")
-        molMod(['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
-                   , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
-                   , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
-                   , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
-                   , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'])
+        # m = MolecularTorch(dataset=dataset
+        #                    , model_nn=model_nn, eval=val
+        #                    , train_batch=4, test_batch=4
+        #                    , epochs=30, optimizer=optimizer, criterion=criterion).fit()
+        # m.eval()
+        # molMod = m.create_molecular_model()
+        # molMod.model_title = "test_regression"
+        # molMod.save()
+        # molMod.load("./test_regression.jmodel")
+        # molMod(['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+        #            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+        #            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+        #            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+        #            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'])
         # print(molMod.Y)
         # print(molMod.prediction)
-        smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
-            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
-            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
-            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
-            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'
-            , 'CC(C)(C)c1ccc(N(C(=O)c2ccco2)[C@H](C(=O)NCCc2cccc(F)c2)c2cccnc2)cc1'
-            , 'OC[C@@H](O1)[C@@H](O)[C@H](O)[C@@H]2[C@@H]1c3c(O)c(OC)c(O)cc3C(=O)O2'
-            , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1']
+        # smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+        #     , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+        #     , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+        #     , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+        #     , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'
+        #     , 'CC(C)(C)c1ccc(N(C(=O)c2ccco2)[C@H](C(=O)NCCc2cccc(F)c2)c2cccnc2)cc1'
+        #     , 'OC[C@@H](O1)[C@@H](O)[C@H](O)[C@@H]2[C@@H]1c3c(O)c(OC)c(O)cc3C(=O)O2'
+        #     , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1']
 
-        for smile in smiles_new:
-            molMod(smile)
+        # for smile in smiles_new:
+        #     molMod(smile)
             # print(molMod.prediction)
 
     @unittest.skip('Local data')
@@ -501,39 +501,39 @@ class TestModels(unittest.TestCase):
         optimizer = torch.optim.Adam(model_nn.parameters(), lr=0.01, weight_decay=5e-4)
         criterion = torch.nn.CrossEntropyLoss()
 
-        m = MolecularTorch(dataset=dataset
-                           , model_nn=model_nn, eval=val
-                           , train_batch=4, test_batch=4
-                           , epochs=40, optimizer=optimizer, criterion=criterion).fit()
-        m.eval()
-        molMod = m.create_molecular_model()
-        molMod.model_name = "test_regression"
-        molMod.save()
-        try:
-            molMod.load("./test_regression.jmodel")
-        except FileNotFoundError:
-            print("A File is missing in load model")
-        # print(molMod.library)
-        # print(molMod.version)
-        # print(molMod.jaqpotpy_version)
-        molMod(['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
-                   , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
-                   , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
-                   , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
-                   , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'])
-        # print(molMod.Y)
-        # print(molMod.prediction)
-        smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
-            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
-            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
-            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
-            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'
-            , 'CC(C)(C)c1ccc(N(C(=O)c2ccco2)[C@H](C(=O)NCCc2cccc(F)c2)c2cccnc2)cc1'
-            , 'OC[C@@H](O1)[C@@H](O)[C@H](O)[C@@H]2[C@@H]1c3c(O)c(OC)c(O)cc3C(=O)O2'
-            , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1']
+        # m = MolecularTorch(dataset=dataset
+        #                    , model_nn=model_nn, eval=val
+        #                    , train_batch=4, test_batch=4
+        #                    , epochs=40, optimizer=optimizer, criterion=criterion).fit()
+        # m.eval()
+        # molMod = m.create_molecular_model()
+        # molMod.model_name = "test_regression"
+        # molMod.save()
+        # try:
+        #     molMod.load("./test_regression.jmodel")
+        # except FileNotFoundError:
+        #     print("A File is missing in load model")
+        # # print(molMod.library)
+        # # print(molMod.version)
+        # # print(molMod.jaqpotpy_version)
+        # molMod(['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+        #            , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+        #            , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+        #            , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+        #            , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'])
+        # # print(molMod.Y)
+        # # print(molMod.prediction)
+        # smiles_new = ['COc1ccc2c(N)nn(C(=O)Cc3cccc(Cl)c3)c2c1'
+        #     , 'CNCC1CCCN(C(=O)[C@@H](c2ccccc2)N2Cc3ccccc3C2=O)C1'
+        #     , 'O=C1NC2(CCOc3ccc(Cl)cc32)C(=O)N1c1cncc2ccccc12'
+        #     , 'COc1ccc2c(NC(=O)C3CCOc4ccc(Cl)cc43)[nH]nc2c1'
+        #     , 'O=C(NC1N=Nc2ccccc21)C1CCOc2ccc(Cl)cc21'
+        #     , 'CC(C)(C)c1ccc(N(C(=O)c2ccco2)[C@H](C(=O)NCCc2cccc(F)c2)c2cccnc2)cc1'
+        #     , 'OC[C@@H](O1)[C@@H](O)[C@H](O)[C@@H]2[C@@H]1c3c(O)c(OC)c(O)cc3C(=O)O2'
+        #     , 'Cc1ccncc1NC(=O)Cc1cc(Cl)cc(-c2cnn(C)c2C(F)F)c1']
 
-        for smile in smiles_new:
-            molMod(smile)
+        # for smile in smiles_new:
+        #     molMod(smile)
 
 
 class CNNNet_regression(torch.nn.Module):

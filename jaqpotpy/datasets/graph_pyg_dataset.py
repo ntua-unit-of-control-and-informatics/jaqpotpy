@@ -56,7 +56,7 @@ class SmilesGraphDataset(Dataset):
             self.featurizer = SmilesGraphFeaturizer()
             # Default node, edge features in case of not specifying dataset
             self.featurizer.set_default_config()
-        
+            
         self.precomputed_features = None
 
     # def config_from_other_dataset(self, dataset):
