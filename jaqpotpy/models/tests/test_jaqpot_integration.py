@@ -6,7 +6,7 @@ from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MordredDescriptors\
     , create_char_to_idx, SmilesToSeq, OneHotSequence, SmilesToImage\
     , TopologicalFingerprint, RDKitDescriptors, MACCSKeysFingerprint
-from jaqpotpy.models import MolecularModel, SklearnModel
+from jaqpotpy.models import SklearnModel
 from sklearn.linear_model import LinearRegression
 from sklearn.svm import SVR, SVC
 import asyncio

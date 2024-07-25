@@ -1,7 +1,7 @@
 import unittest
 from jaqpotpy.jaqpot import Jaqpot
 
-from jaqpotpy.models import MolecularModel
+# from jaqpotpy.models import MolecularModel
 from jaqpotpy.models.evaluator import GenerativeEvaluator
 from jaqpotpy.models.generative.molecular_metrics import diversity_scores \
     , drugcandidate_scores, synthetic_accessibility_score_scores, valid_mean \
