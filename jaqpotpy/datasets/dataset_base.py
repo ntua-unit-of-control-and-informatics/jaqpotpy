@@ -198,31 +198,5 @@ class BaseDataset(ABC):
         raise NotImplementedError
 
 
-class MaterialDataset(BaseDataset):
-    def __init__(self, df: pd.DataFrame = None, path:  Optional[str] = None,
-                 y_cols: Iterable[str] = None,
-                 x_cols: Optional[Iterable[str]] =None, materials_col=None,
-                 materials=None) -> None:
-        super().__init__(df = df, path = path, y_cols = y_cols, x_cols = x_cols)
-        self.materials = materials
-        self._materials_strings = None
-        self.materials_col = materials_col
-
-    @property
-    def materials_strings(self) -> Iterable[str]:
-        return self._materials_strings
-
-    @materials_strings.setter
-    def materials_strings(self, value):
-        self._materials_strings = value
-
-
-class ImageDataset(BaseDataset):
-    def __init__(self,  df: pd.DataFrame = None, path:  Optional[str] = None,
-                  y_cols: Iterable[str] = None,
-                 x_cols: Optional[Iterable[str]] =None) -> None:
-        super().__init__(df = df, path = path, y_cols = y_cols, x_cols = x_cols)
-
-
 if __name__ == '__main__':
     ...
