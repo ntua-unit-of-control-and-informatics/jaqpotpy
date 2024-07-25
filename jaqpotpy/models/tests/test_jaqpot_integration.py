@@ -23,10 +23,10 @@ from torch_geometric.nn import GCNConv
 from torch.nn import Linear
 from torch_geometric.nn import global_mean_pool
 from torch.autograd import Variable
-from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
+#from jaqpotpy.models import MolecularTorchGeometric, MolecularTorch
 from torch_geometric.nn.models import GCN as GCN_TORCH
 import jaqpotpy.utils.pytorch_utils as ptu
-from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
+#from jaqpotpy.descriptors.molecular import MolGraphConvFeaturizer
 from torch_geometric.loader import DataLoader
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
