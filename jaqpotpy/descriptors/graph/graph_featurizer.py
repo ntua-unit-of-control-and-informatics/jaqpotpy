@@ -545,15 +545,12 @@ class SmilesGraphFeaturizer(Featurizer):
                     y=y,
                     smiles=sm)
     def get_json_rep(self):
-        config = {
+        config_json = {
         'warnings_enabled': self.warnings_enabled,
         'include_edge_features': self.include_edge_features,
         'atom_allowable_sets': self.atom_allowable_sets,
         'bond_allowable_sets': self.bond_allowable_sets,
     }
-
-    # Convert the configuration dictionary to a JSON string
-        config_json = json.dumps(config, indent=4)  # `indent=4` for pretty-printing
         return config_json
     
     def load_json_rep(self, json_config):

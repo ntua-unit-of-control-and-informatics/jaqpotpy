@@ -256,16 +256,16 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if not isinstance(independentFeatures, list):
             msg = "'independentFeatures' should be of type list"
             raise ValueError(msg)
-        if any(not isinstance(feature, Feature) for feature in independentFeatures):
-            msg = "'independentFeatures' should must only include elements of type Feature"
-            raise ValueError(msg)
+  #      if any(not isinstance(feature, Feature) for feature in independentFeatures):
+ #           msg = "'independentFeatures' should must only include elements of type Feature"
+#            raise ValueError(msg)
         
         if not isinstance(dependentFeatures, list):
             msg = "'dependentFeatures' should be of type list"
             raise ValueError(msg)
-        if any(not isinstance(feature, Feature) for feature in independentFeatures):
-            msg = "'dependentFeatures' should must only include elements of type Feature"
-            raise ValueError(msg)
+#        if any(not isinstance(feature, Feature) for feature in independentFeatures):
+#            msg = "'dependentFeatures' should must only include elements of type Feature"
+#            raise ValueError(msg)
         
         if reliability is not None and not isinstance(reliability, int):
             msg = "'reliability' should be of type int"
@@ -316,8 +316,8 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
             'type': f'TORCH-{model_type}',
             'jaqpotpyVersion': jaqpotpyVersion,
             'libraries' : [library.to_json() for library in libraries],
-            'dependentFeatures': [feature.to_json() for feature in dependentFeatures],
-            'independentFeatures': [feature.to_json() for feature in independentFeatures],
+            'dependentFeatures': dependentFeatures,
+            'independentFeatures':  independentFeatures,
             'organizations': organizations,
             'visibility': visibility,
             'reliability': reliability,

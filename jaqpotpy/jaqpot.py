@@ -4,6 +4,7 @@ import jaqpotpy.api.dataset_api as data_api
 import jaqpotpy.api.models_api as models_api
 import jaqpotpy.api.task_api as task_api
 import jaqpotpy.api.doa_api as doa_api
+from jaqpotpy.api.types.models.model_type import ModelType
 import jaqpotpy.helpers.jwt as jwtok
 import jaqpotpy.helpers.helpers as help
 import jaqpotpy.helpers.dataset_deserializer as ds
@@ -304,15 +305,23 @@ class Jaqpot:
     def deploy_Torch_Graph_model(self, deployment_json):
 
         auth_client = AuthenticatedClient(base_url=self.base_url, token=self.api_key)
-        body_model = Model(name = deployment_json['actualModel'],
-                           type = deployment_json['model_type'], 
+        actual_model = deployment_json['actualModel']
+        actual_model = model_to_b64encoding(actual_model)
+        featurizer_json = json.dumps(deployment_json['additional_model_params']['featurizer'])
+        body_model = Model(name = "random",
+                           type = ModelType.TORCH, 
                            jaqpotpy_version= "",
-                           libraries = "", 
+                           libraries = "",
                            dependent_features=deployment_json['dependentFeatures'],
-                           independent_features=deployment_json['independentFeatures'],
-                           visibility= deployment_json['visibility'], 
-                           actual_model=deployment_json['actualModel'],
-                           description = deployment_json['description'])
+                           independent_features= deployment_json['independentFeatures'],
+                           extra_config = {
+                               'torchConfig': {
+                                    'featurizer': featurizer_json
+                                }
+                            },
+                           visibility= ModelVisibility.PUBLIC, 
+                           actual_model= actual_model,
+                           description = "random")
         
         response = create_model.sync_detailed(client=auth_client, body=body_model)
         if response.status_code < 300:
@@ -321,6 +330,7 @@ class Jaqpot:
             error = response.headers.get('error')
             error_description = response.headers.get('error_description')
             self.log.error("Error code: " + str(response.status_code.value))
+            self.log.error("Error Body: " + str(response.content))
 
     def deploy_XGBoost(self, model, X, y, title, description, algorithm, doa=None):
         """

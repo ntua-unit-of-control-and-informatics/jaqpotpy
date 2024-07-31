@@ -2,6 +2,7 @@
 Author: Ioannis Pitoskas (jpitoskas@gmail.com)
 """
 
+from jaqpotpy.api.types.models.feature_type import FeatureType
 from . import BinaryModelTrainer
 
 import torch
@@ -9,7 +10,8 @@ import torch_geometric
 import io
 import base64
 import pickle
-from jaqpotpy.schemas import Feature
+#from jaqpotpy.schemas import Feature
+from jaqpotpy.api.types.models.feature import Feature
 from typing import Optional
 import inspect
 
@@ -182,11 +184,11 @@ class BinaryGraphModelTrainer(BinaryModelTrainer):
         }
 
         independentFeatures = [
-            Feature(name='SMILES', featureDependency='INDEPENDENT', possibleValues=[], featureType='SMILES')
+            Feature(key='SMILES', name= 'SMILES', feature_type= FeatureType.SMILES),
         ]
 
         dependentFeatures = [
-            Feature(name=endpoint_name, featureDependency='DEPENDENT', possibleValues=['0', '1'], featureType='CATEGORICAL')
+            Feature(key=endpoint_name, name=endpoint_name, feature_type= FeatureType.INTEGER)
         ]
 
         self.json_data_for_deployment = self._model_data_as_json(actualModel=model_scripted_base64,
