@@ -7,7 +7,6 @@ from torch_geometric.nn import GraphNorm #, BatchNorm, GraphSizeNorm, InstanceNo
 from torch_geometric.nn import global_add_pool, global_mean_pool, global_max_pool
 import torch.nn.init as init
 from torch import Tensor
-from .fully_connected_network import FullyConnectedNetwork
 
 class GraphConvolutionNetwork(nn.Module):
     def __init__(self,
@@ -57,13 +56,7 @@ class GraphConvolutionNetwork(nn.Module):
         x = self._pooling_function(x, batch)
         x = self.fc(x)
         return x
-
-    def _graph_conv_block(self, input_dim, hidden_dim):
-
-        self.gcn_layer = GCNConv(input_dim, hidden_dim)
-        if self.graph_norm:
-            self.norm_layer = GraphNorm(hidden_dim)
-
+    
     def _validate_inputs(self):
         if not isinstance(self.input_dim, int):
             raise TypeError("input_dim must be of type int")
@@ -90,5 +83,5 @@ class GraphConvolutionNetwork(nn.Module):
             return global_max_pool(x, batch)
         else:
             raise NotImplementedError(f"Pooling operation '{self.pooling}' is not supported")
-    
+        
 
