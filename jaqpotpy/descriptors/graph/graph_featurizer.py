@@ -42,7 +42,7 @@ class SmilesGraphFeaturizer():
                            "is_in_ring",
                            "mass"]
     
-    def __init__(self, include_edge_features=False):
+    def __init__(self, include_edge_features=True):
         """ include_edge_features (bool): Whether to include edge features in the featurization."""
         self.include_edge_features = include_edge_features
         self.atom_allowable_sets = {}
@@ -291,12 +291,12 @@ class SmilesGraphFeaturizer():
     
     def get_json_rep(self):
         """Creates a json configuration that will be sent to database for inference"""
-        config_json = {
+        config_json = json.dumps({
         'include_edge_features': self.include_edge_features,
         'atom_allowable_sets': self.atom_allowable_sets,
         'bond_allowable_sets': self.bond_allowable_sets,
-        }
-        return json.dumps(config_json)
+        })
+        return config_json
     
     def load_json_rep(self, json_config):
         """Loads a configuration from a json dict. Mainly used in jaqpotpy-inference"""
