@@ -1,10 +1,7 @@
 from jaqpotpy.api.types.models.feature_type import FeatureType
 from tqdm import tqdm
 import torch
-import torch_geometric
-import io
 import base64
-import pickle
 from jaqpotpy.api.types.models.feature import Feature
 from typing import Optional
 import inspect
