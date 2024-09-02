@@ -10,7 +10,6 @@ import pickle
 
 
 class FeatureDirector:
-
     def __init__(self):
         self._builder = None
 
@@ -28,7 +27,6 @@ class FeatureDirector:
 
 
 class FBuilder(metaclass=abc.ABCMeta):
-
     def __init__(self):
         self.metainfo = MetaInfo()
 
@@ -116,7 +114,6 @@ class FeatureBuilder(FBuilder):
 
 
 class DataEntryDirector:
-
     def __init__(self):
         self._builder = None
 
@@ -134,7 +131,6 @@ class DataEntryDirector:
 
 
 class DBuilder(metaclass=abc.ABCMeta):
-
     def __init__(self):
         self.dataentry = EntryId()
 
@@ -180,7 +176,6 @@ class DBuilder(metaclass=abc.ABCMeta):
 
 
 class DataEntryBuilder(DBuilder):
-
     name = None
     ownerr_uuid = None
     type = None
@@ -219,7 +214,6 @@ class DataEntryBuilder(DBuilder):
 
 
 class PretrainedNeedsDirector:
-
     def __init__(self):
         self._builder = None
 
@@ -237,15 +231,18 @@ class PretrainedNeedsDirector:
         pretrained_needs.description = self._builder.getDescription()
         pretrained_needs.title = self._builder.getTitle()
         pretrained_needs.jaqpotpyVersion = self._builder.getJaqpotPyVersion()
-        pretrained_needs.jaqpotpyDockerVersion = self._builder.getJaqpotpyDockerVersion()
+        pretrained_needs.jaqpotpyDockerVersion = (
+            self._builder.getJaqpotpyDockerVersion()
+        )
         pretrained_needs.libraries = self._builder.getLibraries()
         pretrained_needs.versions = self._builder.getVersions()
         pretrained_needs.type = self._builder.getType()
         pretrained_needs.runtime = self._builder.getRuntime()
         return pretrained_needs
-    
+
+
 class PretrainedNeedsBuilder:
-    ENCODING = 'utf-8'
+    ENCODING = "utf-8"
     independendFeatures = None
     dependendFeatures = None
     implementedWith = []
@@ -367,11 +364,9 @@ class PretrainedNeedsBuilder:
 
     def getVersions(self):
         return self.versions
-    
 
 
 class DOABuilder(metaclass=abc.ABCMeta):
-
     def __init__(self):
         self.doa = Doa()
 

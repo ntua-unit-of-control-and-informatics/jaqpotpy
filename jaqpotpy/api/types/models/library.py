@@ -12,15 +12,15 @@ T = TypeVar("T", bound="Library")
 
 @_attrs_define
 class Library:
-    """
-    Attributes:
-        name (str):  Example: Library Name.
-        version (str):  Example: 1.24.0.
-        id (Union[Unset, int]):
-        created_at (Union[Unset, datetime.datetime]): The date and time when the feature was created. Example:
-            2023-01-01T12:00:00Z.
-        updated_at (Union[Unset, str]): The date and time when the feature was last updated. Example:
-            2023-01-01T12:00:00Z.
+    """Attributes
+    name (str):  Example: Library Name.
+    version (str):  Example: 1.24.0.
+    id (Union[Unset, int]):
+    created_at (Union[Unset, datetime.datetime]): The date and time when the feature was created. Example:
+        2023-01-01T12:00:00Z.
+    updated_at (Union[Unset, str]): The date and time when the feature was last updated. Example:
+        2023-01-01T12:00:00Z.
+
     """
 
     name: str

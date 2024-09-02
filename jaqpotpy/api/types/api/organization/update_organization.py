@@ -66,17 +66,20 @@ def sync_detailed(
     """Update an existing organization
 
     Args:
+    ----
         id (int):
         body (Organization):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, Organization]]
-    """
 
+    """
     kwargs = _get_kwargs(
         id=id,
         body=body,
@@ -98,17 +101,20 @@ def sync(
     """Update an existing organization
 
     Args:
+    ----
         id (int):
         body (Organization):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, Organization]
-    """
 
+    """
     return sync_detailed(
         id=id,
         client=client,
@@ -125,17 +131,20 @@ async def asyncio_detailed(
     """Update an existing organization
 
     Args:
+    ----
         id (int):
         body (Organization):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, Organization]]
-    """
 
+    """
     kwargs = _get_kwargs(
         id=id,
         body=body,
@@ -155,17 +164,20 @@ async def asyncio(
     """Update an existing organization
 
     Args:
+    ----
         id (int):
         body (Organization):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, Organization]
-    """
 
+    """
     return (
         await asyncio_detailed(
             id=id,

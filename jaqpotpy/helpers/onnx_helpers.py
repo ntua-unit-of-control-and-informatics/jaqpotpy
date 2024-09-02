@@ -1,44 +1,46 @@
-import numpy as np
-from onnx import ValueInfoProto, TensorProto
-
-from skl2onnx.algebra.type_helper import guess_initial_types
 from skl2onnx.common.data_types import (
-    guess_numpy_type,
-    DoubleTensorType,DataType,
     BooleanTensorType,
-    Complex128TensorType, Complex64TensorType,
+    Complex128TensorType,
+    Complex64TensorType,
     FloatTensorType,
-    Int8TensorType, Int16TensorType, Int32TensorType, Int64TensorType,
-    UInt8TensorType, UInt16TensorType, UInt32TensorType, UInt64TensorType,
-    StringTensorType
+    Int8TensorType,
+    Int16TensorType,
+    Int32TensorType,
+    Int64TensorType,
+    UInt8TensorType,
+    UInt16TensorType,
+    UInt32TensorType,
+    UInt64TensorType,
+    StringTensorType,
 )
 
+
 def select_ONNX_type(t):
-    if 'float' in t:
+    if "float" in t:
         return FloatTensorType([None, 1])
-    elif t == 'bool':
+    elif t == "bool":
         return BooleanTensorType([None, 1])
-    elif t == 'complex128':
+    elif t == "complex128":
         return Complex128TensorType([None, 1])
-    elif t == 'complex64':
+    elif t == "complex64":
         return Complex64TensorType([None, 1])
-    elif t == 'int8':
+    elif t == "int8":
         return Int8TensorType([None, 1])
-    elif t == 'int16':
+    elif t == "int16":
         return Int16TensorType([None, 1])
-    elif t == 'int32':
+    elif t == "int32":
         return Int32TensorType([None, 1])
-    elif t == 'int64':
+    elif t == "int64":
         return Int64TensorType([None, 1])
-    elif t == 'uint8':
+    elif t == "uint8":
         return UInt8TensorType([None, 1])
-    elif t == 'uint16':
+    elif t == "uint16":
         return UInt16TensorType([None, 1])
-    elif t == 'uint32':
+    elif t == "uint32":
         return UInt32TensorType([None, 1])
-    elif t == 'uint64':
+    elif t == "uint64":
         return UInt64TensorType([None, 1])
-    elif t == 'str':
+    elif t == "str":
         return StringTensorType([None, 1])
     else:
         raise ValueError('"{}" is not a valid datatype'.format(t))
@@ -51,19 +53,10 @@ def guess_ONNX_types(df, drop=None):
     else:
         df_copy = df.drop(drop, axis=1).copy()
 
-    type_list = [(k, select_ONNX_type(str(v)))for k, v in zip(df_copy.columns, df_copy.dtypes)]
+    type_list = [
+        (k, select_ONNX_type(str(v))) for k, v in zip(df_copy.columns, df_copy.dtypes)
+    ]
     return type_list
-    
-
-    
-
-
-
-
-
-
-
-
 
 
 #

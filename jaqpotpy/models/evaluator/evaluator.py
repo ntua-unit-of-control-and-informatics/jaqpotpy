@@ -46,12 +46,12 @@ class GenerativeEvaluator:
         return self
 
     def get_reward(self, mols):
-        rr = 1.
+        rr = 1.0
         for key in self.functions.keys():
             try:
                 f = self.functions.get(key)
                 rr *= f(mols)
-            except TypeError as e:
+            except TypeError:
                 f = self.functions.get(key)
                 rr *= f(mols, self.dataset)
         return rr.reshape(-1, 1)

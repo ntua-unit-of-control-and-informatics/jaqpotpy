@@ -1,10 +1,5 @@
-from .entryid import EntryId
-
-
 class DataEntry(object):
-
     def __init__(self, entryId=None, values=None):
-
         self.entryId = None
         self.values = None
 

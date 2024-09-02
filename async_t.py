@@ -12,10 +12,8 @@
 # print(results[0])
 # print(results[1])
 import logging
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-logging.debug('This message should appear on the console')
-logging.info('So should this')
-logging.warning('And this, too')
 
-
-
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
+logging.debug("This message should appear on the console")
+logging.info("So should this")
+logging.warning("And this, too")

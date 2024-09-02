@@ -15,6 +15,7 @@ class Pdb(BaseModel):
     def get_atoms(self):
         return self.atoms
 
+
 class Xyz(BaseModel):
     num_atoms: int
     comment: str
@@ -63,5 +64,3 @@ class Sdf(BaseModel):
 
     def get_atoms(self):
         return self.con_table.atoms
-
-

@@ -55,16 +55,19 @@ def sync_detailed(
     """Get organization by name
 
     Args:
+    ----
         name (str):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, Organization]]
-    """
 
+    """
     kwargs = _get_kwargs(
         name=name,
     )
@@ -84,16 +87,19 @@ def sync(
     """Get organization by name
 
     Args:
+    ----
         name (str):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, Organization]
-    """
 
+    """
     return sync_detailed(
         name=name,
         client=client,
@@ -108,16 +114,19 @@ async def asyncio_detailed(
     """Get organization by name
 
     Args:
+    ----
         name (str):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, Organization]]
-    """
 
+    """
     kwargs = _get_kwargs(
         name=name,
     )
@@ -135,16 +144,19 @@ async def asyncio(
     """Get organization by name
 
     Args:
+    ----
         name (str):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, Organization]
-    """
 
+    """
     return (
         await asyncio_detailed(
             name=name,

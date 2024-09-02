@@ -1,4 +1,4 @@
-from typing import Union, List, Optional, Any
+from typing import Union, List
 import numpy as np
 from scipy.spatial import Delaunay
 from jaqpotpy.helpers.periodic_table.element import Element
@@ -7,62 +7,96 @@ import warnings
 import pandas as pd
 from jaqpotpy.descriptors.base_classes import MaterialFeaturizer
 from jaqpotpy.cfg import config
-from jaqpotpy.entities.material_models import *
-from jaqpotpy.parsers import *
+from jaqpotpy.entities.material_models import Pdb, Xyz, Sdf
+from jaqpotpy.parsers import MolParser, XyzParser, PdbParser
+
 
 class GeomDescriptors(MaterialFeaturizer):
     """Geometrical Descriptors.
-      This class computes a list of of geometrical descriptors of materials based on the Delaunay tessellation and 14 physicochemical properties of the involved atoms.
-        Namely:
-            - Atomic Number
-            - Atomic radius
-            - Atomic Weight
-            - Atomic Volume
-            - Boiling Point
-            - Density
-            - Dipole Polarizability
-            - Evaporation Heat
-            - Fusion Heat
-            - Radioactivity (0 for non radioactive atoms, 1 for radioactive atoms)
-            - Lattice Constant
-            - Thermal Conductivity
-            - Specific Heat
-            - Electronegativity (Pauling scale)
+    This class computes a list of of geometrical descriptors of materials based on the Delaunay tessellation and 14 physicochemical properties of the involved atoms.
+      Namely:
+          - Atomic Number
+          - Atomic radius
+          - Atomic Weight
+          - Atomic Volume
+          - Boiling Point
+          - Density
+          - Dipole Polarizability
+          - Evaporation Heat
+          - Fusion Heat
+          - Radioactivity (0 for non radioactive atoms, 1 for radioactive atoms)
+          - Lattice Constant
+          - Thermal Conductivity
+          - Specific Heat
+          - Electronegativity (Pauling scale)
 
-      Attributes
-      ----------
-      descriptors: Optional[list]
-        List of descriptor names used in this class.
-        Items of the list must be selected from the set:
-            "atomic_number" | "atomic_radius" | "atomic_weight" | "atomic_volume" |
-            "boiling_point" | "density" | "dipole_polarizability" | "evaporation_heat" |
-            "fusion_heat" | "is_radioactive" | "lattice_constant" | "thermal_conductivity" |
-            "specific_heat" | "en_pauling"
+    Attributes
+    ----------
+    descriptors: Optional[list]
+      List of descriptor names used in this class.
+      Items of the list must be selected from the set:
+          "atomic_number" | "atomic_radius" | "atomic_weight" | "atomic_volume" |
+          "boiling_point" | "density" | "dipole_polarizability" | "evaporation_heat" |
+          "fusion_heat" | "is_radioactive" | "lattice_constant" | "thermal_conductivity" |
+          "specific_heat" | "en_pauling"
 
-      Examples
-      --------
-      >>> import jaqpotpy as jt
-      >>> pdb_file = './AgNP.pdb'
-      >>> featurizer = jt.descriptors.material.GeomDescriptors()
-      >>> features = featurizer.featurize(pdb_file)
-      >>> type(features[0])
-      <class 'numpy.ndarray'>
+    Examples
+    --------
+    >>> import jaqpotpy as jt
+    >>> pdb_file = './AgNP.pdb'
+    >>> featurizer = jt.descriptors.material.GeomDescriptors()
+    >>> features = featurizer.featurize(pdb_file)
+    >>> type(features[0])
+    <class 'numpy.ndarray'>
+
     """
 
     @property
     def __name__(self):
-        return 'GeomDescriptors'
+        return "GeomDescriptors"
 
     def __init__(self, descriptors: List[str] = None):
         if descriptors:
             for d in descriptors:
-                if d not in ["atomic_number", "atomic_radius", "atomic_weight", "atomic_volume", "boiling_point", "density", "dipole_polarizability",
-                             "evaporation_heat", "fusion_heat", "is_radioactive", "lattice_constant", "thermal_conductivity", "specific_heat", "en_pauling"]:
-                    raise ValueError('Descriptor {} is not supported from this Featurizer. Consider building your custom featurizer'.format(d))
+                if d not in [
+                    "atomic_number",
+                    "atomic_radius",
+                    "atomic_weight",
+                    "atomic_volume",
+                    "boiling_point",
+                    "density",
+                    "dipole_polarizability",
+                    "evaporation_heat",
+                    "fusion_heat",
+                    "is_radioactive",
+                    "lattice_constant",
+                    "thermal_conductivity",
+                    "specific_heat",
+                    "en_pauling",
+                ]:
+                    raise ValueError(
+                        "Descriptor {} is not supported from this Featurizer. Consider building your custom featurizer".format(
+                            d
+                        )
+                    )
             self.descriptors = descriptors
         else:
-            self.descriptors = ["atomic_number", "atomic_radius", "atomic_weight", "atomic_volume", "boiling_point", "density", "dipole_polarizability",
-                             "evaporation_heat", "fusion_heat", "is_radioactive", "lattice_constant", "thermal_conductivity", "specific_heat", "en_pauling"]
+            self.descriptors = [
+                "atomic_number",
+                "atomic_radius",
+                "atomic_weight",
+                "atomic_volume",
+                "boiling_point",
+                "density",
+                "dipole_polarizability",
+                "evaporation_heat",
+                "fusion_heat",
+                "is_radioactive",
+                "lattice_constant",
+                "thermal_conductivity",
+                "specific_heat",
+                "en_pauling",
+            ]
 
         self.data = pd.DataFrame()
 
@@ -70,26 +104,25 @@ class GeomDescriptors(MaterialFeaturizer):
         return self
 
     def _featurize(self, material: Union[str, Pdb, Xyz, Sdf], **kwargs) -> np.ndarray:
+        """Calculate Geometrical Descriptors.
+        This class computes a list of of geometrical descriptors of materials based on the Delaunay tessellation and 14 physicochemical properties of the involved atoms.
+          Namely:
+              - Atomic Number
+              - Atomic radius
+              - Atomic Weight
+              - Atomic Volume
+              - Boiling Point
+              - Density
+              - Dipole Polarizability
+              - Evaporation Heat
+              - Fusion Heat
+              - Radioactivity (0 for non radioactive atoms, 1 for radioactive atoms)
+              - Lattice Constant
+              - Thermal Conductivity
+              - Specific Heat
+              - Electronegativity (Pauling scale)
         """
-        Calculate Geometrical Descriptors.
-          This class computes a list of of geometrical descriptors of materials based on the Delaunay tessellation and 14 physicochemical properties of the involved atoms.
-            Namely:
-                - Atomic Number
-                - Atomic radius
-                - Atomic Weight
-                - Atomic Volume
-                - Boiling Point
-                - Density
-                - Dipole Polarizability
-                - Evaporation Heat
-                - Fusion Heat
-                - Radioactivity (0 for non radioactive atoms, 1 for radioactive atoms)
-                - Lattice Constant
-                - Thermal Conductivity
-                - Specific Heat
-                - Electronegativity (Pauling scale)
-        """
-        warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
+        warnings.simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 
         ret_dataframe = pd.DataFrame()
 
@@ -99,24 +132,27 @@ class GeomDescriptors(MaterialFeaturizer):
             disable_tq = False
 
         if isinstance(material, str):
-            file_ext = material.split('.')[-1].lower()
+            file_ext = material.split(".")[-1].lower()
             material_list = []
-            if file_ext in ['sdf', 'mol']:
+            if file_ext in ["sdf", "mol"]:
                 parser = MolParser(material, file_ext)
-            elif file_ext in ['pdb']:
+            elif file_ext in ["pdb"]:
                 parser = PdbParser(material, file_ext)
-            elif file_ext in ['xyz', 'extxyz']:
+            elif file_ext in ["xyz", "extxyz"]:
                 parser = XyzParser(material, file_ext)
             else:
-                raise ValueError(f'Files with extention {file_ext} are not supported. Supported file formats are "xyz","extxyz","pdb","sdf" and "mol".')
+                raise ValueError(
+                    f'Files with extention {file_ext} are not supported. Supported file formats are "xyz","extxyz","pdb","sdf" and "mol".'
+                )
 
             for mat in parser.parse():
                 material_list.append(mat)
         else:
             material_list = [material]
 
-
-        for i, item in enumerate(tqdm(material_list, desc='Parsing files', disable=disable_tq)):
+        for i, item in enumerate(
+                tqdm(material_list, desc="Parsing files", disable=disable_tq)
+        ):
             obj = item.get_atoms()
 
             points = obj.coordinates
@@ -132,13 +168,12 @@ class GeomDescriptors(MaterialFeaturizer):
 
             # Loop through all tetrahedra
             for tetrahedron in tetrahedra:
-
                 # Create the tetrahedron key (e.g. Tetrahedron for elements C,H,N,O -> descriptor = CHNO)
                 lst = [atoms[i].upper().strip() for i in tetrahedron]
-                descriptor = ''.join(sorted(lst))
+                descriptor = "".join(sorted(lst))
 
                 # If the tetrahedron has already been found, increase it's frequency.
-                if descriptor in [col[:col.find('_')] for col in new_line.columns]:
+                if descriptor in [col[: col.find("_")] for col in new_line.columns]:
                     freq[descriptor] += 1
 
                 # If the tetrahedron has not been found, calculate the total physicochemical properties of the tetrahedron and store add them to the DataFrame.
@@ -200,12 +235,12 @@ class GeomDescriptors(MaterialFeaturizer):
                         "lattice_constant": lc,
                         "thermal_conductivity": tc,
                         "specific_heat": sh,
-                        "en_pauling": en
+                        "en_pauling": en,
                     }
 
                     # Store the total physicochemical properties to the DataFrame
                     for d in self.descriptors:
-                        new_line[descriptor + '_' + d] = guide[d]
+                        new_line[descriptor + "_" + d] = guide[d]
 
                     # Set the found counter equal to 1.
                     freq[descriptor] = 1
@@ -223,40 +258,42 @@ class GeomDescriptors(MaterialFeaturizer):
         return np.array(self.data)
 
     def _get_column_names(self, **kwargs) -> list:
-        """
-        Return the column names
-        """
+        """Return the column names"""
         return list(self.data.columns)
 
     def _featurize_dataframe(self, material, **kwargs) -> pd.DataFrame:
-        """
-        Calculate Mordred descriptors.
+        """Calculate Mordred descriptors.
+
         Parameters
         ----------
         datapoint: rdkit.Chem.rdchem.Mol
           RDKit Mol object
+
         Returns
         -------
         np.ndarray
           1D array of Mordred descriptors for `mol`.
           If ignore_3D is True, the length is 1613.
           If ignore_3D is False, the length is 1826.
+
         """
         _ = self._featurize(material)
         return self.data
 
 
 def correct_element_format(element):
-    """
-    Correction of an elements format.
+    """Correction of an elements format.
 
-    Examples:
+    Examples
+    --------
         AU -> Au
         C  -> C
         PB -> Pb
 
     element : str
         The element's name.
-    """
-    return ''.join([element[i] if i == 0 else element[i].lower() for i in range(len(element))])
 
+    """
+    return "".join(
+        [element[i] if i == 0 else element[i].lower() for i in range(len(element))]
+    )

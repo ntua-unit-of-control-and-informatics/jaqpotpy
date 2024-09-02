@@ -1,4 +1,3 @@
-from jaqpotpy.mappers import decode
 import requests
 
 
@@ -7,9 +6,11 @@ dataset_path = "dataset"
 
 def create_dataset_sync(baseurl, api_key, json_dataset, logger):
     uri = baseurl + dataset_path
-    h = {'Content-Type': 'application/json',
-         'Accept': 'application/json',
-         'Authorization': "Bearer " + api_key}
+    h = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer " + api_key,
+    }
     try:
         r = requests.post(uri, headers=h, data=json_dataset)
         if r.status_code < 300:
@@ -23,14 +24,12 @@ def create_dataset_sync(baseurl, api_key, json_dataset, logger):
 
 def get_dataset(baseurl, api_key, datasetid, logger):
     uri = baseurl + dataset_path + "/" + datasetid
-    h = {'Content-Type': 'application/json',
-         'Accept': 'application/json',
-         'Authorization': "Bearer " + api_key}
-    params = {
-        'dataEntries': "true",
-        'rowStart': "0",
-        'rowMax': '1000'
+    h = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer " + api_key,
     }
+    params = {"dataEntries": "true", "rowStart": "0", "rowMax": "1000"}
     try:
         r = requests.get(uri, headers=h, params=params)
         if r.status_code < 300:

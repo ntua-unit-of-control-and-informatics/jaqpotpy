@@ -11,12 +11,12 @@ T = TypeVar("T", bound="PartiallyUpdateModelFeatureBody")
 
 @_attrs_define
 class PartiallyUpdateModelFeatureBody:
-    """
-    Attributes:
-        name (str): A name for the feature that will appear on top of the form field Example: Updated Feature Name.
-        feature_type (FeatureType):  Example: FLOAT.
-        description (Union[Unset, str]):  Example: An updated description for this feature.
-        possible_values (Union[Unset, List[str]]):
+    """Attributes
+    name (str): A name for the feature that will appear on top of the form field Example: Updated Feature Name.
+    feature_type (FeatureType):  Example: FLOAT.
+    description (Union[Unset, str]):  Example: An updated description for this feature.
+    possible_values (Union[Unset, List[str]]):
+
     """
 
     name: str

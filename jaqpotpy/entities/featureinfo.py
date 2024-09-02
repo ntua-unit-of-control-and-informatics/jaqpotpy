@@ -1,7 +1,14 @@
 class FeatureInfo(object):
-
-    def __init__(self, name=None, units=None, conditions=None, category=None, ont=None, uri=None, key=None):
-
+    def __init__(
+        self,
+        name=None,
+        units=None,
+        conditions=None,
+        category=None,
+        ont=None,
+        uri=None,
+        key=None,
+    ):
         self.name = None
         self.units = None
         self.conditions = None

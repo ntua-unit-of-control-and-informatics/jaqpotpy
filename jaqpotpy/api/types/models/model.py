@@ -22,28 +22,28 @@ T = TypeVar("T", bound="Model")
 
 @_attrs_define
 class Model:
-    """
-    Attributes:
-        name (str):  Example: My Model.
-        type (ModelType):
-        jaqpotpy_version (str):  Example: 1.0.0.
-        libraries (List['Library']):
-        dependent_features (List['Feature']):
-        independent_features (List['Feature']):
-        visibility (ModelVisibility):
-        actual_model (str): A base64 representation of the actual model.
-        id (Union[Unset, int]):
-        meta (Union[Unset, ModelMeta]): A JSON object containing meta information.
-        description (Union[Unset, str]):  Example: A description of your model.
-        organizations (Union[Unset, List['Organization']]):
-        pretrained (Union[Unset, bool]):
-        creator (Union[Unset, User]):
-        can_edit (Union[Unset, bool]): If the current user can edit the model
-        tags (Union[Unset, str]):
-        created_at (Union[Unset, datetime.datetime]): The date and time when the feature was created. Example:
-            2023-01-01T12:00:00Z.
-        updated_at (Union[Unset, str]): The date and time when the feature was last updated. Example:
-            2023-01-01T12:00:00Z.
+    """Attributes
+    name (str):  Example: My Model.
+    type (ModelType):
+    jaqpotpy_version (str):  Example: 1.0.0.
+    libraries (List['Library']):
+    dependent_features (List['Feature']):
+    independent_features (List['Feature']):
+    visibility (ModelVisibility):
+    actual_model (str): A base64 representation of the actual model.
+    id (Union[Unset, int]):
+    meta (Union[Unset, ModelMeta]): A JSON object containing meta information.
+    description (Union[Unset, str]):  Example: A description of your model.
+    organizations (Union[Unset, List['Organization']]):
+    pretrained (Union[Unset, bool]):
+    creator (Union[Unset, User]):
+    can_edit (Union[Unset, bool]): If the current user can edit the model
+    tags (Union[Unset, str]):
+    created_at (Union[Unset, datetime.datetime]): The date and time when the feature was created. Example:
+        2023-01-01T12:00:00Z.
+    updated_at (Union[Unset, str]): The date and time when the feature was last updated. Example:
+        2023-01-01T12:00:00Z.
+
     """
 
     name: str
@@ -192,7 +192,9 @@ class Model:
         independent_features = []
         _independent_features = d.pop("independentFeatures")
         for independent_features_item_data in _independent_features:
-            independent_features_item = Feature.from_dict(independent_features_item_data)
+            independent_features_item = Feature.from_dict(
+                independent_features_item_data
+            )
 
             independent_features.append(independent_features_item)
 

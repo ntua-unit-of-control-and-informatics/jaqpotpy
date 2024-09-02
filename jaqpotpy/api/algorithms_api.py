@@ -1,7 +1,7 @@
-#from tornado import gen, httpclient
-#from tornado.httputil import HTTPHeaders
-#import getpass
-#import urllib.parse
+# from tornado import gen, httpclient
+# from tornado.httputil import HTTPHeaders
+# import getpass
+# import urllib.parse
 from jaqpotpy.mappers import decode
 import requests
 
@@ -10,22 +10,25 @@ algos_path = "algorithm"
 
 def get_allgorithms_sync(baseurl, api_key, start=None, max=None):
     uri = baseurl + algos_path
-    h = {'Content-Type': 'application/x-www-form-urlencoded',
-         'Accept': 'application/json',
-         'Authorization': "Bearer " + api_key}
+    h = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+        "Authorization": "Bearer " + api_key,
+    }
     r = requests.get(uri, headers=h, verify=False)
     return r.json()
 
 
 def get_allgorithms_classes(base_url, api_key, start, max):
     uri = base_url + algos_path
-    h = {'Content-Type': 'application/x-www-form-urlencoded',
-         'Accept': 'application/json',
-         'Authorization': "Bearer " + api_key}
+    h = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+        "Authorization": "Bearer " + api_key,
+    }
     r = requests.get(uri, headers=h, verify=False)
     algos = decode.decode_algorithms_to_class(r.json())
     return algos
-
 
 
 # def get_allgorithms_sync(baseurl, api_key, start=None, max=None):

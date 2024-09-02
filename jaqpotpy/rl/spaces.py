@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Generic, Iterable, Mapping, Optional, Sequence, Type, TypeVar
 import numpy as np
 from jaqpotpy.utils import seeding
-from jaqpotpy.utils.types import RDKitMol
 
 T_cov = TypeVar("T_cov", covariant=True)
 
@@ -37,6 +36,7 @@ class Actions(Generic[T_cov]):
     """Defines the actions available for molecule optimization, so you can write actions
     code that applies to any Jaqpotpy Env.
     """
+
     @property
     def actions(self):
         return self.actions
@@ -89,7 +89,8 @@ class Space(Generic[T_cov]):
 
     def sample(self) -> T_cov:
         """Randomly sample an element of this space. Can be
-        uniform or non-uniform sampling based on boundedness of space."""
+        uniform or non-uniform sampling based on boundedness of space.
+        """
         raise NotImplementedError
 
     def seed(self, seed: Optional[int] = None) -> list:
@@ -98,8 +99,7 @@ class Space(Generic[T_cov]):
         return [seed]
 
     def contains(self, x) -> bool:
-        """
-        Return boolean specifying if x is a valid
+        """Return boolean specifying if x is a valid
         member of this space
         """
         raise NotImplementedError
@@ -142,6 +142,7 @@ class Discrete(Space):
     Example::
         >>> Discrete(2)
     """
+
     def __init__(self, n):
         assert n >= 0
         self.n = n
@@ -153,7 +154,9 @@ class Discrete(Space):
     def contains(self, x):
         if isinstance(x, int):
             as_int = x
-        elif isinstance(x, (np.generic, np.ndarray)) and (x.dtype.char in np.typecodes['AllInteger'] and x.shape == ()):
+        elif isinstance(x, (np.generic, np.ndarray)) and (
+            x.dtype.char in np.typecodes["AllInteger"] and x.shape == ()
+        ):
             as_int = int(x)
         else:
             return False

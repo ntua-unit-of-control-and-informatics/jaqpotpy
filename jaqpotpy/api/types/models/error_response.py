@@ -10,10 +10,10 @@ T = TypeVar("T", bound="ErrorResponse")
 
 @_attrs_define
 class ErrorResponse:
-    """
-    Attributes:
-        message (Union[Unset, str]): Error message
-        code (Union[Unset, int]): Error code
+    """Attributes
+    message (Union[Unset, str]): Error message
+    code (Union[Unset, int]): Error code
+
     """
 
     message: Union[Unset, str] = UNSET

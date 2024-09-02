@@ -1,5 +1,4 @@
 class Doa(object):
-
     def __init__(self, modelId=None, doaMatrix=None, aValue=None):
         self.modelId = None
         self.doaMatrix = None

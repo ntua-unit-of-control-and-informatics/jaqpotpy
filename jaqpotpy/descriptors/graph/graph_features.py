@@ -8,6 +8,7 @@ import logging
 from typing import Optional, List, Union, Iterable
 from jaqpotpy.utils.types import RDKitMol, RDKitAtom
 
+
 def one_of_k_encoding(x, allowable_set):
     """Encodes elements of a provided set as integers.
     Parameters
@@ -26,8 +27,7 @@ def one_of_k_encoding(x, allowable_set):
     `ValueError` if `x` is not in `allowable_set`.
     """
     if x not in allowable_set:
-        raise ValueError("input {0} not in allowable set{1}:".format(
-            x, allowable_set))
+        raise ValueError("input {0} not in allowable set{1}:".format(x, allowable_set))
     return list(map(lambda s: x == s, allowable_set))
 
 
@@ -98,9 +98,29 @@ def safe_index(l, e):
 
 class GraphConvConstants(object):
     """This class defines a collection of constants which are useful for graph convolutions on molecules."""
+
     possible_atom_list = [
-        'C', 'N', 'O', 'S', 'F', 'P', 'Cl', 'Mg', 'Na', 'Br', 'Fe', 'Ca', 'Cu',
-        'Mc', 'Pd', 'Pb', 'K', 'I', 'Al', 'Ni', 'Mn'
+        "C",
+        "N",
+        "O",
+        "S",
+        "F",
+        "P",
+        "Cl",
+        "Mg",
+        "Na",
+        "Br",
+        "Fe",
+        "Ca",
+        "Cu",
+        "Mc",
+        "Pd",
+        "Pb",
+        "K",
+        "I",
+        "Al",
+        "Ni",
+        "Mn",
     ]
     """Allowed Numbers of Hydrogens"""
     possible_numH_list = [0, 1, 2, 3, 4]
@@ -113,12 +133,16 @@ class GraphConvConstants(object):
     """Allowed number of radical electrons."""
     possible_number_radical_e_list = [0, 1, 2]
     """Allowed types of Chirality"""
-    possible_chirality_list = ['R', 'S']
+    possible_chirality_list = ["R", "S"]
     """The set of all values allowed."""
     reference_lists = [
-        possible_atom_list, possible_numH_list, possible_valence_list,
-        possible_formal_charge_list, possible_number_radical_e_list,
-        possible_hybridization_list, possible_chirality_list
+        possible_atom_list,
+        possible_numH_list,
+        possible_valence_list,
+        possible_formal_charge_list,
+        possible_number_radical_e_list,
+        possible_hybridization_list,
+        possible_chirality_list,
     ]
     """The number of different values that can be taken. See `get_intervals()`"""
     intervals = get_intervals(reference_lists)
@@ -167,19 +191,23 @@ def get_feature_list(atom):
     possible_hybridization_list = GraphConvConstants.possible_hybridization_list
     # Replace the hybridization
     from rdkit import Chem
+
     # global possible_hybridization_list
     possible_hybridization_list = [
-        Chem.rdchem.HybridizationType.SP, Chem.rdchem.HybridizationType.SP2,
-        Chem.rdchem.HybridizationType.SP3, Chem.rdchem.HybridizationType.SP3D,
-        Chem.rdchem.HybridizationType.SP3D2
+        Chem.rdchem.HybridizationType.SP,
+        Chem.rdchem.HybridizationType.SP2,
+        Chem.rdchem.HybridizationType.SP3,
+        Chem.rdchem.HybridizationType.SP3D,
+        Chem.rdchem.HybridizationType.SP3D2,
     ]
     features = 6 * [0]
     features[0] = safe_index(possible_atom_list, atom.GetSymbol())
     features[1] = safe_index(possible_numH_list, atom.GetTotalNumHs())
     features[2] = safe_index(possible_valence_list, atom.GetImplicitValence())
     features[3] = safe_index(possible_formal_charge_list, atom.GetFormalCharge())
-    features[4] = safe_index(possible_number_radical_e_list,
-                             atom.GetNumRadicalElectrons())
+    features[4] = safe_index(
+        possible_number_radical_e_list, atom.GetNumRadicalElectrons()
+    )
 
     features[5] = safe_index(possible_hybridization_list, atom.GetHybridization())
     return features
@@ -249,10 +277,7 @@ def atom_to_id(atom):
     return features_to_id(features, intervals)
 
 
-def atom_features(atom,
-                  bool_id_feat=False,
-                  explicit_H=False,
-                  use_chirality=False):
+def atom_features(atom, bool_id_feat=False, explicit_H=False, use_chirality=False):
     """Helper method used to compute per-atom feature vectors.
     Many different featurization methods compute per-atom features such as ConvMolFeaturizer, WeaveFeaturizer. This method computes such features.
     Parameters
@@ -284,74 +309,88 @@ def atom_features(atom,
         return np.array([atom_to_id(atom)])
     else:
         from rdkit import Chem
-        results = one_of_k_encoding_unk(
-            atom.GetSymbol(),
-            [
-                'C',
-                'N',
-                'O',
-                'S',
-                'F',
-                'Si',
-                'P',
-                'Cl',
-                'Br',
-                'Mg',
-                'Na',
-                'Ca',
-                'Fe',
-                'As',
-                'Al',
-                'I',
-                'B',
-                'V',
-                'K',
-                'Tl',
-                'Yb',
-                'Sb',
-                'Sn',
-                'Ag',
-                'Pd',
-                'Co',
-                'Se',
-                'Ti',
-                'Zn',
-                'H',  # H?
-                'Li',
-                'Ge',
-                'Cu',
-                'Au',
-                'Ni',
-                'Cd',
-                'In',
-                'Mn',
-                'Zr',
-                'Cr',
-                'Pt',
-                'Hg',
-                'Pb',
-                'Unknown'
-            ]) + one_of_k_encoding(atom.GetDegree(),
-                                   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) + \
-                  one_of_k_encoding_unk(atom.GetImplicitValence(), [0, 1, 2, 3, 4, 5, 6]) + \
-                  [atom.GetFormalCharge(), atom.GetNumRadicalElectrons()] + \
-                  one_of_k_encoding_unk(atom.GetHybridization(), [
-                      Chem.rdchem.HybridizationType.SP, Chem.rdchem.HybridizationType.SP2,
-                      Chem.rdchem.HybridizationType.SP3, Chem.rdchem.HybridizationType.
-                                        SP3D, Chem.rdchem.HybridizationType.SP3D2
-                  ]) + [atom.GetIsAromatic()]
+
+        results = (
+            one_of_k_encoding_unk(
+                atom.GetSymbol(),
+                [
+                    "C",
+                    "N",
+                    "O",
+                    "S",
+                    "F",
+                    "Si",
+                    "P",
+                    "Cl",
+                    "Br",
+                    "Mg",
+                    "Na",
+                    "Ca",
+                    "Fe",
+                    "As",
+                    "Al",
+                    "I",
+                    "B",
+                    "V",
+                    "K",
+                    "Tl",
+                    "Yb",
+                    "Sb",
+                    "Sn",
+                    "Ag",
+                    "Pd",
+                    "Co",
+                    "Se",
+                    "Ti",
+                    "Zn",
+                    "H",  # H?
+                    "Li",
+                    "Ge",
+                    "Cu",
+                    "Au",
+                    "Ni",
+                    "Cd",
+                    "In",
+                    "Mn",
+                    "Zr",
+                    "Cr",
+                    "Pt",
+                    "Hg",
+                    "Pb",
+                    "Unknown",
+                ],
+            )
+            + one_of_k_encoding(atom.GetDegree(), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+            + one_of_k_encoding_unk(atom.GetImplicitValence(), [0, 1, 2, 3, 4, 5, 6])
+            + [atom.GetFormalCharge(), atom.GetNumRadicalElectrons()]
+            + one_of_k_encoding_unk(
+                atom.GetHybridization(),
+                [
+                    Chem.rdchem.HybridizationType.SP,
+                    Chem.rdchem.HybridizationType.SP2,
+                    Chem.rdchem.HybridizationType.SP3,
+                    Chem.rdchem.HybridizationType.SP3D,
+                    Chem.rdchem.HybridizationType.SP3D2,
+                ],
+            )
+            + [atom.GetIsAromatic()]
+        )
         # In case of explicit hydrogen(QM8, QM9), avoid calling `GetTotalNumHs`
         if not explicit_H:
-            results = results + one_of_k_encoding_unk(atom.GetTotalNumHs(),
-                                                      [0, 1, 2, 3, 4])
+            results = results + one_of_k_encoding_unk(
+                atom.GetTotalNumHs(), [0, 1, 2, 3, 4]
+            )
         if use_chirality:
             try:
-                results = results + one_of_k_encoding_unk(
-                    atom.GetProp('_CIPCode'),
-                    ['R', 'S']) + [atom.HasProp('_ChiralityPossible')]
+                results = (
+                    results
+                    + one_of_k_encoding_unk(atom.GetProp("_CIPCode"), ["R", "S"])
+                    + [atom.HasProp("_ChiralityPossible")]
+                )
             except:
-                results = results + [False, False
-                                     ] + [atom.HasProp('_ChiralityPossible')]
+                results = (
+                    results + [False, False] + [atom.HasProp("_ChiralityPossible")]
+                )
 
         return np.array(results)
 
@@ -395,19 +434,23 @@ def bond_features(bond, use_chirality=False):
         raise ImportError("This method requires RDKit to be installed.")
     bt = bond.GetBondType()
     bond_feats = [
-        bt == Chem.rdchem.BondType.SINGLE, bt == Chem.rdchem.BondType.DOUBLE,
-        bt == Chem.rdchem.BondType.TRIPLE, bt == Chem.rdchem.BondType.AROMATIC,
+        bt == Chem.rdchem.BondType.SINGLE,
+        bt == Chem.rdchem.BondType.DOUBLE,
+        bt == Chem.rdchem.BondType.TRIPLE,
+        bt == Chem.rdchem.BondType.AROMATIC,
         bond.GetIsConjugated(),
-        bond.IsInRing()
+        bond.IsInRing(),
     ]
     if use_chirality:
         bond_feats = bond_feats + one_of_k_encoding_unk(
-            str(bond.GetStereo()), GraphConvConstants.possible_bond_stereo)
+            str(bond.GetStereo()), GraphConvConstants.possible_bond_stereo
+        )
     return np.array(bond_feats)
 
 
 def max_pair_distance_pairs(
-        mol: RDKitMol, max_pair_distance: Optional[int] = None) -> np.ndarray:
+    mol: RDKitMol, max_pair_distance: Optional[int] = None
+) -> np.ndarray:
     """Helper method which finds atom pairs within max_pair_distance graph distance.
     This helper method is used to find atoms which are within max_pair_distance
     graph_distance of one another. This is done by using the fact that the
@@ -448,12 +491,12 @@ def max_pair_distance_pairs(
     """
     from rdkit import Chem
     from rdkit.Chem import rdmolops
+
     N = len(mol.GetAtoms())
-    if (max_pair_distance is None or max_pair_distance >= N):
+    if max_pair_distance is None or max_pair_distance >= N:
         max_distance = N
     elif max_pair_distance is not None and max_pair_distance <= 0:
-        raise ValueError(
-            "max_pair_distance must either be a positive integer or None")
+        raise ValueError("max_pair_distance must either be a positive integer or None")
     elif max_pair_distance is not None:
         max_distance = max_pair_distance
     adj = rdmolops.GetAdjacencyMatrix(mol)
@@ -470,12 +513,14 @@ def max_pair_distance_pairs(
     return pair_edges
 
 
-def pair_features(mol: RDKitMol,
-                  bond_features_map: dict,
-                  bond_adj_list: List,
-                  bt_len: int = 6,
-                  graph_distance: bool = True,
-                  max_pair_distance: Optional[int] = None) -> np.ndarray:
+def pair_features(
+    mol: RDKitMol,
+    bond_features_map: dict,
+    bond_adj_list: List,
+    bt_len: int = 6,
+    graph_distance: bool = True,
+    max_pair_distance: Optional[int] = None,
+) -> np.ndarray:
     """Helper method used to compute atom pair feature vectors.
     Many different featurization methods compute atom pair features
     such as WeaveFeaturizer. Note that atom pair features could be
@@ -540,11 +585,13 @@ def pair_features(mol: RDKitMol,
             # first `bt_len` features are bond features(if applicable)
             if (int(a1), int(a2)) not in mapping:
                 raise ValueError(
-                    "Malformed molecule with bonds not in specified graph distance.")
+                    "Malformed molecule with bonds not in specified graph distance."
+                )
             else:
                 n = mapping[(int(a1), int(a2))]
             features[n, :bt_len] = np.asarray(
-                bond_features_map[tuple(sorted((a1, a2)))], dtype=float)
+                bond_features_map[tuple(sorted((a1, a2)))], dtype=float
+            )
         for ring in rings:
             if a1 in ring:
                 for a2 in ring:
@@ -562,29 +609,36 @@ def pair_features(mol: RDKitMol,
         if graph_distance:
             # distance is a matrix of 1-hot encoded distances for all atoms
             distance = find_distance(
-                a1, num_atoms, bond_adj_list, max_distance=max_distance)
+                a1, num_atoms, bond_adj_list, max_distance=max_distance
+            )
             for a2 in range(num_atoms):
                 if (int(a1), int(a2)) not in mapping:
                     # For ring pairs outside max pairs distance continue
                     continue
                 else:
                     n = mapping[(int(a1), int(a2))]
-                    features[n, bt_len + 1:] = distance[a2]
+                    features[n, bt_len + 1 :] = distance[a2]
     # Euclidean distance between atoms
     if not graph_distance:
         coords = np.zeros((N, 3))
         for atom in range(N):
             pos = mol.GetConformer(0).GetAtomPosition(atom)
             coords[atom, :] = [pos.x, pos.y, pos.z]
-        features[:, :, -1] = np.sqrt(np.sum(np.square(
-            np.stack([coords] * N, axis=1) - \
-            np.stack([coords] * N, axis=0)), axis=2))
+        features[:, :, -1] = np.sqrt(
+            np.sum(
+                np.square(
+                    np.stack([coords] * N, axis=1) - np.stack([coords] * N, axis=0)
+                ),
+                axis=2,
+            )
+        )
 
     return features, pair_edges
 
 
-def find_distance(a1: RDKitAtom, num_atoms: int, bond_adj_list,
-                  max_distance=7) -> np.ndarray:
+def find_distance(
+    a1: RDKitAtom, num_atoms: int, bond_adj_list, max_distance=7
+) -> np.ndarray:
     """Computes distances from provided atom.
     Parameters
     ----------
@@ -653,13 +707,16 @@ class ConvMolFeaturizer(MolecularFeaturizer):
     ----
     This class requires RDKit to be installed.
     """
-    name = ['conv_mol']
 
-    def __init__(self,
-                 master_atom: bool = False,
-                 use_chirality: bool = False,
-                 atom_properties: Iterable[str] = [],
-                 per_atom_fragmentation: bool = False):
+    name = ["conv_mol"]
+
+    def __init__(
+        self,
+        master_atom: bool = False,
+        use_chirality: bool = False,
+        atom_properties: Iterable[str] = [],
+        per_atom_fragmentation: bool = False,
+    ):
         """
         Parameters
         ----------
@@ -703,10 +760,11 @@ class ConvMolFeaturizer(MolecularFeaturizer):
         return self
 
     def featurize(
-            self,
-            datapoints: Union[RDKitMol, str, Iterable[RDKitMol], Iterable[str]],
-            log_every_n: int = 1000,
-            **kwargs) -> np.ndarray:
+        self,
+        datapoints: Union[RDKitMol, str, Iterable[RDKitMol], Iterable[str]],
+        log_every_n: int = 1000,
+        **kwargs,
+    ) -> np.ndarray:
         """
         Override parent: aim is to add handling atom-depleted molecules featurization
 
@@ -722,26 +780,28 @@ class ConvMolFeaturizer(MolecularFeaturizer):
         features: np.ndarray
           A numpy array containing a featurized representation of `datapoints`.
         """
-        if 'molecules' in kwargs and datapoints is None:
+        if "molecules" in kwargs and datapoints is None:
             datapoints = kwargs.get("molecules")
             raise DeprecationWarning(
                 'Molecules is being phased out as a parameter, please pass "datapoints" instead.'
             )
 
         features = super(ConvMolFeaturizer, self).featurize(
-            datapoints, log_every_n=1000)
+            datapoints, log_every_n=1000
+        )
         if self.per_atom_fragmentation:
             # create temporary valid ids serving to filter out failed featurizations from every sublist
             # of features (i.e. every molecules' frags list), and also totally failed sublists.
             # This makes output digestable by Loaders
-            valid_frag_inds = [[
-                True if np.array(elt).size > 0 else False for elt in f
-            ] for f in features]
-            features = [[elt
-                         for (is_valid, elt) in zip(l, m)
-                         if is_valid]
-                        for (l, m) in zip(valid_frag_inds, features)
-                        if any(l)]
+            valid_frag_inds = [
+                [True if np.array(elt).size > 0 else False for elt in f]
+                for f in features
+            ]
+            features = [
+                [elt for (is_valid, elt) in zip(l, m) if is_valid]
+                for (l, m) in zip(valid_frag_inds, features)
+                if any(l)
+            ]
         return features
 
     def _get_atom_properties(self, atom):
@@ -761,8 +821,10 @@ class ConvMolFeaturizer(MolecularFeaturizer):
             try:
                 values.append(float(atom.GetOwningMol().GetProp(mol_prop_name)))
             except KeyError:
-                raise KeyError("No property %s found in %s in %s" %
-                               (mol_prop_name, atom.GetOwningMol(), self))
+                raise KeyError(
+                    "No property %s found in %s in %s"
+                    % (mol_prop_name, atom.GetOwningMol(), self)
+                )
         return np.array(values)
 
     def _featurize(self, mol):
@@ -785,24 +847,33 @@ class ConvMolFeaturizer(MolecularFeaturizer):
                 new_n = np.delete(n, (i), axis=0)
                 new_a = []
                 for j, node_pair in enumerate(a):
-                    if i != j:  # don't need this pair, no more connections to deleted node
+                    if (
+                        i != j
+                    ):  # don't need this pair, no more connections to deleted node
                         tmp_node_pair = []
                         for v in node_pair:
                             if v < i:
                                 tmp_node_pair.append(v)
                             elif v > i:
                                 tmp_node_pair.append(
-                                    v -
-                                    1)  # renumber node, because of offset after node deletion
+                                    v - 1
+                                )  # renumber node, because of offset after node deletion
                         new_a.append(tmp_node_pair)
                 yield new_n, new_a
 
         # Get the node features
-        idx_nodes = [(a.GetIdx(),
-                      np.concatenate((atom_features(
-                          a, use_chirality=self.use_chirality),
-                                      self._get_atom_properties(a))))
-                     for a in mol.GetAtoms()]
+        idx_nodes = [
+            (
+                a.GetIdx(),
+                np.concatenate(
+                    (
+                        atom_features(a, use_chirality=self.use_chirality),
+                        self._get_atom_properties(a),
+                    )
+                ),
+            )
+            for a in mol.GetAtoms()
+        ]
 
         idx_nodes.sort()  # Sort by ind to ensure same order as rd_kit
         idx, nodes = list(zip(*idx_nodes))
@@ -814,9 +885,7 @@ class ConvMolFeaturizer(MolecularFeaturizer):
             nodes = np.concatenate([nodes, master_atom_features], axis=0)
 
         # Get bond lists with reverse edges included
-        edge_list = [
-            (b.GetBeginAtomIdx(), b.GetEndAtomIdx()) for b in mol.GetBonds()
-        ]
+        edge_list = [(b.GetBeginAtomIdx(), b.GetEndAtomIdx()) for b in mol.GetBonds()]
         # Get canonical adjacency list
         canon_adj_list = [[] for mol_id in range(len(nodes))]
         for edge in edge_list:
@@ -843,9 +912,11 @@ class ConvMolFeaturizer(MolecularFeaturizer):
     def __eq__(self, other):
         if not isinstance(self, other.__class__):
             return False
-        return self.master_atom == other.master_atom and \
-               self.use_chirality == other.use_chirality and \
-               tuple(self.atom_properties) == tuple(other.atom_properties)
+        return (
+            self.master_atom == other.master_atom
+            and self.use_chirality == other.use_chirality
+            and tuple(self.atom_properties) == tuple(other.atom_properties)
+        )
 
 
 class WeaveFeaturizer(MolecularFeaturizer):
@@ -884,13 +955,15 @@ class WeaveFeaturizer(MolecularFeaturizer):
     This class requires RDKit to be installed.
     """
 
-    name = ['weave_mol']
+    name = ["weave_mol"]
 
-    def __init__(self,
-                 graph_distance: bool = True,
-                 explicit_H: bool = False,
-                 use_chirality: bool = False,
-                 max_pair_distance: Optional[int] = None):
+    def __init__(
+        self,
+        graph_distance: bool = True,
+        explicit_H: bool = False,
+        use_chirality: bool = False,
+        max_pair_distance: Optional[int] = None,
+    ):
         """Initialize this featurizer with set parameters.
         Parameters
         ----------
@@ -922,23 +995,28 @@ class WeaveFeaturizer(MolecularFeaturizer):
         self.use_chirality = use_chirality
         if isinstance(max_pair_distance, int) and max_pair_distance <= 0:
             raise ValueError(
-                "max_pair_distance must either be a positive integer or None")
+                "max_pair_distance must either be a positive integer or None"
+            )
         self.max_pair_distance = max_pair_distance
         if self.use_chirality:
             self.bt_len = int(GraphConvConstants.bond_fdim_base) + len(
-                GraphConvConstants.possible_bond_stereo)
+                GraphConvConstants.possible_bond_stereo
+            )
         else:
             self.bt_len = int(GraphConvConstants.bond_fdim_base)
 
     def _featurize(self, mol):
         """Encodes mol as a WeaveMol object."""
         # Atom features
-        idx_nodes = [(a.GetIdx(),
-                      atom_features(
-                          a,
-                          explicit_H=self.explicit_H,
-                          use_chirality=self.use_chirality))
-                     for a in mol.GetAtoms()]
+        idx_nodes = [
+            (
+                a.GetIdx(),
+                atom_features(
+                    a, explicit_H=self.explicit_H, use_chirality=self.use_chirality
+                ),
+            )
+            for a in mol.GetAtoms()
+        ]
         idx_nodes.sort()  # Sort by ind to ensure same order as rd_kit
         idx, nodes = list(zip(*idx_nodes))
 
@@ -948,9 +1026,9 @@ class WeaveFeaturizer(MolecularFeaturizer):
         # Get bond lists
         bond_features_map = {}
         for b in mol.GetBonds():
-            bond_features_map[tuple(sorted([b.GetBeginAtomIdx(),
-                                            b.GetEndAtomIdx()]))] = bond_features(
-                b, use_chirality=self.use_chirality)
+            bond_features_map[
+                tuple(sorted([b.GetBeginAtomIdx(), b.GetEndAtomIdx()]))
+            ] = bond_features(b, use_chirality=self.use_chirality)
 
         # Get canonical adjacency list
         bond_adj_list = [[] for mol_id in range(len(nodes))]
@@ -965,6 +1043,7 @@ class WeaveFeaturizer(MolecularFeaturizer):
             bond_adj_list,
             bt_len=self.bt_len,
             graph_distance=self.graph_distance,
-            max_pair_distance=self.max_pair_distance)
+            max_pair_distance=self.max_pair_distance,
+        )
 
         return WeaveMol(nodes, pairs, pair_edges)

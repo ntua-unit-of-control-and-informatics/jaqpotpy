@@ -18,23 +18,23 @@ T = TypeVar("T", bound="Feature")
 
 @_attrs_define
 class Feature:
-    """
-    Attributes:
-        key (str): A key that must start with a letter, followed by any combination of letters, digits, hyphens, or
-            underscores. For example, 'abc123', 'abc-test', or 'Abc_test'. It cannot start with a digit. Example: feature-
-            key.
-        name (str): A name for the feature that will appear on top of the form field Example: A feature name.
-        feature_type (FeatureType):  Example: FLOAT.
-        id (Union[Unset, int]):  Example: 1.
-        meta (Union[Unset, FeatureMeta]): A JSON object containing meta information.
-        description (Union[Unset, str]):
-        feature_dependency (Union[Unset, FeatureFeatureDependency]):  Example: DEPENDENT.
-        visible (Union[Unset, bool]):  Example: True.
-        possible_values (Union[Unset, List[str]]):
-        created_at (Union[Unset, datetime.datetime]): The date and time when the feature was created. Example:
-            2023-01-01T12:00:00Z.
-        updated_at (Union[Unset, str]): The date and time when the feature was last updated. Example:
-            2023-01-01T12:00:00Z.
+    """Attributes
+    key (str): A key that must start with a letter, followed by any combination of letters, digits, hyphens, or
+        underscores. For example, 'abc123', 'abc-test', or 'Abc_test'. It cannot start with a digit. Example: feature-
+        key.
+    name (str): A name for the feature that will appear on top of the form field Example: A feature name.
+    feature_type (FeatureType):  Example: FLOAT.
+    id (Union[Unset, int]):  Example: 1.
+    meta (Union[Unset, FeatureMeta]): A JSON object containing meta information.
+    description (Union[Unset, str]):
+    feature_dependency (Union[Unset, FeatureFeatureDependency]):  Example: DEPENDENT.
+    visible (Union[Unset, bool]):  Example: True.
+    possible_values (Union[Unset, List[str]]):
+    created_at (Union[Unset, datetime.datetime]): The date and time when the feature was created. Example:
+        2023-01-01T12:00:00Z.
+    updated_at (Union[Unset, str]): The date and time when the feature was last updated. Example:
+        2023-01-01T12:00:00Z.
+
     """
 
     key: str

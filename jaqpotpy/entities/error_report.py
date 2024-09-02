@@ -2,9 +2,20 @@ from .meta import MetaInfo  # noqa: F401,E501
 
 
 class ErrorReport(object):
-
-    def __init__(self, meta=None, ontological_classes=None, visible=False, temporary=False, featured=False, code=None, actor=None, message=None, details=None, http_status=None, id=None):
-
+    def __init__(
+        self,
+        meta=None,
+        ontological_classes=None,
+        visible=False,
+        temporary=False,
+        featured=False,
+        code=None,
+        actor=None,
+        message=None,
+        details=None,
+        http_status=None,
+        id=None,
+    ):
         self._meta = None
         self._ontological_classes = None
         self._visible = None
@@ -45,7 +56,6 @@ class ErrorReport(object):
     def meta(self):
         """Gets the meta of this ErrorReport.  # noqa: E501
 
-
         :return: The meta of this ErrorReport.  # noqa: E501
         :rtype: MetaInfo
         """
@@ -55,17 +65,14 @@ class ErrorReport(object):
     def meta(self, meta):
         """Sets the meta of this ErrorReport.
 
-
         :param meta: The meta of this ErrorReport.  # noqa: E501
         :type: MetaInfo
         """
-
         self._meta = meta
 
     @property
     def ontological_classes(self):
         """Gets the ontological_classes of this ErrorReport.  # noqa: E501
-
 
         :return: The ontological_classes of this ErrorReport.  # noqa: E501
         :rtype: list[str]
@@ -76,17 +83,14 @@ class ErrorReport(object):
     def ontological_classes(self, ontological_classes):
         """Sets the ontological_classes of this ErrorReport.
 
-
         :param ontological_classes: The ontological_classes of this ErrorReport.  # noqa: E501
         :type: list[str]
         """
-
         self._ontological_classes = ontological_classes
 
     @property
     def visible(self):
         """Gets the visible of this ErrorReport.  # noqa: E501
-
 
         :return: The visible of this ErrorReport.  # noqa: E501
         :rtype: bool
@@ -97,17 +101,14 @@ class ErrorReport(object):
     def visible(self, visible):
         """Sets the visible of this ErrorReport.
 
-
         :param visible: The visible of this ErrorReport.  # noqa: E501
         :type: bool
         """
-
         self._visible = visible
 
     @property
     def temporary(self):
         """Gets the temporary of this ErrorReport.  # noqa: E501
-
 
         :return: The temporary of this ErrorReport.  # noqa: E501
         :rtype: bool
@@ -118,17 +119,14 @@ class ErrorReport(object):
     def temporary(self, temporary):
         """Sets the temporary of this ErrorReport.
 
-
         :param temporary: The temporary of this ErrorReport.  # noqa: E501
         :type: bool
         """
-
         self._temporary = temporary
 
     @property
     def featured(self):
         """Gets the featured of this ErrorReport.  # noqa: E501
-
 
         :return: The featured of this ErrorReport.  # noqa: E501
         :rtype: bool
@@ -139,11 +137,9 @@ class ErrorReport(object):
     def featured(self, featured):
         """Sets the featured of this ErrorReport.
 
-
         :param featured: The featured of this ErrorReport.  # noqa: E501
         :type: bool
         """
-
         self._featured = featured
 
     @property
@@ -166,7 +162,6 @@ class ErrorReport(object):
         :param code: The code of this ErrorReport.  # noqa: E501
         :type: str
         """
-
         self._code = code
 
     @property
@@ -189,7 +184,6 @@ class ErrorReport(object):
         :param actor: The actor of this ErrorReport.  # noqa: E501
         :type: str
         """
-
         self._actor = actor
 
     @property
@@ -212,7 +206,6 @@ class ErrorReport(object):
         :param message: The message of this ErrorReport.  # noqa: E501
         :type: str
         """
-
         self._message = message
 
     @property
@@ -235,7 +228,6 @@ class ErrorReport(object):
         :param details: The details of this ErrorReport.  # noqa: E501
         :type: str
         """
-
         self._details = details
 
     @property
@@ -258,13 +250,11 @@ class ErrorReport(object):
         :param http_status: The http_status of this ErrorReport.  # noqa: E501
         :type: int
         """
-
         self._http_status = http_status
 
     @property
     def id(self):
         """Gets the id of this ErrorReport.  # noqa: E501
-
 
         :return: The id of this ErrorReport.  # noqa: E501
         :rtype: str
@@ -275,9 +265,7 @@ class ErrorReport(object):
     def id(self, id):
         """Sets the id of this ErrorReport.
 
-
         :param id: The id of this ErrorReport.  # noqa: E501
         :type: str
         """
-
         self._id = id

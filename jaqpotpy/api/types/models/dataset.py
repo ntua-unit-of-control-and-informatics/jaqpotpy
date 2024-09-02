@@ -13,17 +13,17 @@ T = TypeVar("T", bound="Dataset")
 
 @_attrs_define
 class Dataset:
-    """
-    Attributes:
-        type (DatasetType):  Example: PREDICTION.
-        entry_type (DatasetEntryType):  Example: ARRAY.
-        input_ (List[Any]):
-        id (Union[Unset, int]):  Example: 1.
-        result (Union[Unset, List[Any]]):
-        status (Union[Unset, DatasetStatus]):
-        failure_reason (Union[Unset, str]):
-        created_at (Union[Unset, str]):
-        updated_at (Union[Unset, str]):
+    """Attributes
+    type (DatasetType):  Example: PREDICTION.
+    entry_type (DatasetEntryType):  Example: ARRAY.
+    input_ (List[Any]):
+    id (Union[Unset, int]):  Example: 1.
+    result (Union[Unset, List[Any]]):
+    status (Union[Unset, DatasetStatus]):
+    failure_reason (Union[Unset, str]):
+    created_at (Union[Unset, str]):
+    updated_at (Union[Unset, str]):
+
     """
 
     type: DatasetType

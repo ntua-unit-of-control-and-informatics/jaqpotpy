@@ -1,13 +1,12 @@
 import pandas as pd
 import numpy as np
-import time
-import asyncio
 
 
 def calculate_a(X):
     shape = X.shape
     a = (3 * (shape[1] + 1)) / shape[0]
     return a
+
 
 def calculate_doa_matrix(X):
     x_T = X.transpose()

@@ -7,7 +7,9 @@ from jaqpotpy.cfg import config
 import numpy as np
 
 
-def np_random(seed: Optional[int] = config.global_seed) -> Tuple["RandomNumberGenerator", Any]:
+def np_random(
+    seed: Optional[int] = config.global_seed,
+) -> Tuple["RandomNumberGenerator", Any]:
     if seed is not None and not (isinstance(seed, int) and 0 <= seed):
         raise Exception(f"Seed must be a non-negative integer or omitted, not {seed}")
 
@@ -35,11 +37,9 @@ class RandomNumberGenerator(np.random.Generator):
         return self.bit_generator.state
 
     def set_state(self, state):
-
         self.bit_generator.state = state
 
     def seed(self, seed=None):
-
         self.bit_generator.state = type(self.bit_generator)(seed).state
 
     rand.__doc__ = np.random.rand.__doc__
@@ -92,9 +92,12 @@ def hash_seed(seed: Optional[int] = None, max_bytes: int = 8) -> int:
     Thus, for sanity we hash the seeds before using them. (This scheme
     is likely not crypto-strength, but it should be good enough to get
     rid of simple correlations.)
+
     Args:
+    ----
         seed: None seeds from an operating system specific randomness source.
         max_bytes: Maximum number of bytes to use in the hashed seed.
+
     """
     if seed is None:
         seed = create_seed(max_bytes=max_bytes)
@@ -106,9 +109,12 @@ def create_seed(a: Optional[Union[int, str]] = None, max_bytes: int = 8) -> int:
     """Create a strong random seed. Otherwise, Python 2 would seed using
     the system time, which might be non-robust especially in the
     presence of concurrency.
+
     Args:
+    ----
         a: None seeds from an operating system specific randomness source.
         max_bytes: Maximum number of bytes to use in the seed.
+
     """
     # Adapted from https://svn.python.org/projects/python/tags/r32/Lib/random.py
     if a is None:
