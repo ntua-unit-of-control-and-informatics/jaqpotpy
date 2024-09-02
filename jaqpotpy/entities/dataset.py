@@ -1,14 +1,22 @@
-from .jaqpot_base import JaqpotEntity
-from .dataentry import DataEntry
-from .featureinfo import FeatureInfo
-from .meta import MetaInfo
-
-
 class Dataset(object):
-
-    def __init__(self, meta=None, ontologicalClasses=None, visible=False, temporary=False, featured=False, datasetUri=None, byModel=None, dataEntry=None, features=None, totalRows=None, totalColumns=None, descriptors=None, id=None, existence=None):
+    def __init__(
+        self,
+        meta=None,
+        ontologicalClasses=None,
+        visible=False,
+        temporary=False,
+        featured=False,
+        datasetUri=None,
+        byModel=None,
+        dataEntry=None,
+        features=None,
+        totalRows=None,
+        totalColumns=None,
+        descriptors=None,
+        id=None,
+        existence=None,
+    ):
         """Dataset - a model defined in Swagger"""  # noqa: E501
-
         self.meta = None
         self.ontologicalClasses = None
         self.visible = None

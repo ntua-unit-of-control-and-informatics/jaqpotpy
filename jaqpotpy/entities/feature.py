@@ -2,9 +2,20 @@ from .meta import MetaInfo  # noqa: F401,E501
 
 
 class Feature(object):
-
-    def __init__(self, meta=None, ontological_classes=None, visible=False, temporary=False, featured=False, units=None, predictor_for=None, admissible_values=None, actual_independent_feature_name=None, from_pretrained=False, id=None):
-
+    def __init__(
+        self,
+        meta=None,
+        ontological_classes=None,
+        visible=False,
+        temporary=False,
+        featured=False,
+        units=None,
+        predictor_for=None,
+        admissible_values=None,
+        actual_independent_feature_name=None,
+        from_pretrained=False,
+        id=None,
+    ):
         self.meta = None
         self.ontologicalClasses = None
         self.visible = None
@@ -17,7 +28,6 @@ class Feature(object):
         self.fromPretrained = None
         self.id = None
         self.discriminator = None
-
 
         # if meta is not None:
         #     self.meta = meta

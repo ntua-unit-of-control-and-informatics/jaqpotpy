@@ -11,12 +11,12 @@ T = TypeVar("T", bound="PartiallyUpdateModelBody")
 
 @_attrs_define
 class PartiallyUpdateModelBody:
-    """
-    Attributes:
-        name (str):
-        visibility (ModelVisibility):
-        description (Union[Unset, str]):
-        organization_ids (Union[Unset, List[int]]):
+    """Attributes
+    name (str):
+    visibility (ModelVisibility):
+    description (Union[Unset, str]):
+    organization_ids (Union[Unset, List[int]]):
+
     """
 
     name: str

@@ -1,6 +1,6 @@
-
 from pydantic import BaseModel
 from typing import List, Optional
+
 
 class MetaInfo(BaseModel):
     identifiers: Optional[List[str]]
@@ -25,9 +25,9 @@ class MetaInfo(BaseModel):
     write: Optional[List[str]]
     execute: Optional[List[str]]
 
+
 class Doa(BaseModel):
     meta: Optional[MetaInfo]
     modelId: Optional[str]
     doaMatrix: Optional[List[List[float]]]
     aValue: Optional[float]
-

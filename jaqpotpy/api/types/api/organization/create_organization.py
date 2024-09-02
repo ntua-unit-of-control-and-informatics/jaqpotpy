@@ -29,7 +29,9 @@ def _get_kwargs(
     return _kwargs
 
 
-def _parse_response(*, client: Union[AuthenticatedClient, Client], response: httpx.Response) -> Optional[Any]:
+def _parse_response(
+    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
+) -> Optional[Any]:
     if response.status_code == HTTPStatus.CREATED:
         return None
     if client.raise_on_unexpected_status:
@@ -38,7 +40,9 @@ def _parse_response(*, client: Union[AuthenticatedClient, Client], response: htt
         return None
 
 
-def _build_response(*, client: Union[AuthenticatedClient, Client], response: httpx.Response) -> Response[Any]:
+def _build_response(
+    *, client: Union[AuthenticatedClient, Client], response: httpx.Response
+) -> Response[Any]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -55,16 +59,19 @@ def sync_detailed(
     """Create a new organization
 
     Args:
+    ----
         body (Organization):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Any]
-    """
 
+    """
     kwargs = _get_kwargs(
         body=body,
     )
@@ -84,16 +91,19 @@ async def asyncio_detailed(
     """Create a new organization
 
     Args:
+    ----
         body (Organization):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Any]
-    """
 
+    """
     kwargs = _get_kwargs(
         body=body,
     )

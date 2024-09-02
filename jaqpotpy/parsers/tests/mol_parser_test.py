@@ -1,54 +1,41 @@
-"""
-Tests for Jaqpotpy Models.
-"""
-import unittest
-from jaqpotpy.parsers.mol_parser import MolParser
+"""Tests for Jaqpotpy Models."""
 
+import unittest
 
 
 class TestParsers(unittest.TestCase):
-    """
-    Test MolParser.
-    """
+    """Test MolParser."""
 
     def setUp(self):
-        """
-        Set up tests.
-        """
+        """Set up tests."""
 
-        #mol = 'C:/Users/jason/Downloads/ChEBI_16716.mol'
-        #sdf = 'C:/Users/jason/Downloads/ChEBI_16716.sdf'
-        #sdfs = 'C:/Users/jason/Downloads/ChEBI_16732.sdf'
-        #folder = 'C:/Users/jason/Downloads/'
+        # mol = 'C:/Users/jason/Downloads/ChEBI_16716.mol'
+        # sdf = 'C:/Users/jason/Downloads/ChEBI_16716.sdf'
+        # sdfs = 'C:/Users/jason/Downloads/ChEBI_16732.sdf'
+        # folder = 'C:/Users/jason/Downloads/'
 
-        #self.parser = MolParser(sdfs, 'sdf')
+        # self.parser = MolParser(sdfs, 'sdf')
 
-    @unittest.skip("This test needs refactoring") 
+    @unittest.skip("This test needs refactoring")
     def test_mol(self):
-        """
-        Test mol file.
-        """
+        """Test mol file."""
         # test = self.parser.parse()
         # mol = next(test)
         # print(mol)
         return
 
-    @unittest.skip("This test needs refactoring")  
+    @unittest.skip("This test needs refactoring")
     def test_sdf(self):
-        """
-        Test sdf file.
-        """
+        """Test sdf file."""
         # test = self.parser.parse()
         # sdf = next(test)
         # print(sdf)
         # # assert pdb.atoms.elements
         return
 
-    @unittest.skip("This test needs refactoring")  
+    @unittest.skip("This test needs refactoring")
     def test_sdfs(self):
-        """
-        Test sdf file.
-        """
+        """Test sdf file."""
         # test = self.parser.parse()
         # sdf1 = next(test)
         # print(sdf1)
@@ -59,11 +46,9 @@ class TestParsers(unittest.TestCase):
         # assert pdb.atoms.elements
         return
 
-    @unittest.skip("This test needs refactoring")  
+    @unittest.skip("This test needs refactoring")
     def test_path(self):
-        """
-        Test pdb folder.
-        """
+        """Test pdb folder."""
         # test = self.parser.parse()
         # stop = ''
         #
@@ -73,13 +58,13 @@ class TestParsers(unittest.TestCase):
         #     print(self.parser.files_[-1])
         #     stop = input('q to stop')
         return
-        
-    @unittest.skip("This test needs refactoring")  
+
+    @unittest.skip("This test needs refactoring")
     def test_df_file(self):
-        #df = self.parser.parse_dataframe()
-        #print(df[0],'\n\n', df[1])
+        # df = self.parser.parse_dataframe()
+        # print(df[0],'\n\n', df[1])
         return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

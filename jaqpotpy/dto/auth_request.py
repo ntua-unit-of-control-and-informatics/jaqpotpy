@@ -1,6 +1,5 @@
 class AuthRequest:
-
-    def __init__(self, username='', authtoken=''):
+    def __init__(self, username="", authtoken=""):
         self.userName = username
         self.authToken = authtoken
 

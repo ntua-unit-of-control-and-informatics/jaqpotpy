@@ -6,7 +6,9 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.feature import Feature
-from ...models.partially_update_model_feature_body import PartiallyUpdateModelFeatureBody
+from ...models.partially_update_model_feature_body import (
+    PartiallyUpdateModelFeatureBody,
+)
 from ...types import Response
 
 
@@ -80,18 +82,21 @@ def sync_detailed(
      Update the name, description, and feature type of an existing feature within a specific model
 
     Args:
+    ----
         model_id (int):
         feature_id (int):
         body (PartiallyUpdateModelFeatureBody):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, Feature]]
-    """
 
+    """
     kwargs = _get_kwargs(
         model_id=model_id,
         feature_id=feature_id,
@@ -117,18 +122,21 @@ def sync(
      Update the name, description, and feature type of an existing feature within a specific model
 
     Args:
+    ----
         model_id (int):
         feature_id (int):
         body (PartiallyUpdateModelFeatureBody):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, Feature]
-    """
 
+    """
     return sync_detailed(
         model_id=model_id,
         feature_id=feature_id,
@@ -149,18 +157,21 @@ async def asyncio_detailed(
      Update the name, description, and feature type of an existing feature within a specific model
 
     Args:
+    ----
         model_id (int):
         feature_id (int):
         body (PartiallyUpdateModelFeatureBody):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, Feature]]
-    """
 
+    """
     kwargs = _get_kwargs(
         model_id=model_id,
         feature_id=feature_id,
@@ -184,18 +195,21 @@ async def asyncio(
      Update the name, description, and feature type of an existing feature within a specific model
 
     Args:
+    ----
         model_id (int):
         feature_id (int):
         body (PartiallyUpdateModelFeatureBody):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, Feature]
-    """
 
+    """
     return (
         await asyncio_detailed(
             model_id=model_id,

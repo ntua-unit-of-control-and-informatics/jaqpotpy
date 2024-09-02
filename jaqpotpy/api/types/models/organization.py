@@ -15,22 +15,22 @@ T = TypeVar("T", bound="Organization")
 
 @_attrs_define
 class Organization:
-    """
-    Attributes:
-        name (str):  Example: my-awesome-org.
-        contact_email (str):  Example: contact@my-awesome-org.com.
-        visibility (OrganizationVisibility):
-        id (Union[Unset, int]):
-        creator_id (Union[Unset, str]):
-        description (Union[Unset, str]):  Example: An awesome organization for managing models..
-        user_ids (Union[Unset, List[str]]):
-        models (Union[Unset, List['Model']]):
-        contact_phone (Union[Unset, str]):  Example: +1234567890.
-        website (Union[Unset, str]):  Example: http://www.my-awesome-org.com.
-        address (Union[Unset, str]):  Example: 123 Organization St., City, Country.
-        can_edit (Union[Unset, bool]): If the current user can edit the organization
-        created_at (Union[Unset, str]):
-        updated_at (Union[Unset, str]):
+    """Attributes
+    name (str):  Example: my-awesome-org.
+    contact_email (str):  Example: contact@my-awesome-org.com.
+    visibility (OrganizationVisibility):
+    id (Union[Unset, int]):
+    creator_id (Union[Unset, str]):
+    description (Union[Unset, str]):  Example: An awesome organization for managing models..
+    user_ids (Union[Unset, List[str]]):
+    models (Union[Unset, List['Model']]):
+    contact_phone (Union[Unset, str]):  Example: +1234567890.
+    website (Union[Unset, str]):  Example: http://www.my-awesome-org.com.
+    address (Union[Unset, str]):  Example: 123 Organization St., City, Country.
+    can_edit (Union[Unset, bool]): If the current user can edit the organization
+    created_at (Union[Unset, str]):
+    updated_at (Union[Unset, str]):
+
     """
 
     name: str

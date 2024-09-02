@@ -12,16 +12,16 @@ T = TypeVar("T", bound="DatasetCSV")
 
 @_attrs_define
 class DatasetCSV:
-    """
-    Attributes:
-        type (DatasetType):  Example: PREDICTION.
-        input_file (str): A base64 representation in CSV format of the input values.
-        id (Union[Unset, int]):  Example: 1.
-        values (Union[Unset, List[Any]]):
-        status (Union[Unset, DatasetCSVStatus]):
-        failure_reason (Union[Unset, str]):
-        created_at (Union[Unset, str]):
-        updated_at (Union[Unset, str]):
+    """Attributes
+    type (DatasetType):  Example: PREDICTION.
+    input_file (str): A base64 representation in CSV format of the input values.
+    id (Union[Unset, int]):  Example: 1.
+    values (Union[Unset, List[Any]]):
+    status (Union[Unset, DatasetCSVStatus]):
+    failure_reason (Union[Unset, str]):
+    created_at (Union[Unset, str]):
+    updated_at (Union[Unset, str]):
+
     """
 
     type: DatasetType

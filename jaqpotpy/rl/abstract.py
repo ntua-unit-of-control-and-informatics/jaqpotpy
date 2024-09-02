@@ -54,7 +54,9 @@ class MolEnv(Generic[ObsType, ActType]):
         episode is reached, you are responsible for calling :meth:`reset`
         to reset this environment's state.
         Accepts an action and returns a tuple (observation, reward, done, info).
+
         Args:
+        ----
             action (object): an action provided by the agent
         This method returns a tuple ``(observation, reward, done, info)``
         Returns:
@@ -67,16 +69,17 @@ class MolEnv(Generic[ObsType, ActType]):
                 - state variables that are hidden from observations or
                 - information that distinguishes truncation and termination or
                 - individual reward terms that are combined to produce the total reward
+
         """
         raise NotImplementedError
 
     @abstractmethod
     def reset(
-            self,
-            *,
-            seed: Optional[int] = None,
-            return_info: bool = False,
-            options: Optional[dict] = None,
+        self,
+        *,
+        seed: Optional[int] = None,
+        return_info: bool = False,
+        options: Optional[dict] = None,
     ) -> Union[ObsType, tuple[ObsType, dict]]:
         """Resets the environment to an initial state and returns an initial
         observation.
@@ -87,13 +90,18 @@ class MolEnv(Generic[ObsType, ActType]):
         the RNG should not be reset.
         Moreover, :meth:`reset` should (in the typical use case) be called with an
         integer seed right after initialization and then never again.
+
         Args:
+        ----
             seed (int or None): The seed that is used to initialize the environment's PRNG. If the environment does not already have a PRNG and ``seed=None`` (the default option) is passed, a seed will be chosen from some source of entropy (e.g. timestamp or /dev/urandom). However, if the environment already has a PRNG and ``seed=None`` is pased, the PRNG will *not* be reset. If you pass an integer, the PRNG will be reset even if it already exists. Usually, you want to pass an integer *right after the environment has been initialized and then never again*. Please refer to the minimal example above to see this paradigm in action.
             return_info (bool): If true, return additional information along with initial observation. This info should be analogous to the info returned in :meth:`step`
             options (dict or None): Additional information to specify how the environment is reset (optional, depending on the specific environment)
+
         Returns:
+        -------
             observation (object): Observation of the initial state. This will be an element of :attr:`observation_space` (usually a numpy array) and is analogous to the observation returned by :meth:`step`.
             info (optional dictionary): This will *only* be returned if ``return_info=True`` is passed. It contains auxiliary information complementing ``observation``. This dictionary should be analogous to the ``info`` returned by :meth:`step`.
+
         """
         # Initialize the RNG if the seed is manually passed
         if seed is not None:
@@ -115,10 +123,13 @@ class MolEnv(Generic[ObsType, ActType]):
           and ANSI escape sequences (e.g. for colors).
 
         Note:
+        ----
             Make sure that your class's metadata 'render_modes' key includes
               the list of supported modes. It's recommended to call super()
               in implementations to use the functionality of this method.
+
         Args:
+        ----
             mode (str): the mode to render with
         Example::
             class MyEnv(Env):
@@ -130,6 +141,7 @@ class MolEnv(Generic[ObsType, ActType]):
                         ... # pop up a window and render
                     else:
                         super(MyEnv, self).render(mode=mode) # just raise an exception
+
         """
         raise NotImplementedError
 
@@ -142,16 +154,21 @@ class MolEnv(Generic[ObsType, ActType]):
 
     def seed(self, seed=None):
         """Sets the seed for this env's random number generator(s).
+
         Note:
+        ----
             Some environments use multiple pseudorandom number generators.
             We want to capture all such seeds used in order to ensure that
             there aren't accidental correlations between multiple generators.
+
         Returns:
+        -------
             list<bigint>: Returns the list of seeds used in this env's random
               number generators. The first value in the list should be the
               "main" seed, or the value which a reproducer should pass to
               'seed'. Often, the main seed equals the provided 'seed', but
               this won't be true if seed=None, for example.
+
         """
         self._np_random, seed = seeding.np_random(seed)
         return [seed]
@@ -159,8 +176,11 @@ class MolEnv(Generic[ObsType, ActType]):
     @property
     def unwrapped(self) -> Env:
         """Completely unwrap this env.
-        Returns:
+
+        Returns
+        -------
             gym.Env: The base non-wrapped gym.Env instance
+
         """
         return self
 
@@ -228,7 +248,9 @@ class Env(Generic[ObsType, ActType]):
         episode is reached, you are responsible for calling :meth:`reset`
         to reset this environment's state.
         Accepts an action and returns a tuple (observation, reward, done, info).
+
         Args:
+        ----
             action (object): an action provided by the agent
         This method returns a tuple ``(observation, reward, done, info)``
         Returns:
@@ -241,16 +263,17 @@ class Env(Generic[ObsType, ActType]):
                 - state variables that are hidden from observations or
                 - information that distinguishes truncation and termination or
                 - individual reward terms that are combined to produce the total reward
+
         """
         raise NotImplementedError
 
     @abstractmethod
     def reset(
-            self,
-            *,
-            seed: Optional[int] = None,
-            return_info: bool = False,
-            options: Optional[dict] = None,
+        self,
+        *,
+        seed: Optional[int] = None,
+        return_info: bool = False,
+        options: Optional[dict] = None,
     ) -> Union[ObsType, tuple[ObsType, dict]]:
         """Resets the environment to an initial state and returns an initial
         observation.
@@ -261,13 +284,18 @@ class Env(Generic[ObsType, ActType]):
         the RNG should not be reset.
         Moreover, :meth:`reset` should (in the typical use case) be called with an
         integer seed right after initialization and then never again.
+
         Args:
+        ----
             seed (int or None): The seed that is used to initialize the environment's PRNG. If the environment does not already have a PRNG and ``seed=None`` (the default option) is passed, a seed will be chosen from some source of entropy (e.g. timestamp or /dev/urandom). However, if the environment already has a PRNG and ``seed=None`` is pased, the PRNG will *not* be reset. If you pass an integer, the PRNG will be reset even if it already exists. Usually, you want to pass an integer *right after the environment has been initialized and then never again*. Please refer to the minimal example above to see this paradigm in action.
             return_info (bool): If true, return additional information along with initial observation. This info should be analogous to the info returned in :meth:`step`
             options (dict or None): Additional information to specify how the environment is reset (optional, depending on the specific environment)
+
         Returns:
+        -------
             observation (object): Observation of the initial state. This will be an element of :attr:`observation_space` (usually a numpy array) and is analogous to the observation returned by :meth:`step`.
             info (optional dictionary): This will *only* be returned if ``return_info=True`` is passed. It contains auxiliary information complementing ``observation``. This dictionary should be analogous to the ``info`` returned by :meth:`step`.
+
         """
         # Initialize the RNG if the seed is manually passed
         if seed is not None:
@@ -289,10 +317,13 @@ class Env(Generic[ObsType, ActType]):
           and ANSI escape sequences (e.g. for colors).
 
         Note:
+        ----
             Make sure that your class's metadata 'render_modes' key includes
               the list of supported modes. It's recommended to call super()
               in implementations to use the functionality of this method.
+
         Args:
+        ----
             mode (str): the mode to render with
         Example::
             class MyEnv(Env):
@@ -304,6 +335,7 @@ class Env(Generic[ObsType, ActType]):
                         ... # pop up a window and render
                     else:
                         super(MyEnv, self).render(mode=mode) # just raise an exception
+
         """
         raise NotImplementedError
 
@@ -316,16 +348,21 @@ class Env(Generic[ObsType, ActType]):
 
     def seed(self, seed=None):
         """Sets the seed for this env's random number generator(s).
+
         Note:
+        ----
             Some environments use multiple pseudorandom number generators.
             We want to capture all such seeds used in order to ensure that
             there aren't accidental correlations between multiple generators.
+
         Returns:
+        -------
             list<bigint>: Returns the list of seeds used in this env's random
               number generators. The first value in the list should be the
               "main" seed, or the value which a reproducer should pass to
               'seed'. Often, the main seed equals the provided 'seed', but
               this won't be true if seed=None, for example.
+
         """
         self._np_random, seed = seeding.np_random(seed)
         return [seed]
@@ -333,8 +370,11 @@ class Env(Generic[ObsType, ActType]):
     @property
     def unwrapped(self) -> Env:
         """Completely unwrap this env.
-        Returns:
+
+        Returns
+        -------
             gym.Env: The base non-wrapped gym.Env instance
+
         """
         return self
 

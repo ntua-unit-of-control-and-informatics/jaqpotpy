@@ -9,3 +9,15 @@ from .graph_attention_network import GraphAttentionNetworkWithExternal
 from .graph_convolutional_network import GraphConvolutionalNetworkWithExternal
 from .graph_sage_network import GraphSAGENetworkWithExternal
 from .graph_transformer_network import GraphTransformerNetworkWithExternal
+
+__all__ = [
+    "GraphAttentionNetwork",
+    "GraphConvolutionalNetwork",
+    "GraphSAGENetwork",
+    "GraphTransformerNetwork",
+    "FullyConnectedNetwork",
+    "GraphAttentionNetworkWithExternal",
+    "GraphConvolutionalNetworkWithExternal",
+    "GraphSAGENetworkWithExternal",
+    "GraphTransformerNetworkWithExternal",
+]

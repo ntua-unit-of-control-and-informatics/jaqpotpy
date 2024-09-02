@@ -8,49 +8,49 @@ import numpy as np
 
 def cumulative_sum_minus_last(l, offset=0):
     """Returns cumulative sums for set of counts, removing last entry.
-  Returns the cumulative sums for a set of counts with the first returned value
-  starting at 0. I.e [3,2,4] -> [0, 3, 5]. Note last sum element 9 is missing.
-  Useful for reindexing
-  Parameters
-  ----------
-  l: list
-    List of integers. Typically small counts.
-  """
+    Returns the cumulative sums for a set of counts with the first returned value
+    starting at 0. I.e [3,2,4] -> [0, 3, 5]. Note last sum element 9 is missing.
+    Useful for reindexing
+    Parameters
+    ----------
+    l: list
+      List of integers. Typically small counts.
+    """
     return np.delete(np.insert(np.cumsum(l, dtype=np.int32), 0, 0), -1) + offset
 
 
 def cumulative_sum(l, offset=0):
     """Returns cumulative sums for set of counts.
-  Returns the cumulative sums for a set of counts with the first returned value
-  starting at 0. I.e [3,2,4] -> [0, 3, 5, 9]. Keeps final sum for searching.
-  Useful for reindexing.
-  Parameters
-  ----------
-  l: list
-    List of integers. Typically small counts.
-  """
+    Returns the cumulative sums for a set of counts with the first returned value
+    starting at 0. I.e [3,2,4] -> [0, 3, 5, 9]. Keeps final sum for searching.
+    Useful for reindexing.
+    Parameters
+    ----------
+    l: list
+      List of integers. Typically small counts.
+    """
     return np.insert(np.cumsum(l), 0, 0) + offset
 
 
 class ConvMol(object):
     """Holds information about a molecules.
-  Resorts order of atoms internally to be in order of increasing degree. Note
-  that only heavy atoms (hydrogens excluded) are considered here.
-  """
+    Resorts order of atoms internally to be in order of increasing degree. Note
+    that only heavy atoms (hydrogens excluded) are considered here.
+    """
 
     def __init__(self, atom_features, adj_list, max_deg=10, min_deg=0):
         """
-    Parameters
-    ----------
-    atom_features: np.ndarray
-      Has shape (n_atoms, n_feat)
-    adj_list: list
-      List of length n_atoms, with neighor indices of each atom.
-    max_deg: int, optional
-      Maximum degree of any atom.
-    min_deg: int, optional
-      Minimum degree of any atom.
-    """
+        Parameters
+        ----------
+        atom_features: np.ndarray
+          Has shape (n_atoms, n_feat)
+        adj_list: list
+          List of length n_atoms, with neighor indices of each atom.
+        max_deg: int, optional
+          Maximum degree of any atom.
+        min_deg: int, optional
+          Minimum degree of any atom.
+        """
 
         self.atom_features = atom_features
         self.n_atoms, self.n_feat = atom_features.shape
@@ -96,7 +96,7 @@ class ConvMol(object):
         """Retrieves atom_features with the specific degree"""
         start_ind = self.deg_slice[deg - self.min_deg, 0]
         size = self.deg_slice[deg - self.min_deg, 1]
-        return self.atom_features[start_ind:(start_ind + size), :]
+        return self.atom_features[start_ind : (start_ind + size), :]
 
     def get_num_atoms_with_deg(self, deg):
         """Returns the number of atoms with the given degree"""
@@ -107,9 +107,9 @@ class ConvMol(object):
 
     def _deg_sort(self):
         """Sorts atoms by degree and reorders internal data structures.
-    Sort the order of the atom_features by degree, maintaining original order
-    whenever two atom_features have the same degree.
-    """
+        Sort the order of the atom_features by degree, maintaining original order
+        whenever two atom_features have the same degree.
+        """
         old_ind = range(self.get_num_atoms())
         deg_list = self.deg_list
         new_ind = list(np.lexsort((old_ind, deg_list)))
@@ -130,9 +130,9 @@ class ConvMol(object):
 
         # Reorder adjacency lists
         self.canon_adj_list = [self.canon_adj_list[i] for i in new_ind]
-        self.canon_adj_list = [[old_to_new[k]
-                                for k in self.canon_adj_list[i]]
-                               for i in range(len(new_ind))]
+        self.canon_adj_list = [
+            [old_to_new[k] for k in self.canon_adj_list[i]] for i in range(len(new_ind))
+        ]
 
         # Get numpy version of degree list for indexing
         deg_array = np.array(self.deg_list)
@@ -154,7 +154,8 @@ class ConvMol(object):
 
             else:
                 self.deg_adj_lists[deg - self.min_deg] = np.zeros(
-                    [0, deg], dtype=np.int32)
+                    [0, deg], dtype=np.int32
+                )
 
         # Construct the slice information
         deg_slice = np.zeros([self.max_deg + 1 - self.min_deg, 2], dtype=np.int32)
@@ -169,82 +170,81 @@ class ConvMol(object):
             # Get the cumulative indices after the first index
             if deg > self.min_deg:
                 deg_slice[deg - self.min_deg, 0] = (
-                        deg_slice[deg - self.min_deg - 1, 0] +
-                        deg_slice[deg - self.min_deg - 1, 1])
+                    deg_slice[deg - self.min_deg - 1, 0]
+                    + deg_slice[deg - self.min_deg - 1, 1]
+                )
 
         # Set indices with zero sized slices to zero to avoid indexing errors
-        deg_slice[:, 0] *= (deg_slice[:, 1] != 0)
+        deg_slice[:, 0] *= deg_slice[:, 1] != 0
         self.deg_slice = deg_slice
 
     def get_atom_features(self):
         """Returns canonicalized version of atom features.
-    Features are sorted by atom degree, with original order maintained when
-    degrees are same.
-    """
+        Features are sorted by atom degree, with original order maintained when
+        degrees are same.
+        """
         return self.atom_features
 
     def get_adjacency_list(self):
         """Returns a canonicalized adjacency list.
-    Canonicalized means that the atoms are re-ordered by degree.
-    Returns
-    -------
-    list
-      Canonicalized form of adjacency list.
-    """
+        Canonicalized means that the atoms are re-ordered by degree.
+        Returns
+        -------
+        list
+          Canonicalized form of adjacency list.
+        """
         return self.canon_adj_list
 
     def get_deg_adjacency_lists(self):
         """Returns adjacency lists grouped by atom degree.
-    Returns
-    -------
-    list
-      Has length (max_deg+1-min_deg). The element at position deg is
-      itself a list of the neighbor-lists for atoms with degree deg.
-    """
+        Returns
+        -------
+        list
+          Has length (max_deg+1-min_deg). The element at position deg is
+          itself a list of the neighbor-lists for atoms with degree deg.
+        """
         return self.deg_adj_lists
 
     def get_deg_slice(self):
         """Returns degree-slice tensor.
-    The deg_slice tensor allows indexing into a flattened version of the
-    molecule's atoms. Assume atoms are sorted in order of degree. Then
-    deg_slice[deg][0] is the starting position for atoms of degree deg in
-    flattened list, and deg_slice[deg][1] is the number of atoms with degree deg.
-    Note deg_slice has shape (max_deg+1-min_deg, 2).
-    Returns
-    -------
-    deg_slice: np.ndarray
-      Shape (max_deg+1-min_deg, 2)
-    """
+        The deg_slice tensor allows indexing into a flattened version of the
+        molecule's atoms. Assume atoms are sorted in order of degree. Then
+        deg_slice[deg][0] is the starting position for atoms of degree deg in
+        flattened list, and deg_slice[deg][1] is the number of atoms with degree deg.
+        Note deg_slice has shape (max_deg+1-min_deg, 2).
+        Returns
+        -------
+        deg_slice: np.ndarray
+          Shape (max_deg+1-min_deg, 2)
+        """
         return self.deg_slice
 
     # TODO(rbharath): Can this be removed?
     @staticmethod
     def get_null_mol(n_feat, max_deg=10, min_deg=0):
         """Constructs a null molecules
-    Get one molecule with one atom of each degree, with all the atoms
-    connected to themselves, and containing n_feat features.
-    Parameters
-    ----------
-    n_feat : int
-        number of features for the nodes in the null molecule
-    """
+        Get one molecule with one atom of each degree, with all the atoms
+        connected to themselves, and containing n_feat features.
+        Parameters
+        ----------
+        n_feat : int
+            number of features for the nodes in the null molecule
+        """
         # Use random insted of zeros to prevent weird issues with summing to zero
         atom_features = np.random.uniform(0, 1, [max_deg + 1 - min_deg, n_feat])
-        canon_adj_list = [
-            deg * [deg - min_deg] for deg in range(min_deg, max_deg + 1)
-        ]
+        canon_adj_list = [deg * [deg - min_deg] for deg in range(min_deg, max_deg + 1)]
 
         return ConvMol(atom_features, canon_adj_list)
 
     @staticmethod
     def agglomerate_mols(mols, max_deg=10, min_deg=0):
         """Concatenates list of ConvMol's into one mol object that can be used to feed
-    into tensorflow placeholders. The indexing of the molecules are preseved during the
-    combination, but the indexing of the atoms are greatly changed.
-    Parameters
-    ----
-    mols: list
-      ConvMol objects to be combined into one molecule."""
+        into tensorflow placeholders. The indexing of the molecules are preseved during the
+        combination, but the indexing of the atoms are greatly changed.
+        Parameters
+        ----
+        mols: list
+          ConvMol objects to be combined into one molecule."""
 
         num_mols = len(mols)
 
@@ -252,7 +252,7 @@ class ConvMol(object):
         atoms_by_deg = np.concatenate([x.atom_features for x in mols])
         degree_vector = np.concatenate([x.degree_list for x in mols], axis=0)
         # Mergesort is a "stable" sort, so the array maintains it's secondary sort of mol_index
-        order = degree_vector.argsort(kind='mergesort')
+        order = degree_vector.argsort(kind="mergesort")
         ordered = np.empty(order.shape, np.int32)
         ordered[order] = np.arange(order.shape[0], dtype=np.int32)
         all_atoms = atoms_by_deg[order]
@@ -263,7 +263,8 @@ class ConvMol(object):
         index_start = 0
         for mol in mols:
             mol_atom_map.append(
-                ordered[index_start:index_start + mol.get_num_atoms()])
+                ordered[index_start : index_start + mol.get_num_atoms()]
+            )
             index_start += mol.get_num_atoms()
 
         # Sort all atoms by degree.
@@ -312,26 +313,30 @@ class ConvMol(object):
                 if nbr_list.shape[0] > 0:
                     if nbr_list.dtype == np.int32:
                         final_id = mol_atom_map[mol_id][nbr_list]
-                        deg_adj_lists[deg_id][row:(row + nbr_list.shape[0])] = final_id
+                        deg_adj_lists[deg_id][row : (row + nbr_list.shape[0])] = (
+                            final_id
+                        )
                         row += nbr_list.shape[0]
                     else:
                         for i in range(nbr_list.shape[0]):
                             for j in range(nbr_list.shape[1]):
-                                deg_adj_lists[deg_id][row, j] = mol_atom_map[mol_id][nbr_list[
-                                    i, j]]
+                                deg_adj_lists[deg_id][row, j] = mol_atom_map[mol_id][
+                                    nbr_list[i, j]
+                                ]
                             # Increment once row is done
                             row += 1
 
         # Get the final aggregated molecule
-        concat_mol = MultiConvMol(all_atoms, deg_adj_lists, deg_slice, membership,
-                                  num_mols)
+        concat_mol = MultiConvMol(
+            all_atoms, deg_adj_lists, deg_slice, membership, num_mols
+        )
         return concat_mol
 
 
 class MultiConvMol(object):
     """Holds information about multiple molecules, for use in feeding information
-     into tensorflow. Generated using the agglomerate_mols function
-  """
+    into tensorflow. Generated using the agglomerate_mols function
+    """
 
     def __init__(self, nodes, deg_adj_lists, deg_slice, membership, num_mols):
         self.nodes = nodes
@@ -356,12 +361,12 @@ class MultiConvMol(object):
 
 class WeaveMol(object):
     """Molecular featurization object for weave convolutions.
-  These objects are produced by WeaveFeaturizer, and feed into
-  WeaveModel. The underlying implementation is inspired by [1]_.
-  References
-  ----------
-  .. [1] Kearnes, Steven, et al. "Molecular graph convolutions: moving beyond fingerprints." Journal of computer-aided molecular design 30.8 (2016): 595-608.
-  """
+    These objects are produced by WeaveFeaturizer, and feed into
+    WeaveModel. The underlying implementation is inspired by [1]_.
+    References
+    ----------
+    .. [1] Kearnes, Steven, et al. "Molecular graph convolutions: moving beyond fingerprints." Journal of computer-aided molecular design 30.8 (2016): 595-608.
+    """
 
     def __init__(self, nodes, pairs, pair_edges):
         self.nodes = nodes

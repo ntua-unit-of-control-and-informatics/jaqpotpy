@@ -14,13 +14,13 @@ T = TypeVar("T", bound="SearchModelsResponse200")
 
 @_attrs_define
 class SearchModelsResponse200:
-    """
-    Attributes:
-        content (Union[Unset, List['Model']]):
-        total_elements (Union[Unset, int]):
-        total_pages (Union[Unset, int]):
-        page_size (Union[Unset, int]):
-        page_number (Union[Unset, int]):
+    """Attributes
+    content (Union[Unset, List['Model']]):
+    total_elements (Union[Unset, int]):
+    total_pages (Union[Unset, int]):
+    page_size (Union[Unset, int]):
+    page_number (Union[Unset, int]):
+
     """
 
     content: Union[Unset, List["Model"]] = UNSET

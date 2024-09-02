@@ -3,16 +3,19 @@ import torch.nn as nn
 from torch_geometric.nn import GCNConv
 from torch_geometric.nn import global_mean_pool
 import numpy as np
-from jaqpotpy.models.generative.models.layers import GraphConvolution, GraphAggregation\
-    , GraphConvolutionLayer, GraphConvolution2
-from typing import Any, Iterable, Union, Dict
+from jaqpotpy.models.generative.models.layers import (
+    GraphConvolution,
+    GraphAggregation,
+    GraphConvolution2,
+)
+from typing import Any, Iterable
 
 
 class GanGeneratorModel(object):
     _model: Any
 
     def sample(self, batch_size):
-        raise NotImplemented("Not implemented")
+        raise NotImplementedError("Not implemented")
 
     @property
     def descriptors(self):
@@ -159,16 +162,18 @@ class GanGeneratorModel(object):
         self._jaqpotpy_docker = value
 
     def __train__(self):
-        raise NotImplemented("Not implemented")
+        raise NotImplementedError("Not implemented")
 
     def __eval__(self):
-        raise NotImplemented("Not implemented")
+        raise NotImplementedError("Not implemented")
 
     def infer(self):
-        raise NotImplemented("Not implemented")
+        raise NotImplementedError("Not implemented")
+
 
 class GanMoleculeGenerator(nn.Module, GanGeneratorModel):
     """Generator network."""
+
     def __init__(self, conv_dims, z_dim, vertexes, edges, nodes, dropout_rate):
         super(GanMoleculeGenerator, self).__init__()
         self.activation_f = torch.nn.Tanh()
@@ -185,7 +190,9 @@ class GanMoleculeGenerator(nn.Module, GanGeneratorModel):
 
     def forward(self, x):
         output = self.multi_dense_layer(x)
-        edges_logits = self.edges_layer(output).view(-1, self.edges, self.vertexes, self.vertexes)
+        edges_logits = self.edges_layer(output).view(
+            -1, self.edges, self.vertexes, self.vertexes
+        )
         edges_logits = (edges_logits + edges_logits.permute(0, 1, 3, 2)) / 2
         edges_logits = self.dropoout(edges_logits.permute(0, 2, 3, 1))
 
@@ -203,6 +210,7 @@ class GanMoleculeGenerator(nn.Module, GanGeneratorModel):
 
 class _GanMoleculeGenerator(nn.Module, GanGeneratorModel):
     """Generator network."""
+
     def __init__(self, conv_dims, z_dim, vertexes, edges, nodes, dropout):
         super(_GanMoleculeGenerator, self).__init__()
 
@@ -212,7 +220,7 @@ class _GanMoleculeGenerator(nn.Module, GanGeneratorModel):
         self.nodes = nodes
 
         layers = []
-        for c0, c1 in zip([z_dim]+conv_dims[:-1], conv_dims):
+        for c0, c1 in zip([z_dim] + conv_dims[:-1], conv_dims):
             layers.append(nn.Linear(c0, c1))
             layers.append(nn.Tanh())
             layers.append(nn.Dropout(p=dropout, inplace=True))
@@ -224,13 +232,14 @@ class _GanMoleculeGenerator(nn.Module, GanGeneratorModel):
 
     def forward(self, x):
         output = self.layers(x)
-        edges_logits = self.edges_layer(output)\
-                       .view(-1, self.edges, self.vertexes, self.vertexes)
-        edges_logits = (edges_logits + edges_logits.permute(0, 1, 3, 2))/2
+        edges_logits = self.edges_layer(output).view(
+            -1, self.edges, self.vertexes, self.vertexes
+        )
+        edges_logits = (edges_logits + edges_logits.permute(0, 1, 3, 2)) / 2
         edges_logits = self.dropoout(edges_logits.permute(0, 2, 3, 1))
 
         nodes_logits = self.nodes_layer(output)
-        nodes_logits = self.dropoout(nodes_logits.view(-1,self.vertexes,self.nodes))
+        nodes_logits = self.dropoout(nodes_logits.view(-1, self.vertexes, self.nodes))
 
         return edges_logits, nodes_logits
 
@@ -243,6 +252,7 @@ class _GanMoleculeGenerator(nn.Module, GanGeneratorModel):
 
 class GanMoleculeDiscriminator(nn.Module):
     """Discriminator network with PatchGAN."""
+
     def __init__(self, conv_dim, m_dim, b_dim, dropout):
         super(GanMoleculeDiscriminator, self).__init__()
 
@@ -253,7 +263,7 @@ class GanMoleculeDiscriminator(nn.Module):
 
         # multi dense layer
         layers = []
-        for c0, c1 in zip([aux_dim]+linear_dim[:-1], linear_dim):
+        for c0, c1 in zip([aux_dim] + linear_dim[:-1], linear_dim):
             layers.append(nn.Linear(c0, c1))
             layers.append(nn.Dropout(dropout))
         self.linear_layer = nn.Sequential(*layers)
@@ -264,8 +274,9 @@ class GanMoleculeDiscriminator(nn.Module):
         adj = adj[:, :, :, 1:].permute(0, 3, 1, 2)
         annotations = torch.cat((hidden, node), -1) if hidden is not None else node
         h = self.gcn_layer(annotations, adj)
-        annotations = torch.cat((h, hidden, node) if hidden is not None\
-                                 else (h, node), -1)
+        annotations = torch.cat(
+            (h, hidden, node) if hidden is not None else (h, node), -1
+        )
         h = self.agg_layer(annotations, torch.tanh)
         h = self.linear_layer(h)
 
@@ -281,15 +292,27 @@ class GanMoleculeDiscriminator(nn.Module):
 class Discriminator2(nn.Module):
     """Discriminator network with PatchGAN."""
 
-    def __init__(self, conv_dim, m_dim, b_dim, with_features=False, f_dim=0, dropout_rate=0.):
+    def __init__(
+        self, conv_dim, m_dim, b_dim, with_features=False, f_dim=0, dropout_rate=0.0
+    ):
         super(Discriminator2, self).__init__()
         self.activation_f = torch.nn.Tanh()
         graph_conv_dim, aux_dim, linear_dim = conv_dim
         # discriminator
-        self.gcn_layer = GraphConvolution2(m_dim, graph_conv_dim, b_dim, with_features, f_dim, dropout_rate)
-        self.agg_layer = GraphAggregation(graph_conv_dim[-1] + m_dim, aux_dim, self.activation_f, with_features, f_dim,
-                                          dropout_rate)
-        self.multi_dense_layer = MultiDenseLayer(aux_dim, linear_dim, self.activation_f, dropout_rate=dropout_rate)
+        self.gcn_layer = GraphConvolution2(
+            m_dim, graph_conv_dim, b_dim, with_features, f_dim, dropout_rate
+        )
+        self.agg_layer = GraphAggregation(
+            graph_conv_dim[-1] + m_dim,
+            aux_dim,
+            self.activation_f,
+            with_features,
+            f_dim,
+            dropout_rate,
+        )
+        self.multi_dense_layer = MultiDenseLayer(
+            aux_dim, linear_dim, self.activation_f, dropout_rate=dropout_rate
+        )
 
         self.output_layer = nn.Linear(linear_dim[-1], 1)
 
@@ -308,15 +331,27 @@ class Discriminator2(nn.Module):
 class MoleculeDiscriminator(nn.Module):
     """Discriminator network with PatchGAN."""
 
-    def __init__(self, conv_dim, m_dim, b_dim, with_features=False, f_dim=0, dropout_rate=0.):
+    def __init__(
+        self, conv_dim, m_dim, b_dim, with_features=False, f_dim=0, dropout_rate=0.0
+    ):
         super(MoleculeDiscriminator, self).__init__()
         self.activation_f = torch.nn.Tanh()
         graph_conv_dim, aux_dim, linear_dim = conv_dim
         # discriminator
-        self.gcn_layer = GraphConvolution(m_dim, graph_conv_dim, b_dim, with_features, f_dim, dropout_rate)
-        self.agg_layer = GraphAggregation(graph_conv_dim[-1] + m_dim, aux_dim, self.activation_f, with_features, f_dim,
-                                          dropout_rate)
-        self.multi_dense_layer = MultiDenseLayer(aux_dim, linear_dim, self.activation_f, dropout_rate=dropout_rate)
+        self.gcn_layer = GraphConvolution(
+            m_dim, graph_conv_dim, b_dim, with_features, f_dim, dropout_rate
+        )
+        self.agg_layer = GraphAggregation(
+            graph_conv_dim[-1] + m_dim,
+            aux_dim,
+            self.activation_f,
+            with_features,
+            f_dim,
+            dropout_rate,
+        )
+        self.multi_dense_layer = MultiDenseLayer(
+            aux_dim, linear_dim, self.activation_f, dropout_rate=dropout_rate
+        )
 
         self.output_layer = nn.Linear(linear_dim[-1], 1)
 
@@ -331,7 +366,7 @@ class MoleculeDiscriminator(nn.Module):
 
 
 class MultiDenseLayer(nn.Module):
-    def __init__(self, aux_unit, linear_units, activation=None, dropout_rate=0.):
+    def __init__(self, aux_unit, linear_units, activation=None, dropout_rate=0.0):
         super(MultiDenseLayer, self).__init__()
         layers = []
         for c0, c1 in zip([aux_unit] + linear_units[:-1], linear_units):
