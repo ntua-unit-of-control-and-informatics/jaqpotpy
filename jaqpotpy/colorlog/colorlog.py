@@ -7,33 +7,29 @@ import sys
 
 from jaqpotpy.colorlog.escape_codes import escape_codes, parse_colors
 
-__all__ = (
-    "escape_codes",
-    "default_log_colors",
-    "ColoredFormatter",
-    "LevelFormatter",
-    "TTYColoredFormatter",
-)
+__all__ = ('escape_codes', 'default_log_colors', 'ColoredFormatter',
+           'LevelFormatter', 'TTYColoredFormatter')
 
 # The default colors to use for the debug levels
 default_log_colors = {
-    "DEBUG": "white",
-    "INFO": "green",
-    "WARNING": "yellow",
-    "ERROR": "red",
-    "CRITICAL": "bold_red",
+    'DEBUG': 'white',
+    'INFO': 'green',
+    'WARNING': 'yellow',
+    'ERROR': 'red',
+    'CRITICAL': 'bold_red',
 }
 
 # The default format to use for each style
 default_formats = {
-    "%": "%(log_color)s%(levelname)s:%(name)s:%(message)s",
-    "{": "{log_color}{levelname}:{name}:{message}",
-    "$": "${log_color}${levelname}:${name}:${message}",
+    '%': '%(log_color)s%(levelname)s:%(name)s:%(message)s',
+    '{': '{log_color}{levelname}:{name}:{message}',
+    '$': '${log_color}${levelname}:${name}:${message}'
 }
 
 
 class ColoredRecord(object):
-    """Wraps a LogRecord, adding named escape codes to the internal dict.
+    """
+    Wraps a LogRecord, adding named escape codes to the internal dict.
     The internal dict is used when formatting the message (by the PercentStyle,
     StrFormatStyle, and StringTemplateStyle classes).
     """
@@ -52,20 +48,16 @@ class ColoredRecord(object):
 
 
 class ColoredFormatter(logging.Formatter):
-    """A formatter that allows colors to be placed in the format string.
+    """
+    A formatter that allows colors to be placed in the format string.
     Intended to help in creating more readable logging output.
     """
 
-    def __init__(
-        self,
-        fmt=None,
-        datefmt=None,
-        style="%",
-        log_colors=None,
-        reset=True,
-        secondary_log_colors=None,
-    ):
-        """Set the format and colors the ColoredFormatter will use.
+    def __init__(self, fmt=None, datefmt=None, style='%',
+                 log_colors=None, reset=True,
+                 secondary_log_colors=None):
+        """
+        Set the format and colors the ColoredFormatter will use.
         The ``fmt``, ``datefmt`` and ``style`` args are passed on to the
         ``logging.Formatter`` constructor.
         The ``secondary_log_colors`` argument can be used to create additional
@@ -88,7 +80,7 @@ class ColoredFormatter(logging.Formatter):
             if sys.version_info > (3, 2):
                 fmt = default_formats[style]
             else:
-                fmt = default_formats["%"]
+                fmt = default_formats['%']
 
         if sys.version_info > (3, 2):
             super(ColoredFormatter, self).__init__(fmt, datefmt, style)
@@ -97,7 +89,8 @@ class ColoredFormatter(logging.Formatter):
         else:
             logging.Formatter.__init__(self, fmt, datefmt)
 
-        self.log_colors = log_colors if log_colors is not None else default_log_colors
+        self.log_colors = (
+            log_colors if log_colors is not None else default_log_colors)
         self.secondary_log_colors = secondary_log_colors
         self.reset = reset
 
@@ -114,7 +107,7 @@ class ColoredFormatter(logging.Formatter):
         if self.secondary_log_colors:
             for name, log_colors in self.secondary_log_colors.items():
                 color = self.color(log_colors, record.levelname)
-                setattr(record, name + "_log_color", color)
+                setattr(record, name + '_log_color', color)
 
         # Format the message
         if sys.version_info > (2, 7):
@@ -124,8 +117,8 @@ class ColoredFormatter(logging.Formatter):
 
         # Add a reset code to the end of the message
         # (if it wasn't explicitly added in format str)
-        if self.reset and not message.endswith(escape_codes["reset"]):
-            message += escape_codes["reset"]
+        if self.reset and not message.endswith(escape_codes['reset']):
+            message += escape_codes['reset']
 
         return message
 
@@ -133,16 +126,11 @@ class ColoredFormatter(logging.Formatter):
 class LevelFormatter(ColoredFormatter):
     """An extension of ColoredFormatter that uses per-level format strings."""
 
-    def __init__(
-        self,
-        fmt=None,
-        datefmt=None,
-        style="%",
-        log_colors=None,
-        reset=True,
-        secondary_log_colors=None,
-    ):
-        """Set the per-loglevel format that will be used.
+    def __init__(self, fmt=None, datefmt=None, style='%',
+                 log_colors=None, reset=True,
+                 secondary_log_colors=None):
+        """
+        Set the per-loglevel format that will be used.
         Supports fmt as a dict. All other args are passed on to the
         ``colorlog.ColoredFormatter`` constructor.
         :Parameters:
@@ -150,9 +138,7 @@ class LevelFormatter(ColoredFormatter):
             A mapping of log levels (represented as strings, e.g. 'WARNING') to
             different formatters. (*New in version 2.7.0)
         (All other parameters are the same as in colorlog.ColoredFormatter)
-
         Example:
-        -------
         formatter = colorlog.LevelFormatter(fmt={
             'DEBUG':'%(log_color)s%(msg)s (%(module)s:%(lineno)d)',
             'INFO': '%(log_color)s%(msg)s',
@@ -160,27 +146,16 @@ class LevelFormatter(ColoredFormatter):
             'ERROR': '%(log_color)sERROR: %(msg)s (%(module)s:%(lineno)d)',
             'CRITICAL': '%(log_color)sCRIT: %(msg)s (%(module)s:%(lineno)d)',
         })
-
         """
         if sys.version_info > (2, 7):
             super(LevelFormatter, self).__init__(
-                fmt=fmt,
-                datefmt=datefmt,
-                style=style,
-                log_colors=log_colors,
-                reset=reset,
-                secondary_log_colors=secondary_log_colors,
-            )
+                fmt=fmt, datefmt=datefmt, style=style, log_colors=log_colors,
+                reset=reset, secondary_log_colors=secondary_log_colors)
         else:
             ColoredFormatter.__init__(
-                self,
-                fmt=fmt,
-                datefmt=datefmt,
-                style=style,
-                log_colors=log_colors,
-                reset=reset,
-                secondary_log_colors=secondary_log_colors,
-            )
+                self, fmt=fmt, datefmt=datefmt, style=style,
+                log_colors=log_colors, reset=reset,
+                secondary_log_colors=secondary_log_colors)
         self.style = style
         self.fmt = fmt
 
@@ -192,9 +167,8 @@ class LevelFormatter(ColoredFormatter):
                 # Update self._style because we've changed self._fmt
                 # (code based on stdlib's logging.Formatter.__init__())
                 if self.style not in logging._STYLES:
-                    raise ValueError(
-                        "Style must be one of: %s" % ",".join(logging._STYLES.keys())
-                    )
+                    raise ValueError('Style must be one of: %s' % ','.join(
+                        logging._STYLES.keys()))
                 self._style = logging._STYLES[self.style][0](self._fmt)
 
         if sys.version_info > (2, 7):
@@ -206,16 +180,17 @@ class LevelFormatter(ColoredFormatter):
 
 
 class TTYColoredFormatter(ColoredFormatter):
-    """Blanks all color codes if not running under a TTY.
+    """
+    Blanks all color codes if not running under a TTY.
     This is useful when you want to be able to pipe colorlog output to a file.
     """
 
     def __init__(self, *args, **kwargs):
         """Overwrite the `reset` argument to False if stream is not a TTY."""
-        self.stream = kwargs.pop("stream")
+        self.stream = kwargs.pop('stream')
 
         # Both `reset` and `isatty` must be true to insert reset codes.
-        kwargs["reset"] = kwargs.get("reset", True) and self.stream.isatty()
+        kwargs['reset'] = kwargs.get('reset', True) and self.stream.isatty()
 
         ColoredFormatter.__init__(self, *args, **kwargs)
 
