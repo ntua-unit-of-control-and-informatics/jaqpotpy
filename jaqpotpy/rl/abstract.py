@@ -72,11 +72,11 @@ class MolEnv(Generic[ObsType, ActType]):
 
     @abstractmethod
     def reset(
-            self,
-            *,
-            seed: Optional[int] = None,
-            return_info: bool = False,
-            options: Optional[dict] = None,
+        self,
+        *,
+        seed: Optional[int] = None,
+        return_info: bool = False,
+        options: Optional[dict] = None,
     ) -> Union[ObsType, tuple[ObsType, dict]]:
         """Resets the environment to an initial state and returns an initial
         observation.
@@ -246,11 +246,11 @@ class Env(Generic[ObsType, ActType]):
 
     @abstractmethod
     def reset(
-            self,
-            *,
-            seed: Optional[int] = None,
-            return_info: bool = False,
-            options: Optional[dict] = None,
+        self,
+        *,
+        seed: Optional[int] = None,
+        return_info: bool = False,
+        options: Optional[dict] = None,
     ) -> Union[ObsType, tuple[ObsType, dict]]:
         """Resets the environment to an initial state and returns an initial
         observation.

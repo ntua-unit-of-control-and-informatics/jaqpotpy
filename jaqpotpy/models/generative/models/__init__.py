@@ -1,1 +1,5 @@
-from .models import GanMoleculeGenerator, GanMoleculeDiscriminator, MoleculeDiscriminator
+from .models import (
+    GanMoleculeGenerator,
+    GanMoleculeDiscriminator,
+    MoleculeDiscriminator,
+)

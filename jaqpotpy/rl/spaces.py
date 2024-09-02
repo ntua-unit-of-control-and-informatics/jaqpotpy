@@ -37,6 +37,7 @@ class Actions(Generic[T_cov]):
     """Defines the actions available for molecule optimization, so you can write actions
     code that applies to any Jaqpotpy Env.
     """
+
     @property
     def actions(self):
         return self.actions
@@ -142,6 +143,7 @@ class Discrete(Space):
     Example::
         >>> Discrete(2)
     """
+
     def __init__(self, n):
         assert n >= 0
         self.n = n
@@ -153,7 +155,9 @@ class Discrete(Space):
     def contains(self, x):
         if isinstance(x, int):
             as_int = x
-        elif isinstance(x, (np.generic, np.ndarray)) and (x.dtype.char in np.typecodes['AllInteger'] and x.shape == ()):
+        elif isinstance(x, (np.generic, np.ndarray)) and (
+            x.dtype.char in np.typecodes["AllInteger"] and x.shape == ()
+        ):
             as_int = int(x)
         else:
             return False

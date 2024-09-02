@@ -3,8 +3,23 @@ from .meta import MetaInfo  # noqa: F401,E501
 
 
 class Task(object):
-
-    def __init__(self, meta=None, ontological_classes=None, visible=False, temporary=False, featured=False, result_uri=None, result=None, percentage_completed=None, error_report=None, http_status=None, duration=None, type=None, id=None, status=None):  # noqa: E501
+    def __init__(
+        self,
+        meta=None,
+        ontological_classes=None,
+        visible=False,
+        temporary=False,
+        featured=False,
+        result_uri=None,
+        result=None,
+        percentage_completed=None,
+        error_report=None,
+        http_status=None,
+        duration=None,
+        type=None,
+        id=None,
+        status=None,
+    ):  # noqa: E501
         """Task - a model defined in Swagger"""  # noqa: E501
 
         self._meta = None
@@ -304,8 +319,9 @@ class Task(object):
         allowed_values = ["TRAINING", "PREDICTION", "PREPARATION", "VALIDATION"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"  # noqa: E501
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(  # noqa: E501
+                    type, allowed_values
+                )
             )
 
         self._type = type
@@ -349,11 +365,19 @@ class Task(object):
         :param status: The status of this Task.  # noqa: E501
         :type: str
         """
-        allowed_values = ["RUNNING", "COMPLETED", "CANCELLED", "ERROR", "REJECTED", "QUEUED"]  # noqa: E501
+        allowed_values = [
+            "RUNNING",
+            "COMPLETED",
+            "CANCELLED",
+            "ERROR",
+            "REJECTED",
+            "QUEUED",
+        ]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
-                "Invalid value for `status` ({0}), must be one of {1}"  # noqa: E501
-                .format(status, allowed_values)
+                "Invalid value for `status` ({0}), must be one of {1}".format(  # noqa: E501
+                    status, allowed_values
+                )
             )
 
         self._status = status

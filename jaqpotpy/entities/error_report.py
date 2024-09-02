@@ -2,9 +2,20 @@ from .meta import MetaInfo  # noqa: F401,E501
 
 
 class ErrorReport(object):
-
-    def __init__(self, meta=None, ontological_classes=None, visible=False, temporary=False, featured=False, code=None, actor=None, message=None, details=None, http_status=None, id=None):
-
+    def __init__(
+        self,
+        meta=None,
+        ontological_classes=None,
+        visible=False,
+        temporary=False,
+        featured=False,
+        code=None,
+        actor=None,
+        message=None,
+        details=None,
+        http_status=None,
+        id=None,
+    ):
         self._meta = None
         self._ontological_classes = None
         self._visible = None

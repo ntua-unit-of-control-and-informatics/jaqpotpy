@@ -7,7 +7,9 @@ from jaqpotpy.cfg import config
 import numpy as np
 
 
-def np_random(seed: Optional[int] = config.global_seed) -> Tuple["RandomNumberGenerator", Any]:
+def np_random(
+    seed: Optional[int] = config.global_seed,
+) -> Tuple["RandomNumberGenerator", Any]:
     if seed is not None and not (isinstance(seed, int) and 0 <= seed):
         raise Exception(f"Seed must be a non-negative integer or omitted, not {seed}")
 
@@ -35,11 +37,9 @@ class RandomNumberGenerator(np.random.Generator):
         return self.bit_generator.state
 
     def set_state(self, state):
-
         self.bit_generator.state = state
 
     def seed(self, seed=None):
-
         self.bit_generator.state = type(self.bit_generator)(seed).state
 
     rand.__doc__ = np.random.rand.__doc__

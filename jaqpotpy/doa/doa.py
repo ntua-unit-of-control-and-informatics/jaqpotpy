@@ -3,18 +3,20 @@ import pandas as pd
 import numpy as np
 from typing import Iterable, Any, Union
 
+
 class DOA(ABC):
     """
     Abstract class for DOA methods
     """
+
     @property
     def __name__(self):
         return NotImplementedError
-    
+
     @property
     def doa_new(self):
         return self._doa
-    
+
     @doa_new.setter
     def doa_new(self, value):
         self._doa = value
@@ -50,12 +52,13 @@ class Leverage(DOA):
     Initialized upon training data and holds the doa matrix and the threshold 'A' value.
     Calculates the DOA for a new instance of data or array of data.
     """
+
     _doa = []
     _in_doa = []
 
     @property
     def __name__(self):
-        return 'LeverageDoa'
+        return "LeverageDoa"
 
     def __init__(self) -> None:
         # self._scaler: BaseEstimator = scaler
@@ -63,7 +66,7 @@ class Leverage(DOA):
         self._doa_matrix = None
         self._h_star = None
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         return key
 
     @property
@@ -112,15 +115,16 @@ class Leverage(DOA):
                 in_ad = False
             self._doa.append(d2)
             self._in_doa.append(in_ad)
-            doa = {'DOA': d2, 'A': self._h_star, 'in_doa': in_ad}
+            doa = {"DOA": d2, "A": self._h_star, "in_doa": in_ad}
             doaAll.append(doa)
         return doaAll
-    
+
     def _validate_input(self, data: Union[np.array, pd.DataFrame]):
         if isinstance(data, pd.DataFrame):
             return data.to_numpy()
         else:
             return data
+
 
 class MeanVar(DOA):
     """
@@ -128,12 +132,13 @@ class MeanVar(DOA):
     Initialized upon training data and holds the doa mean and the variance of the data.
     Calculates the mean and variance for a new instance of data or array of data and decides if in AD.
     """
+
     _doa = []
     _in_doa = []
 
     @property
     def __name__(self):
-        return 'MeanVar'
+        return "MeanVar"
 
     def __init__(self) -> None:
         self._data: np.array = None
@@ -144,7 +149,9 @@ class MeanVar(DOA):
         shape = X.shape
         list_m_var = []
         for i in range(shape[1]):
-            list_m_var.append([np.mean(columns[i]), np.std(columns[i]), np.var(columns[i])])
+            list_m_var.append(
+                [np.mean(columns[i]), np.std(columns[i]), np.var(columns[i])]
+            )
         self._data = np.array(list_m_var)
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
@@ -155,16 +162,17 @@ class MeanVar(DOA):
         for nd in new_data:
             for index, row in enumerate(nd):
                 bounds = self._data[index]
-                bounds_data = [bounds[0]-4*bounds[1], bounds[0]+4*bounds[1]]
+                bounds_data = [bounds[0] - 4 * bounds[1], bounds[0] + 4 * bounds[1]]
                 if row >= bounds_data[0] and row <= bounds_data[1]:
                     continue
                 else:
                     in_doa = False
-            doa = {'in_doa': in_doa}
+            doa = {"in_doa": in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
             self._in_doa.append(in_doa)
         return doaAll
+
 
 class BoundingBox(DOA):
     _doa = []
@@ -172,7 +180,7 @@ class BoundingBox(DOA):
 
     @property
     def __name__(self):
-        return 'BoundingBox'
+        return "BoundingBox"
 
     def __init__(self) -> None:
         self._data: np.array = None
@@ -199,7 +207,7 @@ class BoundingBox(DOA):
                     continue
                 else:
                     in_doa = False
-            doa = {'in_doa': in_doa}
+            doa = {"in_doa": in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
             self._in_doa.append(in_doa)

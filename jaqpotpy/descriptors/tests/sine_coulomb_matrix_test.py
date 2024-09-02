@@ -4,24 +4,35 @@ import unittest
 
 
 class test_SineCoulombMatrix(unittest.TestCase):
-    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
+    @unittest.skip(
+        "Material modelling has not been tested yet in the newest version of jaqpotpy"
+    )
     def setUp(self) -> None:
-        self.path = './jaqpotpy/test_data/test.extxyz'
+        self.path = "./jaqpotpy/test_data/test.extxyz"
         lattice = Lattice.cubic(4.2)
         self.struct = Structure(lattice, ["Cs", "Cl"], [[0, 0, 0], [0.5, 0.5, 0.5]])
         self.featurizer_flat = SineCoulombMatrix(flatten=True)
         self.featurizer = SineCoulombMatrix()
 
-    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
+    @unittest.skip(
+        "Material modelling has not been tested yet in the newest version of jaqpotpy"
+    )
     def test_featurize_struct(self):
         features_flat = self.featurizer_flat.featurize(self.struct)
         features = self.featurizer.featurize(self.struct)
 
         assert features_flat.shape == (1, self.featurizer_flat.max_atoms)
-        assert features.shape == (1, self.featurizer.max_atoms, self.featurizer.max_atoms, self.featurizer.max_atoms)
+        assert features.shape == (
+            1,
+            self.featurizer.max_atoms,
+            self.featurizer.max_atoms,
+            self.featurizer.max_atoms,
+        )
         return
-    
-    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
+
+    @unittest.skip(
+        "Material modelling has not been tested yet in the newest version of jaqpotpy"
+    )
     def test_featurize_struct_df(self):
         features_flat = self.featurizer_flat.featurize_dataframe(self.struct)
         features = self.featurizer.featurize_dataframe(self.struct)
@@ -30,16 +41,25 @@ class test_SineCoulombMatrix(unittest.TestCase):
         assert features_flat.shape == (1, self.featurizer_flat.max_atoms)
         return
 
-    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
+    @unittest.skip(
+        "Material modelling has not been tested yet in the newest version of jaqpotpy"
+    )
     def test_featurize_path(self):
         features_flat = self.featurizer_flat.featurize(self.path)
         features = self.featurizer.featurize(self.path)
 
         assert features_flat.shape == (1, self.featurizer_flat.max_atoms)
-        assert features.shape == (1, self.featurizer.max_atoms, self.featurizer.max_atoms, self.featurizer.max_atoms)
+        assert features.shape == (
+            1,
+            self.featurizer.max_atoms,
+            self.featurizer.max_atoms,
+            self.featurizer.max_atoms,
+        )
         return
-    
-    @unittest.skip("Material modelling has not been tested yet in the newest version of jaqpotpy")
+
+    @unittest.skip(
+        "Material modelling has not been tested yet in the newest version of jaqpotpy"
+    )
     def test_featurize_path_df(self):
         features_flat = self.featurizer_flat.featurize_dataframe(self.path)
         features = self.featurizer.featurize_dataframe(self.path)
@@ -49,5 +69,5 @@ class test_SineCoulombMatrix(unittest.TestCase):
         return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

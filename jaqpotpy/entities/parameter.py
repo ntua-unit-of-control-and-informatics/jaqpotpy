@@ -1,7 +1,13 @@
 class Parameter(object):
-
-    def __init__(self, required=False, description=None, vendor_extensions=None, pattern=None, _in=None, name=None):
-
+    def __init__(
+        self,
+        required=False,
+        description=None,
+        vendor_extensions=None,
+        pattern=None,
+        _in=None,
+        name=None,
+    ):
         self._required = None
         self._description = None
         self._vendor_extensions = None

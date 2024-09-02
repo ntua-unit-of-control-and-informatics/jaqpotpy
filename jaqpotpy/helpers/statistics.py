@@ -1,6 +1,7 @@
 """
 General methods for computing property statistics from a list of values
 """
+
 import numpy as np
 import scipy
 
@@ -71,7 +72,11 @@ class PropertyStats:
         Returns:
             range
         """
-        return (max(data_lst) - min(data_lst)) if not np.any(np.isnan(data_lst)) else float("nan")
+        return (
+            (max(data_lst) - min(data_lst))
+            if not np.any(np.isnan(data_lst))
+            else float("nan")
+        )
 
     @staticmethod
     def mean(data_lst, weights=None):
@@ -127,8 +132,12 @@ class PropertyStats:
         if weights is None:
             return np.std(data_lst)
         else:
-            beta = np.sum(weights) / (np.sum(weights) ** 2 - np.sum(np.power(weights, 2)))
-            dev = np.power(np.subtract(data_lst, PropertyStats.mean(data_lst, weights=weights)), 2)
+            beta = np.sum(weights) / (
+                np.sum(weights) ** 2 - np.sum(np.power(weights, 2))
+            )
+            dev = np.power(
+                np.subtract(data_lst, PropertyStats.mean(data_lst, weights=weights)), 2
+            )
             return np.sqrt(beta * np.dot(dev, weights))
 
     @staticmethod
@@ -158,7 +167,7 @@ class PropertyStats:
             u2 = np.dot(weights, np.power(diff, 2)) / total_weight
             if np.isclose(u3, 0):
                 return 0
-            return u3 / u2 ** 1.5
+            return u3 / u2**1.5
 
     @staticmethod
     def kurtosis(data_lst, weights=None):
@@ -187,7 +196,7 @@ class PropertyStats:
             u2 = np.dot(weights, diff_sq)
             if np.isclose(u4, 0):
                 return 0
-            return u4 / u2 ** 2 * total_weight
+            return u4 / u2**2 * total_weight
 
     @staticmethod
     def geom_std_dev(data_lst, weights=None):
@@ -267,7 +276,9 @@ class PropertyStats:
 
             # If power=0, return geometric mean
             elif power == 0:
-                return np.product(np.power(data_lst, np.true_divide(weights, np.sum(weights))))
+                return np.product(
+                    np.power(data_lst, np.true_divide(weights, np.sum(weights)))
+                )
             else:
                 return np.power(
                     np.sum(np.multiply(weights, np.power(data_lst, power))) / alpha,

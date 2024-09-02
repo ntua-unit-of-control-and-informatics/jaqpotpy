@@ -6,7 +6,9 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.feature import Feature
-from ...models.partially_update_model_feature_body import PartiallyUpdateModelFeatureBody
+from ...models.partially_update_model_feature_body import (
+    PartiallyUpdateModelFeatureBody,
+)
 from ...types import Response
 
 

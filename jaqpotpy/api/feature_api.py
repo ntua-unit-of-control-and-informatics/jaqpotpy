@@ -9,9 +9,11 @@ feat_path = "feature"
 def create_feature_sync(baseurl, api_key, json_feat):
     uri = baseurl + feat_path
     token = "Bearer " + api_key
-    h = {"Content-type": "application/json",
-         "Accept": "application/json",
-         'Authorization': token}
+    h = {
+        "Content-type": "application/json",
+        "Accept": "application/json",
+        "Authorization": token,
+    }
     try:
         r = requests.post(uri, data=json_feat, headers=h)
         return r.json()
@@ -22,14 +24,17 @@ def create_feature_sync(baseurl, api_key, json_feat):
 def get_feature(baseurl, api_key, featid):
     uri = baseurl + feat_path + "/" + featid
     token = "Bearer " + api_key
-    h = {"Content-type": "application/json",
-         "Accept": "application/json",
-         'Authorization': token}
+    h = {
+        "Content-type": "application/json",
+        "Accept": "application/json",
+        "Authorization": token,
+    }
     try:
         r = requests.get(uri, headers=h)
         return r.json()
     except Exception as e:
         print("Error 1: " + str(e))
+
 
 # @gen.coroutine
 # def create_feature_async(baseurl, api_key, json_feat):

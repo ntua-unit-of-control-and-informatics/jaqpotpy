@@ -1,13 +1,11 @@
 from typing import List
 from jaqpotpy.parsers.base_classes import Parser
-from jaqpotpy.entities.material_models import (
-    Pdb, Atoms
-)
+from jaqpotpy.entities.material_models import Pdb, Atoms
 import pandas as pd
 
 
 def _clean_key(word) -> str:
-    return ''.join(i for i in word if i.isalnum())
+    return "".join(i for i in word if i.isalnum())
 
 
 def _str_to_num(s, start, stop, change):
@@ -20,7 +18,7 @@ def _str_to_num(s, start, stop, change):
 
     x = s[start:stop]
 
-    if x.strip() != '':
+    if x.strip() != "":
         if change == 0:
             x = float(x)
 
@@ -59,13 +57,12 @@ class PdbParser(Parser):
 
     @property
     def __name__(self):
-        return 'PdbParser'
+        return "PdbParser"
 
     def __getitem__(self):
         return self
 
     def _parse(self, path) -> Pdb:
-
         """
         Parse pdb files.
 
@@ -84,7 +81,9 @@ class PdbParser(Parser):
 
         # Initialize variables
         curr_key = ""
-        pdb_dict: Pdb = Pdb(meta={}, atoms=Atoms(elements=[], coordinates=[], extraInfo=[]))
+        pdb_dict: Pdb = Pdb(
+            meta={}, atoms=Atoms(elements=[], coordinates=[], extraInfo=[])
+        )
         extra = []
         lines = 0
 
@@ -95,8 +94,9 @@ class PdbParser(Parser):
         # Iterate through the file
         for row in pdb:
             curr_list = row.split()
-            if curr_list[0] == "ATOM":  # Then there are specific characteristics about the atoms and we pass them to the JSON
-
+            if (
+                curr_list[0] == "ATOM"
+            ):  # Then there are specific characteristics about the atoms and we pass them to the JSON
                 if curr_key != "ATOM":
                     if lines == 1:
                         pdb_dict.meta[curr_key] = extra[0]
@@ -105,31 +105,37 @@ class PdbParser(Parser):
                     curr_key = "ATOM"
 
                 pdb_dict.atoms.elements.append(row[76:78].strip())
-                pdb_dict.atoms.coordinates.append([
-                    _str_to_num(row, 30, 38, 0), _str_to_num(row, 38, 46, 0), _str_to_num(row, 46, 54, 0)
-                ])
+                pdb_dict.atoms.coordinates.append(
+                    [
+                        _str_to_num(row, 30, 38, 0),
+                        _str_to_num(row, 38, 46, 0),
+                        _str_to_num(row, 46, 54, 0),
+                    ]
+                )
                 if row[22:26].strip() == "":
                     a = 0
                 else:
                     a = _str_to_num(row, 22, 26, 1)
 
-                pdb_dict.atoms.extraInfo.append({
-                    "serial": _str_to_num(row, 6, 11, 1),
-                    "name": row[12:16].strip(),
-                    "altLoc": row[16],
-                    "resName": row[17:20].strip(),
-                    "chainID": row[21],
-                    "resSeq": a,
-                    "iCode": row[26],
-                    "occupancy": _str_to_num(row, 54, 60, 0),
-                    "tempFactor": _str_to_num(row, 60, 66, 0),
-                    "charge": row[78:].strip()
-                })
+                pdb_dict.atoms.extraInfo.append(
+                    {
+                        "serial": _str_to_num(row, 6, 11, 1),
+                        "name": row[12:16].strip(),
+                        "altLoc": row[16],
+                        "resName": row[17:20].strip(),
+                        "chainID": row[21],
+                        "resSeq": a,
+                        "iCode": row[26],
+                        "occupancy": _str_to_num(row, 54, 60, 0),
+                        "tempFactor": _str_to_num(row, 60, 66, 0),
+                        "charge": row[78:].strip(),
+                    }
+                )
             else:
                 # In this case we are at the begining of the pdb and we collect the meta data.
 
                 if _clean_key(curr_list[0]) == curr_key:  # Then it is the first loop
-                    extra.append(row[len(curr_key):])
+                    extra.append(row[len(curr_key) :])
                     lines += 1
                 else:
                     # We check if there are multiple rocords to this specific key, and if not then we pass tha value only.
@@ -142,7 +148,7 @@ class PdbParser(Parser):
                     # We change the key and initialize the dictionary and the lines variable
                     curr_key = _clean_key(curr_list[0])
                     extra = []
-                    extra.append(row[len(curr_key):])
+                    extra.append(row[len(curr_key) :])
                     lines = 1
         return pdb_dict
 
@@ -166,11 +172,11 @@ class PdbParser(Parser):
         df = pd.DataFrame()
         for i in range(len(file.atoms.extraInfo)):
             d = file.atoms.extraInfo[i]
-            d['file'] = filename
-            d['element'] = file.atoms.elements[i]
-            d['x'] = file.atoms.coordinates[i][0]
-            d['y'] = file.atoms.coordinates[i][1]
-            d['z'] = file.atoms.coordinates[i][2]
+            d["file"] = filename
+            d["element"] = file.atoms.elements[i]
+            d["x"] = file.atoms.coordinates[i][0]
+            d["y"] = file.atoms.coordinates[i][1]
+            d["z"] = file.atoms.coordinates[i][2]
 
             df = pd.concat([df, pd.DataFrame(d, index=[0])]).reset_index(drop=True)
 

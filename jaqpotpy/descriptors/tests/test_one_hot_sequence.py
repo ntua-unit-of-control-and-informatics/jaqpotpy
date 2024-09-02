@@ -1,71 +1,81 @@
 """
 Test basic molecular features.
 """
+
 import unittest
 
 from jaqpotpy.descriptors.molecular import OneHotSequence
 # pylint: disable=no-member
 
+
 class TestOneHotSeqDescriptors(unittest.TestCase):
-  """
-  Test Smiles to seq descriptors.
-  """
+    """
+    Test Smiles to seq descriptors.
+    """
 
-  def setUp(self):
-    """
-    Set up tests.
-    """
-    from rdkit import Chem
-    smiles = 'CC(=O)OC1=CC=CC=C1C(=O)O'
-    self.mol = Chem.MolFromSmiles(smiles)
-    # self.featurizer = SmilesToSeq()
+    def setUp(self):
+        """
+        Set up tests.
+        """
+        from rdkit import Chem
 
-  @unittest.skip("This test needs refactoring")
-  def test_sts_descriptors(self):
-    """
-    Test simple descriptors.
-    """
-    smiles = ['CC(=O)OC1=CC=CC=C1C(=O)O', 'CC(=O)OC1=CC=CC=C1C(=O)O']
-    featurizer = OneHotSequence()
-    descriptors = featurizer.featurize(smiles)
-    assert len(descriptors[0]) == 100
+        smiles = "CC(=O)OC1=CC=CC=C1C(=O)O"
+        self.mol = Chem.MolFromSmiles(smiles)
+        # self.featurizer = SmilesToSeq()
 
-  @unittest.skip("This test needs refactoring")
-  def test_sts_descriptors_on_smiles(self):
-    """
-    Test invocation on raw smiles.
-    """
-    smiles = ['CC(=O)OC1=CC=CC=C1C(=O)O', 'CC(=O)OC1=CC=CC=C1C(=O)O']
-    featurizer = OneHotSequence()
-    descriptors = featurizer.featurize('CC(=O)OC1=CC=CC=C1C(=O)O')
-    assert len(descriptors[0]) == 100
+    @unittest.skip("This test needs refactoring")
+    def test_sts_descriptors(self):
+        """
+        Test simple descriptors.
+        """
+        smiles = ["CC(=O)OC1=CC=CC=C1C(=O)O", "CC(=O)OC1=CC=CC=C1C(=O)O"]
+        featurizer = OneHotSequence()
+        descriptors = featurizer.featurize(smiles)
+        assert len(descriptors[0]) == 100
 
-  @unittest.skip("This test needs refactoring")
-  def test_sts_descriptors_on_smiles_pad(self):
-    """
-    Test invocation on raw smiles.
-    """
-    smiles = ['CC(=O)OC1=CC=CC=C1C(=O)O', 'CC(=O)OC1=CC=CC=C1C(=O)O']
-    featurizer = OneHotSequence(max_length=50)
-    descriptors = featurizer.featurize('CC(=O)OC1=CC=CC=C1C(=O)O')
-    assert len(descriptors[0]) == 50
+    @unittest.skip("This test needs refactoring")
+    def test_sts_descriptors_on_smiles(self):
+        """
+        Test invocation on raw smiles.
+        """
+        smiles = ["CC(=O)OC1=CC=CC=C1C(=O)O", "CC(=O)OC1=CC=CC=C1C(=O)O"]
+        featurizer = OneHotSequence()
+        descriptors = featurizer.featurize("CC(=O)OC1=CC=CC=C1C(=O)O")
+        assert len(descriptors[0]) == 100
 
-  @unittest.skip("This test needs refactoring")
-  def test_sts_descriptors_on_smiles_df(self):
-    """
-    Test invocation on raw smiles.
-    """
-    smiles = ['CC(=O)OC1=CC=CC=C1C(=O)O', 'CC(=O)OC1=CC=CC=C1C(=O)O']
-    featurizer = OneHotSequence()
-    # descriptors = featurizer.featurize_dataframe(
-    #     ['CC(=O)OC1=CC=CC=C1C(=O)O'])
-    descriptors = featurizer.featurize_dataframe(['CC(=O)OC1=CC=CC=C1C(=O)O'
-                                                     , 'CC(=O)OC1=CC=CC=C1C(=O)O', 'CC(=O)OC1=CC=CC=C1C(=O)O'])
-    assert descriptors.shape == (3, 1)
-    featurizer = OneHotSequence()
-    descriptors = featurizer.featurize_dataframe(['CC(=O)OC1=CC=CC=C1C(=O)O', 'CC(=O)OC1=CC=CC=C1C(=O)O'])
-    print(descriptors['OneHotSequence'].loc[[0]].to_numpy().shape)
-    print(descriptors.loc[[0]]['OneHotSequence'])
-    print(descriptors.loc[[0]]['OneHotSequence'].to_numpy().shape)
-    print(descriptors)
-    assert descriptors.shape == (2, 1)
+    @unittest.skip("This test needs refactoring")
+    def test_sts_descriptors_on_smiles_pad(self):
+        """
+        Test invocation on raw smiles.
+        """
+        smiles = ["CC(=O)OC1=CC=CC=C1C(=O)O", "CC(=O)OC1=CC=CC=C1C(=O)O"]
+        featurizer = OneHotSequence(max_length=50)
+        descriptors = featurizer.featurize("CC(=O)OC1=CC=CC=C1C(=O)O")
+        assert len(descriptors[0]) == 50
+
+    @unittest.skip("This test needs refactoring")
+    def test_sts_descriptors_on_smiles_df(self):
+        """
+        Test invocation on raw smiles.
+        """
+        smiles = ["CC(=O)OC1=CC=CC=C1C(=O)O", "CC(=O)OC1=CC=CC=C1C(=O)O"]
+        featurizer = OneHotSequence()
+        # descriptors = featurizer.featurize_dataframe(
+        #     ['CC(=O)OC1=CC=CC=C1C(=O)O'])
+        descriptors = featurizer.featurize_dataframe(
+            [
+                "CC(=O)OC1=CC=CC=C1C(=O)O",
+                "CC(=O)OC1=CC=CC=C1C(=O)O",
+                "CC(=O)OC1=CC=CC=C1C(=O)O",
+            ]
+        )
+        assert descriptors.shape == (3, 1)
+        featurizer = OneHotSequence()
+        descriptors = featurizer.featurize_dataframe(
+            ["CC(=O)OC1=CC=CC=C1C(=O)O", "CC(=O)OC1=CC=CC=C1C(=O)O"]
+        )
+        print(descriptors["OneHotSequence"].loc[[0]].to_numpy().shape)
+        print(descriptors.loc[[0]]["OneHotSequence"])
+        print(descriptors.loc[[0]]["OneHotSequence"].to_numpy().shape)
+        print(descriptors)
+        assert descriptors.shape == (2, 1)

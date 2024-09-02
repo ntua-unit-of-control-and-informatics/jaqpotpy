@@ -1,11 +1,22 @@
 class PretrainedRequirements:
-
-    def __init__(self, rawModel=None, independentFeatures=None,
-                 predictedFeatures=None, additionalInfo=None,
-                 title=None, implementedWith=None,
-                 algorithm=None, implementedIn=None,
-                 description=None, dependentFeatures=None
-                 , jaqpotpyVersion=None, jaqpotpyDockerVersion=None, type=None, libraries=None, versions=None):
+    def __init__(
+        self,
+        rawModel=None,
+        independentFeatures=None,
+        predictedFeatures=None,
+        additionalInfo=None,
+        title=None,
+        implementedWith=None,
+        algorithm=None,
+        implementedIn=None,
+        description=None,
+        dependentFeatures=None,
+        jaqpotpyVersion=None,
+        jaqpotpyDockerVersion=None,
+        type=None,
+        libraries=None,
+        versions=None,
+    ):
         self.rawModel = rawModel
         self.independentFeatures = independentFeatures
         self.predictedFeatures = predictedFeatures

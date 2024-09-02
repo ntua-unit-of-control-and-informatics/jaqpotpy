@@ -46,7 +46,7 @@ class GenerativeEvaluator:
         return self
 
     def get_reward(self, mols):
-        rr = 1.
+        rr = 1.0
         for key in self.functions.keys():
             try:
                 f = self.functions.get(key)

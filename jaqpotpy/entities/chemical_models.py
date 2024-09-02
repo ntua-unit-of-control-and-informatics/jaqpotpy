@@ -119,5 +119,3 @@ class ScreeningConstantsModel(BaseModel):
     n: Optional[int]
     s: Optional[str]
     screening: Optional[float]
-
-

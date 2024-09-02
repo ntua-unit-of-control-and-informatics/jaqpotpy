@@ -28,7 +28,7 @@ from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.serializer import JaqpotSerializer
 from jaqpotpy.utils.url_utils import add_subdomain
 
-ENCODING = 'utf-8'
+ENCODING = "utf-8"
 
 
 # import matplotlib
@@ -50,14 +50,16 @@ class Jaqpot:
 
     def __init__(self, base_url=None, create_logs=False):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-        self.log = init_logger(__name__, testing_mode=False, output_log_file=create_logs)
+        self.log = init_logger(
+            __name__, testing_mode=False, output_log_file=create_logs
+        )
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = 'https://appv2.jaqpot.org/'
-        self.app_url = add_subdomain(self.base_url, 'app')
-        self.login_url = add_subdomain(self.base_url, 'login')
-        self.api_url = add_subdomain(self.base_url, 'api')
+            self.base_url = "https://appv2.jaqpot.org/"
+        self.app_url = add_subdomain(self.base_url, "app")
+        self.login_url = add_subdomain(self.base_url, "login")
+        self.api_url = add_subdomain(self.base_url, "api")
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
@@ -71,7 +73,7 @@ class Jaqpot:
             keycloak_openid = KeycloakOpenID(
                 server_url=self.login_url,
                 client_id="jaqpot-client",
-                realm_name="jaqpot"
+                realm_name="jaqpot",
             )
 
             # Generate the authorization URL
@@ -79,7 +81,7 @@ class Jaqpot:
             auth_url = keycloak_openid.auth_url(
                 redirect_uri=redirect_uri,
                 scope="openid email profile",
-                state="random_state_value"
+                state="random_state_value",
             )
 
             print(f"Open this URL in your browser and log in:\n{auth_url}")
@@ -91,14 +93,12 @@ class Jaqpot:
 
             # Exchange the code for an access token
             token_response = keycloak_openid.token(
-                grant_type='authorization_code',
-                code=code,
-                redirect_uri=redirect_uri
+                grant_type="authorization_code", code=code, redirect_uri=redirect_uri
             )
 
-            access_token = token_response['access_token']
+            access_token = token_response["access_token"]
             self.api_key = access_token
-        except Exception as e:
+        except Exception:
             self.log.error("Could not login to jaqpot")
 
     def set_api_key(self, api_key):
@@ -121,8 +121,8 @@ class Jaqpot:
             # print(type_to_c)
             # df[t] = df[t].astype(float)
         # print(df.dtypes)
-        df = df.replace(np.nan, '', regex=True)
-        if type(df).__name__ != 'DataFrame':
+        df = df.replace(np.nan, "", regex=True)
+        if type(df).__name__ != "DataFrame":
             raise Exception("Cannot form a Jaqpot Dataset. Please provide a Dataframe")
         model = models_api.get_model(self.base_url, self.api_key, modelId, self.log)
         # feats = []
@@ -139,7 +139,7 @@ class Jaqpot:
         features = []
         keyi = 0
 
-        for key, value in model['additionalInfo']['independentFeatures'].items():
+        for key, value in model["additionalInfo"]["independentFeatures"].items():
             feat_info = FeatureInfo()
             # f = featapi.create_feature_sync(self.base_url, self.api_key, feat)
             feat_uri = key
@@ -161,28 +161,38 @@ class Jaqpot:
         dataset.dataEntry = data_entry
         dataset.features = features
         json_dataset = json.dumps(dataset, cls=JaqpotSerializer)
-        dataset_n = data_api.create_dataset_sync(self.base_url, self.api_key, json_dataset, self.log)
+        dataset_n = data_api.create_dataset_sync(
+            self.base_url, self.api_key, json_dataset, self.log
+        )
         dataset_id = dataset_n["_id"]
         dataset_uri = self.base_url + "dataset/" + dataset_id
-        task = models_api.predict(self.base_url, self.api_key, dataseturi=dataset_uri, modelid=modelId, logger=self.log)
+        task = models_api.predict(
+            self.base_url,
+            self.api_key,
+            dataseturi=dataset_uri,
+            modelid=modelId,
+            logger=self.log,
+        )
         percentage = 0
-        taskid = task['_id']
+        taskid = task["_id"]
         while percentage < 100:
             time.sleep(1)
             task = task_api.get_task(self.base_url, self.api_key, taskid)
             try:
-                percentage = task['percentageCompleted']
+                percentage = task["percentageCompleted"]
             except KeyError:
                 percentage = 0
             self.log.info("completed " + str(percentage))
-        predicted_dataset = task['resultUri']
+        predicted_dataset = task["resultUri"]
         dar = predicted_dataset.split("/")
-        dataset = data_api.get_dataset(self.base_url, self.api_key, dar[len(dar) - 1], self.log)
+        dataset = data_api.get_dataset(
+            self.base_url, self.api_key, dar[len(dar) - 1], self.log
+        )
         df, predicts = ds.decode_predicted(dataset)
         return df, predicts
 
     def deploy_sklearn_model(self, model, name, description, visibility):
-        """"
+        """ "
         Deploy sklearn models on Jaqpot.
         :param model:
         :param name:
@@ -192,53 +202,70 @@ class Jaqpot:
         """
         auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
         actual_model = model_to_b64encoding(model.copy())
-        body_model = Model(name=name,
-                           type=model.type,
-                           jaqpotpy_version=model.jaqpotpy_version,
-                           libraries=model.libraries,
-                           dependent_features=[Feature(key=feature_i['key'], name=feature_i['name'],
-                                                       feature_type=feature_i['featureType']) for feature_i in
-                                               model.dependentFeatures],
-                           independent_features=[Feature(key=feature_i['key'], name=feature_i['name'],
-                                                         feature_type=feature_i['featureType']) for feature_i in
-                                                 model.independentFeatures],
-                           visibility=ModelVisibility(visibility),
-                           actual_model=actual_model,
-                           description=description)
+        body_model = Model(
+            name=name,
+            type=model.type,
+            jaqpotpy_version=model.jaqpotpy_version,
+            libraries=model.libraries,
+            dependent_features=[
+                Feature(
+                    key=feature_i["key"],
+                    name=feature_i["name"],
+                    feature_type=feature_i["featureType"],
+                )
+                for feature_i in model.dependentFeatures
+            ],
+            independent_features=[
+                Feature(
+                    key=feature_i["key"],
+                    name=feature_i["name"],
+                    feature_type=feature_i["featureType"],
+                )
+                for feature_i in model.independentFeatures
+            ],
+            visibility=ModelVisibility(visibility),
+            actual_model=actual_model,
+            description=description,
+        )
 
         response = create_model.sync_detailed(client=auth_client, body=body_model)
         if response.status_code < 300:
-            model_url = response.headers.get('Location')
-            model_id = model_url.split('/')[-1]
+            model_url = response.headers.get("Location")
+            model_id = model_url.split("/")[-1]
 
             self.log.info(
                 "Model has been successfully uploaded. The url of the model is %s",
-                self.app_url + '/dashboard/models/' + model_id)
+                self.app_url + "/dashboard/models/" + model_id,
+            )
         else:
-            error = response.headers.get('error')
-            error_description = response.headers.get('error_description')
+            error = response.headers.get("error")
+            error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
 
 
 def deploy_Torch_Graph_model(self, deployment_json):
     auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
-    body_model = Model(name=deployment_json['actualModel'],
-                       type=deployment_json['model_type'],
-                       jaqpotpy_version="",
-                       libraries="",
-                       dependent_features=deployment_json['dependentFeatures'],
-                       independent_features=deployment_json['independentFeatures'],
-                       visibility=deployment_json['visibility'],
-                       actual_model=deployment_json['actualModel'],
-                       description=deployment_json['description'])
+    body_model = Model(
+        name=deployment_json["actualModel"],
+        type=deployment_json["model_type"],
+        jaqpotpy_version="",
+        libraries="",
+        dependent_features=deployment_json["dependentFeatures"],
+        independent_features=deployment_json["independentFeatures"],
+        visibility=deployment_json["visibility"],
+        actual_model=deployment_json["actualModel"],
+        description=deployment_json["description"],
+    )
 
     response = create_model.sync_detailed(client=auth_client, body=body_model)
     if response.status_code < 300:
         self.log.info(
-            "Model has been successfully uploaded. The url of the model is " + response.headers.get('Location'))
+            "Model has been successfully uploaded. The url of the model is "
+            + response.headers.get("Location")
+        )
     else:
-        error = response.headers.get('error')
-        error_description = response.headers.get('error_description')
+        error = response.headers.get("error")
+        error_description = response.headers.get("error_description")
         self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_XGBoost(self, model, X, y, title, description, algorithm, doa=None):
@@ -271,9 +298,13 @@ def deploy_Torch_Graph_model(self, deployment_json):
 
         """
         if isinstance(X, pd.DataFrame) is False:
-            raise Exception('Function deploy_glm supports pandas dataframe or series. X is not one')
+            raise Exception(
+                "Function deploy_glm supports pandas dataframe or series. X is not one"
+            )
         if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
-            raise Exception('Function deploy_glm supports pandas dataframe or series. Y is not one')
+            raise Exception(
+                "Function deploy_glm supports pandas dataframe or series. Y is not one"
+            )
         # coef_flatten = model.coef_.flatten()
         # intercept_flatten = model.intercept_.flatten()
         # coef_df = pd.DataFrame(list(zip(list(X), coef_flatten)), columns=['Features', 'coeff'])
@@ -284,31 +315,51 @@ def deploy_Torch_Graph_model(self, deployment_json):
         # for key in coefs_all.values:
         #     coefs[key[0]] = key[1]
         # additionalInfo['coefficients'] = coefs
-        additionalInfo['inputSeries'] = list(X)
-        pretrained = help.create_pretrain_req(model, X, y, title, description,
-                                              algorithm, "XGBoost model", "XGBoost-model",
-                                              additionalInfo)
+        additionalInfo["inputSeries"] = list(X)
+        pretrained = help.create_pretrain_req(
+            model,
+            X,
+            y,
+            title,
+            description,
+            algorithm,
+            "XGBoost model",
+            "XGBoost-model",
+            additionalInfo,
+        )
         # j = json.dumps(pretrained)
         j = json.dumps(pretrained, cls=JaqpotSerializer)
         if doa is None:
-            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            response = models_api.post_pretrained_model(
+                self.base_url, self.api_key, j, self.log
+            )
             if response.status_code < 300:
                 resp = response.json()
-                self.log.info("Model with id: " + resp['modelId'] + " created. Please visit the application to proceed")
-                return resp['modelId']
+                self.log.info(
+                    "Model with id: "
+                    + resp["modelId"]
+                    + " created. Please visit the application to proceed"
+                )
+                return resp["modelId"]
             else:
                 resp = response.json()
-                self.log.error("Some error occured: " + resp['message'])
+                self.log.error("Some error occured: " + resp["message"])
                 return
         else:
-            response = models_api.post_pretrained_model(self.base_url, self.api_key, j, self.log)
+            response = models_api.post_pretrained_model(
+                self.base_url, self.api_key, j, self.log
+            )
             if response.status_code < 300:
                 resp = response.json()
-                self.log.info("Model with id: " + resp['modelId'] + " created. Storing Domain of applicability")
-                modid = resp['modelId']
+                self.log.info(
+                    "Model with id: "
+                    + resp["modelId"]
+                    + " created. Storing Domain of applicability"
+                )
+                modid = resp["modelId"]
             else:
                 resp = response.json()
-                self.log.error("Some error occured: " + resp['message'])
+                self.log.error("Some error occured: " + resp["message"])
                 return
             # loop = asyncio.get_event_loop()
             # a = loop.create_task(jha.calculate_a(X))
@@ -318,11 +369,13 @@ def deploy_Torch_Graph_model(self, deployment_json):
             b = jha.calculate_doa_matrix(X)
             # all_groups = asyncio.gather(a, b)
             # results = loop.run_until_complete(all_groups)
-            doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp['modelId'])
+            doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp["modelId"])
             j = json.dumps(doa, cls=JaqpotSerializer)
             resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
             if resp == 201:
-                self.log.info("Stored Domain of applicability. Visit the application to proceed")
+                self.log.info(
+                    "Stored Domain of applicability. Visit the application to proceed"
+                )
                 return modid
 
     def get_model_by_id(self, model):
@@ -378,7 +431,9 @@ def deploy_Torch_Graph_model(self, deployment_json):
             The models of the user.
 
         """
-        return models_api.get_my_models(self.base_url, self.api_key, minimum, maximum, self.log)
+        return models_api.get_my_models(
+            self.base_url, self.api_key, minimum, maximum, self.log
+        )
 
     def get_orgs_models(self, organization, minimum, maximum):
         """
@@ -399,7 +454,9 @@ def deploy_Torch_Graph_model(self, deployment_json):
             The models of the organization.
 
         """
-        return models_api.get_orgs_models(self.base_url, self.api_key, organization, minimum, maximum, self.log)
+        return models_api.get_orgs_models(
+            self.base_url, self.api_key, organization, minimum, maximum, self.log
+        )
 
     def get_models_by_tag(self, tag, minimum, maximum):
         """
@@ -420,7 +477,9 @@ def deploy_Torch_Graph_model(self, deployment_json):
             The models of the organization.
 
         """
-        return models_api.get_models_by_tag(self.base_url, self.api_key, tag, minimum, maximum, self.log)
+        return models_api.get_models_by_tag(
+            self.base_url, self.api_key, tag, minimum, maximum, self.log
+        )
 
     def get_models_by_tag_and_org(self, organization, tag, minimum, maximum):
         """
@@ -443,7 +502,9 @@ def deploy_Torch_Graph_model(self, deployment_json):
             The models of the organization.
 
         """
-        return models_api.get_models_by_tag(self.base_url, self.api_key, organization, tag, minimum, maximum, self.log)
+        return models_api.get_models_by_tag(
+            self.base_url, self.api_key, organization, tag, minimum, maximum, self.log
+        )
 
     def get_dataset(self, dataset):
         """
@@ -464,16 +525,21 @@ def deploy_Torch_Graph_model(self, deployment_json):
         Mazimum rows retrieved: 1000.
         """
 
-        dataRetrieved = data_api.get_dataset(self.base_url, self.api_key, dataset, self.log)
+        dataRetrieved = data_api.get_dataset(
+            self.base_url, self.api_key, dataset, self.log
+        )
 
-        feats = ["" for i in range(len(dataRetrieved['features']))]
+        feats = ["" for i in range(len(dataRetrieved["features"]))]
 
-        for item in dataRetrieved['features']:
-            feats[int(item['key'])] = item['name']
+        for item in dataRetrieved["features"]:
+            feats[int(item["key"])] = item["name"]
 
-        indices = [item['entryId']['name'] for item in dataRetrieved['dataEntry']]
+        indices = [item["entryId"]["name"] for item in dataRetrieved["dataEntry"]]
 
-        data = [[item['values'][str(feats.index(col))] for col in feats] for item in dataRetrieved['dataEntry']]
+        data = [
+            [item["values"][str(feats.index(col))] for col in feats]
+            for item in dataRetrieved["dataEntry"]
+        ]
 
         return pd.DataFrame(data, index=indices, columns=feats)
 

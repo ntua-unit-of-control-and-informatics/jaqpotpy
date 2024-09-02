@@ -1,4 +1,5 @@
 from jaqpotpy.dto.auth_request import AuthRequest
+
 # from tornado.escape import json_decode
 import json
 from jaqpotpy.entities.algorithm import Algorithm
@@ -7,7 +8,7 @@ import json
 
 def decode_auth(request):
     jsonreq = json.dumps(request)
-    au_req = AuthRequest(jsonreq['userName'], jsonreq['authToken'])
+    au_req = AuthRequest(jsonreq["userName"], jsonreq["authToken"])
     return au_req
 
 

@@ -4,6 +4,7 @@ import torch
 import pandas as pd
 from typing import Iterable, Any, Optional
 
+
 class SmilesGraphDataset(Dataset):
     """
     A PyTorch Dataset class for handling SMILES strings as graphs.
@@ -16,18 +17,20 @@ class SmilesGraphDataset(Dataset):
         precomputed_features (list, optional): A list of precomputed features. If precompute_featurization() is not called, this attribute remains None.
     """
 
-    def __init__(self,
-                smiles: list = None,
-                y: Optional[list] = None,
-                featurizer: Optional[SmilesGraphFeaturizer] = None):
+    def __init__(
+        self,
+        smiles: list = None,
+        y: Optional[list] = None,
+        featurizer: Optional[SmilesGraphFeaturizer] = None,
+    ):
         """
         The SmilesGraphDataset constructor.
 
         Args:
-            smiles (list): A list of SMILES strings. 
+            smiles (list): A list of SMILES strings.
             y (list, optional): A list of target values. Default is None.
             featurizer (SmilesGraphFeaturizer, optional): A featurizer object for to create graph representations from SMILES strings.
-        
+
         Example:
         ```
         >>> from jaqpotpy.jaqpotpy_torch.featurizers import SmilesGraphFeaturizer
@@ -56,7 +59,7 @@ class SmilesGraphDataset(Dataset):
             self.featurizer = SmilesGraphFeaturizer()
             # Default node, edge features in case of not specifying dataset
             self.featurizer.set_default_config()
-            
+
         self.precomputed_features = None
 
     # def config_from_other_dataset(self, dataset):
@@ -95,7 +98,9 @@ class SmilesGraphDataset(Dataset):
         Precomputes the featurization of the dataset before being accessed by __getitem__
         """
         if self.y:
-            self.precomputed_features = [self.featurizer(sm, y) for sm, y, in zip(self.smiles, self.y)]
+            self.precomputed_features = [
+                self.featurizer(sm, y) for sm, y in zip(self.smiles, self.y)
+            ]
         else:
             self.precomputed_features = [self.featurizer(sm) for sm in self.smiles]
 
@@ -108,7 +113,6 @@ class SmilesGraphDataset(Dataset):
         """
         return len(self.get_atom_feature_labels())
 
-
     def get_num_edge_features(self):
         """
         Returns the number of edge features.
@@ -117,7 +121,6 @@ class SmilesGraphDataset(Dataset):
             int: Number of edge features.
         """
         return len(self.get_bond_feature_labels())
-
 
     def __getitem__(self, idx):
         """
@@ -136,7 +139,7 @@ class SmilesGraphDataset(Dataset):
         """
         if self.precomputed_features:
             return self.precomputed_features[idx]
-        
+
         sm = self.smiles[idx]
         y = self.y[idx] if self.y else None
 
@@ -145,16 +148,15 @@ class SmilesGraphDataset(Dataset):
     def __len__(self):
         """
         __len__  functionality is important for the DataLoader to determine batching,
-        shuffling and iterating over the dataset. 
+        shuffling and iterating over the dataset.
 
         Returns:
             int: Number of samples.
         """
         return len(self.smiles)
-    
+
     def __repr__(self) -> str:
         """
         Official string representation of the Dataset Object
         """
         return self.__class__.__name__
-

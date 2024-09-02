@@ -26,23 +26,33 @@ csv_path = keras.utils.get_file(
     "https://raw.githubusercontent.com/aspuru-guzik-group/chemical_vae/master/models/zinc_properties/250k_rndm_zinc_drugs_clean_3.csv",
 )
 
-df = pd.read_csv("/Users/pantelispanka/.keras/datasets/250k_rndm_zinc_drugs_clean_3.csv")
+df = pd.read_csv(
+    "/Users/pantelispanka/.keras/datasets/250k_rndm_zinc_drugs_clean_3.csv"
+)
 df["smiles"] = df["smiles"].apply(lambda s: s.replace("\n", ""))
 print(df.head())
 
-smiles = df['smiles'].to_list()[0:1000]
+smiles = df["smiles"].to_list()[0:1000]
 
 feat = MolGanFeaturizer(max_atom_count=40)
 
 dataset = JaqpotpyDataset(smiles=smiles, featurizer=feat, task="generation")
 dataset = dataset.create()
-gm: GraphMatrix = dataset.df['MolGanGraphs'][0]
+gm: GraphMatrix = dataset.df["MolGanGraphs"][0]
 
 
 class Generator(torch.nn.Module):
-    def __init__(self, in_channels
-                 , num_layers, hidden_channels, out_channels
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+    def __init__(
+        self,
+        in_channels,
+        num_layers,
+        hidden_channels,
+        out_channels,
+        activation: torch.nn.Module = torch.nn.ReLU(),
+        dropout=0,
+        norm: torch.nn.Module = None,
+        act_first=True,
+    ):
         super(Generator, self).__init__()
         torch.manual_seed(config.global_seed)
 
@@ -77,9 +87,17 @@ class Generator(torch.nn.Module):
 
 
 class Discriminator(torch.nn.Module):
-    def __init__(self, in_channels
-                 , num_layers, hidden_channels, out_channels
-                 , activation: torch.nn.Module = torch.nn.ReLU(), dropout=0, norm: torch.nn.Module = None, act_first=True):
+    def __init__(
+        self,
+        in_channels,
+        num_layers,
+        hidden_channels,
+        out_channels,
+        activation: torch.nn.Module = torch.nn.ReLU(),
+        dropout=0,
+        norm: torch.nn.Module = None,
+        act_first=True,
+    ):
         super(Discriminator, self).__init__()
         torch.manual_seed(config.global_seed)
         self.act = activation

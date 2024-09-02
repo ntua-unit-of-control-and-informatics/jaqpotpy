@@ -1,7 +1,18 @@
 class PretrainedModel(object):
-
-    def __init__(self, raw_model=None, pmml_model=None, additional_info=None, dependent_features=None, independent_features=None, predicted_features=None, implemented_in=None, implemented_with=None, title=None, discription=None, algorithm=None):
-
+    def __init__(
+        self,
+        raw_model=None,
+        pmml_model=None,
+        additional_info=None,
+        dependent_features=None,
+        independent_features=None,
+        predicted_features=None,
+        implemented_in=None,
+        implemented_with=None,
+        title=None,
+        discription=None,
+        algorithm=None,
+    ):
         self._raw_model = None
         self._pmml_model = None
         self._additional_info = None

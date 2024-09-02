@@ -9,7 +9,9 @@ PATH = "jaqpotpy/helpers/periodic_table/elements.db"
 
 class PeriodicTable(object):
     def __init__(self):
-        self.__engine = create_engine("sqlite:///{path:s}".format(path=PATH), echo=False)
+        self.__engine = create_engine(
+            "sqlite:///{path:s}".format(path=PATH), echo=False
+        )
 
     @property
     def get_tables(self) -> List:
@@ -19,21 +21,21 @@ class PeriodicTable(object):
     def _find_one(self, query) -> Dict:
         res = pd.read_sql_query(query, self.__engine)
         if len(res) > 1:
-            raise Warning('Found more results for query. Returning the first one.')
+            raise Warning("Found more results for query. Returning the first one.")
 
         return res.loc[0].to_dict()
 
     def _find_many(self, query) -> Generator:
         res = pd.read_sql_query(query, self.__engine)
 
-        for row in res.to_dict(orient='records'):
+        for row in res.to_dict(orient="records"):
             yield row
 
     def _fetch_table(self, table, as_dataframe=False) -> Union[pd.DataFrame, Generator]:
-        res = pd.read_sql_query('SELECT * FROM {}'.format(table), self.__engine)
+        res = pd.read_sql_query("SELECT * FROM {}".format(table), self.__engine)
 
         if as_dataframe:
             return res
 
-        for row in res.to_dict(orient='records'):
+        for row in res.to_dict(orient="records"):
             yield row
