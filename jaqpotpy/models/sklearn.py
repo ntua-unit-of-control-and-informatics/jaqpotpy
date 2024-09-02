@@ -17,10 +17,11 @@ from onnxruntime import InferenceSession
 from onnxruntime import InferenceSession
 import numpy as np
 
+
 class SklearnModel(Model):
 
     def __init__(self, dataset: JaqpotpyDataset, doa: DOA, model: Any,
-                  preprocessor: Preprocess = None,  evaluator: Evaluator = None):
+                 preprocessor: Preprocess = None, evaluator: Evaluator = None):
         self.x_cols = dataset.x_cols
         self.y_cols = dataset.y_cols
         self.dataset = dataset
@@ -61,17 +62,17 @@ class SklearnModel(Model):
 
         if self.dataset.y is None:
             raise TypeError("dataset.y is None. Please provide a target variable for the model.")
-        #Get X and y from dataset
+        # Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
 
         if self.doa:
             self.trained_doa = self.doa.fit(X=X)
-        
+
         if len(self.dataset.y_cols) == 1:
             y = y.to_numpy().ravel()
 
-        #if preprocessing was applied to either X,y or both
+        # if preprocessing was applied to either X,y or both
         if self.preprocess is not None:
             self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             self.pipeline = sklearn.pipeline.Pipeline(steps=[])
@@ -87,7 +88,8 @@ class SklearnModel(Model):
 
             if len(pre_y_keys) > 0:
                 if self.task == "classification":
-                    raise ValueError("Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y.")
+                    raise ValueError(
+                        "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y.")
                 else:
                     preprocess_names_y = []
                     preprocess_classes_y = []
@@ -104,30 +106,36 @@ class SklearnModel(Model):
 
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
             else:
-                self.trained_model = self.pipeline.fit(X.to_numpy(), y)#.to_numpy().ravel())   
-        #case where no preprocessing was provided
+                self.trained_model = self.pipeline.fit(X.to_numpy(), y)  # .to_numpy().ravel())
+        # case where no preprocessing was provided
         else:
-            self.trained_model = self.model.fit(X.to_numpy(), y)#.to_numpy().ravel())
-        
+            self.trained_model = self.model.fit(X.to_numpy(), y)  # .to_numpy().ravel())
+
         if self.dataset.smiles_cols:
-            self.independentFeatures = list({"key": self.dataset.smiles_cols[smiles_col_i], "name": self.dataset.smiles_cols[smiles_col_i], "featureType": "SMILES"} for smiles_col_i in range(len(self.dataset.smiles_cols)))
+            self.independentFeatures = list(
+                {"key": self.dataset.smiles_cols[smiles_col_i], "name": self.dataset.smiles_cols[smiles_col_i],
+                 "featureType": "SMILES"} for smiles_col_i in range(len(self.dataset.smiles_cols)))
         else:
             self.independentFeatures = list()
         if self.dataset.x_cols:
-            self.independentFeatures += list({"key": feature, "name": feature, "featureType": X[feature].dtype} for feature in self.dataset.x_cols)
-        self.dependentFeatures = list({"key": feature, "name": feature, "featureType": self.dataset.__get_Y__()[feature].dtype} for feature in self.dataset.y_cols)
+            self.independentFeatures += list(
+                {"key": feature, "name": feature, "featureType": X[feature].dtype} for feature in self.dataset.x_cols)
+        self.dependentFeatures = list(
+            {"key": feature, "name": feature, "featureType": self.dataset.__get_Y__()[feature].dtype} for feature in
+            self.dataset.y_cols)
         self.__dtypes_to_jaqpotypes__()
 
         name = self.model.__class__.__name__ + "_ONNX"
-        self.onnx_model = convert_sklearn(self.trained_model, initial_types=[('float_input', FloatTensorType([None, X.to_numpy().shape[1]]))], name=name,
+        self.onnx_model = convert_sklearn(self.trained_model, initial_types=[
+            ('float_input', FloatTensorType([None, X.to_numpy().shape[1]]))], name=name,
                                           options=onnx_options)
         self.onnx_opset = self.onnx_model.opset_import[0].version
-        
+
         if self.evaluator:
             self.__eval__()
         return self
 
-    def predict(self,  dataset: JaqpotpyDataset):
+    def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sklearn_prediction = self.trained_model.predict(dataset.X.to_numpy().astype(np.float32))
@@ -139,7 +147,7 @@ class SklearnModel(Model):
                     else:
                         sklearn_prediction = f.inverse_transform(sklearn_prediction)
         return sklearn_prediction
-    
+
     def predict_proba(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
@@ -148,8 +156,8 @@ class SklearnModel(Model):
         sklearn_probs = self.trained_model.predict_proba(dataset.X.to_numpy())
         sklearn_probs_list = [max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))]
         return sklearn_probs_list
-    
-    def predict_onnx(self,  dataset: JaqpotpyDataset):
+
+    def predict_onnx(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
@@ -163,7 +171,7 @@ class SklearnModel(Model):
         if len(self.y_cols) == 1:
             return onnx_prediction[0].flatten()
         return onnx_prediction[0]
-    
+
     def predict_proba_onnx(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
@@ -171,7 +179,7 @@ class SklearnModel(Model):
             raise ValueError("predict_onnx_proba is available only for classification tasks")
         sess = InferenceSession(self.onnx_model.SerializeToString())
         onnx_probs = sess.run(None, {"float_input": dataset.X.to_numpy().astype(np.float32)})
-        onnx_probs_list = [max(onnx_probs[1][instance].values()) for  instance in range(len(onnx_probs[1]))]
+        onnx_probs_list = [max(onnx_probs[1][instance].values()) for instance in range(len(onnx_probs[1]))]
         return onnx_probs_list
 
     def __eval__(self):
@@ -214,12 +222,12 @@ class SklearnModel(Model):
                 print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
                 pass
             # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
-            #print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
+            # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
 
     def copy(self):
         copied_model = copy.deepcopy(self)
         copied_model.dataset = None
         return copied_model
-    
+
     def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
-        jaqpot.deploy_SklearnModel(model = self, name = name, description = description, visibility = visibility)
+        jaqpot.deploy_sklearn_model(model=self, name=name, description=description, visibility=visibility)
