@@ -55,6 +55,9 @@ class Jaqpot:
             self.base_url = base_url
         else:
             self.base_url = 'https://appv2.jaqpot.org/'
+        self.app_url = add_subdomain(self.base_url, 'app')
+        self.login_url = add_subdomain(self.base_url, 'login')
+        self.api_url = add_subdomain(self.base_url, 'api')
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
@@ -66,7 +69,7 @@ class Jaqpot:
         try:
             # Configure Keycloak client
             keycloak_openid = KeycloakOpenID(
-                server_url="https://login.appv2.jaqpot.org/",
+                server_url=self.login_url,
                 client_id="jaqpot-client",
                 realm_name="jaqpot"
             )
@@ -187,7 +190,7 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        auth_client = AuthenticatedClient(base_url=add_subdomain(self.base_url, 'api'), token=self.api_key)
+        auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
         actual_model = model_to_b64encoding(model.copy())
         body_model = Model(name=name,
                            type=model.type,
@@ -210,7 +213,7 @@ class Jaqpot:
 
             self.log.info(
                 "Model has been successfully uploaded. The url of the model is %s",
-                add_subdomain(self.base_url, 'app') + '/dashboard/models/' + model_id)
+                self.app_url + '/dashboard/models/' + model_id)
         else:
             error = response.headers.get('error')
             error_description = response.headers.get('error_description')
