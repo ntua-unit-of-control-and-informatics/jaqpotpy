@@ -48,7 +48,7 @@ class Jaqpot:
 
     """
 
-    def __init__(self, base_url=None, login_url=None, create_logs=False):
+    def __init__(self, base_url=None, create_logs=False):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(__name__, testing_mode=False, output_log_file=create_logs)
         if base_url:
