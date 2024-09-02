@@ -1,11 +1,7 @@
 from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
-from typing import Iterable, Any
-import math
-from jaqpotpy.descriptors.molecular import RDKitDescriptors, MordredDescriptors
-import pickle
-
+from typing import Iterable, Any, Union
 
 class DOA(ABC):
     """
@@ -63,7 +59,7 @@ class Leverage(DOA):
 
     def __init__(self) -> None:
         # self._scaler: BaseEstimator = scaler
-        self._data: np.array = None
+        self._data: Union[np.array, pd.DataFrame] = None
         self._doa_matrix = None
         self._h_star = None
 
@@ -96,12 +92,13 @@ class Leverage(DOA):
         x_out = x_T.dot(self._data)
         self._doa_matrix = np.linalg.pinv(x_out)
 
-    def fit(self, X: np.array):
-        self._data = X
+    def fit(self, X: Union[np.array, pd.DataFrame]):
+        self._data = self._validate_input(X)
         self.calculate_matrix()
         self.calculate_threshold()
 
-    def predict(self, new_data: np.array) -> Iterable[Any]:
+    def predict(self, new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]:
+        new_data = self._validate_input(new_data)
         doaAll = []
         self._doa = []
         self._in_doa = []
@@ -118,7 +115,12 @@ class Leverage(DOA):
             doa = {'DOA': d2, 'A': self._h_star, 'in_doa': in_ad}
             doaAll.append(doa)
         return doaAll
-
+    
+    def _validate_input(self, data: Union[np.array, pd.DataFrame]):
+        if isinstance(data, pd.DataFrame):
+            return data.to_numpy()
+        else:
+            return data
 
 class MeanVar(DOA):
     """
