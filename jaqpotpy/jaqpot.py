@@ -1,37 +1,32 @@
+import http.client as http_client
+import json
+import time
 import webbrowser
 
-import jaqpotpy.api.algorithms_api as alapi
-import jaqpotpy.api.dataset_api as data_api
-import jaqpotpy.api.models_api as models_api
-import jaqpotpy.api.chempot_api as chempot_api
-import jaqpotpy.api.task_api as task_api
-import jaqpotpy.api.doa_api as doa_api
-import jaqpotpy.helpers.jwt as jwtok
-import jaqpotpy.helpers.helpers as help
-import jaqpotpy.helpers.dataset_deserializer as ds
-from jaqpotpy.api.types.api.model import create_model
-from jaqpotpy.api.types.models import Model
-from jaqpotpy.api.types.models.model_visibility import ModelVisibility
-from jaqpotpy.api.types.models.feature import Feature
-from jaqpotpy.api.types.client import AuthenticatedClient
-from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
-from jaqpotpy.helpers.logging import init_logger
-import json
-import jaqpotpy.api.feature_api as featapi
-from jaqpotpy.helpers.serializer import JaqpotSerializer
-from jaqpotpy.entities.dataset import Dataset
-from jaqpotpy.entities.meta import MetaInfo
-from jaqpotpy.entities.featureinfo import FeatureInfo
-import pandas as pd
 import numpy as np
-import http.client as http_client
-import getpass
-import time
-import jaqpotpy.doa.doa as jha
-from sys import getsizeof
-from tqdm import tqdm
-
+import pandas as pd
 from keycloak import KeycloakOpenID
+
+import jaqpotpy.api.dataset_api as data_api
+import jaqpotpy.api.doa_api as doa_api
+import jaqpotpy.api.feature_api as featapi
+import jaqpotpy.api.models_api as models_api
+import jaqpotpy.api.task_api as task_api
+import jaqpotpy.doa.doa as jha
+import jaqpotpy.helpers.dataset_deserializer as ds
+import jaqpotpy.helpers.helpers as help
+from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
+from jaqpotpy.api.types.api.model import create_model
+from jaqpotpy.api.types.client import AuthenticatedClient
+from jaqpotpy.api.types.models import Model
+from jaqpotpy.api.types.models.feature import Feature
+from jaqpotpy.api.types.models.model_visibility import ModelVisibility
+from jaqpotpy.entities.dataset import Dataset
+from jaqpotpy.entities.featureinfo import FeatureInfo
+from jaqpotpy.entities.meta import MetaInfo
+from jaqpotpy.helpers.logging import init_logger
+from jaqpotpy.helpers.serializer import JaqpotSerializer
+from jaqpotpy.utils.url_utils import add_subdomain
 
 ENCODING = 'utf-8'
 
@@ -59,11 +54,7 @@ class Jaqpot:
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = 'https://api.appv2.jaqpot.org/'
-        if login_url:
-            self.login_url = login_url
-        else:
-            self.login_url = 'https://login.appv2.jaqpot.org'
+            self.base_url = 'https://appv2.jaqpot.org/'
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
@@ -188,8 +179,15 @@ class Jaqpot:
         return df, predicts
 
     def deploy_sklearn_model(self, model, name, description, visibility):
-
-        auth_client = AuthenticatedClient(base_url=self.base_url, token=self.api_key)
+        """"
+        Deploy sklearn models on Jaqpot.
+        :param model:
+        :param name:
+        :param description:
+        :param visibility:
+        :return:
+        """
+        auth_client = AuthenticatedClient(base_url=add_subdomain(self.base_url, 'api'), token=self.api_key)
         actual_model = model_to_b64encoding(model.copy())
         body_model = Model(name=name,
                            type=model.type,
@@ -207,8 +205,12 @@ class Jaqpot:
 
         response = create_model.sync_detailed(client=auth_client, body=body_model)
         if response.status_code < 300:
+            model_url = response.headers.get('Location')
+            model_id = model_url.split('/')[-1]
+
             self.log.info(
-                "Model has been successfully uploaded. The url of the model is " + response.headers.get('Location'))
+                "Model has been successfully uploaded. The url of the model is %s",
+                add_subdomain(self.base_url, 'app') + '/dashboard/models/' + model_id)
         else:
             error = response.headers.get('error')
             error_description = response.headers.get('error_description')
@@ -315,30 +317,6 @@ class Jaqpot:
 
         """
         return models_api.get_model(self.base_url, self.api_key, model, self.log)
-
-    def get_raw_model_by_id(self, model):
-        """
-        Retrieves raw model by ID.
-
-        Parameters
-        ----------
-        model : str
-            The model's ID.
-
-        Returns
-        Returns
-        -------
-        Object
-            The particular model and the raw model.
-        """
-
-        # raw_model = models_api.get_raw_model(self.base_url, self.api_key, model, self.log)
-
-        validating = jaqlogin.validate_api_key(self.base_url, self.api_key)
-        if validating is not True:
-            self.log.error(validating)
-        else:
-            return models_api.get_raw_model(self.base_url, self.api_key, model, self.log)
 
     def get_feature_by_id(self, feature):
         """
