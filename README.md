@@ -32,24 +32,6 @@ jaqpot = Jaqpot()
 jaqpot.login() # follow the steps here to login through the command line 
 ```
 
-#### Request and Set API Key
-
-You can request an API key and set it:
-```python
-jaqpot.request_key('your_username', 'your_password')
-```
-or
-```python
-jaqpot.request_key_safe()  # Prompts for username and password securely
-```
-#### Set API Key Directly
-
-If you already have an API key (you can retrieve one from https://app.jaqpot.org), you can set it directly:
-
-```python
-jaqpot.set_api_key("your_api_key")
-```
-
 ### Model Training and Deployment
 
 Follow these steps to train and deploy your model on Jaqpot:
