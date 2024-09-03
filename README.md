@@ -29,7 +29,7 @@ To use jaqpotpy, you need to log in to the Jaqpot platform. You can log in using
 from jaqpotpy import Jaqpot
 
 jaqpot = Jaqpot()
-jaqpot.login('your_username', 'your_password') 
+jaqpot.login() # follow the steps here to login through the command line 
 ```
 
 #### Request and Set API Key
