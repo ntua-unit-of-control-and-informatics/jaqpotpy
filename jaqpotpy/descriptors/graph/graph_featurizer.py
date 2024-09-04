@@ -290,11 +290,23 @@ class SmilesGraphFeaturizer:
 
     def get_num_node_features(self):
         """Returns the number of node features."""
-        return len(self.get_atom_feature_labels())
+        num = 0
+        for value in self.atom_allowable_sets.values():
+            if value is None:
+                num += 1
+            else:
+                num+=len(value)
+        return num
 
     def get_num_edge_features(self):
         """Returns the number of edge features"""
-        return len(self.get_bond_feature_labels())
+        num = 0
+        for value in self.bond_allowable_sets.values():
+            if value is None:
+                num += 1
+            else:
+                num+=len(value)
+        return num
 
     def __call__(self, *args, **kwargs):
         """Featurizes the input data"""
