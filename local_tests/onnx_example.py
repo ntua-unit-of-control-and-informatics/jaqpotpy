@@ -1,9 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-from jaqpotpy.descriptors.molecular import TopologicalFingerprint
 from jaqpotpy.descriptors.molecular import TopologicalFingerprint
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
