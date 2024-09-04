@@ -64,6 +64,7 @@ class Model:
     tags: Union[Unset, str] = UNSET
     created_at: Union[Unset, datetime.datetime] = UNSET
     updated_at: Union[Unset, str] = UNSET
+    extra_config: dict = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -122,7 +123,7 @@ class Model:
             created_at = self.created_at.isoformat()
 
         updated_at = self.updated_at
-
+        extra_config = self.extra_config
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -135,6 +136,7 @@ class Model:
                 "independentFeatures": independent_features,
                 "visibility": visibility,
                 "actualModel": actual_model,
+                "extraConfig": extra_config
             }
         )
         if id is not UNSET:
@@ -157,6 +159,8 @@ class Model:
             field_dict["createdAt"] = created_at
         if updated_at is not UNSET:
             field_dict["updatedAt"] = updated_at
+        if extra_config is not UNSET:
+            field_dict['extraConfig'] = extra_config
 
         return field_dict
 
@@ -241,7 +245,8 @@ class Model:
             created_at = isoparse(_created_at)
 
         updated_at = d.pop("updatedAt", UNSET)
-
+        extra_config = d.pop("extraConfig", UNSET)
+        
         model = cls(
             name=name,
             type=type,
@@ -259,6 +264,7 @@ class Model:
             creator=creator,
             can_edit=can_edit,
             tags=tags,
+            extra_config = extra_config,
             created_at=created_at,
             updated_at=updated_at,
         )

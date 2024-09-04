@@ -1,6 +1,7 @@
 from jaqpotpy.api.types.models.feature_type import FeatureType
 from tqdm import tqdm
 import torch
+import io
 import base64
 from jaqpotpy.api.types.models.feature import Feature
 from typing import Optional
@@ -372,24 +373,27 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         if self.model.training:
             self.model.eval()
             self.model = self.model.cpu()
-            
+        
         dummy_smile = 'CCC'
         dummy_input = featurizer.featurize(dummy_smile)
         x = dummy_input.x
         edge_index = dummy_input.edge_index
         batch = torch.zeros(x.shape[0],dtype=torch.int64)
+        buffer = io.BytesIO()
         torch.onnx.export(self.model, # model being run
                   args = (x, edge_index, batch),
-                  f = 'model.onnx',
+                  f = buffer,
                   input_names=['x', 'edge_index', 'batch'],
                   dynamic_axes = {"x": {0: 'nodes'},
                                   'edge_index':{1: 'edges'},
                                   'batch':[0]})
-        with open("model.onnx", "rb") as f:
-            onnx_model_bytes = f.read()
+        onnx_model_bytes = buffer.getvalue()
+        buffer.close()
+        #with open("model.onnx", "rb") as f:
+        #    onnx_model_bytes = f.read()
         model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode('utf-8')
-        import os
-        os.remove("model.onnx")
+        #import os
+        #os.remove("model.onnx")
 
         # featurizer_buffer = io.BytesIO()
         # pickle.dump(featurizer, featurizer_buffer)
