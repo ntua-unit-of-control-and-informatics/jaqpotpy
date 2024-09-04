@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Union, List
+from typing import Optional
 
 
 class ElementModel(BaseModel):
@@ -119,5 +119,3 @@ class ScreeningConstantsModel(BaseModel):
     n: Optional[int]
     s: Optional[str]
     screening: Optional[float]
-
-

@@ -10,11 +10,11 @@ T = TypeVar("T", bound="User")
 
 @_attrs_define
 class User:
-    """
-    Attributes:
-        id (str):
-        name (Union[Unset, str]):
-        email_verified (Union[Unset, bool]):
+    """Attributes
+    id (str):
+    name (Union[Unset, str]):
+    email_verified (Union[Unset, bool]):
+
     """
 
     id: str

@@ -71,18 +71,21 @@ def sync_detailed(
     """Search for models
 
     Args:
+    ----
         query (str):
         page (Union[Unset, int]):  Default: 0.
         size (Union[Unset, int]):  Default: 10.
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, SearchModelsResponse200]]
-    """
 
+    """
     kwargs = _get_kwargs(
         query=query,
         page=page,
@@ -106,18 +109,21 @@ def sync(
     """Search for models
 
     Args:
+    ----
         query (str):
         page (Union[Unset, int]):  Default: 0.
         size (Union[Unset, int]):  Default: 10.
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, SearchModelsResponse200]
-    """
 
+    """
     return sync_detailed(
         client=client,
         query=query,
@@ -136,18 +142,21 @@ async def asyncio_detailed(
     """Search for models
 
     Args:
+    ----
         query (str):
         page (Union[Unset, int]):  Default: 0.
         size (Union[Unset, int]):  Default: 10.
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, SearchModelsResponse200]]
-    """
 
+    """
     kwargs = _get_kwargs(
         query=query,
         page=page,
@@ -169,18 +178,21 @@ async def asyncio(
     """Search for models
 
     Args:
+    ----
         query (str):
         page (Union[Unset, int]):  Default: 0.
         size (Union[Unset, int]):  Default: 10.
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, SearchModelsResponse200]
-    """
 
+    """
     return (
         await asyncio_detailed(
             client=client,

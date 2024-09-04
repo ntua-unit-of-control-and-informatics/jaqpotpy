@@ -1,5 +1,4 @@
 class EntryId(object):
-
     def __init__(self, name=None, ownerUUID=None, URI=None, type=None):
         self.name = None
         self.ownerUUID = None

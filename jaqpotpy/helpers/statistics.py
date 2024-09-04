@@ -1,6 +1,5 @@
-"""
-General methods for computing property statistics from a list of values
-"""
+"""General methods for computing property statistics from a list of values"""
+
 import numpy as np
 import scipy
 
@@ -26,8 +25,7 @@ class PropertyStats:
 
     @staticmethod
     def calc_stat(data_lst, stat, weights=None):
-        """
-        Compute a property statistic
+        """Compute a property statistic
         Args:
             data_lst (list of floats): list of values
             stat (str) - Name of property to be compute. If there are arguments to the statistics function, these
@@ -46,8 +44,11 @@ class PropertyStats:
         Args:
             data_lst (list of floats): List of values to be assessed
             weights: (ignored)
-        Returns:
+
+        Returns
+        -------
             minimum value
+
         """
         return min(data_lst) if not np.any(np.isnan(data_lst)) else float("nan")
 
@@ -57,8 +58,11 @@ class PropertyStats:
         Args:
             data_lst (list of floats): List of values to be assessed
             weights: (ignored)
-        Returns:
+
+        Returns
+        -------
             maximum value
+
         """
         return max(data_lst) if not np.any(np.isnan(data_lst)) else float("nan")
 
@@ -68,10 +72,17 @@ class PropertyStats:
         Args:
             data_lst (list of floats): List of values to be assessed
             weights: (ignored)
-        Returns:
+
+        Returns
+        -------
             range
+
         """
-        return (max(data_lst) - min(data_lst)) if not np.any(np.isnan(data_lst)) else float("nan")
+        return (
+            (max(data_lst) - min(data_lst))
+            if not np.any(np.isnan(data_lst))
+            else float("nan")
+        )
 
     @staticmethod
     def mean(data_lst, weights=None):
@@ -101,11 +112,14 @@ class PropertyStats:
         This is computed by first calculating the mean of the list,
         and then computing the average absolute difference between each value
         and the mean.
+
         Args:
+        ----
             data_lst (list of floats): List of values to be assessed
             weights (list of floats): Weights for each value
         Returns:
             mean absolute deviation
+
         """
         mean = PropertyStats.mean(data_lst, weights)
         return np.average(np.abs(np.subtract(data_lst, mean)), weights=weights)
@@ -127,8 +141,12 @@ class PropertyStats:
         if weights is None:
             return np.std(data_lst)
         else:
-            beta = np.sum(weights) / (np.sum(weights) ** 2 - np.sum(np.power(weights, 2)))
-            dev = np.power(np.subtract(data_lst, PropertyStats.mean(data_lst, weights=weights)), 2)
+            beta = np.sum(weights) / (
+                np.sum(weights) ** 2 - np.sum(np.power(weights, 2))
+            )
+            dev = np.power(
+                np.subtract(data_lst, PropertyStats.mean(data_lst, weights=weights)), 2
+            )
             return np.sqrt(beta * np.dot(dev, weights))
 
     @staticmethod
@@ -158,7 +176,7 @@ class PropertyStats:
             u2 = np.dot(weights, np.power(diff, 2)) / total_weight
             if np.isclose(u3, 0):
                 return 0
-            return u3 / u2 ** 1.5
+            return u3 / u2**1.5
 
     @staticmethod
     def kurtosis(data_lst, weights=None):
@@ -187,19 +205,17 @@ class PropertyStats:
             u2 = np.dot(weights, diff_sq)
             if np.isclose(u4, 0):
                 return 0
-            return u4 / u2 ** 2 * total_weight
+            return u4 / u2**2 * total_weight
 
     @staticmethod
     def geom_std_dev(data_lst, weights=None):
-        """
-        Geometric standard deviation
+        """Geometric standard deviation
         Args:
             data_lst (list of floats): List of values to be assessed
             weights (list of floats): Weights for each value
         Returns:
             geometric standard deviation
         """
-
         # Make fake weights, if none are provided
         if weights is None:
             weights = np.ones_like(data_lst)
@@ -216,11 +232,14 @@ class PropertyStats:
         If multiple elements occur equally-frequently (or same weight, if
         weights are provided), this function will return the minimum of those
         values.
+
         Args:
+        ----
             data_lst (list of floats): List of values to be assessed
             weights (list of floats): Weights for each value
         Returns:
             mode
+
         """
         if weights is None:
             return scipy.stats.mode(data_lst).mode[0]
@@ -235,15 +254,13 @@ class PropertyStats:
 
     @staticmethod
     def holder_mean(data_lst, weights=None, power=1):
-        """
-        Get Holder mean
+        """Get Holder mean
         Args:
             data_lst: (list/array) of values
             weights: (list/array) of weights
             power: (int/float/str) which holder mean to compute
         Returns: Holder mean
         """
-
         if isinstance(power, str):
             power = float(power)
 
@@ -267,7 +284,9 @@ class PropertyStats:
 
             # If power=0, return geometric mean
             elif power == 0:
-                return np.product(np.power(data_lst, np.true_divide(weights, np.sum(weights))))
+                return np.product(
+                    np.power(data_lst, np.true_divide(weights, np.sum(weights)))
+                )
             else:
                 return np.power(
                     np.sum(np.multiply(weights, np.power(data_lst, power))) / alpha,
@@ -276,15 +295,12 @@ class PropertyStats:
 
     @staticmethod
     def sorted(data_lst, weights=None):
-        """
-        Returns the sorted data_lst
-        """
+        """Returns the sorted data_lst"""
         return np.sort(data_lst)
 
     @staticmethod
     def eigenvalues(data_lst, symm=False, sort=False):
-        """
-        Return the eigenvalues of a matrix as a numpy array
+        """Return the eigenvalues of a matrix as a numpy array
         Args:
             data_lst: (matrix-like) of values
             symm: whether to assume the matrix is symmetric
@@ -303,14 +319,18 @@ class PropertyStats:
 
     @staticmethod
     def quantile(data_lst, weights=None, q=0.5):
-        """
-        Return a specific quantile.
+        """Return a specific quantile.
+
         Args:
+        ----
             data_lst (list or np.ndarray): 1D data list to be used for computing
                 quantiles
             q (float): The quantile, as a fraction between 0 and 1.
+
         Returns:
+        -------
             (float) The computed quantile of the data_lst.
+
         """
         q = float(q)
         return np.quantile(data_lst, q=q)

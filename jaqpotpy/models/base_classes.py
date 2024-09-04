@@ -1,6 +1,7 @@
 from jaqpotpy.doa.doa import DOA
-from jaqpotpy.descriptors.base_classes import Featurizer 
+from jaqpotpy.descriptors.base_classes import Featurizer
 from typing import Any, Iterable
+
 
 class Model(object):
     _model: Any

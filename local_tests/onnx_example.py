@@ -1,7 +1,9 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint
 from jaqpotpy.descriptors.molecular import TopologicalFingerprint
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
@@ -24,10 +26,20 @@ dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
+featurizer = TopologicalFingerprint()
+dataset = JaqpotpyDataset(
+    df=df,
+    y_cols=y_cols,
+    smiles_cols=smiles_cols,
+    x_cols=x_cols,
+    task="regression",
+    featurizer=featurizer,
+)
 
 pre = Preprocess()
 # pre.register_preprocess_class("Standard Scaler", StandardScaler())
 # pre.register_preprocess_class('MinMax Scaler', MinMaxScaler())
+pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
 pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
 
 model = RandomForestRegressor(random_state=42)
@@ -35,14 +47,27 @@ doa_method = Leverage()
 molecularModel_t1 = SklearnModel(
     dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
 )
+molecularModel_t1 = SklearnModel(
+    dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+)
 
 molecularModel_t1.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
+molecularModel_t1.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
 
+pred_path = "/Users/vassilis/Documents/GitHub/jaqpotpy/jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
 pred_path = "/Users/vassilis/Documents/GitHub/jaqpotpy/jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
 df = pd.read_csv(pred_path)
 
 # # data = [{'SMILES': 'CC', 'X1': 1, 'X2': 2}]
 # # df = pd.DataFrame(data)
+prediction_dataset = JaqpotpyDataset(
+    df=df,
+    y_cols=None,
+    smiles_cols=smiles_cols,
+    x_cols=x_cols,
+    task="regression",
+    featurizer=featurizer,
+)
 prediction_dataset = JaqpotpyDataset(
     df=df,
     y_cols=None,
@@ -57,7 +82,9 @@ skl_predictions = molecularModel_t1.predict(prediction_dataset)
 onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
 # onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
 print("SKLearn Predictions:", skl_predictions)
+print("SKLearn Predictions:", skl_predictions)
 # print('SKLearn Probabilities:', skl_probabilities)
+print("ONNX Predictions:", onnx_predictions)
 print("ONNX Predictions:", onnx_predictions)
 # print('ONNX Probabilities:', onnx_probs)
 

@@ -3,19 +3,28 @@ from jaqpotpy.jaqpot import Jaqpot
 
 # from jaqpotpy.models import MolecularModel
 from jaqpotpy.models.evaluator import GenerativeEvaluator
-from jaqpotpy.models.generative.molecular_metrics import diversity_scores \
-    , drugcandidate_scores, synthetic_accessibility_score_scores, valid_mean \
-    , quantitative_estimation_druglikeness_scores, novel_score \
-    , water_octanol_partition_coefficient_scores, unique_total_score, valids, valid_scores
+from jaqpotpy.models.generative.molecular_metrics import (
+    diversity_scores,
+    drugcandidate_scores,
+    synthetic_accessibility_score_scores,
+    valid_mean,
+    quantitative_estimation_druglikeness_scores,
+    novel_score,
+    water_octanol_partition_coefficient_scores,
+    unique_total_score,
+    valid_scores,
+)
+
+
 # pylint: disable=no-member
 
 
 class TestEvaluators(unittest.TestCase):
-
     def setUp(self) -> None:
         self.jaqpot = Jaqpot()
         self.jaqpot.set_api_key(
-            "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2NjY1MjU0MzQsImlhdCI6MTY2NjM1MjYzNCwiYXV0aF90aW1lIjoxNjY2MzUyNjM0LCJqdGkiOiIxODk2ZWQ3ZC1lMmM1LTQ2ZWItOTE3MS1mYzQyYWRiYzVkMmUiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiI0NDAxMTk1NDUyNGQzMTk5ZGIxNDZkYjAwMWViZGZiYzNlbFFSS2JwWiIsInNlc3Npb25fc3RhdGUiOiIzMGVlZTc1YS03NDg2LTRjN2MtYjI1Ni1kNmM0ZjIxOGI2MDQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwic2lkIjoiMzBlZWU3NWEtNzQ4Ni00YzdjLWIyNTYtZDZjNGYyMThiNjA0IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.GFFG1HIKcYsdVqAFSavL_1SgLN0GJWffL3yOahUV_4h2JmqYx5LkzELAk9EfLDroqzxclcl0uBEutrSKIPK2-PSN-8cl_4UY-9__E2F6iG7OR_wOtW5vOY54L5p8LqC0nnbrck_U59sVz9k-zzIsSgmV1NJwDxduL8nzN5FQBjnUW8ZAsMXx1AhK23-x3KPe2L1s2lAq4JE7azXL7ahu7tdSAaKsJRzF0ZdSwUCWic_awc5nNxjspoToK-OrC8-0cDx1cDgX30-L1Wy2gTMBzjW4gHkQ-uhKZ9-yVa_bWK162x0JRGzE_RzZf9DiPebE-jCShxTcuK_8pw1YfoILyw")
+            "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ3Ujh3X1lGOWpKWFRWQ2x2VHF1RkswZkctQXROQUJsb3FBd0N4MmlTTWQ4In0.eyJleHAiOjE2NjY1MjU0MzQsImlhdCI6MTY2NjM1MjYzNCwiYXV0aF90aW1lIjoxNjY2MzUyNjM0LCJqdGkiOiIxODk2ZWQ3ZC1lMmM1LTQ2ZWItOTE3MS1mYzQyYWRiYzVkMmUiLCJpc3MiOiJodHRwczovL2xvZ2luLmphcXBvdC5vcmcvYXV0aC9yZWFsbXMvamFxcG90IiwiYXVkIjoiYWNjb3VudCIsInN1YiI6IjI0MjVkNzYwLTAxOGQtNDA4YS1hZTBiLWNkZTRjNTYzNTRiOSIsInR5cCI6IkJlYXJlciIsImF6cCI6ImphcXBvdC11aS1jb2RlIiwibm9uY2UiOiI0NDAxMTk1NDUyNGQzMTk5ZGIxNDZkYjAwMWViZGZiYzNlbFFSS2JwWiIsInNlc3Npb25fc3RhdGUiOiIzMGVlZTc1YS03NDg2LTRjN2MtYjI1Ni1kNmM0ZjIxOGI2MDQiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIicqJyIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBqYXFwb3QtYWNjb3VudHMgZW1haWwgcHJvZmlsZSB3cml0ZSByZWFkIiwic2lkIjoiMzBlZWU3NWEtNzQ4Ni00YzdjLWIyNTYtZDZjNGYyMThiNjA0IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiUGFudGVsaXMgS2FyYXR6YXMiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJwYW50ZWxpc3BhbmthIiwiZ2l2ZW5fbmFtZSI6IlBhbnRlbGlzIiwiZmFtaWx5X25hbWUiOiJLYXJhdHphcyIsImVtYWlsIjoicGFudGVsaXNwYW5rYUBnbWFpbC5jb20ifQ.GFFG1HIKcYsdVqAFSavL_1SgLN0GJWffL3yOahUV_4h2JmqYx5LkzELAk9EfLDroqzxclcl0uBEutrSKIPK2-PSN-8cl_4UY-9__E2F6iG7OR_wOtW5vOY54L5p8LqC0nnbrck_U59sVz9k-zzIsSgmV1NJwDxduL8nzN5FQBjnUW8ZAsMXx1AhK23-x3KPe2L1s2lAq4JE7azXL7ahu7tdSAaKsJRzF0ZdSwUCWic_awc5nNxjspoToK-OrC8-0cDx1cDgX30-L1Wy2gTMBzjW4gHkQ-uhKZ9-yVa_bWK162x0JRGzE_RzZf9DiPebE-jCShxTcuK_8pw1YfoILyw"
+        )
         self.mols_mocking_genereted = [
             "CCOc1cccc(NC(=O)NCc2ccc(N3CCSCC3)cc2)c1",
             "Cc1cccc(NC(=O)CN2CCN(c3ccc4c(c3)OCCO4)C2=O)n1",
@@ -65,8 +74,7 @@ class TestEvaluators(unittest.TestCase):
             "O=C(NCCCc1ccccc1)C1CCN(C(=O)[C@@H]2CC(=O)N(c3ccccc3)C2)CC1",
             "O=Cc1ccc(OCc2ccn(-c3cccc(F)c3)n2)cc1",
             "Clc1ccccc1Cn1ccnc1",
-                     ]
-
+        ]
 
         self.mols_no_valids = [
             "CCOc1ccccAdsfvSdSCC3)cc2)c1",
@@ -117,8 +125,7 @@ class TestEvaluators(unittest.TestCase):
             "O=C(NCCCc1ccccc1)C1CCN(C(=O)[C@@H]2CC(=O)N(c3ccccc3)C2)CC1",
             "O=Cc1ccc(OCc2ccn(-c3cccc(F)c3)n2)cc1",
             "Clc1ccccc1Cn1ccnc1",
-                     ]
-
+        ]
 
         self.mols_test = [
             "CC(C)(C)c1ccc2occ(CC(=O)Nc3ccccc3F)c2c1",
@@ -177,14 +184,21 @@ class TestEvaluators(unittest.TestCase):
     @unittest.skip("This test needs refactoring")
     def test_generative_evaluator(self):
         from rdkit import Chem
+
         gen_eval = GenerativeEvaluator()
         gen_eval.register_scoring_function("Valid all", valid_mean)
-        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
-        gen_eval.register_scoring_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        gen_eval.register_scoring_function(
+            "QED", quantitative_estimation_druglikeness_scores
+        )
+        gen_eval.register_scoring_function(
+            "Synthetic Accessibility", synthetic_accessibility_score_scores
+        )
         gen_eval.register_scoring_function("Novel", novel_score)
         gen_eval.register_scoring_function("Unique", unique_total_score)
         # gen_eval.register_scoring_function("Diversity", diversity_scores)
-        gen_eval.register_scoring_function("Water Oct", water_octanol_partition_coefficient_scores)
+        gen_eval.register_scoring_function(
+            "Water Oct", water_octanol_partition_coefficient_scores
+        )
         gen_eval.register_scoring_function("Drugcandidate Scores", drugcandidate_scores)
 
         # gen_eval.register_scoring_function("Novel all", novel_score)
@@ -198,14 +212,21 @@ class TestEvaluators(unittest.TestCase):
     @unittest.skip("This test needs refactoring")
     def test_generative_evaluator_no_valids(self):
         from rdkit import Chem
+
         gen_eval = GenerativeEvaluator()
         gen_eval.register_scoring_function("Valid all", valid_mean)
-        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
-        gen_eval.register_scoring_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        gen_eval.register_scoring_function(
+            "QED", quantitative_estimation_druglikeness_scores
+        )
+        gen_eval.register_scoring_function(
+            "Synthetic Accessibility", synthetic_accessibility_score_scores
+        )
         gen_eval.register_scoring_function("Novel", novel_score)
         gen_eval.register_scoring_function("Unique", unique_total_score)
         # gen_eval.register_scoring_function("Diversity", diversity_scores)
-        gen_eval.register_scoring_function("Water Oct", water_octanol_partition_coefficient_scores)
+        gen_eval.register_scoring_function(
+            "Water Oct", water_octanol_partition_coefficient_scores
+        )
         gen_eval.register_scoring_function("Drugcandidate Scores", drugcandidate_scores)
 
         # gen_eval.register_scoring_function("Novel all", novel_score)
@@ -215,21 +236,28 @@ class TestEvaluators(unittest.TestCase):
             try:
                 mol = Chem.MolFromSmiles(i)
                 mols.append(mol)
-            except Exception as e:
+            except Exception:
                 mols.append(None)
-        rew = gen_eval.get_reward(mols)
+        # rew = gen_eval.get_reward(mols)
 
     @unittest.skip("This test needs refactoring")
     def test_generative_evaluator_scores(self):
         from rdkit import Chem
+
         gen_eval = GenerativeEvaluator()
         gen_eval.register_scoring_function("Valid all", valid_mean)
-        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
-        gen_eval.register_scoring_function("Synthetic Accessibility", synthetic_accessibility_score_scores)
+        gen_eval.register_scoring_function(
+            "QED", quantitative_estimation_druglikeness_scores
+        )
+        gen_eval.register_scoring_function(
+            "Synthetic Accessibility", synthetic_accessibility_score_scores
+        )
         gen_eval.register_scoring_function("Novel", novel_score)
         gen_eval.register_scoring_function("Unique", unique_total_score)
         gen_eval.register_scoring_function("Diversity", diversity_scores)
-        gen_eval.register_scoring_function("Water Oct", water_octanol_partition_coefficient_scores)
+        gen_eval.register_scoring_function(
+            "Water Oct", water_octanol_partition_coefficient_scores
+        )
         gen_eval.register_scoring_function("Drugcandidate Scores", drugcandidate_scores)
 
         # gen_eval.register_scoring_function("Novel all", novel_score)
@@ -239,16 +267,19 @@ class TestEvaluators(unittest.TestCase):
             try:
                 mol = Chem.MolFromSmiles(i)
                 mols.append(mol)
-            except Exception as e:
+            except Exception:
                 mols.append(None)
-        rew = gen_eval.get_reward(mols)
+        # rew = gen_eval.get_reward(mols)
 
     @unittest.skip("This test needs refactoring")
     def test_generative_evaluator_scores_valids(self):
         from rdkit import Chem
+
         gen_eval = GenerativeEvaluator()
         gen_eval.register_scoring_function("Valids", valid_scores)
-        gen_eval.register_scoring_function("QED", quantitative_estimation_druglikeness_scores)
+        gen_eval.register_scoring_function(
+            "QED", quantitative_estimation_druglikeness_scores
+        )
 
         # gen_eval.register_scoring_function("Novel all", novel_score)
         gen_eval.register_dataset(self.mols_test)
@@ -257,12 +288,9 @@ class TestEvaluators(unittest.TestCase):
             try:
                 mol = Chem.MolFromSmiles(i)
                 mols.append(mol)
-            except Exception as e:
+            except Exception:
                 mols.append(None)
-        rew = gen_eval.get_reward(mols)
-
-
-
+        # rew = gen_eval.get_reward(mols)
 
 # gen_eval = GenerativeEvaluator()
 #

@@ -1,12 +1,19 @@
-from .meta import MetaInfo
-from .parameter import Parameter
-
-
 class Algorithm(object):
-
-    def __init__(self, meta=None, ontological_classes=None, visible=False, temporary=False,
-                 featured=False, parameters=None, ranking=None, bibtex=None, training_service=None,
-                 prediction_service=None, report_service=None, _id=None):
+    def __init__(
+        self,
+        meta=None,
+        ontological_classes=None,
+        visible=False,
+        temporary=False,
+        featured=False,
+        parameters=None,
+        ranking=None,
+        bibtex=None,
+        training_service=None,
+        prediction_service=None,
+        report_service=None,
+        _id=None,
+    ):
         self._meta = None
         self._ontological_classes = None
         self._visible = None

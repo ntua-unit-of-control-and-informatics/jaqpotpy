@@ -79,19 +79,22 @@ def sync_detailed(
     """Get paginated shared models
 
     Args:
+    ----
         page (Union[Unset, int]):  Default: 0.
         size (Union[Unset, int]):  Default: 10.
         sort (Union[Unset, List[str]]):  Example: ['field1|asc', 'field2|desc'].
         organization_id (Union[Unset, int]):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, GetSharedModelsResponse200]]
-    """
 
+    """
     kwargs = _get_kwargs(
         page=page,
         size=size,
@@ -117,19 +120,22 @@ def sync(
     """Get paginated shared models
 
     Args:
+    ----
         page (Union[Unset, int]):  Default: 0.
         size (Union[Unset, int]):  Default: 10.
         sort (Union[Unset, List[str]]):  Example: ['field1|asc', 'field2|desc'].
         organization_id (Union[Unset, int]):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, GetSharedModelsResponse200]
-    """
 
+    """
     return sync_detailed(
         client=client,
         page=page,
@@ -150,19 +156,22 @@ async def asyncio_detailed(
     """Get paginated shared models
 
     Args:
+    ----
         page (Union[Unset, int]):  Default: 0.
         size (Union[Unset, int]):  Default: 10.
         sort (Union[Unset, List[str]]):  Example: ['field1|asc', 'field2|desc'].
         organization_id (Union[Unset, int]):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Response[Union[Any, GetSharedModelsResponse200]]
-    """
 
+    """
     kwargs = _get_kwargs(
         page=page,
         size=size,
@@ -186,19 +195,22 @@ async def asyncio(
     """Get paginated shared models
 
     Args:
+    ----
         page (Union[Unset, int]):  Default: 0.
         size (Union[Unset, int]):  Default: 10.
         sort (Union[Unset, List[str]]):  Example: ['field1|asc', 'field2|desc'].
         organization_id (Union[Unset, int]):
 
     Raises:
+    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
+    -------
         Union[Any, GetSharedModelsResponse200]
-    """
 
+    """
     return (
         await asyncio_detailed(
             client=client,

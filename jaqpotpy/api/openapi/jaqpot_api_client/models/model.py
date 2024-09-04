@@ -214,7 +214,9 @@ class Model:
         independent_features = []
         _independent_features = d.pop("independentFeatures")
         for independent_features_item_data in _independent_features:
-            independent_features_item = Feature.from_dict(independent_features_item_data)
+            independent_features_item = Feature.from_dict(
+                independent_features_item_data
+            )
 
             independent_features.append(independent_features_item)
 

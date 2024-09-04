@@ -1,7 +1,7 @@
-"""
-Featurizer implementations used in Smiles2Vec models.
+"""Featurizer implementations used in Smiles2Vec models.
 SmilesToSeq featurizer for Smiles2Vec models taken from https://arxiv.org/abs/1712.02734
 """
+
 from typing import Dict, List, Iterable
 import numpy as np
 
@@ -12,21 +12,26 @@ PAD_TOKEN = "<pad>"
 OUT_OF_VOCAB_TOKEN = "<unk>"
 
 
-def create_char_to_idx(smiles:  Iterable[str],
-                       max_len: int = 250, ) -> Dict[str, int]:
+def create_char_to_idx(
+    smiles: Iterable[str],
+    max_len: int = 250,
+) -> Dict[str, int]:
     """Creates a dictionary with character to index mapping.
-      Parameters
-      ----------
-      smiles: str array
-          List of smiles
-      max_len: int, default 250
-          Maximum allowed length of the SMILES string
-      smiles_field: str, default "smiles"
-          Field indicating the SMILES strings int the file.
-      Returns
-      -------
-      Dict[str, int]
-        A dictionary mapping characters to their integer indexes.
+
+    Parameters
+    ----------
+    smiles: str array
+        List of smiles
+    max_len: int, default 250
+        Maximum allowed length of the SMILES string
+    smiles_field: str, default "smiles"
+        Field indicating the SMILES strings int the file.
+
+    Returns
+    -------
+    Dict[str, int]
+      A dictionary mapping characters to their integer indexes.
+
     """
     char_set = set()
     for smile in smiles:
@@ -40,40 +45,43 @@ def create_char_to_idx(smiles:  Iterable[str],
 
 
 class SmilesToSeq(MolecularFeaturizer):
-    """
-      SmilesToSeq Featurizer takes a SMILES string, and turns it into a sequence.
-      Details taken from [1]_.
-      SMILES strings smaller than a specified max length (max_len) are padded using
-      the PAD token while those larger than the max length are not considered. Based
-      on the paper, there is also the option to add extra padding (pad_len) on both
-      sides of the string after length normalization. Using a character to index (char_to_idx)
-      mapping, the SMILES characters are turned into indices and the
-      resulting sequence of indices serves as the input for an embedding layer.
-      References
-      ----------
-      .. [1] Goh, Garrett B., et al. "Using rule-based labels for weak supervised
-         learning: a ChemNet for transferable chemical property prediction."
-         Proceedings of the 24th ACM SIGKDD International Conference on Knowledge
-         Discovery & Data Mining. 2018.
-      Note
-      ----
-      This class requires RDKit to be installed.
+    """SmilesToSeq Featurizer takes a SMILES string, and turns it into a sequence.
+    Details taken from [1]_.
+    SMILES strings smaller than a specified max length (max_len) are padded using
+    the PAD token while those larger than the max length are not considered. Based
+    on the paper, there is also the option to add extra padding (pad_len) on both
+    sides of the string after length normalization. Using a character to index (char_to_idx)
+    mapping, the SMILES characters are turned into indices and the
+    resulting sequence of indices serves as the input for an embedding layer.
+
+    References:
+    ----------
+    .. [1] Goh, Garrett B., et al. "Using rule-based labels for weak supervised
+       learning: a ChemNet for transferable chemical property prediction."
+       Proceedings of the 24th ACM SIGKDD International Conference on Knowledge
+       Discovery & Data Mining. 2018.
+
+    Note:
+    ----
+    This class requires RDKit to be installed.
+
     """
 
-    def __init__(self,
-                 char_to_idx: Dict[str, int],
-                 max_len: int = 250,
-                 pad_len: int = 10):
+    def __init__(
+        self, char_to_idx: Dict[str, int], max_len: int = 250, pad_len: int = 10
+    ):
         """Initialize this class.
-    Parameters
-    ----------
-    char_to_idx: Dict
-      Dictionary containing character to index mappings for unique characters
-    max_len: int, default 250
-      Maximum allowed length of the SMILES string.
-    pad_len: int, default 10
-      Amount of padding to add on either side of the SMILES seq
-    """
+
+        Parameters
+        ----------
+        char_to_idx: Dict
+        Dictionary containing character to index mappings for unique characters
+        max_len: int, default 250
+        Maximum allowed length of the SMILES string.
+        pad_len: int, default 10
+        Amount of padding to add on either side of the SMILES seq
+
+        """
         self.max_len = max_len
         self.char_to_idx = char_to_idx
         self.idx_to_char = {idx: letter for letter, idx in self.char_to_idx.items()}
@@ -84,20 +92,18 @@ class SmilesToSeq(MolecularFeaturizer):
 
     @property
     def __name__(self):
-        return 'SmilesToSeq'
+        return "SmilesToSeq"
 
     def to_seq(self, smile: List[str]) -> np.ndarray:
         """Turns list of smiles characters into array of indices"""
         out_of_vocab_idx = self.char_to_idx[OUT_OF_VOCAB_TOKEN]
-        seq = [
-            self.char_to_idx.get(character, out_of_vocab_idx) for character in smile
-        ]
+        seq = [self.char_to_idx.get(character, out_of_vocab_idx) for character in smile]
         return np.array(seq)
 
     def remove_pad(self, characters: List[str]) -> List[str]:
         """Removes PAD_TOKEN from the character list."""
-        characters = characters[self.pad_len:]
-        characters = characters[:-self.pad_len]
+        characters = characters[self.pad_len :]
+        characters = characters[: -self.pad_len]
         chars = list()
 
         for char in characters:
@@ -115,22 +121,25 @@ class SmilesToSeq(MolecularFeaturizer):
 
     def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
         """Featurizes a SMILES sequence.
+
         Parameters
         ----------
         datapoints: rdkit.Chem.rdchem.Mol
           RDKit Mol object
+
         Returns
         -------
         np.ndarray
           A 1D array of a SMILES sequence.
           If the length of SMILES is longer than `max_len`, this value is an empty array.
+
         """
         try:
             from rdkit import Chem
         except ModuleNotFoundError:
             raise ImportError("This class requires RDKit to be installed.")
 
-        if 'mol' in kwargs:
+        if "mol" in kwargs:
             datapoint = kwargs.get("mol")
             raise DeprecationWarning(
                 'Mol is being phased out as a parameter, please pass "datapoint" instead.'
@@ -152,27 +161,30 @@ class SmilesToSeq(MolecularFeaturizer):
         return smile_seq
 
     def _get_column_names(self, **kwargs) -> list:
-        descriptors = ['Sequence']
+        descriptors = ["Sequence"]
         return descriptors
 
     def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
         """Featurizes a SMILES sequence.
+
         Parameters
         ----------
         datapoints: rdkit.Chem.rdchem.Mol
           RDKit Mol object
+
         Returns
         -------
         np.ndarray
           A 1D array of a SMILES sequence.
           If the length of SMILES is longer than `max_len`, this value is an empty array.
+
         """
         try:
             from rdkit import Chem
         except ModuleNotFoundError:
             raise ImportError("This class requires RDKit to be installed.")
 
-        if 'mol' in kwargs:
+        if "mol" in kwargs:
             datapoint = kwargs.get("mol")
             raise DeprecationWarning(
                 'Mol is being phased out as a parameter, please pass "datapoint" instead.'

@@ -1,41 +1,31 @@
-"""
-Tests for Jaqpotpy Models.
-"""
+"""Tests for Jaqpotpy Models."""
+
 import unittest
-from jaqpotpy.parsers.pdb_parser import PdbParser
 
 
 class TestParsers(unittest.TestCase):
-    """
-    Test PdbParser.
-    """
+    """Test PdbParser."""
 
     def setUp(self):
-        """
-        Set up tests.
-        """
+        """Set up tests."""
 
-        #pdb = 'C:/Users/jason/OneDrive/Documents/PhD - NTUA Process Control/Project 01 - PDB Files/PDB_files/GNP1.pdb'
-        #path = 'C:/Users/jason/OneDrive/Documents/PhD - NTUA Process Control/Project 01 - PDB Files/PDB_files/'
+        # pdb = 'C:/Users/jason/OneDrive/Documents/PhD - NTUA Process Control/Project 01 - PDB Files/PDB_files/GNP1.pdb'
+        # path = 'C:/Users/jason/OneDrive/Documents/PhD - NTUA Process Control/Project 01 - PDB Files/PDB_files/'
 
-        #self.parser = PdbParser(pdb, 'pdb')
+        # self.parser = PdbParser(pdb, 'pdb')
 
-    @unittest.skip("This test needs refactoring")  
+    @unittest.skip("This test needs refactoring")
     def test_file(self):
-        """
-        Test pdb file.
-        """
+        """Test pdb file."""
         # test = self.parser.parse()
         # pdb = next(test)
         # print(pdb.atoms.elements)
         # assert pdb.atoms.elements
         return
 
-    @unittest.skip("This test needs refactoring") 
+    @unittest.skip("This test needs refactoring")
     def test_path(self):
-        """
-        Test pdb folder.
-        """
+        """Test pdb folder."""
         # test = self.parser.parse()
         # stop = ''
         #
@@ -47,17 +37,18 @@ class TestParsers(unittest.TestCase):
 
         return
 
-    @unittest.skip("This test needs refactoring") 
+    @unittest.skip("This test needs refactoring")
     def test_df_file(self):
-        #df = self.parser.parse_dataframe()
+        # df = self.parser.parse_dataframe()
         # pdb = next(test)
-        #print(df)
+        # print(df)
         return
 
-    @unittest.skip("This test needs refactoring") 
+    @unittest.skip("This test needs refactoring")
     def test_xyz(self):
-        #print(self.parser.to_xyz())
+        # print(self.parser.to_xyz())
         return
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

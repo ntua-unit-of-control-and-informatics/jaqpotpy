@@ -1,4 +1,4 @@
-[![Build and test](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy/actions/workflows/ci.yml/badge.svg)](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy/actions/workflows/ci.yml) [![Publish to PyPI 📦](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy/actions/workflows/pipy_release.yml/badge.svg)](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy/actions/workflows/pipy_release.yml)
+[![Build and test](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy/actions/workflows/build.yml/badge.svg)](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy/actions/workflows/build.yml) [![Publish to PyPI 📦](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy/actions/workflows/pipy_release.yml/badge.svg)](https://github.com/ntua-unit-of-control-and-informatics/jaqpotpy/actions/workflows/pipy_release.yml)
 
 # Jaqpotpy
 
@@ -29,25 +29,7 @@ To use jaqpotpy, you need to log in to the Jaqpot platform. You can log in using
 from jaqpotpy import Jaqpot
 
 jaqpot = Jaqpot()
-jaqpot.login('your_username', 'your_password') 
-```
-
-#### Request and Set API Key
-
-You can request an API key and set it:
-```python
-jaqpot.request_key('your_username', 'your_password')
-```
-or
-```python
-jaqpot.request_key_safe()  # Prompts for username and password securely
-```
-#### Set API Key Directly
-
-If you already have an API key (you can retrieve one from https://app.jaqpot.org), you can set it directly:
-
-```python
-jaqpot.set_api_key("your_api_key")
+jaqpot.login() # follow the steps here to login through the command line 
 ```
 
 ### Model Training and Deployment
