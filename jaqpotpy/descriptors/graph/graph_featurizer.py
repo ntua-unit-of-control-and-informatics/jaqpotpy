@@ -6,7 +6,6 @@ import json
 class SmilesGraphFeaturizer:
     # Notes
     # 1. Atom, Bond feature labels function not needed. can be obtained with featurizer.atom_allowable_sets
-    # 2.
     """
     Featurizes SMILES strings into graph data suitable for graph neural networks.
     Class Attributes:
@@ -70,7 +69,6 @@ class SmilesGraphFeaturizer:
         Sets the allowable sets for bond features. This is used internally.
         Bond_allowable_sets_dict (dict): Dictionary of allowable sets per bond feature.
         """
-        self.bond_allowable_sets = dict()
         for bond_feature, allowable_set in bond_allowable_sets_dict.items():
             self.add_bond_feature(bond_feature, allowable_set)
 
