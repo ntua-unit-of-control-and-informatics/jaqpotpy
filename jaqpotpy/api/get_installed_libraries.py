@@ -1,6 +1,5 @@
 import subprocess
-from jaqpotpy.api.types.models.library import Library
-
+from jaqpotpy.api.openapi.jaqpot_api_client.models.library import Library
 
 def get_installed_libraries():
     # Run the pip freeze command
