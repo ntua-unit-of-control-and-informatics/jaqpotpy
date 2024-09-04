@@ -7,11 +7,11 @@ import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.helpers.jwt as jwtok
 import jaqpotpy.helpers.helpers as help
 import jaqpotpy.helpers.dataset_deserializer as ds
-from jaqpotpy.api.types.api.model import create_model
-from jaqpotpy.api.types.models import Model
-from jaqpotpy.api.types.models.model_visibility import ModelVisibility
-from jaqpotpy.api.types.models.feature import Feature
-from jaqpotpy.api.types.client import AuthenticatedClient
+from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
+from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import ModelVisibility
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
+from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.helpers.logging import init_logger
 import json
