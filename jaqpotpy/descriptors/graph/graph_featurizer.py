@@ -3,6 +3,7 @@ import torch
 from torch_geometric.data import Data
 import json
 
+
 class SmilesGraphFeaturizer:
     # Notes
     # 1. Atom, Bond feature labels function not needed. can be obtained with featurizer.atom_allowable_sets
@@ -52,7 +53,7 @@ class SmilesGraphFeaturizer:
 
     def __init__(self, include_edge_features=True):
         """include_edge_features (bool): Whether to include edge features in the featurization."""
-        self.include_edge_features = include_edge_features  
+        self.include_edge_features = include_edge_features
         self.atom_allowable_sets = {}
         self.bond_allowable_sets = {}
 
@@ -295,7 +296,7 @@ class SmilesGraphFeaturizer:
             if value is None:
                 num += 1
             else:
-                num+=len(value)
+                num += len(value)
         return num
 
     def get_num_edge_features(self):
@@ -305,7 +306,7 @@ class SmilesGraphFeaturizer:
             if value is None:
                 num += 1
             else:
-                num+=len(value)
+                num += len(value)
         return num
 
     def __call__(self, *args, **kwargs):

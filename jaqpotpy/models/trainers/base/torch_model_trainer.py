@@ -18,12 +18,12 @@ class TorchModelTrainerMeta(ABCMeta):
         A metaclass for torch model training, ensuring:
         - 'get_model_type' method is defined as a class method
         """
-        if 'get_model_type' in dct:
-            method = dct['get_model_type']
+        if "get_model_type" in dct:
+            method = dct["get_model_type"]
             if not isinstance(method, classmethod):
                 raise TypeError(f"{name}.get_model_type must be a class method")
         return super().__new__(cls, name, bases, dct)
-    
+
 
 class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
     """
@@ -40,10 +40,10 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         current_epoch (int): The epoch on which the trainer has currently reached.
         log_enabled (bool): Whether logging is enabled.
         log_filepath (os.path.relpath or None): Relative path to the log file.
-        json_data_for_deployment (dict or None): The data to be sent to the API of Jaqpot in JSON format. Note that `prepare_for_deployment` must be called to compute this attribute. 
+        json_data_for_deployment (dict or None): The data to be sent to the API of Jaqpot in JSON format. Note that `prepare_for_deployment` must be called to compute this attribute.
         logger (logging.Logger): The logger object at INFO level used for logging during model training.
     """
-    
+
     @classmethod
     @abstractmethod
     def get_model_type(cls):
@@ -55,16 +55,18 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         pass
 
-    def __init__(self,
-                 model: torch.nn.Module,
-                 n_epochs: int,
-                 optimizer: torch.optim.Optimizer,
-                 loss_fn: torch.nn.Module,
-                 scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None,
-                 device: str = 'cpu',
-                 use_tqdm: bool = True,
-                 log_enabled: bool = True,
-                 log_filepath: Optional[str] = None):
+    def __init__(
+        self,
+        model: torch.nn.Module,
+        n_epochs: int,
+        optimizer: torch.optim.Optimizer,
+        loss_fn: torch.nn.Module,
+        scheduler: Optional[torch.optim.lr_scheduler.LRScheduler] = None,
+        device: str = "cpu",
+        use_tqdm: bool = True,
+        log_enabled: bool = True,
+        log_filepath: Optional[str] = None,
+    ):
         """
         Args:
             model (torch.nn.Module): The torch model to be trained.
@@ -80,19 +82,24 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         self.model = model
         self.n_epochs = n_epochs
         self.optimizer = optimizer
-        self.scheduler = scheduler if scheduler is not None else LambdaLR(optimizer, lr_lambda=lambda epoch: 1)
+        self.scheduler = (
+            scheduler
+            if scheduler is not None
+            else LambdaLR(optimizer, lr_lambda=lambda epoch: 1)
+        )
         self.loss_fn = loss_fn
         self.device = torch.device(device)
         self.use_tqdm = use_tqdm
         self.current_epoch = 0
         self.log_enabled = log_enabled
-        self.log_filepath = os.path.relpath(log_filepath) if log_filepath else log_filepath
+        self.log_filepath = (
+            os.path.relpath(log_filepath) if log_filepath else log_filepath
+        )
         self.json_data_for_deployment = None
 
         self.logger = self._setup_logger()
-        
-        self.model.to(self.device)
 
+        self.model.to(self.device)
 
     def _setup_logger(self):
         """
@@ -105,22 +112,22 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         # Remove existing handlers
         for handler in logger.handlers[:]:
             logger.removeHandler(handler)
-    
-        handlers=[logging.StreamHandler(sys.stdout)]
+
+        handlers = [logging.StreamHandler(sys.stdout)]
         if self.log_filepath:
             if os.path.exists(self.log_filepath):
                 raise ValueError(f"File already exists: {self.log_filepath}")
             log_file_handler = logging.FileHandler(self.log_filepath)
             handlers.append(log_file_handler)
 
-        log_format = '%(message)s'
+        log_format = "%(message)s"
         formatter = logging.Formatter(log_format)
         for handler in handlers:
             handler.setFormatter(formatter)
             logger.addHandler(handler)
 
         return logger
-    
+
     @classmethod
     def collect_subclass_info(cls):
         """
@@ -134,9 +141,9 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         for subclass in cls.__subclasses__():
 
             subclass_info[subclass.__name__] = {
-                'model_type': subclass.get_model_type(),
-                'parent': cls.__name__,
-                'is_abstract': inspect.isabstract(subclass),
+                "model_type": subclass.get_model_type(),
+                "parent": cls.__name__,
+                "is_abstract": inspect.isabstract(subclass),
             }
 
             subclass_info.update(subclass.collect_subclass_info())
@@ -147,12 +154,15 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
     def get_subclass_model_types(cls):
         """
         Return the list of all the types of models that inherit from TorchModelTrainer and are implemented in the jaqpotpy_torch.trainers submodule.
-        
+
         Returns:
             list: A list of model types as strings.
         """
-        return [v['model_type'] for v in cls.collect_subclass_info().values() if not v['is_abstract'] and v['model_type'] is not None]
-    
+        return [
+            v["model_type"]
+            for v in cls.collect_subclass_info().values()
+            if not v["is_abstract"] and v["model_type"] is not None
+        ]
 
     # @check_reach_epoch_limit
     @abstractmethod
@@ -161,7 +171,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         Train the model.
 
         Args:
-            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.            
+            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional): DataLoader for the validation dataset.
         Returns:
             None
@@ -177,30 +187,30 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
             loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the evaluation dataset.
         """
         pass
-    
+
     # @abstractmethod
     # def prepare_for_deployment(self, *args, **kwargs):
     #     """
     #     Prepare the model data in JSON format for deployment on Jaqpot.
     #     """
     #     pass
-    
 
     @staticmethod
     # @enforce_types
-    def _model_data_as_json(actualModel: str,
-                            name: str,
-                            description: Union[str, None],
-                            model_type: str,
-                            visibility:  str,
-                            independentFeatures: List[Feature],
-                            dependentFeatures: List[Feature],
-                            additional_model_params: dict,
-                            reliability: Optional[int] = None,
-                            pretrained: int = False,
-                            meta: Optional[dict] = None,
-                            organizations: Optional[List[Organization]] = None,
-                            ) -> dict:
+    def _model_data_as_json(
+        actualModel: str,
+        name: str,
+        description: Union[str, None],
+        model_type: str,
+        visibility: str,
+        independentFeatures: List[Feature],
+        dependentFeatures: List[Feature],
+        additional_model_params: dict,
+        reliability: Optional[int] = None,
+        pretrained: int = False,
+        meta: Optional[dict] = None,
+        organizations: Optional[List[Organization]] = None,
+    ) -> dict:
         """
         Create a JSON representation of the model data for deployment.
 
@@ -221,7 +231,7 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         Returns:
             dict: The JSON representation of the model data.
         """
-        
+
         if not isinstance(name, str):
             msg = "'name' should be of type str"
             raise ValueError(msg)
@@ -231,20 +241,20 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if not minLength_name <= len(name) <= maxLength_name:
             msg = "Model 'name' length must be between 3 and 255 characters"
             raise ValueError(msg)
-        
-        description = ''  if description is None else description
+
+        description = "" if description is None else description
         if not isinstance(description, str):
             msg = "'description' should be of type str"
             raise ValueError(msg)
-        
+
         if not isinstance(model_type, str):
             msg = "'model_type' should be of type str"
             raise ValueError(msg)
         if model_type not in TorchModelTrainer.get_subclass_model_types():
             msg = f"Invalid model_type: '{model_type}'. It must be one of {set(TorchModelTrainer.get_subclass_model_types())}."
             raise ValueError(msg)
-        
-        visibility_allowed_values = ['PUBLIC', 'ORG_SHARED', 'PRIVATE']
+
+        visibility_allowed_values = ["PUBLIC", "ORG_SHARED", "PRIVATE"]
         if visibility not in visibility_allowed_values:
             msg = f"Invalid visibility: {visibility}. Must be one of {visibility_allowed_values}"
             raise ValueError(msg)
@@ -252,21 +262,21 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if not isinstance(independentFeatures, list):
             msg = "'independentFeatures' should be of type list"
             raise ValueError(msg)
-  #      if any(not isinstance(feature, Feature) for feature in independentFeatures):
- #           msg = "'independentFeatures' should must only include elements of type Feature"
-#            raise ValueError(msg)
-        
+        #      if any(not isinstance(feature, Feature) for feature in independentFeatures):
+        #           msg = "'independentFeatures' should must only include elements of type Feature"
+        #            raise ValueError(msg)
+
         if not isinstance(dependentFeatures, list):
             msg = "'dependentFeatures' should be of type list"
             raise ValueError(msg)
-#        if any(not isinstance(feature, Feature) for feature in independentFeatures):
-#            msg = "'dependentFeatures' should must only include elements of type Feature"
-#            raise ValueError(msg)
-        
+        #        if any(not isinstance(feature, Feature) for feature in independentFeatures):
+        #            msg = "'dependentFeatures' should must only include elements of type Feature"
+        #            raise ValueError(msg)
+
         if reliability is not None and not isinstance(reliability, int):
             msg = "'reliability' should be of type int"
             raise ValueError(msg)
-        
+
         if not isinstance(pretrained, bool):
             msg = "'pretrained' should be of type bool"
             raise ValueError(msg)
@@ -274,18 +284,24 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if meta is not None and not isinstance(meta, dict):
             msg = "'meta' should be of type dict"
             raise ValueError(msg)
-        
+
         if organizations is not None and not isinstance(meta, list):
             msg = "'organizations' should be of type list"
             raise ValueError(msg)
-        if organizations is not None and any(not isinstance(organization, Organization) for organization in organizations):
-            msg = "'organizations' should must only include elements of type Organization"
+        if organizations is not None and any(
+            not isinstance(organization, Organization) for organization in organizations
+        ):
+            msg = (
+                "'organizations' should must only include elements of type Organization"
+            )
             raise ValueError(msg)
 
-        if set(feature.name for feature in independentFeatures) & set(feature.name for feature in dependentFeatures):
+        if set(feature.name for feature in independentFeatures) & set(
+            feature.name for feature in dependentFeatures
+        ):
             msg = "There are input and output variables that might have the same naming"
             raise ValueError(msg)
-        
+
         independent_feature_names = set(feature.name for feature in independentFeatures)
         dependent_feature_names = set(feature.name for feature in dependentFeatures)
         overlapping_features = independent_feature_names & dependent_feature_names
@@ -299,31 +315,32 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if organizations is None:
             organizations = []
 
-        libraries = [Library(package_name, package_version) for package_name, package_version in get_installed_packages().items()]
+        libraries = [
+            Library(package_name, package_version)
+            for package_name, package_version in get_installed_packages().items()
+        ]
 
-        jaqpotpyVersion = '1.0.0'
+        jaqpotpyVersion = "1.0.0"
         # jaqpotpyVersion = str(jaqpotpy.__version__)
-        
-        
+
         data = {
-            'meta': meta,
-            'name': name,
-            'description': description,
-            'type': f'TORCH-{model_type}',
-            'jaqpotpyVersion': jaqpotpyVersion,
-            'libraries' : [library.to_json() for library in libraries],
-            'dependentFeatures': dependentFeatures,
-            'independentFeatures':  independentFeatures,
-            'organizations': organizations,
-            'visibility': visibility,
-            'reliability': reliability,
-            'pretrained': pretrained,
-            'actualModel': actualModel,
-            'additional_model_params': additional_model_params,
+            "meta": meta,
+            "name": name,
+            "description": description,
+            "type": f"TORCH-{model_type}",
+            "jaqpotpyVersion": jaqpotpyVersion,
+            "libraries": [library.to_json() for library in libraries],
+            "dependentFeatures": dependentFeatures,
+            "independentFeatures": independentFeatures,
+            "organizations": organizations,
+            "visibility": visibility,
+            "reliability": reliability,
+            "pretrained": pretrained,
+            "actualModel": actualModel,
+            "additional_model_params": additional_model_params,
         }
 
         return data
-
 
     def set_input_feature_meta_for_deployment(self, feature_name: str, meta: dict):
         """
@@ -339,8 +356,10 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if not isinstance(meta, dict):
             msg = "'meta' should be of type dict"
             raise ValueError(msg)
-        self._set_feature_attr_for_deployment(feature_name, 'meta', dict(meta), is_input_feature=True)
-    
+        self._set_feature_attr_for_deployment(
+            feature_name, "meta", dict(meta), is_input_feature=True
+        )
+
     def set_output_feature_meta_for_deployment(self, feature_name: str, meta: dict):
         """
         Set the meta attribute for an output feature in the JSON data for deployment.
@@ -355,9 +374,13 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if not isinstance(meta, dict):
             msg = "'meta' should be of type dict"
             raise ValueError(msg)
-        self._set_feature_attr_for_deployment(feature_name, 'meta', dict(meta), is_input_feature=False)
-    
-    def set_input_feature_description_for_deployment(self, feature_name: str, description: str):
+        self._set_feature_attr_for_deployment(
+            feature_name, "meta", dict(meta), is_input_feature=False
+        )
+
+    def set_input_feature_description_for_deployment(
+        self, feature_name: str, description: str
+    ):
         """
         Set the description attribute for an input feature in the JSON data for deployment.
 
@@ -371,9 +394,13 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if not isinstance(description, str):
             msg = "'description' should be of type str"
             raise ValueError(msg)
-        self._set_feature_attr_for_deployment(feature_name, 'description', str(description), is_input_feature=True)
-    
-    def set_output_feature_description_for_deployment(self, feature_name: str, description: str):
+        self._set_feature_attr_for_deployment(
+            feature_name, "description", str(description), is_input_feature=True
+        )
+
+    def set_output_feature_description_for_deployment(
+        self, feature_name: str, description: str
+    ):
         """
         Set the description attribute for an output feature in the JSON data for deployment.
 
@@ -387,15 +414,17 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if not isinstance(description, str):
             msg = "'description' should be of type str"
             raise ValueError(msg)
-        self._set_feature_attr_for_deployment(feature_name, 'description', str(description), is_input_feature=False)
+        self._set_feature_attr_for_deployment(
+            feature_name, "description", str(description), is_input_feature=False
+        )
 
-
-    def _set_feature_attr_for_deployment(self,
-                                         feature_name,
-                                         attr_name, 
-                                         attr_value,
-                                         is_input_feature=True,
-                                         ):
+    def _set_feature_attr_for_deployment(
+        self,
+        feature_name,
+        attr_name,
+        attr_value,
+        is_input_feature=True,
+    ):
         """
         Set an attribute for a feature in the JSON data for deployment.
 
@@ -409,19 +438,20 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if self.json_data_for_deployment is None:
             msg = "No JSON data for deployment to set feature attributes. You may need to call 'prepare_data_for_deployment' first."
             raise RuntimeError(msg)
-    
-        feature_dependency = 'independentFeatures' if is_input_feature else 'dependentFeatures'
-        
+
+        feature_dependency = (
+            "independentFeatures" if is_input_feature else "dependentFeatures"
+        )
+
         for i, feature in enumerate(self.json_data_for_deployment[feature_dependency]):
-            if feature_name == feature['name']:
-                self.json_data_for_deployment[feature_dependency][i][attr_name] = attr_value
+            if feature_name == feature["name"]:
+                self.json_data_for_deployment[feature_dependency][i][
+                    attr_name
+                ] = attr_value
                 return
-        
+
         raise ValueError(f"No feature named '{feature_name}'")
-    
 
-
-    
     def deploy_model(self, token):
         """
         Deploy the model to Jaqpot.
@@ -442,15 +472,17 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
 
         # TODO: Replace with the appropriate headers
         headers = {
-                'Authorization': f'Bearer {token}',
-                'Content-Type': 'application/json'
-            }
-        
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+
         # TODO: Replace with the appropriate url for model uploading
         # url = "http://localhost:8006/api/v1/models/upload/" # for jaqpotpy-torch-inference repo
-        url = "http://localhost:8002/upload/" # for jaqpotpy-inference repo
+        url = "http://localhost:8002/upload/"  # for jaqpotpy-inference repo
 
         # TODO: Add whatever else is needed in the POST request
-        response = requests.post(url, json=self.json_data_for_deployment, headers=headers)
+        response = requests.post(
+            url, json=self.json_data_for_deployment, headers=headers
+        )
 
         return response

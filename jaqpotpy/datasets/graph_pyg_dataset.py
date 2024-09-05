@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
-from typing import  Any, Optional
+from typing import Any, Optional
+
 
 class SmilesGraphDataset(Dataset):
     """
@@ -12,10 +13,13 @@ class SmilesGraphDataset(Dataset):
     featurizer (SmilesGraphFeaturizer): The object to transform SMILES strings into graph representations.
     precomputed_features (list, optional): A list of precomputed features. If precompute_featurization() is not called, this attribute remains None.
     """
-    def __init__(self,
-                smiles: list = None,
-                y: Optional[list] = None,
-                featurizer: Optional[SmilesGraphFeaturizer] = None):
+
+    def __init__(
+        self,
+        smiles: list = None,
+        y: Optional[list] = None,
+        featurizer: Optional[SmilesGraphFeaturizer] = None,
+    ):
         """The SmilesGraphDataset constructor."""
         super().__init__()
         self.smiles = smiles
@@ -31,7 +35,9 @@ class SmilesGraphDataset(Dataset):
 
     def precompute_featurization(self):
         """Precomputes the featurization of the dataset before being accessed by __getitem__"""
-        self.precomputed_features = [self.featurizer(sm, y) for sm, y, in zip(self.smiles, self.y)]
+        self.precomputed_features = [
+            self.featurizer(sm, y) for sm, y, in zip(self.smiles, self.y)
+        ]
 
     def get_num_node_features(self):
         """Returns the number of node features."""
@@ -63,10 +69,10 @@ class SmilesGraphDataset(Dataset):
     def __len__(self):
         """
         __len__ functionality is important for the DataLoader to determine batching,
-        shuffling and iterating over the dataset. 
+        shuffling and iterating over the dataset.
         """
         return len(self.smiles)
-    
+
     def __repr__(self) -> str:
         """Official string representation of the Dataset Object"""
         return self.__class__.__name__

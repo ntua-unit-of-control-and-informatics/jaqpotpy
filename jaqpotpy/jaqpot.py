@@ -242,26 +242,33 @@ class Jaqpot:
             # error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
 
-    def deploy_Torch_Graph_model(self, onnx_model, featurizer, name, description, target_name, visibility):
-        
-        auth_client = AuthenticatedClient(base_url = 'http://localhost.jaqpot.org:8080/', token=self.api_key) # Change Base URL when not in local testing
+    def deploy_Torch_Graph_model(
+        self, onnx_model, featurizer, name, description, target_name, visibility
+    ):
+
+        auth_client = AuthenticatedClient(
+            base_url="http://localhost.jaqpot.org:8080/", token=self.api_key
+        )  # Change Base URL when not in local testing
         featurizer_json = featurizer.get_json_rep()
         body_model = Model(
-            name = name,
-            type= ModelType.TORCH,
-            jaqpotpy_version = jaqpotpy.__version__,
-            libraries = get_installed_libraries(),
-            dependent_features = [Feature(key = target_name, name = target_name, feature_type = FeatureType.INTEGER)], #TODO: Spaces dont work in endpoint name
-            independent_features= [Feature(key = 'SMILES', name = 'SMILES', feature_type= FeatureType.SMILES)],
-            extra_config = {
-                               'torchConfig': {
-                                    'featurizer': featurizer_json,
-                                    'task': 'classification'
-                                }
-                            },
-            visibility = ModelVisibility(visibility),
-            actual_model = onnx_model,
-            description = description,
+            name=name,
+            type=ModelType.TORCH,
+            jaqpotpy_version=jaqpotpy.__version__,
+            libraries=get_installed_libraries(),
+            dependent_features=[
+                Feature(
+                    key=target_name, name=target_name, feature_type=FeatureType.INTEGER
+                )
+            ],  # TODO: Spaces dont work in endpoint name
+            independent_features=[
+                Feature(key="SMILES", name="SMILES", feature_type=FeatureType.SMILES)
+            ],
+            extra_config={
+                "torchConfig": {"featurizer": featurizer_json, "task": "classification"}
+            },
+            visibility=ModelVisibility(visibility),
+            actual_model=onnx_model,
+            description=description,
         )
 
         response = create_model.sync_detailed(client=auth_client, body=body_model)
