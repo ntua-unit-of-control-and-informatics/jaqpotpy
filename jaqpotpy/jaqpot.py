@@ -243,8 +243,9 @@ class Jaqpot:
             self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_Torch_Graph_model(self, onnx_model, featurizer, name, description, target_name, visibility):
+        
         auth_client = AuthenticatedClient(base_url = 'http://localhost.jaqpot.org:8080/', token=self.api_key) # Change Base URL when not in local testing
-        featurizer_json = featurizer.get_json_rep()
+        featurizer_json = featurizer.get_zjson_rep()
         body_model = Model(
             name = name,
             type= ModelType.TORCH,
@@ -254,7 +255,8 @@ class Jaqpot:
             independent_features= [Feature(key = 'SMILES', name = 'SMILES', feature_type= FeatureType.SMILES)],
             extra_config = {
                                'torchConfig': {
-                                    'featurizer': featurizer_json
+                                    'featurizer': featurizer_json,
+                                    'task': 'classification'
                                 }
                             },
             visibility = ModelVisibility(visibility),

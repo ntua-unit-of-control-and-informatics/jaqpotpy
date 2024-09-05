@@ -178,12 +178,12 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         """
         pass
     
-    @abstractmethod
-    def prepare_for_deployment(self, *args, **kwargs):
-        """
-        Prepare the model data in JSON format for deployment on Jaqpot.
-        """
-        pass
+    # @abstractmethod
+    # def prepare_for_deployment(self, *args, **kwargs):
+    #     """
+    #     Prepare the model data in JSON format for deployment on Jaqpot.
+    #     """
+    #     pass
     
 
     @staticmethod
