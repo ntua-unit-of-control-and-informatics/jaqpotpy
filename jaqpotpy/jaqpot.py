@@ -14,16 +14,12 @@ import jaqpotpy.api.models_api as models_api
 import jaqpotpy.api.task_api as task_api
 import jaqpotpy.doa.doa as jha
 import jaqpotpy.helpers.dataset_deserializer as ds
-import jaqpotpy.helpers.helpers as help
+from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
+from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import ModelVisibility
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
+from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
-from jaqpotpy.api.types.api.model import create_model
-from jaqpotpy.api.types.client import AuthenticatedClient
-from jaqpotpy.api.types.models import Model
-from jaqpotpy.api.types.models.feature import Feature
-from jaqpotpy.api.types.models.model_visibility import ModelVisibility
-from jaqpotpy.entities.dataset import Dataset
-from jaqpotpy.entities.featureinfo import FeatureInfo
-from jaqpotpy.entities.meta import MetaInfo
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.serializer import JaqpotSerializer
 from jaqpotpy.utils.url_utils import add_subdomain
@@ -108,84 +104,6 @@ class Jaqpot:
         """
         self.api_key = api_key
         self.log.info("api key is set")
-
-    def predict(self, df=None, modelId=None):
-        # df_titles = list(df)
-        # for t in df_titles:
-        # type_to_c = df[t].dtypes
-        # if type_to_c == 'int64':
-        # print(type_to_c)
-        # df[t] = df[t].astype(float)
-        # print(df.dtypes)
-        df = df.replace(np.nan, "", regex=True)
-        if type(df).__name__ != "DataFrame":
-            raise Exception("Cannot form a Jaqpot Dataset. Please provide a Dataframe")
-        model = models_api.get_model(self.base_url, self.api_key, modelId, self.log)
-        # feats = []
-        # for featUri in model['independentFeatures']:
-        #     featar = featUri.split("/")
-        #     feat = featapi.get_feature(self.base_url, self.api_key, featar[len(featar)-1])
-        #     feats.append(feat)
-        # for featUri in model['additionalInfo']['independentFeatures']:
-        #     print(featUri)
-        # featar = featUri.split("/")
-        # feat = featapi.get_feature(self.base_url, self.api_key, featar[len(featar)-1])
-        # feats.append(feat)
-        feat_map = {}
-        features = []
-        keyi = 0
-
-        for key, value in model["additionalInfo"]["independentFeatures"].items():
-            feat_info = FeatureInfo()
-            # f = featapi.create_feature_sync(self.base_url, self.api_key, feat)
-            feat_uri = key
-            feat_map[value] = keyi
-            feat_info.uri = feat_uri
-            feat_info.name = value
-            feat_info.key = keyi
-            features.append(feat_info.__dict__)
-            keyi += 1
-
-        dataset = Dataset()
-        meta = MetaInfo()
-        meta.creators = [self.user_id]
-        dataset.meta = meta.__dict__
-        dataset.totalRows = df.shape[0]
-        dataset.totalColumns = df.shape[1]
-        # dataset.existence = "UPLOADED"
-        data_entry = help.create_data_entry(df, feat_map, self.user_id)
-        dataset.dataEntry = data_entry
-        dataset.features = features
-        json_dataset = json.dumps(dataset, cls=JaqpotSerializer)
-        dataset_n = data_api.create_dataset_sync(
-            self.base_url, self.api_key, json_dataset, self.log
-        )
-        dataset_id = dataset_n["_id"]
-        dataset_uri = self.base_url + "dataset/" + dataset_id
-        task = models_api.predict(
-            self.base_url,
-            self.api_key,
-            dataseturi=dataset_uri,
-            modelid=modelId,
-            logger=self.log,
-        )
-        percentage = 0
-        taskid = task["_id"]
-        while percentage < 100:
-            time.sleep(1)
-            task = task_api.get_task(self.base_url, self.api_key, taskid)
-            try:
-                percentage = task["percentageCompleted"]
-            except KeyError:
-                percentage = 0
-            self.log.info("completed " + str(percentage))
-        predicted_dataset = task["resultUri"]
-        dar = predicted_dataset.split("/")
-        dataset = data_api.get_dataset(
-            self.base_url, self.api_key, dar[len(dar) - 1], self.log
-        )
-        df, predicts = ds.decode_predicted(dataset)
-        return df, predicts
 
     def deploy_sklearn_model(self, model, name, description, visibility):
         """ "

@@ -21,7 +21,7 @@ pip install jaqpotpy
 
 ### Logging In
 
-To use jaqpotpy, you need to log in to the Jaqpot platform. You can log in using your username and password or by setting an API key.
+To use jaqpotpy, you need to log in to the Jaqpot platform. You can log in using the login() method
 
 #### Login with Username and Password
 

@@ -1,7 +1,0 @@
-site_name: jaqpotpy
-site_description: jaqpotpy for Jaqpot
-nav:
-    - Home: index.md
-    - About: about.md
-
-theme: readthedocs
