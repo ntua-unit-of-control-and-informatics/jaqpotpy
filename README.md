@@ -73,3 +73,4 @@ Result:
 #### Managing Your Models
 
 You can further manage your models through the Jaqpot user interface at https://app.jaqpot.org. This platform allows you to view detailed documentation, share models with your contacts, and make predictions.
+
