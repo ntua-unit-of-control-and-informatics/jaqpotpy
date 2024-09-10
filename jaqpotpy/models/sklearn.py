@@ -39,6 +39,7 @@ class SklearnModel(Model):
         self.evaluator = evaluator
         self.preprocess = preprocessor
         self.preprocessing_y = None
+        self.transformers_y = {}
         self.libraries = None
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
@@ -60,6 +61,10 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.FLOAT
             elif feature["featureType"] in ["string, object"]:
                 feature["featureType"] = FeatureType.STRING
+    
+    def _extract_attributes(self, transformer):
+        attributes = transformer.__dict__
+        return {k: (v.tolist() if isinstance(v, np.ndarray) else v.item() if isinstance(v, (np.int64, np.float64)) else v) for k, v in attributes.items()}
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
@@ -106,17 +111,20 @@ class SklearnModel(Model):
                     for pre_y_key in pre_y_keys:
                         pre_y_function = self.preprocess.classes_y.get(pre_y_key)
                         y_scaled = pre_y_function.fit_transform(y_scaled)
-                        if len(self.dataset.y_cols) == 1:
-                            y_scaled = y_scaled.ravel()
                         self.preprocess.register_fitted_class_y(
                             pre_y_key, pre_y_function
                         )
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
-                    self.preprocessing_y = preprocess_classes_y
 
+                        class_name = pre_y_function.__class__.__name__
+                        self.transformers_y[class_name] = self._extract_attributes(pre_y_function)
+                    if len(self.dataset.y_cols) == 1:
+                        y_scaled = y_scaled.ravel()
+                    self.preprocessing_y = preprocess_classes_y
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
             else:
+                print(y)
                 self.trained_model = self.pipeline.fit(
                     X.to_numpy(), y
                 )  # .to_numpy().ravel())
