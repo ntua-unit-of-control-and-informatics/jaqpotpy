@@ -6,8 +6,9 @@ from typing import Any, Dict, Optional
 from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.jaqpot_api_client.models import FeatureType
-from jaqpotpy.api.openapi.jaqpot_api_client.models import ModelType
+from jaqpotpy.api.openapi.jaqpot_api_client.models import FeatureType, ModelType, ModelExtraConfig, Preprocessor
+from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config import PreprocessorConfig
+from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config_additional_property import PreprocessorConfigAdditionalProperty
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
@@ -50,6 +51,7 @@ class SklearnModel(Model):
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
         self.dependentFeatures = None
+        self.extra_config = ModelExtraConfig()
 
     def __dtypes_to_jaqpotypes__(self):
         for feature in self.independentFeatures + self.dependentFeatures:
@@ -65,6 +67,14 @@ class SklearnModel(Model):
     def _extract_attributes(self, transformer):
         attributes = transformer.__dict__
         return {k: (v.tolist() if isinstance(v, np.ndarray) else v.item() if isinstance(v, (np.int64, np.float64)) else v) for k, v in attributes.items()}
+    
+    def _transformers_y_to_extraconfig(self):
+        unassigned_transformers = self.transformers_y
+        for transformer_name, transformer_attrs in unassigned_transformers.items():
+            preprocessor = Preprocessor(name=transformer_name, config=transformer_attrs)
+            self.extra_config.preprocessors.append(preprocessor)
+
+
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
@@ -108,6 +118,7 @@ class SklearnModel(Model):
                     preprocess_names_y = []
                     preprocess_classes_y = []
                     y_scaled = self.dataset.__get_Y__()
+                    self.extra_config.preprocessors = []
                     for pre_y_key in pre_y_keys:
                         pre_y_function = self.preprocess.classes_y.get(pre_y_key)
                         y_scaled = pre_y_function.fit_transform(y_scaled)
@@ -117,8 +128,17 @@ class SklearnModel(Model):
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
 
-                        class_name = pre_y_function.__class__.__name__
-                        self.transformers_y[class_name] = self._extract_attributes(pre_y_function)
+                        config = PreprocessorConfig()
+                        for attr_name, attr_value in self._extract_attributes(pre_y_function).items():
+                            additional_property = PreprocessorConfigAdditionalProperty()
+                            additional_property.additional_properties['value'] = attr_value
+                            config.additional_properties[attr_name] = additional_property
+                        self.extra_config.preprocessors.append(
+                            Preprocessor(
+                                name=pre_y_function.__class__.__name__, 
+                                config=config
+                            )
+                        )
                     if len(self.dataset.y_cols) == 1:
                         y_scaled = y_scaled.ravel()
                     self.preprocessing_y = preprocess_classes_y

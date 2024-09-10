@@ -140,6 +140,7 @@ class Jaqpot:
             visibility=ModelVisibility(visibility),
             actual_model=actual_model,
             description=description,
+            extra_config=model.extra_config
         )
 
         response = create_model.sync_detailed(client=auth_client, body=body_model)
