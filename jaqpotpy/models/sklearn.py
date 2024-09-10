@@ -68,11 +68,18 @@ class SklearnModel(Model):
         attributes = transformer.__dict__
         return {k: (v.tolist() if isinstance(v, np.ndarray) else v.item() if isinstance(v, (np.int64, np.float64)) else v) for k, v in attributes.items()}
     
-    def _transformers_y_to_extraconfig(self):
-        unassigned_transformers = self.transformers_y
-        for transformer_name, transformer_attrs in unassigned_transformers.items():
-            preprocessor = Preprocessor(name=transformer_name, config=transformer_attrs)
-            self.extra_config.preprocessors.append(preprocessor)
+    def _add_transformer_to_extraconfig(self,pre_y_function):
+        config = PreprocessorConfig()
+        for attr_name, attr_value in self._extract_attributes(pre_y_function).items():
+            additional_property = PreprocessorConfigAdditionalProperty()
+            additional_property.additional_properties['value'] = attr_value
+            config.additional_properties[attr_name] = additional_property
+        self.extra_config.preprocessors.append(
+            Preprocessor(
+                name=pre_y_function.__class__.__name__, 
+                config=config
+            )
+        )
 
 
 
@@ -127,18 +134,8 @@ class SklearnModel(Model):
                         )
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
+                        self._add_transformer_to_extraconfig(pre_y_function)
 
-                        config = PreprocessorConfig()
-                        for attr_name, attr_value in self._extract_attributes(pre_y_function).items():
-                            additional_property = PreprocessorConfigAdditionalProperty()
-                            additional_property.additional_properties['value'] = attr_value
-                            config.additional_properties[attr_name] = additional_property
-                        self.extra_config.preprocessors.append(
-                            Preprocessor(
-                                name=pre_y_function.__class__.__name__, 
-                                config=config
-                            )
-                        )
                     if len(self.dataset.y_cols) == 1:
                         y_scaled = y_scaled.ravel()
                     self.preprocessing_y = preprocess_classes_y
