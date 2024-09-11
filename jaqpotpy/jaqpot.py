@@ -6,7 +6,6 @@ import webbrowser
 import numpy as np
 import pandas as pd
 from keycloak import KeycloakOpenID
-
 import jaqpotpy.api.dataset_api as data_api
 import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.api.feature_api as featapi
@@ -114,8 +113,8 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
-        actual_model = model_to_b64encoding(model.copy())
+        auth_client = AuthenticatedClient(base_url=self.base_url, token=self.api_key)
+        actual_model = model_to_b64encoding(model.copy().onnx_model.SerializeToString())
         body_model = Model(
             name=name,
             type=model.type,

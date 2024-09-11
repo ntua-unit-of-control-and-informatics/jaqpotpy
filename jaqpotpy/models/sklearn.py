@@ -93,7 +93,7 @@ class SklearnModel(Model):
         # Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
-
+        
         if self.doa:
             self.trained_doa = self.doa.fit(X=X)
 
@@ -102,7 +102,6 @@ class SklearnModel(Model):
 
         # if preprocessing was applied to either X,y or both
         if self.preprocess is not None:
-            self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             # Apply preprocessing on design matrix X
             pre_keys = self.preprocess.classes.keys()
