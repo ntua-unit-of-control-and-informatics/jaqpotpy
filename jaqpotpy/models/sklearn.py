@@ -4,11 +4,14 @@ from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from typing import Any, Dict, Optional
 from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
+from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.jaqpot_api_client.models import FeatureType, ModelType, ModelExtraConfig, Preprocessor
+from jaqpotpy.api.openapi.jaqpot_api_client.models import FeatureType, ModelType, ModelExtraConfig, Preprocessor, Featurizer
 from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config import PreprocessorConfig
+from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config import FeaturizerConfig
 from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config_additional_property import PreprocessorConfigAdditionalProperty
+from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config_additional_property import FeaturizerConfigAdditionalProperty
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
@@ -64,27 +67,43 @@ class SklearnModel(Model):
             elif feature["featureType"] in ["string, object"]:
                 feature["featureType"] = FeatureType.STRING
     
-    def _extract_attributes(self, transformer):
-        attributes = transformer.__dict__
+    def _extract_attributes(self, trained_class):
+        attributes = trained_class.__dict__
         return {k: (v.tolist() if isinstance(v, np.ndarray) else v.item() if isinstance(v, (np.int64, np.float64)) else v) for k, v in attributes.items()}
     
-    def _add_transformer_to_extraconfig(self,pre_y_function):
-        config = PreprocessorConfig()
-        for attr_name, attr_value in self._extract_attributes(pre_y_function).items():
-            additional_property = PreprocessorConfigAdditionalProperty()
-            additional_property.additional_properties['value'] = attr_value
-            config.additional_properties[attr_name] = additional_property
-        self.extra_config.preprocessors.append(
-            Preprocessor(
-                name=pre_y_function.__class__.__name__, 
-                config=config
-            )
-        )
+    def _add_class_to_extraconfig(self,added_class, added_class_type):
+            if added_class_type == 'preprocessor':
+                config = PreprocessorConfig()
+                additional_property_type = PreprocessorConfigAdditionalProperty()
+            elif added_class_type == 'featurizer':
+                config = FeaturizerConfig()
+                additional_property_type = FeaturizerConfigAdditionalProperty()
 
+            for attr_name, attr_value in self._extract_attributes(added_class).items():
+                additional_property = additional_property_type
+                additional_property.additional_properties['value'] = attr_value
+                config.additional_properties[attr_name] = additional_property
 
+            if added_class_type == 'preprocessor':
+                self.extra_config.preprocessors.append(
+                    Preprocessor(
+                        name=added_class.__class__.__name__, 
+                        config=config
+                    )
+                )
+            elif added_class_type == 'featurizer':
+                self.extra_config.featurizers.append(
+                    Featurizer(
+                        name=added_class.__class__.__name__,
+                        config=config
+                    )
+                )
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
+        if isinstance(self.featurizer, MolecularFeaturizer):
+            self.extra_config.featurizers = []
+            self._add_class_to_extraconfig(self.featurizer, 'featurizer')
 
         if self.dataset.y is None:
             raise TypeError(
@@ -133,7 +152,7 @@ class SklearnModel(Model):
                         )
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
-                        self._add_transformer_to_extraconfig(pre_y_function)
+                        self._add_class_to_extraconfig(pre_y_function, 'preprocessor')
 
                     if len(self.dataset.y_cols) == 1:
                         y_scaled = y_scaled.ravel()
