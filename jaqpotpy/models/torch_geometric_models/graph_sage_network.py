@@ -34,8 +34,8 @@ class GraphSageNetwork(nn.Module):
         self.graph_norm = graph_norm
         self.jittable = jittable
         self.seed = seed
-        torch.manual_seed(seed)
-        np.random.seed(seed)
+        torch.manual_seed(self.seed)
+        np.random.seed(self.seed)
         self._validate_inputs()
 
         self.graph_layers = nn.ModuleList()
