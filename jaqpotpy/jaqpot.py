@@ -16,9 +16,8 @@ import jaqpotpy.helpers.dataset_deserializer as ds
 from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
 from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import (
-    ModelVisibility,
-)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import ModelVisibility
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_task import ModelTask
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
 from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
@@ -142,6 +141,7 @@ class Jaqpot:
                 for feature_i in model.independentFeatures
             ],
             visibility=ModelVisibility(visibility),
+            task=ModelTask(model.task.upper()),
             actual_model=actual_model,
             description=description,
             extra_config=model.extra_config
