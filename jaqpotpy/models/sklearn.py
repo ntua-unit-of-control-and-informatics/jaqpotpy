@@ -6,8 +6,8 @@ from typing import Any, Dict, Optional
 from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.types.models import FeatureType
-from jaqpotpy.api.types.models import ModelType
+from jaqpotpy.api.openapi.jaqpot_api_client.models import FeatureType
+from jaqpotpy.api.openapi.jaqpot_api_client.models import ModelType
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
