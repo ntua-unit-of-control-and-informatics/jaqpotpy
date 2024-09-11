@@ -105,6 +105,11 @@ print("ONNX Predictions:", onnx_predictions)
 # # # jaqpot.login('jaqpot','jaqpot')
 # jaqpot.set_api_key(api_key)
 
-jaqpot=Jaqpot()
+jaqpot = Jaqpot()
 jaqpot.login()
-molecularModel_t1.deploy_on_jaqpot(jaqpot=jaqpot, name="Classification model", description="Test classification with one output ", visibility="PUBLIC")
+molecularModel_t1.deploy_on_jaqpot(
+    jaqpot=jaqpot,
+    name="Classification model",
+    description="Test classification with one output ",
+    visibility="PUBLIC",
+)
