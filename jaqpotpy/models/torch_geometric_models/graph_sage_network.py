@@ -22,10 +22,9 @@ class GraphSageNetwork(nn.Module):
         dropout_proba: float = 0.0,
         graph_norm: bool = False,
         jittable: bool = True,
+        seed=42,
     ):
         super(GraphSageNetwork, self).__init__()
-        torch.manual_seed(42)
-        np.random.seed(42)
         self.input_dim = input_dim
         self.hidden_layers = hidden_layers
         self.hidden_dim = hidden_dim
@@ -34,6 +33,9 @@ class GraphSageNetwork(nn.Module):
         self.dropout_proba = dropout_proba
         self.graph_norm = graph_norm
         self.jittable = jittable
+        self.seed = seed
+        torch.manual_seed(self.seed)
+        np.random.seed(self.seed)
         self._validate_inputs()
 
         self.graph_layers = nn.ModuleList()
