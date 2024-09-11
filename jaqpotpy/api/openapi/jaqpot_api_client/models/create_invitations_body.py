@@ -10,10 +10,10 @@ T = TypeVar("T", bound="CreateInvitationsBody")
 
 @_attrs_define
 class CreateInvitationsBody:
-    """Attributes
-    emails (Union[Unset, List[str]]): List of email addresses to invite Example: ['user1@example.com',
-        'user2@example.com'].
-
+    """
+    Attributes:
+        emails (Union[Unset, List[str]]): List of email addresses to invite Example: ['user1@example.com',
+            'user2@example.com'].
     """
 
     emails: Union[Unset, List[str]] = UNSET

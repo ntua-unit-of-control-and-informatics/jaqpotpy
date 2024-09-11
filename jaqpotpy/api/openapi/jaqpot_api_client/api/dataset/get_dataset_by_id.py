@@ -57,19 +57,16 @@ def sync_detailed(
      Retrieve a single dataset by its ID
 
     Args:
-    ----
         id (int):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Response[Union[Any, Dataset]]
-
     """
+
     kwargs = _get_kwargs(
         id=id,
     )
@@ -91,19 +88,16 @@ def sync(
      Retrieve a single dataset by its ID
 
     Args:
-    ----
         id (int):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Union[Any, Dataset]
-
     """
+
     return sync_detailed(
         id=id,
         client=client,
@@ -120,19 +114,16 @@ async def asyncio_detailed(
      Retrieve a single dataset by its ID
 
     Args:
-    ----
         id (int):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Response[Union[Any, Dataset]]
-
     """
+
     kwargs = _get_kwargs(
         id=id,
     )
@@ -152,19 +143,16 @@ async def asyncio(
      Retrieve a single dataset by its ID
 
     Args:
-    ----
         id (int):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Union[Any, Dataset]
-
     """
+
     return (
         await asyncio_detailed(
             id=id,
