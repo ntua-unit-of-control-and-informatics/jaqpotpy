@@ -80,7 +80,7 @@ class SklearnModel(Model):
             additional_property_type = FeaturizerConfigAdditionalProperty()
 
         for attr_name, attr_value in self._extract_attributes(added_class).items():
-            additional_property = additional_property_type
+            additional_property = type(additional_property_type)()
             additional_property.additional_properties['value'] = attr_value
             config.additional_properties[attr_name] = additional_property
 
