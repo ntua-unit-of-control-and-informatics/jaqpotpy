@@ -35,9 +35,12 @@ class SmilesGraphDataset(Dataset):
 
     def precompute_featurization(self):
         """Precomputes the featurization of the dataset before being accessed by __getitem__"""
-        self.precomputed_features = [
-            self.featurizer(sm, y) for sm, y, in zip(self.smiles, self.y)
-        ]
+        if self.y:
+            self.precomputed_features = [
+                self.featurizer(sm, y) for sm, y, in zip(self.smiles, self.y)
+            ]
+        else:
+            self.precomputed_features = [self.featurizer(sm) for sm in self.smiles]
 
     def get_num_node_features(self):
         """Returns the number of node features."""
@@ -63,7 +66,7 @@ class SmilesGraphDataset(Dataset):
         if self.precomputed_features:
             return self.precomputed_features[idx]
         sm = self.smiles[idx]
-        y = self.y[idx]
+        y = self.y[idx] if self.y else None
         return self.featurizer(sm, y)
 
     def __len__(self):

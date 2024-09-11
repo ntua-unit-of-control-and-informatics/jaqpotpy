@@ -15,22 +15,20 @@ import jaqpotpy.api.models_api as models_api
 import jaqpotpy.api.task_api as task_api
 import jaqpotpy.doa.doa as jha
 import jaqpotpy.helpers.dataset_deserializer as ds
-import jaqpotpy.helpers.helpers as help
+from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
+from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import (
+    ModelVisibility,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
+from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
-from jaqpotpy.api.types.api.model import create_model
-from jaqpotpy.api.types.client import AuthenticatedClient
-from jaqpotpy.api.types.models import Model
-from jaqpotpy.api.types.models.feature import Feature
-from jaqpotpy.api.types.models.model_visibility import ModelVisibility
-from jaqpotpy.api.types.models.model_type import ModelType
-from jaqpotpy.entities.dataset import Dataset
-from jaqpotpy.entities.featureinfo import FeatureInfo
-from jaqpotpy.entities.meta import MetaInfo
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.serializer import JaqpotSerializer
 from jaqpotpy.utils.url_utils import add_subdomain
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.types.models.feature_type import FeatureType
 
 ENCODING = "utf-8"
 
@@ -169,8 +167,9 @@ class Jaqpot:
     ):
 
         auth_client = AuthenticatedClient(
-            base_url="http://localhost.jaqpot.org:8080/", token=self.api_key
+            base_url=self.api_url, token=self.api_key
         )  # Change Base URL when not in local testing
+        # baseurl: "http://localhost.jaqpot.org:8080/"
         featurizer_json = featurizer.get_json_rep()
         body_model = Model(
             name=name,
