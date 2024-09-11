@@ -34,8 +34,8 @@ class GraphConvolutionNetwork(nn.Module):
         self.graph_norm = graph_norm
         self.jittable = jittable
         self.seed = seed
-        torch.manual_seed(42)
-        np.random.seed(42)
+        torch.manual_seed(seed)
+        np.random.seed(seed)
         self._validate_inputs()
 
         self.graph_layers = nn.ModuleList()
