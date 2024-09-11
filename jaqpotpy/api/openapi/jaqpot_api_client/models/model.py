@@ -5,6 +5,7 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 from dateutil.parser import isoparse
 
+from ..models.model_task import ModelTask
 from ..models.model_type import ModelType
 from ..models.model_visibility import ModelVisibility
 from ..types import UNSET, Unset
@@ -32,12 +33,12 @@ class Model:
         dependent_features (List['Feature']):
         independent_features (List['Feature']):
         visibility (ModelVisibility):
+        task (ModelTask):
         actual_model (str): A base64 representation of the actual model.
         id (Union[Unset, int]):
         meta (Union[Unset, ModelMeta]): A JSON object containing meta information.
         description (Union[Unset, str]):  Example: A description of your model.
         shared_with_organizations (Union[Unset, List['Organization']]):
-        pretrained (Union[Unset, bool]):
         creator (Union[Unset, User]):
         can_edit (Union[Unset, bool]): If the current user can edit the model
         is_admin (Union[Unset, bool]):
@@ -57,12 +58,12 @@ class Model:
     dependent_features: List["Feature"]
     independent_features: List["Feature"]
     visibility: ModelVisibility
+    task: ModelTask
     actual_model: str
     id: Union[Unset, int] = UNSET
     meta: Union[Unset, "ModelMeta"] = UNSET
     description: Union[Unset, str] = UNSET
     shared_with_organizations: Union[Unset, List["Organization"]] = UNSET
-    pretrained: Union[Unset, bool] = UNSET
     creator: Union[Unset, "User"] = UNSET
     can_edit: Union[Unset, bool] = UNSET
     is_admin: Union[Unset, bool] = UNSET
@@ -97,6 +98,8 @@ class Model:
 
         visibility = self.visibility.value
 
+        task = self.task.value
+
         actual_model = self.actual_model
 
         id = self.id
@@ -113,8 +116,6 @@ class Model:
             for shared_with_organizations_item_data in self.shared_with_organizations:
                 shared_with_organizations_item = shared_with_organizations_item_data.to_dict()
                 shared_with_organizations.append(shared_with_organizations_item)
-
-        pretrained = self.pretrained
 
         creator: Union[Unset, Dict[str, Any]] = UNSET
         if not isinstance(self.creator, Unset):
@@ -149,6 +150,7 @@ class Model:
                 "dependentFeatures": dependent_features,
                 "independentFeatures": independent_features,
                 "visibility": visibility,
+                "task": task,
                 "actualModel": actual_model,
             }
         )
@@ -160,8 +162,6 @@ class Model:
             field_dict["description"] = description
         if shared_with_organizations is not UNSET:
             field_dict["sharedWithOrganizations"] = shared_with_organizations
-        if pretrained is not UNSET:
-            field_dict["pretrained"] = pretrained
         if creator is not UNSET:
             field_dict["creator"] = creator
         if can_edit is not UNSET:
@@ -214,13 +214,13 @@ class Model:
         independent_features = []
         _independent_features = d.pop("independentFeatures")
         for independent_features_item_data in _independent_features:
-            independent_features_item = Feature.from_dict(
-                independent_features_item_data
-            )
+            independent_features_item = Feature.from_dict(independent_features_item_data)
 
             independent_features.append(independent_features_item)
 
         visibility = ModelVisibility(d.pop("visibility"))
+
+        task = ModelTask(d.pop("task"))
 
         actual_model = d.pop("actualModel")
 
@@ -241,8 +241,6 @@ class Model:
             shared_with_organizations_item = Organization.from_dict(shared_with_organizations_item_data)
 
             shared_with_organizations.append(shared_with_organizations_item)
-
-        pretrained = d.pop("pretrained", UNSET)
 
         _creator = d.pop("creator", UNSET)
         creator: Union[Unset, User]
@@ -283,12 +281,12 @@ class Model:
             dependent_features=dependent_features,
             independent_features=independent_features,
             visibility=visibility,
+            task=task,
             actual_model=actual_model,
             id=id,
             meta=meta,
             description=description,
             shared_with_organizations=shared_with_organizations,
-            pretrained=pretrained,
             creator=creator,
             can_edit=can_edit,
             is_admin=is_admin,

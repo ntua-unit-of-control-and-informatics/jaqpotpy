@@ -1,5 +1,3 @@
-"""Author: Ioannis Pitoskas (jpitoskas@gmail.com)"""
-
 from abc import ABC, abstractmethod, ABCMeta
 import torch
 import logging
@@ -16,7 +14,8 @@ from torch.optim.lr_scheduler import LambdaLR
 
 class TorchModelTrainerMeta(ABCMeta):
     def __new__(cls, name, bases, dct):
-        """A metaclass for torch model training, ensuring:
+        """
+        A metaclass for torch model training, ensuring:
         - 'get_model_type' method is defined as a class method
         """
         if "get_model_type" in dct:
@@ -27,10 +26,10 @@ class TorchModelTrainerMeta(ABCMeta):
 
 
 class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
-    """An abstract class for training a model and deploying it on Jaqpot.
+    """
+    An abstract class for training a model and deploying it on Jaqpot.
 
-    Attributes
-    ----------
+    Attributes:
         model (torch.nn.Module): The torch model to be trained.
         n_epochs (int): Number of training epochs.
         optimizer (torch.optim.Optimizer): The optimizer used for training the model.
@@ -43,18 +42,16 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         log_filepath (os.path.relpath or None): Relative path to the log file.
         json_data_for_deployment (dict or None): The data to be sent to the API of Jaqpot in JSON format. Note that `prepare_for_deployment` must be called to compute this attribute.
         logger (logging.Logger): The logger object at INFO level used for logging during model training.
-
     """
 
     @classmethod
     @abstractmethod
     def get_model_type(cls):
-        """Return the type of the model as a string.
+        """
+        Return the type of the model as a string.
 
-        Returns
-        -------
+        Returns:
             str: The model type.
-
         """
         pass
 
@@ -70,8 +67,8 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         log_enabled: bool = True,
         log_filepath: Optional[str] = None,
     ):
-        """Args:
-        ----
+        """
+        Args:
             model (torch.nn.Module): The torch model to be trained.
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
@@ -81,7 +78,6 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
             use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
             log_enabled (bool, optional): Whether logging is enabled. Default is True.
             log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
-
         """
         self.model = model
         self.n_epochs = n_epochs
@@ -106,7 +102,10 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         self.model.to(self.device)
 
     def _setup_logger(self):
-        """Setup the logger for the training process."""
+        """
+        Setup the logger for the training process.
+        """
+
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
 
@@ -131,16 +130,16 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
 
     @classmethod
     def collect_subclass_info(cls):
-        """Collect information about all subclasses of the current class.
+        """
+        Collect information about all subclasses of the current class.
 
-        Returns
-        -------
+        Returns:
             dict: A dictionary containing information about the subclasses (model type, parent class, if is abstract class or not).
-
         """
         subclass_info = {}
 
         for subclass in cls.__subclasses__():
+
             subclass_info[subclass.__name__] = {
                 "model_type": subclass.get_model_type(),
                 "parent": cls.__name__,
@@ -153,12 +152,11 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
 
     @classmethod
     def get_subclass_model_types(cls):
-        """Return the list of all the types of models that inherit from TorchModelTrainer and are implemented in the jaqpotpy_torch.trainers submodule.
+        """
+        Return the list of all the types of models that inherit from TorchModelTrainer and are implemented in the jaqpotpy_torch.trainers submodule.
 
-        Returns
-        -------
+        Returns:
             list: A list of model types as strings.
-
         """
         return [
             v["model_type"]
@@ -169,35 +167,33 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
     # @check_reach_epoch_limit
     @abstractmethod
     def train(self, train_loader, val_loader=None):
-        """Train the model.
+        """
+        Train the model.
 
         Args:
-        ----
             train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional): DataLoader for the validation dataset.
-
         Returns:
-        -------
             None
-
         """
         pass
 
     @abstractmethod
     def evaluate(self, val_loader):
-        """Evaluate the model.
+        """
+        Evaluate the model.
 
         Args:
-        ----
             loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the evaluation dataset.
-
         """
         pass
 
-    @abstractmethod
-    def prepare_for_deployment(self, *args, **kwargs):
-        """Prepare the model data in JSON format for deployment on Jaqpot."""
-        pass
+    # @abstractmethod
+    # def prepare_for_deployment(self, *args, **kwargs):
+    #     """
+    #     Prepare the model data in JSON format for deployment on Jaqpot.
+    #     """
+    #     pass
 
     @staticmethod
     # @enforce_types
@@ -215,10 +211,10 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         meta: Optional[dict] = None,
         organizations: Optional[List[Organization]] = None,
     ) -> dict:
-        """Create a JSON representation of the model data for deployment.
+        """
+        Create a JSON representation of the model data for deployment.
 
         Args:
-        ----
             actualModel (str): The actual model.
             name (str): The name of the model.
             description (Union[str, None]): The description of the model.
@@ -233,10 +229,9 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
             organizations (Optional[List[Organization]]): List of organizations. Default is None.
 
         Returns:
-        -------
             dict: The JSON representation of the model data.
-
         """
+
         if not isinstance(name, str):
             msg = "'name' should be of type str"
             raise ValueError(msg)
@@ -267,18 +262,16 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         if not isinstance(independentFeatures, list):
             msg = "'independentFeatures' should be of type list"
             raise ValueError(msg)
-        if any(not isinstance(feature, Feature) for feature in independentFeatures):
-            msg = "'independentFeatures' should must only include elements of type Feature"
-            raise ValueError(msg)
+        #      if any(not isinstance(feature, Feature) for feature in independentFeatures):
+        #           msg = "'independentFeatures' should must only include elements of type Feature"
+        #            raise ValueError(msg)
 
         if not isinstance(dependentFeatures, list):
             msg = "'dependentFeatures' should be of type list"
             raise ValueError(msg)
-        if any(not isinstance(feature, Feature) for feature in independentFeatures):
-            msg = (
-                "'dependentFeatures' should must only include elements of type Feature"
-            )
-            raise ValueError(msg)
+        #        if any(not isinstance(feature, Feature) for feature in independentFeatures):
+        #            msg = "'dependentFeatures' should must only include elements of type Feature"
+        #            raise ValueError(msg)
 
         if reliability is not None and not isinstance(reliability, int):
             msg = "'reliability' should be of type int"
@@ -337,10 +330,8 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
             "type": f"TORCH-{model_type}",
             "jaqpotpyVersion": jaqpotpyVersion,
             "libraries": [library.to_json() for library in libraries],
-            "dependentFeatures": [feature.to_json() for feature in dependentFeatures],
-            "independentFeatures": [
-                feature.to_json() for feature in independentFeatures
-            ],
+            "dependentFeatures": dependentFeatures,
+            "independentFeatures": independentFeatures,
             "organizations": organizations,
             "visibility": visibility,
             "reliability": reliability,
@@ -352,13 +343,12 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         return data
 
     def set_input_feature_meta_for_deployment(self, feature_name: str, meta: dict):
-        """Set the meta attribute for an input feature in the JSON data for deployment.
+        """
+        Set the meta attribute for an input feature in the JSON data for deployment.
 
         Args:
-        ----
             feature_name (str): The name of the input feature.
             meta (dict): The meta data to set for the input feature.
-
         """
         if not isinstance(feature_name, str):
             msg = "'feature_name' should be of type str"
@@ -371,13 +361,12 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         )
 
     def set_output_feature_meta_for_deployment(self, feature_name: str, meta: dict):
-        """Set the meta attribute for an output feature in the JSON data for deployment.
+        """
+        Set the meta attribute for an output feature in the JSON data for deployment.
 
         Args:
-        ----
             feature_name (str): The name of the output feature.
             meta (dict): The meta data to set for the output feature.
-
         """
         if not isinstance(feature_name, str):
             msg = "'feature_name' should be of type str"
@@ -392,13 +381,12 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
     def set_input_feature_description_for_deployment(
         self, feature_name: str, description: str
     ):
-        """Set the description attribute for an input feature in the JSON data for deployment.
+        """
+        Set the description attribute for an input feature in the JSON data for deployment.
 
         Args:
-        ----
             feature_name (str): The name of the input feature.
             description (str): The description to set for the input feature.
-
         """
         if not isinstance(feature_name, str):
             msg = "'feature_name' should be of type str"
@@ -413,13 +401,12 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
     def set_output_feature_description_for_deployment(
         self, feature_name: str, description: str
     ):
-        """Set the description attribute for an output feature in the JSON data for deployment.
+        """
+        Set the description attribute for an output feature in the JSON data for deployment.
 
         Args:
-        ----
             feature_name (str): The name of the output feature.
             description (str): The description to set for the output feature.
-
         """
         if not isinstance(feature_name, str):
             msg = "'feature_name' should be of type str"
@@ -438,16 +425,16 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         attr_value,
         is_input_feature=True,
     ):
-        """Set an attribute for a feature in the JSON data for deployment.
+        """
+        Set an attribute for a feature in the JSON data for deployment.
 
         Args:
-        ----
             feature_name (str): The name of the feature.
             attr_name (str): The name of the attribute.
             attr_value: The value of the attribute.
             is_input_feature (bool, optional): Whether the feature is an input feature. Default is True.
-
         """
+
         if self.json_data_for_deployment is None:
             msg = "No JSON data for deployment to set feature attributes. You may need to call 'prepare_data_for_deployment' first."
             raise RuntimeError(msg)
@@ -458,25 +445,24 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
 
         for i, feature in enumerate(self.json_data_for_deployment[feature_dependency]):
             if feature_name == feature["name"]:
-                self.json_data_for_deployment[feature_dependency][i][attr_name] = (
-                    attr_value
-                )
+                self.json_data_for_deployment[feature_dependency][i][
+                    attr_name
+                ] = attr_value
                 return
 
         raise ValueError(f"No feature named '{feature_name}'")
 
     def deploy_model(self, token):
-        """Deploy the model to Jaqpot.
+        """
+        Deploy the model to Jaqpot.
 
         Args:
-        ----
             token (str): The authorization token.
 
         Returns:
-        -------
             Response: The response from the Jaqpot server.
-
         """
+
         if self.json_data_for_deployment is None:
             no_json_err_msg = (
                 "There are no JSON data to deploy. Note that prepare_for_deployment() must be called first to prepare the JSON to be deployed. "

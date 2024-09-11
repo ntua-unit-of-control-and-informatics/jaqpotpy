@@ -14,9 +14,7 @@ T = TypeVar("T", bound="FeatureMeta")
 class FeatureMeta:
     """A JSON object containing meta information."""
 
-    additional_properties: Dict[str, "FeatureMetaAdditionalProperty"] = _attrs_field(
-        init=False, factory=dict
-    )
+    additional_properties: Dict[str, "FeatureMetaAdditionalProperty"] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         field_dict: Dict[str, Any] = {}
@@ -27,9 +25,7 @@ class FeatureMeta:
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.feature_meta_additional_property import (
-            FeatureMetaAdditionalProperty,
-        )
+        from ..models.feature_meta_additional_property import FeatureMetaAdditionalProperty
 
         d = src_dict.copy()
         feature_meta = cls()

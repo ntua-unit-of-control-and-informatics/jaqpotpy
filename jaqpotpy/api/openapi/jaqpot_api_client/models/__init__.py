@@ -29,12 +29,15 @@ from .model_extra_config_torch_config_additional_property import ModelExtraConfi
 from .model_meta import ModelMeta
 from .model_meta_additional_property import ModelMetaAdditionalProperty
 from .model_summary import ModelSummary
+from .model_task import ModelTask
 from .model_type import ModelType
 from .model_visibility import ModelVisibility
 from .organization import Organization
 from .organization_invitation import OrganizationInvitation
 from .organization_invitation_status import OrganizationInvitationStatus
 from .organization_summary import OrganizationSummary
+from .organization_user import OrganizationUser
+from .organization_user_association_type import OrganizationUserAssociationType
 from .organization_visibility import OrganizationVisibility
 from .partial_update_organization_body import PartialUpdateOrganizationBody
 from .partially_update_model_body import PartiallyUpdateModelBody
@@ -75,12 +78,15 @@ __all__ = (
     "ModelMeta",
     "ModelMetaAdditionalProperty",
     "ModelSummary",
+    "ModelTask",
     "ModelType",
     "ModelVisibility",
     "Organization",
     "OrganizationInvitation",
     "OrganizationInvitationStatus",
     "OrganizationSummary",
+    "OrganizationUser",
+    "OrganizationUserAssociationType",
     "OrganizationVisibility",
     "PartiallyUpdateModelBody",
     "PartiallyUpdateModelFeatureBody",
