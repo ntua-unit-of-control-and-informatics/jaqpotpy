@@ -70,34 +70,34 @@ class SklearnModel(Model):
     def _extract_attributes(self, trained_class):
         attributes = trained_class.__dict__
         return {k: (v.tolist() if isinstance(v, np.ndarray) else v.item() if isinstance(v, (np.int64, np.float64)) else v) for k, v in attributes.items()}
-    
+
     def _add_class_to_extraconfig(self,added_class, added_class_type):
-            if added_class_type == 'preprocessor':
-                config = PreprocessorConfig()
-                additional_property_type = PreprocessorConfigAdditionalProperty()
-            elif added_class_type == 'featurizer':
-                config = FeaturizerConfig()
-                additional_property_type = FeaturizerConfigAdditionalProperty()
+        if added_class_type == 'preprocessor':
+            config = PreprocessorConfig()
+            additional_property_type = PreprocessorConfigAdditionalProperty()
+        elif added_class_type == 'featurizer':
+            config = FeaturizerConfig()
+            additional_property_type = FeaturizerConfigAdditionalProperty()
 
-            for attr_name, attr_value in self._extract_attributes(added_class).items():
-                additional_property = additional_property_type
-                additional_property.additional_properties['value'] = attr_value
-                config.additional_properties[attr_name] = additional_property
+        for attr_name, attr_value in self._extract_attributes(added_class).items():
+            additional_property = additional_property_type
+            additional_property.additional_properties['value'] = attr_value
+            config.additional_properties[attr_name] = additional_property
 
-            if added_class_type == 'preprocessor':
-                self.extra_config.preprocessors.append(
-                    Preprocessor(
-                        name=added_class.__class__.__name__, 
-                        config=config
-                    )
+        if added_class_type == 'preprocessor':
+            self.extra_config.preprocessors.append(
+                Preprocessor(
+                    name=added_class.__class__.__name__, 
+                    config=config
                 )
-            elif added_class_type == 'featurizer':
-                self.extra_config.featurizers.append(
-                    Featurizer(
-                        name=added_class.__class__.__name__,
-                        config=config
-                    )
+            )
+        elif added_class_type == 'featurizer':
+            self.extra_config.featurizers.append(
+                Featurizer(
+                    name=added_class.__class__.__name__,
+                    config=config
                 )
+            )
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
