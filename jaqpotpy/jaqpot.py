@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from keycloak import KeycloakOpenID
 
+import jaqpotpy
 import jaqpotpy.api.dataset_api as data_api
 import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.api.feature_api as featapi
@@ -16,13 +17,18 @@ import jaqpotpy.doa.doa as jha
 import jaqpotpy.helpers.dataset_deserializer as ds
 from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
 from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import ModelVisibility
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import (
+    ModelVisibility,
+)
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
 from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.serializer import JaqpotSerializer
 from jaqpotpy.utils.url_utils import add_subdomain
+from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 
 ENCODING = "utf-8"
 
@@ -156,31 +162,46 @@ class Jaqpot:
             # error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
 
+    def deploy_Torch_Graph_model(
+        self, onnx_model, featurizer, name, description, target_name, visibility
+    ):
 
-def deploy_Torch_Graph_model(self, deployment_json):
-    auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
-    body_model = Model(
-        name=deployment_json["actualModel"],
-        type=deployment_json["model_type"],
-        jaqpotpy_version="",
-        libraries="",
-        dependent_features=deployment_json["dependentFeatures"],
-        independent_features=deployment_json["independentFeatures"],
-        visibility=deployment_json["visibility"],
-        actual_model=deployment_json["actualModel"],
-        description=deployment_json["description"],
-    )
-
-    response = create_model.sync_detailed(client=auth_client, body=body_model)
-    if response.status_code < 300:
-        self.log.info(
-            "Model has been successfully uploaded. The url of the model is "
-            + response.headers.get("Location")
+        auth_client = AuthenticatedClient(
+            base_url=self.api_url, token=self.api_key
+        )  # Change Base URL when not in local testing
+        # baseurl: "http://localhost.jaqpot.org:8080/"
+        featurizer_json = featurizer.get_json_rep()
+        body_model = Model(
+            name=name,
+            type=ModelType.TORCH,
+            jaqpotpy_version=jaqpotpy.__version__,
+            libraries=get_installed_libraries(),
+            dependent_features=[
+                Feature(
+                    key=target_name, name=target_name, feature_type=FeatureType.INTEGER
+                )
+            ],  # TODO: Spaces dont work in endpoint name
+            independent_features=[
+                Feature(key="SMILES", name="SMILES", feature_type=FeatureType.SMILES)
+            ],
+            extra_config={
+                "torchConfig": {"featurizer": featurizer_json, "task": "classification"}
+            },
+            visibility=ModelVisibility(visibility),
+            actual_model=onnx_model,
+            description=description,
         )
-    else:
-        # error = response.headers.get("error")
-        # error_description = response.headers.get("error_description")
-        self.log.error("Error code: " + str(response.status_code.value))
+
+        response = create_model.sync_detailed(client=auth_client, body=body_model)
+        if response.status_code < 300:
+            self.log.info(
+                "Graph Pytorch Model has been successfully uploaded. The url of the model is "
+                + response.headers.get("Location")
+            )
+        else:
+            # error = response.headers.get("error")
+            # error_description = response.headers.get("error_description")
+            self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_XGBoost(self, model, X, y, title, description, algorithm, doa=None):
         """Deploys XGBoost model to Jaqpot.

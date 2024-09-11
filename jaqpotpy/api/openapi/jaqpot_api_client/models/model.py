@@ -111,7 +111,9 @@ class Model:
         if not isinstance(self.shared_with_organizations, Unset):
             shared_with_organizations = []
             for shared_with_organizations_item_data in self.shared_with_organizations:
-                shared_with_organizations_item = shared_with_organizations_item_data.to_dict()
+                shared_with_organizations_item = (
+                    shared_with_organizations_item_data.to_dict()
+                )
                 shared_with_organizations.append(shared_with_organizations_item)
 
         pretrained = self.pretrained
@@ -238,7 +240,9 @@ class Model:
         shared_with_organizations = []
         _shared_with_organizations = d.pop("sharedWithOrganizations", UNSET)
         for shared_with_organizations_item_data in _shared_with_organizations or []:
-            shared_with_organizations_item = Organization.from_dict(shared_with_organizations_item_data)
+            shared_with_organizations_item = Organization.from_dict(
+                shared_with_organizations_item_data
+            )
 
             shared_with_organizations.append(shared_with_organizations_item)
 
