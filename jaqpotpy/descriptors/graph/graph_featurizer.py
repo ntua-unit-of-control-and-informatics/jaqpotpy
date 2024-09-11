@@ -269,7 +269,8 @@ class SmilesGraphFeaturizer:
         """One-hot encodes a value based on an allowable set."""
         if x not in allowable_set:
             feature_text = f"{feature_name} " if feature_name else ""
-        return [x == s for s in allowable_set]
+            print(feature_text)
+            return [x == s for s in allowable_set]
 
     def _one_of_k_encoding_unk(self, x, allowable_set):
         """One-hot encodes a value based on an allowable set, mapping unseen values to 'UNK'."""

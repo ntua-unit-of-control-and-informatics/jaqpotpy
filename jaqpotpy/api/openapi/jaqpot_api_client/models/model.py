@@ -12,6 +12,7 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.feature import Feature
     from ..models.library import Library
+    from ..models.model_extra_config import ModelExtraConfig
     from ..models.model_meta import ModelMeta
     from ..models.organization import Organization
     from ..models.user import User
@@ -22,28 +23,31 @@ T = TypeVar("T", bound="Model")
 
 @_attrs_define
 class Model:
-    """Attributes
-    name (str):  Example: My Model.
-    type (ModelType):
-    jaqpotpy_version (str):  Example: 1.0.0.
-    libraries (List['Library']):
-    dependent_features (List['Feature']):
-    independent_features (List['Feature']):
-    visibility (ModelVisibility):
-    actual_model (str): A base64 representation of the actual model.
-    id (Union[Unset, int]):
-    meta (Union[Unset, ModelMeta]): A JSON object containing meta information.
-    description (Union[Unset, str]):  Example: A description of your model.
-    organizations (Union[Unset, List['Organization']]):
-    pretrained (Union[Unset, bool]):
-    creator (Union[Unset, User]):
-    can_edit (Union[Unset, bool]): If the current user can edit the model
-    tags (Union[Unset, str]):
-    created_at (Union[Unset, datetime.datetime]): The date and time when the feature was created. Example:
-        2023-01-01T12:00:00Z.
-    updated_at (Union[Unset, str]): The date and time when the feature was last updated. Example:
-        2023-01-01T12:00:00Z.
-
+    """
+    Attributes:
+        name (str):  Example: My Model.
+        type (ModelType):
+        jaqpotpy_version (str):  Example: 1.0.0.
+        libraries (List['Library']):
+        dependent_features (List['Feature']):
+        independent_features (List['Feature']):
+        visibility (ModelVisibility):
+        actual_model (str): A base64 representation of the actual model.
+        id (Union[Unset, int]):
+        meta (Union[Unset, ModelMeta]): A JSON object containing meta information.
+        description (Union[Unset, str]):  Example: A description of your model.
+        shared_with_organizations (Union[Unset, List['Organization']]):
+        pretrained (Union[Unset, bool]):
+        creator (Union[Unset, User]):
+        can_edit (Union[Unset, bool]): If the current user can edit the model
+        is_admin (Union[Unset, bool]):
+        tags (Union[Unset, str]):
+        legacy_prediction_service (Union[Unset, str]):
+        extra_config (Union[Unset, ModelExtraConfig]): A JSON object containing extra configuration for the model
+        created_at (Union[Unset, datetime.datetime]): The date and time when the feature was created. Example:
+            2023-01-01T12:00:00Z.
+        updated_at (Union[Unset, str]): The date and time when the feature was last updated. Example:
+            2023-01-01T12:00:00Z.
     """
 
     name: str
@@ -57,11 +61,14 @@ class Model:
     id: Union[Unset, int] = UNSET
     meta: Union[Unset, "ModelMeta"] = UNSET
     description: Union[Unset, str] = UNSET
-    organizations: Union[Unset, List["Organization"]] = UNSET
+    shared_with_organizations: Union[Unset, List["Organization"]] = UNSET
     pretrained: Union[Unset, bool] = UNSET
     creator: Union[Unset, "User"] = UNSET
     can_edit: Union[Unset, bool] = UNSET
+    is_admin: Union[Unset, bool] = UNSET
     tags: Union[Unset, str] = UNSET
+    legacy_prediction_service: Union[Unset, str] = UNSET
+    extra_config: Union[Unset, "ModelExtraConfig"] = UNSET
     created_at: Union[Unset, datetime.datetime] = UNSET
     updated_at: Union[Unset, str] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -100,12 +107,14 @@ class Model:
 
         description = self.description
 
-        organizations: Union[Unset, List[Dict[str, Any]]] = UNSET
-        if not isinstance(self.organizations, Unset):
-            organizations = []
-            for organizations_item_data in self.organizations:
-                organizations_item = organizations_item_data.to_dict()
-                organizations.append(organizations_item)
+        shared_with_organizations: Union[Unset, List[Dict[str, Any]]] = UNSET
+        if not isinstance(self.shared_with_organizations, Unset):
+            shared_with_organizations = []
+            for shared_with_organizations_item_data in self.shared_with_organizations:
+                shared_with_organizations_item = (
+                    shared_with_organizations_item_data.to_dict()
+                )
+                shared_with_organizations.append(shared_with_organizations_item)
 
         pretrained = self.pretrained
 
@@ -115,7 +124,15 @@ class Model:
 
         can_edit = self.can_edit
 
+        is_admin = self.is_admin
+
         tags = self.tags
+
+        legacy_prediction_service = self.legacy_prediction_service
+
+        extra_config: Union[Unset, Dict[str, Any]] = UNSET
+        if not isinstance(self.extra_config, Unset):
+            extra_config = self.extra_config.to_dict()
 
         created_at: Union[Unset, str] = UNSET
         if not isinstance(self.created_at, Unset):
@@ -143,16 +160,22 @@ class Model:
             field_dict["meta"] = meta
         if description is not UNSET:
             field_dict["description"] = description
-        if organizations is not UNSET:
-            field_dict["organizations"] = organizations
+        if shared_with_organizations is not UNSET:
+            field_dict["sharedWithOrganizations"] = shared_with_organizations
         if pretrained is not UNSET:
             field_dict["pretrained"] = pretrained
         if creator is not UNSET:
             field_dict["creator"] = creator
         if can_edit is not UNSET:
             field_dict["canEdit"] = can_edit
+        if is_admin is not UNSET:
+            field_dict["isAdmin"] = is_admin
         if tags is not UNSET:
             field_dict["tags"] = tags
+        if legacy_prediction_service is not UNSET:
+            field_dict["legacyPredictionService"] = legacy_prediction_service
+        if extra_config is not UNSET:
+            field_dict["extraConfig"] = extra_config
         if created_at is not UNSET:
             field_dict["createdAt"] = created_at
         if updated_at is not UNSET:
@@ -164,6 +187,7 @@ class Model:
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         from ..models.feature import Feature
         from ..models.library import Library
+        from ..models.model_extra_config import ModelExtraConfig
         from ..models.model_meta import ModelMeta
         from ..models.organization import Organization
         from ..models.user import User
@@ -213,12 +237,14 @@ class Model:
 
         description = d.pop("description", UNSET)
 
-        organizations = []
-        _organizations = d.pop("organizations", UNSET)
-        for organizations_item_data in _organizations or []:
-            organizations_item = Organization.from_dict(organizations_item_data)
+        shared_with_organizations = []
+        _shared_with_organizations = d.pop("sharedWithOrganizations", UNSET)
+        for shared_with_organizations_item_data in _shared_with_organizations or []:
+            shared_with_organizations_item = Organization.from_dict(
+                shared_with_organizations_item_data
+            )
 
-            organizations.append(organizations_item)
+            shared_with_organizations.append(shared_with_organizations_item)
 
         pretrained = d.pop("pretrained", UNSET)
 
@@ -231,7 +257,18 @@ class Model:
 
         can_edit = d.pop("canEdit", UNSET)
 
+        is_admin = d.pop("isAdmin", UNSET)
+
         tags = d.pop("tags", UNSET)
+
+        legacy_prediction_service = d.pop("legacyPredictionService", UNSET)
+
+        _extra_config = d.pop("extraConfig", UNSET)
+        extra_config: Union[Unset, ModelExtraConfig]
+        if isinstance(_extra_config, Unset):
+            extra_config = UNSET
+        else:
+            extra_config = ModelExtraConfig.from_dict(_extra_config)
 
         _created_at = d.pop("createdAt", UNSET)
         created_at: Union[Unset, datetime.datetime]
@@ -254,11 +291,14 @@ class Model:
             id=id,
             meta=meta,
             description=description,
-            organizations=organizations,
+            shared_with_organizations=shared_with_organizations,
             pretrained=pretrained,
             creator=creator,
             can_edit=can_edit,
+            is_admin=is_admin,
             tags=tags,
+            legacy_prediction_service=legacy_prediction_service,
+            extra_config=extra_config,
             created_at=created_at,
             updated_at=updated_at,
         )
