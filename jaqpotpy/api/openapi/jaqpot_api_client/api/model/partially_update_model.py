@@ -70,20 +70,17 @@ def sync_detailed(
     """Partially update specific fields of a model
 
     Args:
-    ----
         id (int):
         body (PartiallyUpdateModelBody):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Response[Union[Any, Model]]
-
     """
+
     kwargs = _get_kwargs(
         id=id,
         body=body,
@@ -105,20 +102,17 @@ def sync(
     """Partially update specific fields of a model
 
     Args:
-    ----
         id (int):
         body (PartiallyUpdateModelBody):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Union[Any, Model]
-
     """
+
     return sync_detailed(
         id=id,
         client=client,
@@ -135,20 +129,17 @@ async def asyncio_detailed(
     """Partially update specific fields of a model
 
     Args:
-    ----
         id (int):
         body (PartiallyUpdateModelBody):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Response[Union[Any, Model]]
-
     """
+
     kwargs = _get_kwargs(
         id=id,
         body=body,
@@ -168,20 +159,17 @@ async def asyncio(
     """Partially update specific fields of a model
 
     Args:
-    ----
         id (int):
         body (PartiallyUpdateModelBody):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Union[Any, Model]
-
     """
+
     return (
         await asyncio_detailed(
             id=id,

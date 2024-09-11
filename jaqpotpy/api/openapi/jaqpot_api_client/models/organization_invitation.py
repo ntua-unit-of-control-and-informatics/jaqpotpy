@@ -11,13 +11,13 @@ T = TypeVar("T", bound="OrganizationInvitation")
 
 @_attrs_define
 class OrganizationInvitation:
-    """Attributes
-    user_email (str): Email address of the invited user
-    status (OrganizationInvitationStatus): Status of the invitation
-    expiration_date (str): Expiration date of the invitation
-    id (Union[Unset, str]): ID of the invitation
-    user_id (Union[Unset, str]): The user id associated with that invitation
-
+    """
+    Attributes:
+        user_email (str): Email address of the invited user
+        status (OrganizationInvitationStatus): Status of the invitation
+        expiration_date (str): Expiration date of the invitation
+        id (Union[Unset, str]): ID of the invitation
+        user_id (Union[Unset, str]): The user id associated with that invitation
     """
 
     user_email: str

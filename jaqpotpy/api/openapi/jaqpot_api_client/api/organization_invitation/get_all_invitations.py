@@ -72,19 +72,16 @@ def sync_detailed(
      This endpoint allows an organization admin to get all invitations for their organization.
 
     Args:
-    ----
         org_name (str):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Response[Union[ErrorResponse, List['OrganizationInvitation']]]
-
     """
+
     kwargs = _get_kwargs(
         org_name=org_name,
     )
@@ -106,19 +103,16 @@ def sync(
      This endpoint allows an organization admin to get all invitations for their organization.
 
     Args:
-    ----
         org_name (str):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Union[ErrorResponse, List['OrganizationInvitation']]
-
     """
+
     return sync_detailed(
         org_name=org_name,
         client=client,
@@ -135,19 +129,16 @@ async def asyncio_detailed(
      This endpoint allows an organization admin to get all invitations for their organization.
 
     Args:
-    ----
         org_name (str):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Response[Union[ErrorResponse, List['OrganizationInvitation']]]
-
     """
+
     kwargs = _get_kwargs(
         org_name=org_name,
     )
@@ -167,19 +158,16 @@ async def asyncio(
      This endpoint allows an organization admin to get all invitations for their organization.
 
     Args:
-    ----
         org_name (str):
 
     Raises:
-    ------
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-    -------
         Union[ErrorResponse, List['OrganizationInvitation']]
-
     """
+
     return (
         await asyncio_detailed(
             org_name=org_name,

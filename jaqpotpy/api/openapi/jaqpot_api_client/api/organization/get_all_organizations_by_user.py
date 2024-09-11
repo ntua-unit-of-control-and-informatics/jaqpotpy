@@ -53,16 +53,14 @@ def sync_detailed(
 ) -> Response[List["Organization"]]:
     """Get all user organizations
 
-    Raises
-    ------
+    Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
-    Returns
-    -------
+    Returns:
         Response[List['Organization']]
-
     """
+
     kwargs = _get_kwargs()
 
     response = client.get_httpx_client().request(
@@ -78,16 +76,14 @@ def sync(
 ) -> Optional[List["Organization"]]:
     """Get all user organizations
 
-    Raises
-    ------
+    Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
-    Returns
-    -------
+    Returns:
         List['Organization']
-
     """
+
     return sync_detailed(
         client=client,
     ).parsed
@@ -99,16 +95,14 @@ async def asyncio_detailed(
 ) -> Response[List["Organization"]]:
     """Get all user organizations
 
-    Raises
-    ------
+    Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
-    Returns
-    -------
+    Returns:
         Response[List['Organization']]
-
     """
+
     kwargs = _get_kwargs()
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -122,16 +116,14 @@ async def asyncio(
 ) -> Optional[List["Organization"]]:
     """Get all user organizations
 
-    Raises
-    ------
+    Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
-    Returns
-    -------
+    Returns:
         List['Organization']
-
     """
+
     return (
         await asyncio_detailed(
             client=client,

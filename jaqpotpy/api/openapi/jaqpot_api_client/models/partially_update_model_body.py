@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Type, TypeVar, Union, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
+from ..models.model_task import ModelTask
 from ..models.model_visibility import ModelVisibility
 from ..types import UNSET, Unset
 
@@ -15,6 +16,7 @@ class PartiallyUpdateModelBody:
     Attributes:
         name (str):
         visibility (ModelVisibility):
+        task (ModelTask):
         description (Union[Unset, str]):
         tags (Union[Unset, str]):
         shared_with_organization_ids (Union[Unset, List[int]]):
@@ -22,6 +24,7 @@ class PartiallyUpdateModelBody:
 
     name: str
     visibility: ModelVisibility
+    task: ModelTask
     description: Union[Unset, str] = UNSET
     tags: Union[Unset, str] = UNSET
     shared_with_organization_ids: Union[Unset, List[int]] = UNSET
@@ -31,6 +34,8 @@ class PartiallyUpdateModelBody:
         name = self.name
 
         visibility = self.visibility.value
+
+        task = self.task.value
 
         description = self.description
 
@@ -46,6 +51,7 @@ class PartiallyUpdateModelBody:
             {
                 "name": name,
                 "visibility": visibility,
+                "task": task,
             }
         )
         if description is not UNSET:
@@ -64,6 +70,8 @@ class PartiallyUpdateModelBody:
 
         visibility = ModelVisibility(d.pop("visibility"))
 
+        task = ModelTask(d.pop("task"))
+
         description = d.pop("description", UNSET)
 
         tags = d.pop("tags", UNSET)
@@ -73,6 +81,7 @@ class PartiallyUpdateModelBody:
         partially_update_model_body = cls(
             name=name,
             visibility=visibility,
+            task=task,
             description=description,
             tags=tags,
             shared_with_organization_ids=shared_with_organization_ids,
