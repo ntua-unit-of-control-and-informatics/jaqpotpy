@@ -176,7 +176,7 @@ class Jaqpot:
         self, onnx_model, featurizer, name, description, target_name, visibility, task
     ):
 
-        if task == "classification":
+        if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
             feature_type = FeatureType.INTEGER
         elif task == "regression":
