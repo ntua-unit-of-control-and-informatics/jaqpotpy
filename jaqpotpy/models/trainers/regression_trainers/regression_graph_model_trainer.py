@@ -1,17 +1,19 @@
 """Author: Ioannis Pitoskas (jpitoskas@gmail.com)"""
 
-from . import RegressionModelTrainer
-
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
+from tqdm import tqdm
 import torch
 import io
 import base64
-import pickle
-from jaqpotpy.schemas import Feature
 from typing import Optional
 import inspect
+from ..base import TorchModelTrainer
+from sklearn import metrics
+import torch.nn.functional as F
 
 
-class RegressionGraphModelTrainer(RegressionModelTrainer):
+class RegressionGraphModelTrainer(TorchModelTrainer):
     """Trainer class for Regression using Graph Neural Networks for SMILES and external features."""
 
     MODEL_TYPE = "regression-graph-model"
@@ -79,8 +81,6 @@ class RegressionGraphModelTrainer(RegressionModelTrainer):
             use_tqdm=use_tqdm,
             log_enabled=log_enabled,
             log_filepath=log_filepath,
-            normalization_mean=normalization_mean,
-            normalization_std=normalization_std,
         )
 
     def get_model_kwargs(self, data):
@@ -106,41 +106,221 @@ class RegressionGraphModelTrainer(RegressionModelTrainer):
 
         return kwargs
 
-    def prepare_for_deployment(
-        self,
-        featurizer,
-        endpoint_name: str,
-        name: str,
-        description: Optional[str] = None,
-        visibility: str = "PUBLIC",
-        reliability: Optional[int] = None,
-        pretrained: bool = False,
-        meta: dict = dict(),
-    ):
-        """Args:
-        ----
-            featurizer (object): The featurizer used to transform the SMILES to graph representations before training the model.
-            endpoint_name (str): The name of the endpoint for the deployed model.
-            name (str): The name to be assigned to the deployed model.
-            description (str, optional): A description for the model to be deployed. Default is None.
-            visibility (str, optional): Visibility of the deployed model. Can be 'PUBLIC', 'PRIVATE' or 'ORG_SHARED'. Default is 'PUBLIC'.
-            reliability (int, optional): The models reliability. Default is None.
-            pretrained (bool, optional): Indicates if the model is pretrained. Default is False.
-            meta (dict, optional): Additional metadata for the model. Default is an empty dictionary.
+    def train(self, train_loader, val_loader=None):
+        """Train the model.
 
-        Returns
+        Args:
+        ----
+            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]):
+                DataLoader for the training dataset.
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional):
+                DataLoader for the validation dataset.
+
+        Returns:
         -------
-            dict: The data to be sent to the API of Jaqpot in JSON format.
-                  Note that in this case, the '*additional_model_params*' key contains a nested dictionary with they keys: {'*normalization_mean*', '*normalization_std*', '*featurizer*'}.
+            None
 
         """
-        # model_scripted = torch.jit.script(self.model)
-        # model_buffer = io.BytesIO()
-        # #torch.jit.save(model_scripted, model_buffer)
-        # model_buffer.seek(0)
-        # model_scripted_base64 = base64.b64encode(model_buffer.getvalue()).decode('utf-8')
+        for i in range(self.n_epochs):
+            self.current_epoch += 1
 
-        #####
+            train_loss = self._train_one_epoch(train_loader)
+            _, train_metrics_dict = self.evaluate(train_loader)
+
+            if self.log_enabled:
+                self.logger.info(f"Epoch {self.current_epoch}:")
+                self._log_metrics(
+                    train_loss, metrics_dict=train_metrics_dict, mode="train"
+                )
+
+            if val_loader:
+                val_loss, val_metrics_dict = self.evaluate(val_loader)
+                if self.log_enabled:
+                    self._log_metrics(
+                        val_loss, metrics_dict=val_metrics_dict, mode="val"
+                    )
+
+            self.scheduler.step()
+
+    def _train_one_epoch(self, train_loader):
+        """This helper method handles the training loop for a single epoch, updating the model parameters and
+        computing the running loss.
+
+        Args:
+        ----
+            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the
+                training dataset.
+
+        Returns:
+        -------
+            float: The average loss of the current epoch.
+
+        """
+        running_loss = 0
+        total_samples = 0
+
+        tqdm_loader = (
+            tqdm(train_loader, desc=f"Epoch {self.current_epoch}/{self.n_epochs}")
+            if self.use_tqdm
+            else train_loader
+        )
+
+        self.model.train()
+        for _, data in enumerate(tqdm_loader):
+            try:  # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                data = data.to(self.device)
+                y = data.y
+            except AttributeError:
+                data = [d.to(self.device) for d in data]
+                y = data[-1]
+
+            model_kwargs = self.get_model_kwargs(data)
+
+            self.optimizer.zero_grad()
+
+            outputs = self.model(**model_kwargs).squeeze(-1)
+            loss = self.loss_fn(outputs.float(), y.float())
+
+            running_loss += loss.item() * y.size(0)
+            total_samples += y.size(0)
+
+            loss.backward()
+            self.optimizer.step()
+
+            if self.use_tqdm:
+                tqdm_loader.set_postfix(loss=running_loss / total_samples)
+
+        avg_loss = running_loss / len(train_loader.dataset)
+
+        if self.use_tqdm:
+            tqdm_loader.set_postfix(loss=running_loss)
+            tqdm_loader.close()
+
+        return avg_loss
+
+    def evaluate(self, val_loader):
+        """Evaluate the model's performance on the validation set.
+
+        Args:
+        ----
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
+
+        Returns:
+        -------
+            float: Average loss over the validation dataset.
+            dict: Dictionary containing evaluation metrics. The keys represent the metric names and the values are floats.
+
+        """
+        running_loss = 0
+        total_samples = 0
+
+        all_preds = []
+        all_true = []
+
+        self.model.eval()
+        with torch.no_grad():
+            for _, data in enumerate(val_loader):
+                try:  # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                    data = data.to(self.device)
+                    y = data.y
+                except AttributeError:
+                    data = [d.to(self.device) for d in data]
+                    y = data[-1]
+
+                model_kwargs = self.get_model_kwargs(data)
+
+                outputs = self.model(**model_kwargs).squeeze(-1)
+                all_preds.extend(outputs.tolist())
+                all_true.extend(y.tolist())
+
+                loss = self.loss_fn(outputs.float(), y.float())
+
+                running_loss += loss.item() * y.size(0)
+                total_samples += y.size(0)
+
+            avg_loss = running_loss / len(val_loader.dataset)
+
+        all_true = torch.tensor(all_true).tolist()
+        all_preds = torch.tensor(all_preds).tolist()
+
+        metrics_dict = self._compute_metrics(all_true, all_preds)
+        metrics_dict["loss"] = avg_loss
+
+        return avg_loss, metrics_dict
+
+    def predict(self, val_loader):
+        """Provide predictions on the validation set.
+
+        Args:
+        ----
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
+
+        Returns:
+        -------
+            list: List of predictions.
+
+        """
+        all_preds = []
+        self.model.eval()
+        with torch.no_grad():
+            for _, data in enumerate(val_loader):
+                try:  # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
+                    data = data.to(self.device)
+                except AttributeError:
+                    data = [d.to(self.device) for d in data]
+
+                model_kwargs = self.get_model_kwargs(data)
+
+                outputs = self.model(**model_kwargs).squeeze(-1)
+
+                all_preds.extend(outputs.tolist())
+
+        all_preds = self._denormalize(torch.tensor(all_preds)).tolist()
+
+        return all_preds
+
+    def _log_metrics(self, loss, metrics_dict, mode="train"):
+        if mode == "train":
+            epoch_logs = " Train: "
+        elif mode == "val":
+            epoch_logs = " Val:   "
+        else:
+            raise ValueError(f"Invalid mode '{mode}'")
+
+        epoch_logs += f"loss={loss:.4f}"
+        for metric, value in metrics_dict.items():
+            if metric == "loss":
+                continue
+
+            epoch_logs += " | "
+            epoch_logs += f"{metric}={value:.4f}"
+
+        self.logger.info(epoch_logs)
+
+    def _compute_metrics(self, y_true, y_pred):
+        explained_variance = metrics.explained_variance_score(y_true, y_pred)
+        r2 = metrics.r2_score(y_true, y_pred)
+        mse = metrics.mean_squared_error(y_true, y_pred)
+        rmse = metrics.root_mean_squared_error(y_true, y_pred)
+        mae = metrics.mean_absolute_error(y_true, y_pred)
+
+        metrics_dict = {
+            "explained_variance": explained_variance,
+            "r2": r2,
+            "mse": mse,
+            "rmse": rmse,
+            "mae": mae,
+        }
+
+        return metrics_dict
+
+    # def _normalize(self, x):
+    #     return x.sub_(self.normalization_mean).div_(self.normalization_std)
+
+    # def _denormalize(self, x):
+    #     return x.mul_(self.normalization_std).add_(self.normalization_mean)
+
+    def pyg_to_onnx(self, featurizer):
         if self.model.training:
             self.model.eval()
             self.model = self.model.cpu()
@@ -150,63 +330,16 @@ class RegressionGraphModelTrainer(RegressionModelTrainer):
         x = dummy_input.x
         edge_index = dummy_input.edge_index
         batch = torch.zeros(x.shape[0], dtype=torch.int64)
+        buffer = io.BytesIO()
         torch.onnx.export(
-            self.model,  # model being run
+            self.model,
             args=(x, edge_index, batch),
-            f="model.onnx",
+            f=buffer,
             input_names=["x", "edge_index", "batch"],
             dynamic_axes={"x": {0: "nodes"}, "edge_index": {1: "edges"}, "batch": [0]},
         )
-        with open("model.onnx", "rb") as f:
-            onnx_model_bytes = f.read()
+        onnx_model_bytes = buffer.getvalue()
+        buffer.close()
         model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode("utf-8")
-        import os
 
-        os.remove("model.onnx")
-
-        featurizer_buffer = io.BytesIO()
-        pickle.dump(featurizer, featurizer_buffer)
-        featurizer_buffer.seek(0)
-        featurizer_pickle_base64 = base64.b64encode(
-            featurizer_buffer.getvalue()
-        ).decode("utf-8")
-
-        additional_model_params = {
-            "normalization_mean": self.normalization_mean,
-            "normalization_std": self.normalization_std,
-            "featurizer": featurizer_pickle_base64,
-        }
-
-        independentFeatures = [
-            Feature(
-                name="SMILES",
-                featureDependency="INDEPENDENT",
-                possibleValues=[],
-                featureType="SMILES",
-            )
-        ]
-
-        dependentFeatures = [
-            Feature(
-                name=endpoint_name,
-                featureDependency="DEPENDENT",
-                possibleValues=[],
-                featureType="FLOAT",
-            )
-        ]
-
-        self.json_data_for_deployment = self._model_data_as_json(
-            actualModel=model_scripted_base64,
-            name=name,
-            description=description,
-            model_type=self.get_model_type(),
-            visibility=visibility,
-            independentFeatures=independentFeatures,
-            dependentFeatures=dependentFeatures,
-            additional_model_params=additional_model_params,
-            reliability=reliability,
-            pretrained=pretrained,
-            meta=meta,
-        )
-
-        return self.json_data_for_deployment
+        return model_scripted_base64
