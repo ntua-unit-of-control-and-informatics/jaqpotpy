@@ -1,9 +1,9 @@
-from jaqpotpy.api.types.models.feature_type import FeatureType
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
 from tqdm import tqdm
 import torch
 import io
 import base64
-from jaqpotpy.api.types.models.feature import Feature
 from typing import Optional
 import inspect
 from ..base import TorchModelTrainer
