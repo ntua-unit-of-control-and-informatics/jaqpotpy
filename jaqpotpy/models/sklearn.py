@@ -19,6 +19,7 @@ from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
 from onnxruntime import InferenceSession
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 
 
 class SklearnModel(Model):
@@ -196,10 +197,10 @@ class SklearnModel(Model):
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=[
-                ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
+            ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
             ],
             name=name,
-            options=onnx_options,
+            options={StandardScaler: {"div": "div_cast"}},
         )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
