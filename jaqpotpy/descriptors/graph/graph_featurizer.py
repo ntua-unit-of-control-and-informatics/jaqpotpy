@@ -2,6 +2,7 @@ from rdkit import Chem
 import torch
 from torch_geometric.data import Data
 import json
+from collections import OrderedDict
 
 
 class SmilesGraphFeaturizer:
@@ -185,6 +186,13 @@ class SmilesGraphFeaturizer:
                 raise ValueError(
                     f"No default allowable set for bond characteristic '{bond_feature}'. You must set your own allowable set."
                 )
+
+    def sort_allowable_sets(self):
+        """Sorts the allowable sets for atom and bond features."""
+        self.atom_allowable_sets = OrderedDict(sorted(self.atom_allowable_sets.items()))
+        self.bond_allowable_sets = OrderedDict(sorted(self.bond_allowable_sets.items()))
+
+        return self
 
     def set_default_config(self):
         """Sets the default configuration for the featurizer."""
