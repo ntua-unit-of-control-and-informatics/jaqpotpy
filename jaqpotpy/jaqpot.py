@@ -6,7 +6,6 @@ import webbrowser
 import numpy as np
 import pandas as pd
 import jaqpotpy
-from keycloak import KeycloakOpenID
 import jaqpotpy.api.dataset_api as data_api
 import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.api.feature_api as featapi
