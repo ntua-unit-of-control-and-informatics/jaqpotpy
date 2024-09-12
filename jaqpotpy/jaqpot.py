@@ -11,14 +11,23 @@ import jaqpotpy.api.dataset_api as data_api
 import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.api.feature_api as featapi
 import jaqpotpy.api.models_api as models_api
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config import (
+    ModelExtraConfig,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config_torch_config import (
+    ModelExtraConfigTorchConfig,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config_torch_config_additional_property import (
+    ModelExtraConfigTorchConfigAdditionalProperty,
+)
 import jaqpotpy.api.task_api as task_api
 import jaqpotpy.doa.doa as jha
 import jaqpotpy.helpers.dataset_deserializer as ds
 from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
 from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import ModelVisibility
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_task import ModelTask
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import ModelVisibility
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
 from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
@@ -170,7 +179,13 @@ class Jaqpot:
             base_url=self.api_url, token=self.api_key
         )  # Change Base URL when not in local testing
         # baseurl: "http://localhost.jaqpot.org:8080/"
-        featurizer_json = featurizer.get_json_rep()
+        featurizer_dict = featurizer.get_dict()
+
+        featurizer_config = ModelExtraConfigTorchConfigAdditionalProperty.from_dict(
+            featurizer_dict
+        )
+        torch_config_json = {"featurizerConfig": featurizer_config.to_dict()}
+        torch_config = ModelExtraConfigTorchConfig.from_dict(torch_config_json)
         body_model = Model(
             name=name,
             type=ModelType.TORCH,
@@ -184,9 +199,8 @@ class Jaqpot:
             independent_features=[
                 Feature(key="SMILES", name="SMILES", feature_type=FeatureType.SMILES)
             ],
-            extra_config={
-                "torchConfig": {"featurizer": featurizer_json, "task": "classification"}
-            },
+            extra_config=ModelExtraConfig(torch_config=torch_config),
+            task=ModelTask.BINARY_CLASSIFICATION,
             visibility=ModelVisibility(visibility),
             actual_model=onnx_model,
             description=description,
