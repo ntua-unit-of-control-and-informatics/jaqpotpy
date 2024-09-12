@@ -173,9 +173,20 @@ class Jaqpot:
             self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_Torch_Graph_model(
-        self, onnx_model, featurizer, name, description, target_name, visibility
+        self, onnx_model, featurizer, name, description, target_name, visibility, task
     ):
 
+        if task == "binary_classification":
+            model_task = ModelTask.BINARY_CLASSIFICATION
+            feature_type = FeatureType.INTEGER
+        elif task == "regression":
+            model_task = ModelTask.REGRESSION
+            feature_type = FeatureType.FLOAT
+        elif task == "multiclass_classification":
+            model_task = ModelTask.MULTICLASS_CLASSIFICATION
+            feature_type = FeatureType.INTEGER
+        else:   
+            raise ValueError("Task should be either classification or regression")
         auth_client = AuthenticatedClient(
             base_url=self.api_url, token=self.api_key
         )  # Change Base URL when not in local testing
@@ -193,15 +204,13 @@ class Jaqpot:
             jaqpotpy_version=jaqpotpy.__version__,
             libraries=get_installed_libraries(),
             dependent_features=[
-                Feature(
-                    key=target_name, name=target_name, feature_type=FeatureType.INTEGER
-                )
+                Feature(key=target_name, name=target_name, feature_type=feature_type)
             ],  # TODO: Spaces dont work in endpoint name
             independent_features=[
                 Feature(key="SMILES", name="SMILES", feature_type=FeatureType.SMILES)
             ],
             extra_config=ModelExtraConfig(torch_config=torch_config),
-            task=ModelTask.BINARY_CLASSIFICATION,
+            task=model_task,
             visibility=ModelVisibility(visibility),
             actual_model=onnx_model,
             description=description,
