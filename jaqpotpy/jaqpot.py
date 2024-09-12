@@ -182,7 +182,10 @@ class Jaqpot:
         elif task == "regression":
             model_task = ModelTask.REGRESSION
             feature_type = FeatureType.FLOAT
-        else:
+        elif task == "multiclass_classification":
+            model_task = ModelTask.MULTICLASS_CLASSIFICATION
+            feature_type = FeatureType.INTEGER
+        else:   
             raise ValueError("Task should be either classification or regression")
         auth_client = AuthenticatedClient(
             base_url=self.api_url, token=self.api_key
