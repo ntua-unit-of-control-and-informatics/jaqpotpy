@@ -2,6 +2,7 @@ from rdkit import Chem
 import torch
 from torch_geometric.data import Data
 import json
+from collections import OrderedDict
 
 
 class SmilesGraphFeaturizer:
@@ -186,6 +187,13 @@ class SmilesGraphFeaturizer:
                     f"No default allowable set for bond characteristic '{bond_feature}'. You must set your own allowable set."
                 )
 
+    def sort_allowable_sets(self):
+        """Sorts the allowable sets for atom and bond features."""
+        self.atom_allowable_sets = OrderedDict(sorted(self.atom_allowable_sets.items()))
+        self.bond_allowable_sets = OrderedDict(sorted(self.bond_allowable_sets.items()))
+
+        return self
+
     def set_default_config(self):
         """Sets the default configuration for the featurizer."""
         atom_allowable_sets = {
@@ -327,23 +335,20 @@ class SmilesGraphFeaturizer:
             smiles=sm,
         )
 
-    def get_json_rep(self):
+    def get_dict(self):
         """Creates a json configuration that will be sent to database for inference"""
-        config_json = json.dumps(
-            {
-                "include_edge_features": self.include_edge_features,
-                "atom_allowable_sets": self.atom_allowable_sets,
-                "bond_allowable_sets": self.bond_allowable_sets,
-            }
-        )
-        return config_json
+        config_dict = {
+            "include_edge_features": self.include_edge_features,
+            "atom_allowable_sets": self.atom_allowable_sets,
+            "bond_allowable_sets": self.bond_allowable_sets,
+        }
+        return config_dict
 
-    def load_json_rep(self, json_config):
+    def load_dict(self, feat_dict):
         """Loads a configuration from a json dict. Mainly used in jaqpotpy-inference"""
-        data = json.loads(json_config)
-        self.include_edge_features = data.get("include_edge_features")
-        self._set_atom_allowable_sets(data.get("atom_allowable_sets"))
-        self._set_bond_allowable_sets(data.get("bond_allowable_sets"))
+        self.include_edge_features = feat_dict["include_edge_features"]
+        self._set_atom_allowable_sets(feat_dict["atom_allowable_sets"])
+        self._set_bond_allowable_sets(feat_dict["bond_allowable_sets"])
         return self
 
     def __repr__(self):

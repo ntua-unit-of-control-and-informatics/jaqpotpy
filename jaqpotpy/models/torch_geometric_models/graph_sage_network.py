@@ -10,7 +10,7 @@ from torch import Tensor
 
 
 class GraphSageNetwork(nn.Module):
-    """Graph Convolution Model"""
+    """Graph Sage Model"""
 
     def __init__(
         self,

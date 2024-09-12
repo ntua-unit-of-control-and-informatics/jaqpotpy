@@ -16,9 +16,9 @@ T = TypeVar("T", bound="ModelExtraConfigTorchConfig")
 class ModelExtraConfigTorchConfig:
     """ """
 
-    additional_properties: Dict[str, "ModelExtraConfigTorchConfigAdditionalProperty"] = _attrs_field(
-        init=False, factory=dict
-    )
+    additional_properties: Dict[
+        str, "ModelExtraConfigTorchConfigAdditionalProperty"
+    ] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         field_dict: Dict[str, Any] = {}
@@ -38,7 +38,9 @@ class ModelExtraConfigTorchConfig:
 
         additional_properties = {}
         for prop_name, prop_dict in d.items():
-            additional_property = ModelExtraConfigTorchConfigAdditionalProperty.from_dict(prop_dict)
+            additional_property = (
+                ModelExtraConfigTorchConfigAdditionalProperty.from_dict(prop_dict)
+            )
 
             additional_properties[prop_name] = additional_property
 
@@ -52,7 +54,9 @@ class ModelExtraConfigTorchConfig:
     def __getitem__(self, key: str) -> "ModelExtraConfigTorchConfigAdditionalProperty":
         return self.additional_properties[key]
 
-    def __setitem__(self, key: str, value: "ModelExtraConfigTorchConfigAdditionalProperty") -> None:
+    def __setitem__(
+        self, key: str, value: "ModelExtraConfigTorchConfigAdditionalProperty"
+    ) -> None:
         self.additional_properties[key] = value
 
     def __delitem__(self, key: str) -> None:
