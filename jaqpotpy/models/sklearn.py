@@ -159,7 +159,6 @@ class SklearnModel(Model):
                     self.preprocessing_y = preprocess_classes_y
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
             else:
-                print(y)
                 self.trained_model = self.pipeline.fit(
                     X.to_numpy(), y
                 )  # .to_numpy().ravel())
