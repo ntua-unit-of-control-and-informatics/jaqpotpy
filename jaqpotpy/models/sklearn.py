@@ -4,10 +4,14 @@ from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from typing import Any, Dict, Optional
 from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
+from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.jaqpot_api_client.models import FeatureType
-from jaqpotpy.api.openapi.jaqpot_api_client.models import ModelType
+from jaqpotpy.api.openapi.jaqpot_api_client.models import FeatureType, ModelType, ModelExtraConfig, Preprocessor, Featurizer
+from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config import PreprocessorConfig
+from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config import FeaturizerConfig
+from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config_additional_property import PreprocessorConfigAdditionalProperty
+from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config_additional_property import FeaturizerConfigAdditionalProperty
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
@@ -15,6 +19,7 @@ from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
 from onnxruntime import InferenceSession
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 
 
 class SklearnModel(Model):
@@ -39,6 +44,7 @@ class SklearnModel(Model):
         self.evaluator = evaluator
         self.preprocess = preprocessor
         self.preprocessing_y = None
+        self.transformers_y = {}
         self.libraries = None
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
@@ -49,6 +55,7 @@ class SklearnModel(Model):
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
         self.dependentFeatures = None
+        self.extra_config = ModelExtraConfig()
 
     def __dtypes_to_jaqpotypes__(self):
         for feature in self.independentFeatures + self.dependentFeatures:
@@ -60,9 +67,44 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.FLOAT
             elif feature["featureType"] in ["string, object"]:
                 feature["featureType"] = FeatureType.STRING
+    
+    def _extract_attributes(self, trained_class):
+        attributes = trained_class.__dict__
+        return {k: (v.tolist() if isinstance(v, np.ndarray) else v.item() if isinstance(v, (np.int64, np.float64)) else v) for k, v in attributes.items()}
+
+    def _add_class_to_extraconfig(self,added_class, added_class_type):
+        if added_class_type == 'preprocessor':
+            config = PreprocessorConfig()
+            additional_property_type = PreprocessorConfigAdditionalProperty()
+        elif added_class_type == 'featurizer':
+            config = FeaturizerConfig()
+            additional_property_type = FeaturizerConfigAdditionalProperty()
+
+        for attr_name, attr_value in self._extract_attributes(added_class).items():
+            additional_property = type(additional_property_type)()
+            additional_property.additional_properties['value'] = attr_value
+            config.additional_properties[attr_name] = additional_property
+
+        if added_class_type == 'preprocessor':
+            self.extra_config.preprocessors.append(
+                Preprocessor(
+                    name=added_class.__class__.__name__, 
+                    config=config
+                )
+            )
+        elif added_class_type == 'featurizer':
+            self.extra_config.featurizers.append(
+                Featurizer(
+                    name=added_class.__class__.__name__,
+                    config=config
+                )
+            )
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
+        if isinstance(self.featurizer, MolecularFeaturizer):
+            self.extra_config.featurizers = []
+            self._add_class_to_extraconfig(self.featurizer, 'featurizer')
 
         if self.dataset.y is None:
             raise TypeError(
@@ -71,7 +113,7 @@ class SklearnModel(Model):
         # Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
-
+        
         if self.doa:
             self.trained_doa = self.doa.fit(X=X)
 
@@ -80,7 +122,6 @@ class SklearnModel(Model):
 
         # if preprocessing was applied to either X,y or both
         if self.preprocess is not None:
-            self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             self.pipeline = sklearn.pipeline.Pipeline(steps=[])
             # Apply preprocessing on design matrix X
             pre_keys = self.preprocess.classes.keys()
@@ -103,18 +144,20 @@ class SklearnModel(Model):
                     preprocess_names_y = []
                     preprocess_classes_y = []
                     y_scaled = self.dataset.__get_Y__()
+                    self.extra_config.preprocessors = []
                     for pre_y_key in pre_y_keys:
                         pre_y_function = self.preprocess.classes_y.get(pre_y_key)
                         y_scaled = pre_y_function.fit_transform(y_scaled)
-                        if len(self.dataset.y_cols) == 1:
-                            y_scaled = y_scaled.ravel()
                         self.preprocess.register_fitted_class_y(
                             pre_y_key, pre_y_function
                         )
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
-                    self.preprocessing_y = preprocess_classes_y
+                        self._add_class_to_extraconfig(pre_y_function, 'preprocessor')
 
+                    if len(self.dataset.y_cols) == 1:
+                        y_scaled = y_scaled.ravel()
+                    self.preprocessing_y = preprocess_classes_y
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
             else:
                 self.trained_model = self.pipeline.fit(
@@ -154,10 +197,10 @@ class SklearnModel(Model):
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=[
-                ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
+            ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
             ],
             name=name,
-            options=onnx_options,
+            options={StandardScaler: {"div": "div_cast"}},
         )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
@@ -173,7 +216,7 @@ class SklearnModel(Model):
         )
         if self.preprocess is not None:
             if self.preprocessing_y:
-                for f in self.preprocessing_y:
+                for f in self.preprocessing_y[::-1]:
                     if len(self.y_cols) == 1:
                         sklearn_prediction = f.inverse_transform(
                             sklearn_prediction.reshape(1, -1)
@@ -204,7 +247,7 @@ class SklearnModel(Model):
             onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
         if self.preprocess is not None:
             if self.preprocessing_y:
-                for f in self.preprocessing_y:
+                for f in self.preprocessing_y[::-1]:
                     onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
         if len(self.y_cols) == 1:
             return onnx_prediction[0].flatten()

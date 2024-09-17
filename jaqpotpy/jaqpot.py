@@ -5,9 +5,8 @@ import webbrowser
 
 import numpy as np
 import pandas as pd
-from keycloak import KeycloakOpenID
-
 import jaqpotpy
+from keycloak import KeycloakOpenID
 import jaqpotpy.api.dataset_api as data_api
 import jaqpotpy.api.doa_api as doa_api
 import jaqpotpy.api.feature_api as featapi
@@ -130,8 +129,8 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
-        actual_model = model_to_b64encoding(model.copy())
+        auth_client = AuthenticatedClient(base_url=self.base_url, token=self.api_key)
+        actual_model = model_to_b64encoding(model.copy().onnx_model.SerializeToString())
         body_model = Model(
             name=name,
             type=model.type,
@@ -154,8 +153,10 @@ class Jaqpot:
                 for feature_i in model.independentFeatures
             ],
             visibility=ModelVisibility(visibility),
+            task=ModelTask(model.task.upper()),
             actual_model=actual_model,
             description=description,
+            extra_config=model.extra_config,
         )
 
         response = create_model.sync_detailed(client=auth_client, body=body_model)
@@ -175,7 +176,6 @@ class Jaqpot:
     def deploy_Torch_Graph_model(
         self, onnx_model, featurizer, name, description, target_name, visibility, task
     ):
-
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
             feature_type = FeatureType.INTEGER
@@ -185,7 +185,7 @@ class Jaqpot:
         elif task == "multiclass_classification":
             model_task = ModelTask.MULTICLASS_CLASSIFICATION
             feature_type = FeatureType.INTEGER
-        else:   
+        else:
             raise ValueError("Task should be either classification or regression")
         auth_client = AuthenticatedClient(
             base_url=self.api_url, token=self.api_key
