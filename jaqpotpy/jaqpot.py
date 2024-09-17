@@ -129,7 +129,7 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        auth_client = AuthenticatedClient(base_url=self.base_url, token=self.api_key)
+        auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
         actual_model = model_to_b64encoding(model.copy().onnx_model.SerializeToString())
         body_model = Model(
             name=name,
