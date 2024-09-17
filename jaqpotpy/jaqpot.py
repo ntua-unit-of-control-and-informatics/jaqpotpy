@@ -27,7 +27,9 @@ from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
 from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_task import ModelTask
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import ModelVisibility
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import (
+    ModelVisibility,
+)
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
 from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
@@ -154,7 +156,7 @@ class Jaqpot:
             task=ModelTask(model.task.upper()),
             actual_model=actual_model,
             description=description,
-            extra_config=model.extra_config
+            extra_config=model.extra_config,
         )
 
         response = create_model.sync_detailed(client=auth_client, body=body_model)
@@ -174,7 +176,6 @@ class Jaqpot:
     def deploy_Torch_Graph_model(
         self, onnx_model, featurizer, name, description, target_name, visibility
     ):
-
         auth_client = AuthenticatedClient(
             base_url=self.api_url, token=self.api_key
         )  # Change Base URL when not in local testing
