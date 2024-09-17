@@ -75,6 +75,7 @@ class JaqpotpyDataset(BaseDataset):
         self._validate_column_names(self.smiles_cols, "smiles_cols")
         self._validate_column_names(self.x_cols, "x_cols")
         self._validate_column_names(self.y_cols, "y_cols")
+        self._validate_column_space()
 
         self.init_df = self._df
         self.featurizer = featurizer
@@ -110,6 +111,17 @@ class JaqpotpyDataset(BaseDataset):
             raise ValueError(
                 f"The following columns in {col_type} are not present in the DataFrame: {missing_cols}"
             )
+
+    def _validate_column_space(self):
+
+        for ix, col in enumerate(self.x_cols):
+            if " " in col:
+                new_col = col.replace(" ", "_")
+                self.x_cols[ix] = new_col
+                self._df.rename(columns={col: new_col}, inplace=True)
+                print(
+                    f"Warning: Column names cannot have spaces. Column '{col}' has been renamed to '{new_col}'"
+                )
 
     def _validate_column_overlap(self, smiles_cols, x_cols, y_cols):
         smiles_set = set(smiles_cols) if smiles_cols else set()
