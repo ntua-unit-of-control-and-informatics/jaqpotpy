@@ -25,7 +25,7 @@ dataset = JaqpotpyDataset(
     featurizer=featurizer,
 )
 pre = Preprocess()
-# pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
+# pre.register_preprocess_class("Standard Scaler", StandardScaler())
 # pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
 
 model = RandomForestRegressor(random_state=42)
@@ -34,7 +34,7 @@ molecularModel_t1 = SklearnModel(
     dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
 )
 
-molecularModel_t1.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
+molecularModel_t1.fit()
 # # print(molecularModel_t1.transformers_y)
 pred_path = "/Users/vassilis/Documents/GitHub/jaqpotpy/jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
 df = pd.read_csv(pred_path)
@@ -52,7 +52,7 @@ prediction_dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
-print(prediction_dataset.df)
+# print(prediction_dataset.df)
 
 skl_predictions = molecularModel_t1.predict(prediction_dataset)
 # skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
@@ -65,16 +65,18 @@ print("ONNX Predictions:", onnx_predictions)
 
 
 # Merge predictions and probabilities into a pandas DataFrame
-df_predictions = pd.DataFrame({
-    'SKLearn Predictions': skl_predictions,
-    # 'SKLearn Probabilities': skl_probabilities,
-    'ONNX Predictions': onnx_predictions,
-    # 'ONNX Probabilities': onnx_probs
-})
+df_predictions = pd.DataFrame(
+    {
+        "SKLearn Predictions": skl_predictions,
+        # 'SKLearn Probabilities': skl_probabilities,
+        "ONNX Predictions": onnx_predictions,
+        # 'ONNX Probabilities': onnx_probs
+    }
+)
 print(df_predictions)
 
 
-with open('/Users/vassilis/Desktop/api_key.txt', 'r') as file:
+with open("/Users/vassilis/Desktop/api_key.txt", "r") as file:
     api_key = file.read().strip()
 
 jaqpot = Jaqpot("http://localhost.jaqpot.org:8080")
@@ -83,4 +85,9 @@ jaqpot.set_api_key(api_key)
 
 # jaqpot=Jaqpot()
 # jaqpot.login()
-molecularModel_t1.deploy_on_jaqpot(jaqpot=jaqpot, name="Demo: Regression", description="Test uploading only with onnx, without preprocessing ", visibility="PRIVATE")
+molecularModel_t1.deploy_on_jaqpot(
+    jaqpot=jaqpot,
+    name="Demo: Regression",
+    description="Test uploading only with onnx, without preprocessing ",
+    visibility="PRIVATE",
+)
