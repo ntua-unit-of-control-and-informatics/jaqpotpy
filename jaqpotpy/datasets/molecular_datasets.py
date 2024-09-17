@@ -120,7 +120,7 @@ class JaqpotpyDataset(BaseDataset):
                 self.x_cols[ix] = new_col
                 self._df.rename(columns={col: new_col}, inplace=True)
                 print(
-                    f"Warning: Column names cannot have spaces. Column '{col}' has been renamed to '{col.replace(' ', '_')}'"
+                    f"Warning: Column names cannot have spaces. Column '{col}' has been renamed to '{new_col}'"
                 )
 
     def _validate_column_overlap(self, smiles_cols, x_cols, y_cols):
