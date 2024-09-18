@@ -44,7 +44,7 @@ class DOA(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def send_attributes(self):
+    def get_attributes(self):
         raise NotImplementedError
 
 
@@ -100,7 +100,7 @@ class Leverage(DOA):
         self._data = self._validate_input(X)
         self.calculate_matrix()
         self.calculate_threshold()
-        self.send_attributes()
+        self._doa_attributes = self.get_attributes()
 
     def predict(self, new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]:
         new_data = self._validate_input(new_data)
@@ -127,7 +127,7 @@ class Leverage(DOA):
         else:
             return data
 
-    def send_attributes(self):
+    def get_attributes(self):
         return {"doa_matrix": self.doa_matrix, "h_star": self.h_star}
 
 
@@ -149,15 +149,19 @@ class MeanVar(DOA):
 
     def fit(self, X: np.array):
         self._data = X
-        columns = list(zip(*self._data))
-        shape = X.shape
+        # columns = X.columns  # list(zip(*self._data))
+        # shape = X.shape
         list_m_var = []
-        for i in range(shape[1]):
+        for i in range(self._data.shape[1]):
             list_m_var.append(
-                [np.mean(columns[i]), np.std(columns[i]), np.var(columns[i])]
+                [
+                    np.mean(self._data.iloc[:, i]),
+                    np.std(self._data.iloc[:, i]),
+                    np.var(self._data.iloc[:, i]),
+                ]
             )
         self._bounds = np.array(list_m_var)
-        self.send_attributes()
+        self._doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
@@ -178,7 +182,7 @@ class MeanVar(DOA):
             self._in_doa.append(in_doa)
         return doaAll
 
-    def send_attributes(self):
+    def get_attributes(self):
         return {"mean_var": self._bounds}
 
 
@@ -201,7 +205,7 @@ class BoundingBox(DOA):
         for i in range(shape[1]):
             list_m_var.append([np.min(columns[i]), np.max(columns[i])])
         self._bounding_box = np.array(list_m_var)
-        self.send_attributes()
+        self._doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
@@ -222,5 +226,5 @@ class BoundingBox(DOA):
             self._in_doa.append(in_doa)
         return doaAll
 
-    def send_attributes(self):
+    def get_attributes(self):
         return {"bounding_box": self._bounding_box}
