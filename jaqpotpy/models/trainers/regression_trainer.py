@@ -1,5 +1,3 @@
-"""Author: Ioannis Pitoskas (jpitoskas@gmail.com)"""
-
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
 from tqdm import tqdm
@@ -8,7 +6,7 @@ import io
 import base64
 from typing import Optional
 import inspect
-from ..base import TorchModelTrainer
+from jaqpotpy.models.trainers.base_trainer import TorchModelTrainer
 from sklearn import metrics
 import torch.nn.functional as F
 

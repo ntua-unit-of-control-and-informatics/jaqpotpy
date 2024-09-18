@@ -130,7 +130,7 @@ class SmilesGraphFeaturizer:
             # Creates a dict where key is the string name of the feature and values are the allowable set
             # This is if user input provides allowable set based on RDKit
             else:
-                self.atom_allowable_sets[bond_feature] = list(allowable_set)
+                self.bond_allowable_sets[bond_feature] = list(allowable_set)
 
     def get_default_atom_allowable_set(self, atom_feature):
         """Returns the default allowable set for an atom feature."""
