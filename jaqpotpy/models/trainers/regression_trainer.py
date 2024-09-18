@@ -1,15 +1,25 @@
-"""Author: Ioannis Pitoskas (jpitoskas@gmail.com)"""
-
-from ..base import TorchModelTrainer
-from abc import abstractmethod
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
 from tqdm import tqdm
 import torch
+import io
+import base64
+from typing import Optional
+import inspect
+from jaqpotpy.models.trainers.base_trainer import TorchModelTrainer
+from sklearn import metrics
 import torch.nn.functional as F
-import sklearn.metrics as metrics
 
 
-class MulticlassModelTrainer(TorchModelTrainer):
-    """Abstract trainer class for Multiclass Classification models using PyTorch."""
+class RegressionGraphModelTrainer(TorchModelTrainer):
+    """Trainer class for Regression using Graph Neural Networks for SMILES and external features."""
+
+    MODEL_TYPE = "regression-graph-model"
+    """'regression-graph-model'"""
+
+    @classmethod
+    def get_model_type(cls):
+        return cls.MODEL_TYPE
 
     def __init__(
         self,
@@ -22,8 +32,10 @@ class MulticlassModelTrainer(TorchModelTrainer):
         use_tqdm=True,
         log_enabled=True,
         log_filepath=None,
+        normalization_mean=0.5,
+        normalization_std=1.0,
     ):
-        """The MulticlassModelTrainer constructor.
+        """The RegressionGraphModelTrainer constructor.
 
         Args:
         ----
@@ -36,6 +48,25 @@ class MulticlassModelTrainer(TorchModelTrainer):
             use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
             log_enabled (bool, optional): Whether logging is enabled. Default is True.
             log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
+            normalization_mean (float, optional): Mean used to normalize the true values of the regression variables before model training. Default is 0.
+            normalization_std' (float, optinal): Standard deviation used to normalize the true values of the regression variables before model training. Default is 1.
+
+        Example:
+        -------
+        ```
+        >>> import torch
+        >>> from jaqpotpy.jaqpotpy_torch.models import GraphAttentionNetwork
+        >>> from jaqpotpy.jaqpotpy_torch.trainers import RegressionGraphModelTrainer
+        >>>
+        >>> model = GraphAttentionNetwork(input_dim=10,
+        ...                               hidden_dims=[32, 32]
+        ...                               edge_dim=5,
+        ...                               output_dim=num_classes)
+        >>> optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
+        >>> loss_fn = torch.nn.MSELoss()
+        >>>
+        >>> trainer = MulticlassGraphModelTrainer(model, n_epochs=50, optimizer=optimizer, loss_fn=loss_fn)
+        ```
 
         """
         super().__init__(
@@ -50,28 +81,38 @@ class MulticlassModelTrainer(TorchModelTrainer):
             log_filepath=log_filepath,
         )
 
-    @abstractmethod
     def get_model_kwargs(self, data):
-        """This abstract method should be implemented by subclasses to provide model-specific keyword arguments based on the data.
+        """Fetch the model's keyword arguments.
 
         Args:
         ----
-            data: Whatever data the respective dataloader fetches.
+            data (torch_geometric.data.Data): Data object returned as returned by the Dataloader
 
         Returns:
         -------
-            dict: The kwargs that the forward method of the respective model expects as input.
+            dict: The required model kwargs. Set of keywords: {'*x*', '*edge_index*', '*batch*', '*edge_attr*'}. Note that '*edge_attr*' is only present if the model supports edge features.
 
         """
-        pass
+        kwargs = {}
+
+        kwargs["x"] = data.x
+        kwargs["edge_index"] = data.edge_index
+        kwargs["batch"] = data.batch
+
+        if "edge_attr" in inspect.signature(self.model.forward).parameters:
+            kwargs["edge_attr"] = data.edge_attr
+
+        return kwargs
 
     def train(self, train_loader, val_loader=None):
         """Train the model.
 
         Args:
         ----
-            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
-            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional): DataLoader for the validation dataset.
+            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]):
+                DataLoader for the training dataset.
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional):
+                DataLoader for the validation dataset.
 
         Returns:
         -------
@@ -82,15 +123,16 @@ class MulticlassModelTrainer(TorchModelTrainer):
             self.current_epoch += 1
 
             train_loss = self._train_one_epoch(train_loader)
-            _, train_metrics_dict, _ = self.evaluate(train_loader)
+            _, train_metrics_dict = self.evaluate(train_loader)
 
             if self.log_enabled:
+                self.logger.info(f"Epoch {self.current_epoch}:")
                 self._log_metrics(
                     train_loss, metrics_dict=train_metrics_dict, mode="train"
                 )
 
             if val_loader:
-                val_loss, val_metrics_dict, _ = self.evaluate(val_loader)
+                val_loss, val_metrics_dict = self.evaluate(val_loader)
                 if self.log_enabled:
                     self._log_metrics(
                         val_loss, metrics_dict=val_metrics_dict, mode="val"
@@ -99,11 +141,13 @@ class MulticlassModelTrainer(TorchModelTrainer):
             self.scheduler.step()
 
     def _train_one_epoch(self, train_loader):
-        """This helper method handles the training loop for a single epoch, updating the model parameters and computing the running loss.
+        """This helper method handles the training loop for a single epoch, updating the model parameters and
+        computing the running loss.
 
         Args:
         ----
-            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
+            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the
+                training dataset.
 
         Returns:
         -------
@@ -132,8 +176,8 @@ class MulticlassModelTrainer(TorchModelTrainer):
 
             self.optimizer.zero_grad()
 
-            outputs = self.model(**model_kwargs)
-            loss = self.loss_fn(outputs.float(), y.long())
+            outputs = self.model(**model_kwargs).squeeze(-1)
+            loss = self.loss_fn(outputs.float(), y.float())
 
             running_loss += loss.item() * y.size(0)
             total_samples += y.size(0)
@@ -163,16 +207,13 @@ class MulticlassModelTrainer(TorchModelTrainer):
         -------
             float: Average loss over the validation dataset.
             dict: Dictionary containing evaluation metrics. The keys represent the metric names and the values are floats.
-            numpy.ndarray: Confusion matrix C as a numpy.ndarray of shape (num_classes, num_classes), with Cij being equal to
-                           the number of observations known to be in group i and predicted to be in group j.
 
         """
         running_loss = 0
         total_samples = 0
 
         all_preds = []
-        all_probs = []
-        all_labels = []
+        all_true = []
 
         self.model.eval()
         with torch.no_grad():
@@ -186,33 +227,24 @@ class MulticlassModelTrainer(TorchModelTrainer):
 
                 model_kwargs = self.get_model_kwargs(data)
 
-                outputs = self.model(**model_kwargs)
+                outputs = self.model(**model_kwargs).squeeze(-1)
+                all_preds.extend(outputs.tolist())
+                all_true.extend(y.tolist())
 
-                probs = F.softmax(outputs, dim=1)
-                _, preds = torch.max(probs, 1)
-
-                all_probs.extend(probs.tolist())
-                all_preds.extend(preds.tolist())
-                all_labels.extend(y.tolist())
-
-                loss = self.loss_fn(outputs.float(), y.long())
+                loss = self.loss_fn(outputs.float(), y.float())
 
                 running_loss += loss.item() * y.size(0)
                 total_samples += y.size(0)
 
             avg_loss = running_loss / len(val_loader.dataset)
 
-        metrics_dict = self._compute_metrics(all_labels, all_preds)
-        # metrics_dict['roc_auc'] = metrics.roc_auc_score(all_labels, all_probs)
+        all_true = torch.tensor(all_true).tolist()
+        all_preds = torch.tensor(all_preds).tolist()
+
+        metrics_dict = self._compute_metrics(all_true, all_preds)
         metrics_dict["loss"] = avg_loss
-        conf_mat = metrics.confusion_matrix(
-            all_labels, all_preds, labels=torch.arange(self.model.output_dim)
-        )
 
-        #     tn, fp, fn, tp = metrics.confusion_matrix(all_labels, all_preds).ravel()
-        #     conf_mat = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp}
-
-        return avg_loss, metrics_dict, conf_mat
+        return avg_loss, metrics_dict
 
     def predict(self, val_loader):
         """Provide predictions on the validation set.
@@ -237,46 +269,13 @@ class MulticlassModelTrainer(TorchModelTrainer):
 
                 model_kwargs = self.get_model_kwargs(data)
 
-                outputs = self.model(**model_kwargs)
+                outputs = self.model(**model_kwargs).squeeze(-1)
 
-                probs = F.softmax(outputs, dim=1)
-                _, preds = torch.max(probs, 1)
+                all_preds.extend(outputs.tolist())
 
-                all_preds.extend(preds.tolist())
+        all_preds = self._denormalize(torch.tensor(all_preds)).tolist()
 
         return all_preds
-
-    def predict_proba(self, val_loader):
-        """Provide the probabilities of the predictions on the validation set.
-
-        Args:
-        ----
-            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
-
-        Returns:
-        -------
-            list: List of predictions' probabilities.
-
-        """
-        all_probs = []
-        self.model.eval()
-        with torch.no_grad():
-            for _, data in enumerate(val_loader):
-                try:  # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
-                    data = data.to(self.device)
-                except AttributeError:
-                    data = [d.to(self.device) for d in data]
-
-                model_kwargs = self.get_model_kwargs(data)
-
-                outputs = self.model(**model_kwargs)
-
-                probs = F.softmax(outputs, dim=1)
-                # _, preds = torch.max(probs, 1)
-
-                all_probs.extend(probs.tolist())
-
-        return all_probs
 
     def _log_metrics(self, loss, metrics_dict, mode="train"):
         if mode == "train":
@@ -297,62 +296,48 @@ class MulticlassModelTrainer(TorchModelTrainer):
         self.logger.info(epoch_logs)
 
     def _compute_metrics(self, y_true, y_pred):
-        accuracy = metrics.accuracy_score(y_true, y_pred)
-        balanced_accuracy = metrics.balanced_accuracy_score(y_true, y_pred)
-        precision_macro = metrics.precision_score(
-            y_true,
-            y_pred,
-            zero_division=0,
-            average="macro",
-            labels=torch.arange(self.model.output_dim),
-        )
-        recall_macro = metrics.recall_score(
-            y_true,
-            y_pred,
-            zero_division=0,
-            average="macro",
-            labels=torch.arange(self.model.output_dim),
-        )
-        f1_macro = metrics.f1_score(
-            y_true,
-            y_pred,
-            zero_division=0,
-            average="macro",
-            labels=torch.arange(self.model.output_dim),
-        )
-        precision_micro = metrics.precision_score(
-            y_true,
-            y_pred,
-            zero_division=0,
-            average="micro",
-            labels=torch.arange(self.model.output_dim),
-        )
-        recall_micro = metrics.recall_score(
-            y_true,
-            y_pred,
-            zero_division=0,
-            average="micro",
-            labels=torch.arange(self.model.output_dim),
-        )
-        f1_micro = metrics.f1_score(
-            y_true,
-            y_pred,
-            zero_division=0,
-            average="micro",
-            labels=torch.arange(self.model.output_dim),
-        )
-        mcc = metrics.matthews_corrcoef(y_true, y_pred)
+        explained_variance = metrics.explained_variance_score(y_true, y_pred)
+        r2 = metrics.r2_score(y_true, y_pred)
+        mse = metrics.mean_squared_error(y_true, y_pred)
+        rmse = metrics.root_mean_squared_error(y_true, y_pred)
+        mae = metrics.mean_absolute_error(y_true, y_pred)
 
         metrics_dict = {
-            "accuracy": accuracy,
-            "balanced_accuracy": balanced_accuracy,
-            "precision_macro": precision_macro,
-            "recall_macro": recall_macro,
-            "f1_macro": f1_macro,
-            "precision_micro": precision_micro,
-            "recall_micro": recall_micro,
-            "f1_micro": f1_micro,
-            "mcc": mcc,
+            "explained_variance": explained_variance,
+            "r2": r2,
+            "mse": mse,
+            "rmse": rmse,
+            "mae": mae,
         }
 
         return metrics_dict
+
+    # def _normalize(self, x):
+    #     return x.sub_(self.normalization_mean).div_(self.normalization_std)
+
+    # def _denormalize(self, x):
+    #     return x.mul_(self.normalization_std).add_(self.normalization_mean)
+
+    def pyg_to_onnx(self, featurizer):
+        if self.model.training:
+            self.model.eval()
+            self.model = self.model.cpu()
+
+        dummy_smile = "CCC"
+        dummy_input = featurizer.featurize(dummy_smile)
+        x = dummy_input.x
+        edge_index = dummy_input.edge_index
+        batch = torch.zeros(x.shape[0], dtype=torch.int64)
+        buffer = io.BytesIO()
+        torch.onnx.export(
+            self.model,
+            args=(x, edge_index, batch),
+            f=buffer,
+            input_names=["x", "edge_index", "batch"],
+            dynamic_axes={"x": {0: "nodes"}, "edge_index": {1: "edges"}, "batch": [0]},
+        )
+        onnx_model_bytes = buffer.getvalue()
+        buffer.close()
+        model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode("utf-8")
+
+        return model_scripted_base64
