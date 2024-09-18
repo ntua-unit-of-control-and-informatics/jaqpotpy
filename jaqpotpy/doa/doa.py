@@ -146,6 +146,8 @@ class MeanVar(DOA):
 
     def __init__(self) -> None:
         self._data: np.array = None
+        self._bounds = None
+        self._doa_attributes = None
 
     def fit(self, X: np.array):
         self._data = X
@@ -194,14 +196,16 @@ class BoundingBox(DOA):
 
     def __init__(self) -> None:
         self._data: np.array = None
+        self._bounding_box = None
+        self._doa_attributes = None
 
     def fit(self, X: np.array):
         self._data = X
-        columns = list(zip(*self._data))
-        shape = X.shape
         list_m_var = []
-        for i in range(shape[1]):
-            list_m_var.append([np.min(columns[i]), np.max(columns[i])])
+        for i in range(self._data.shape[1]):
+            list_m_var.append(
+                [np.min(self._data.iloc[:, i]), np.max(self._data.iloc[:, i])]
+            )
         self._bounding_box = np.array(list_m_var)
         self._doa_attributes = self.get_attributes()
 
