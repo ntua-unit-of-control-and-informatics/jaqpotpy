@@ -1,5 +1,6 @@
 from jaqpotpy.descriptors.base_classes import MaterialFeaturizer
-from jaqpotpy.descriptors.graph.graph_data import GraphData
+
+# from jaqpotpy.descriptors.graph.graph_data import GraphData
 from pymatgen.core.structure import Structure
 import numpy as np
 from typing import Union, Tuple
