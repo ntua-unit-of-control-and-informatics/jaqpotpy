@@ -1,4 +1,3 @@
-from .base import TorchModelTrainer
-from .binary_trainers import *
-from .multiclass_trainers import *
-from .regression_trainers import *
+from jaqpotpy.models.trainers.base_trainer import TorchModelTrainer
+from jaqpotpy.models.trainers.binary_trainer import BinaryGraphModelTrainer
+from jaqpotpy.models.trainers.regression_trainer import RegressionGraphModelTrainer
