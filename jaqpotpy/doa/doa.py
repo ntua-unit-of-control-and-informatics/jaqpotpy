@@ -149,8 +149,6 @@ class MeanVar(DOA):
 
     def fit(self, X: np.array):
         self._data = X
-        # columns = X.columns  # list(zip(*self._data))
-        # shape = X.shape
         list_m_var = []
         for i in range(self._data.shape[1]):
             list_m_var.append(
