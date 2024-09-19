@@ -11,20 +11,13 @@ from jaqpotpy.api.openapi.jaqpot_api_client.models import (
     FeatureType,
     ModelType,
     ModelExtraConfig,
-    Preprocessor,
-    Featurizer,
+    Transformer,
 )
-from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config import (
-    PreprocessorConfig,
+from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
+    TransformerConfig,
 )
-from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config import (
-    FeaturizerConfig,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config_additional_property import (
-    PreprocessorConfigAdditionalProperty,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config_additional_property import (
-    FeaturizerConfigAdditionalProperty,
+from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
+    TransformerConfigAdditionalProperty,
 )
 import sklearn
 from jaqpotpy.cfg import config
@@ -95,12 +88,8 @@ class SklearnModel(Model):
         }
 
     def _add_class_to_extraconfig(self, added_class, added_class_type):
-        if added_class_type == "preprocessor":
-            config = PreprocessorConfig()
-            additional_property_type = PreprocessorConfigAdditionalProperty()
-        elif added_class_type == "featurizer":
-            config = FeaturizerConfig()
-            additional_property_type = FeaturizerConfigAdditionalProperty()
+        config = TransformerConfig()
+        additional_property_type = TransformerConfigAdditionalProperty()
 
         for attr_name, attr_value in self._extract_attributes(added_class).items():
             additional_property = type(additional_property_type)()
@@ -109,11 +98,11 @@ class SklearnModel(Model):
 
         if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
-                Preprocessor(name=added_class.__class__.__name__, config=config)
+                Transformer(name=added_class.__class__.__name__, config=config)
             )
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
-                Featurizer(name=added_class.__class__.__name__, config=config)
+                Transformer(name=added_class.__class__.__name__, config=config)
             )
 
     def fit(self, onnx_options: Optional[Dict] = None):
