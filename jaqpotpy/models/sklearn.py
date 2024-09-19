@@ -7,11 +7,25 @@ from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.jaqpot_api_client.models import FeatureType, ModelType, ModelExtraConfig, Preprocessor, Featurizer
-from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config import PreprocessorConfig
-from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config import FeaturizerConfig
-from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config_additional_property import PreprocessorConfigAdditionalProperty
-from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config_additional_property import FeaturizerConfigAdditionalProperty
+from jaqpotpy.api.openapi.jaqpot_api_client.models import (
+    FeatureType,
+    ModelType,
+    ModelExtraConfig,
+    Preprocessor,
+    Featurizer,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config import (
+    PreprocessorConfig,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config import (
+    FeaturizerConfig,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config_additional_property import (
+    PreprocessorConfigAdditionalProperty,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config_additional_property import (
+    FeaturizerConfigAdditionalProperty,
+)
 import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
@@ -40,7 +54,6 @@ class SklearnModel(Model):
         self.pipeline = None
         self.trained_model = None
         self.doa = doa
-        self.trained_doa = None
         self.evaluator = evaluator
         self.preprocess = preprocessor
         self.preprocessing_y = None
@@ -67,44 +80,47 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.FLOAT
             elif feature["featureType"] in ["string, object"]:
                 feature["featureType"] = FeatureType.STRING
-    
+
     def _extract_attributes(self, trained_class):
         attributes = trained_class.__dict__
-        return {k: (v.tolist() if isinstance(v, np.ndarray) else v.item() if isinstance(v, (np.int64, np.float64)) else v) for k, v in attributes.items()}
+        return {
+            k: (
+                v.tolist()
+                if isinstance(v, np.ndarray)
+                else v.item()
+                if isinstance(v, (np.int64, np.float64))
+                else v
+            )
+            for k, v in attributes.items()
+        }
 
-    def _add_class_to_extraconfig(self,added_class, added_class_type):
-        if added_class_type == 'preprocessor':
+    def _add_class_to_extraconfig(self, added_class, added_class_type):
+        if added_class_type == "preprocessor":
             config = PreprocessorConfig()
             additional_property_type = PreprocessorConfigAdditionalProperty()
-        elif added_class_type == 'featurizer':
+        elif added_class_type == "featurizer":
             config = FeaturizerConfig()
             additional_property_type = FeaturizerConfigAdditionalProperty()
 
         for attr_name, attr_value in self._extract_attributes(added_class).items():
             additional_property = type(additional_property_type)()
-            additional_property.additional_properties['value'] = attr_value
+            additional_property.additional_properties["value"] = attr_value
             config.additional_properties[attr_name] = additional_property
 
-        if added_class_type == 'preprocessor':
+        if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
-                Preprocessor(
-                    name=added_class.__class__.__name__, 
-                    config=config
-                )
+                Preprocessor(name=added_class.__class__.__name__, config=config)
             )
-        elif added_class_type == 'featurizer':
+        elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
-                Featurizer(
-                    name=added_class.__class__.__name__,
-                    config=config
-                )
+                Featurizer(name=added_class.__class__.__name__, config=config)
             )
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
         if isinstance(self.featurizer, MolecularFeaturizer):
             self.extra_config.featurizers = []
-            self._add_class_to_extraconfig(self.featurizer, 'featurizer')
+            self._add_class_to_extraconfig(self.featurizer, "featurizer")
 
         if self.dataset.y is None:
             raise TypeError(
@@ -113,9 +129,9 @@ class SklearnModel(Model):
         # Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
-        
+
         if self.doa:
-            self.trained_doa = self.doa.fit(X=X)
+            self.doa.fit(X=X)
 
         if len(self.dataset.y_cols) == 1:
             y = y.to_numpy().ravel()
@@ -153,7 +169,7 @@ class SklearnModel(Model):
                         )
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
-                        self._add_class_to_extraconfig(pre_y_function, 'preprocessor')
+                        self._add_class_to_extraconfig(pre_y_function, "preprocessor")
 
                     if len(self.dataset.y_cols) == 1:
                         y_scaled = y_scaled.ravel()
@@ -197,7 +213,7 @@ class SklearnModel(Model):
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=[
-            ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
+                ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
             ],
             name=name,
             options={StandardScaler: {"div": "div_cast"}},
