@@ -27,10 +27,12 @@ class SmilesGraphDataset(Dataset):
         # For the moment there is only one Featurizer for Graph.
         if featurizer:
             self.featurizer = featurizer
+            self.featurizer.sort_allowable_sets()
         else:
             self.featurizer = SmilesGraphFeaturizer()
             # Default node, edge features in case of not specifying dataset
             self.featurizer.set_default_config()
+            self.featurizer.sort_allowable_sets()
         self.precomputed_features = None
 
     def precompute_featurization(self):
