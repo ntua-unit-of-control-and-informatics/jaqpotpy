@@ -66,6 +66,7 @@ class Leverage(DOA):
         self._data: Union[np.array, pd.DataFrame] = None
         self._doa_matrix = None
         self._h_star = None
+        self._doa_attributes = None
 
     def __getitem__(self, key):
         return key

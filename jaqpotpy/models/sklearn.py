@@ -1,8 +1,16 @@
-import sklearn.pipeline
 import copy
+import sklearn
+from typing import Any, Dict, Optional
+import sklearn.pipeline
+from jaqpotpy.cfg import config
+import jaqpotpy
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import FloatTensorType
+from onnxruntime import InferenceSession
+import numpy as np
+from sklearn.preprocessing import StandardScaler
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
-from typing import Any, Dict, Optional
 from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.models import Evaluator, Preprocess
@@ -19,22 +27,14 @@ from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
 from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
     TransformerConfigAdditionalProperty,
 )
-import sklearn
-from jaqpotpy.cfg import config
-import jaqpotpy
-from skl2onnx import convert_sklearn
-from skl2onnx.common.data_types import FloatTensorType
-from onnxruntime import InferenceSession
-import numpy as np
-from sklearn.preprocessing import StandardScaler
 
 
 class SklearnModel(Model):
     def __init__(
         self,
         dataset: JaqpotpyDataset,
-        doa: DOA,
         model: Any,
+        doa: Optional[DOA or list] = None,
         preprocessor: Preprocess = None,
         evaluator: Evaluator = None,
     ):
@@ -44,9 +44,8 @@ class SklearnModel(Model):
         self.featurizer = dataset.featurizer
         self.model = model
         self.pipeline = None
-        self.pipeline = None
         self.trained_model = None
-        self.doa = doa
+        self.doa = doa if isinstance(doa, list) else [doa] if doa else []
         self.evaluator = evaluator
         self.preprocess = preprocessor
         self.preprocessing_y = None
@@ -74,8 +73,11 @@ class SklearnModel(Model):
             elif feature["featureType"] in ["string, object"]:
                 feature["featureType"] = FeatureType.STRING
 
-    def _extract_attributes(self, trained_class):
-        attributes = trained_class.__dict__
+    def _extract_attributes(self, trained_class, trained_class_type):
+        if trained_class_type == "doa":
+            attributes = trained_class._doa_attributes
+        else:
+            attributes = trained_class.__dict__
         return {
             k: (
                 v.tolist()
@@ -91,7 +93,9 @@ class SklearnModel(Model):
         config = TransformerConfig()
         additional_property_type = TransformerConfigAdditionalProperty()
 
-        for attr_name, attr_value in self._extract_attributes(added_class).items():
+        for attr_name, attr_value in self._extract_attributes(
+            added_class, added_class_type
+        ).items():
             additional_property = type(additional_property_type)()
             additional_property.additional_properties["value"] = attr_value
             config.additional_properties[attr_name] = additional_property
@@ -102,6 +106,10 @@ class SklearnModel(Model):
             )
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
+                Transformer(name=added_class.__class__.__name__, config=config)
+            )
+        elif added_class_type == "doa":
+            self.extra_config.doa.append(
                 Transformer(name=added_class.__class__.__name__, config=config)
             )
 
@@ -120,7 +128,12 @@ class SklearnModel(Model):
         y = self.dataset.__get_Y__()
 
         if self.doa:
-            self.doa.fit(X=X)
+            self.extra_config.doa = []
+            # if not isinstance(self.doa, list):
+            #     self.doa = [self.doa]
+            for doa_method in self.doa:
+                doa_method.fit(X=X)
+                self._add_class_to_extraconfig(doa_method, "doa")
 
         if len(self.dataset.y_cols) == 1:
             y = y.to_numpy().ravel()
