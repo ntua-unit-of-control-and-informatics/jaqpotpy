@@ -6,8 +6,6 @@ from collections import OrderedDict
 
 
 class SmilesGraphFeaturizer:
-    # Notes
-    # 1. Atom, Bond feature labels function not needed. can be obtained with featurizer.atom_allowable_sets
     """
     Featurizes SMILES strings into graph data suitable for graph neural networks.
     Class Attributes:
@@ -214,7 +212,7 @@ class SmilesGraphFeaturizer:
         if self.include_edge_features:
             self._set_bond_allowable_sets(bond_allowable_sets)
 
-    def extract_molecular_features(self, mol):
+    def _extract_molecular_features(self, mol):
         """Extracts molecular features from a molecule. Returns the atom and bond (optionally) features for a molecule."""
         mol_atom_features = []
         for atom in mol.GetAtoms():
@@ -326,7 +324,7 @@ class SmilesGraphFeaturizer:
         """Featurizes a SMILES string into graph data. Returns torch_geometric.data.Data object."""
         mol = Chem.MolFromSmiles(sm)
         adjacency_matrix = self._adjacency_matrix(mol)
-        mol_atom_features, mol_bond_features = self.extract_molecular_features(mol)
+        mol_atom_features, mol_bond_features = self._extract_molecular_features(mol)
         return Data(
             x=mol_atom_features,
             edge_index=adjacency_matrix,
