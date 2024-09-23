@@ -58,18 +58,18 @@ class Jaqpot:
 
     """
 
-    def __init__(self, base_url=None, create_logs=False):
+    def __init__(self, base_url=None, app_url=None, login_url=None, api_url=None, create_logs=False):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
         )
-        if base_url:
+        if base_url: 
             self.base_url = base_url
         else:
             self.base_url = "https://appv2.jaqpot.org/"
-        self.app_url = add_subdomain(self.base_url, "app")
-        self.login_url = add_subdomain(self.base_url, "login")
-        self.api_url = add_subdomain(self.base_url, "api")
+        self.app_url = app_url or add_subdomain(self.base_url, "app")
+        self.login_url = login_url or add_subdomain(self.base_url, "login")
+        self.api_url = api_url or add_subdomain(self.base_url, "api")
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
