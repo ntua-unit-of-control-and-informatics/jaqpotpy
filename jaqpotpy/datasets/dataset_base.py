@@ -123,11 +123,11 @@ class BaseDataset(ABC):
 
     @task.setter
     def task(self, value):
-        if (
-            value.upper()
-            not in ["REGRESSION", "BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"]
-            or value is None
-        ):
+        if value is None or value.upper() not in [
+            "REGRESSION",
+            "BINARY_CLASSIFICATION",
+            "MULTICLASS_CLASSIFICATION",
+        ]:
             raise ValueError(
                 "Task must be either 'REGRESSION', BINARY_CLASSIFICATION' or 'MULTICLASS_CLASSIFICATION'."
             )

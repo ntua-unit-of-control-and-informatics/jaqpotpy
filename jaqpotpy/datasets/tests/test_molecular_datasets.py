@@ -27,7 +27,7 @@ class TestDatasets(unittest.TestCase):
         script_dir = os.path.dirname(__file__)
         test_data_dir = os.path.abspath(os.path.join(script_dir, "../../test_data"))
         single_smiles_csv_file_path = os.path.join(
-            test_data_dir, "test_data_smiles_binary_classification.csv"
+            test_data_dir, "test_data_smiles_classification.csv"
         )
         multiple_smiles_csv_file_path = os.path.join(
             test_data_dir, "test_data_many_smiles_columns.csv"
@@ -51,11 +51,10 @@ class TestDatasets(unittest.TestCase):
             task="binary_classification",
             featurizer=self.featurizer,
         )
-
         self.assertIsNotNone(dataset.df, "DataFrame should not be None")
         self.assertEqual(
             dataset.task,
-            "binary_classification",
+            "BINARY_CLASSIFICATION",
             "Task should be 'binary_classification'",
         )
         self.assertEqual(
@@ -103,8 +102,8 @@ class TestDatasets(unittest.TestCase):
 
         self.assertIn(
             dataset.task,
-            ["regression", "binary_classification"],
-            "Task should be either 'regression' or 'binary_classification'",
+            ["REGRESSION", "BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"],
+            "Task should be either 'regression', 'binary_classification' or 'multiclass_classification'",
         )
         self.assertEqual(len(dataset), 139, "The length of the dataset should be 139")
 
