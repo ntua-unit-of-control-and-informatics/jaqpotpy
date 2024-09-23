@@ -77,12 +77,12 @@ print(df_predictions)
 
 
 # Upload locally
-jaqpot = Jaqpot(base_url="http://localhost.jaqpot.org", app_url="http://localhost.jaqpot.org:3000", 
-                login_url="http://localhost.jaqpot.org:8070",
-                api_url="http://localhost.jaqpot.org:8080", keycloak_realm="jaqpot-local", 
-                keycloak_client_id="jaqpot-local-test")
+# jaqpot = Jaqpot(base_url="http://localhost.jaqpot.org", app_url="http://localhost.jaqpot.org:3000", 
+#                 login_url="http://localhost.jaqpot.org:8070",
+#                 api_url="http://localhost.jaqpot.org:8080", keycloak_realm="jaqpot-local", 
+#                 keycloak_client_id="jaqpot-local-test")
 
-# jaqpot = Jaqpot()
+jaqpot = Jaqpot()
 jaqpot.login()
 # # # jaqpot = Jaqpot("https://api.appv2.jaqpot.org")
 

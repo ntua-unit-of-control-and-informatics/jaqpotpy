@@ -4,7 +4,7 @@ import os
 import unittest
 import pandas as pd
 from jaqpotpy.descriptors.molecular import MACCSKeysFingerprint
-from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
+from jaqpotpy.datasets.jaqpot_datasets import JaqpotpyDataset
 
 
 class TestDatasets(unittest.TestCase):
