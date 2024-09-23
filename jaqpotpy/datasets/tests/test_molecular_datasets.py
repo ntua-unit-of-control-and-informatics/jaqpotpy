@@ -14,8 +14,8 @@ class TestDatasets(unittest.TestCase):
     Attributes
     ----------
         smiles (list): A list of SMILES strings representing molecular structures used for testing.
-        activity (list): A list of binary classification labels corresponding to the molecules in mols.
-        classification_dataset (list): A list of continuous regression targets corresponding to the molecules in mols.
+        activity (list): A list of binary binary_classification labels corresponding to the molecules in mols.
+        binary_classification_dataset (list): A list of continuous regression targets corresponding to the molecules in mols.
         regression_dataset (list): A list of continuous regression targets corresponding to the molecules in mols.
 
     Methods
@@ -27,7 +27,7 @@ class TestDatasets(unittest.TestCase):
         script_dir = os.path.dirname(__file__)
         test_data_dir = os.path.abspath(os.path.join(script_dir, "../../test_data"))
         single_smiles_csv_file_path = os.path.join(
-            test_data_dir, "test_data_smiles_classification.csv"
+            test_data_dir, "test_data_smiles_binary_classification.csv"
         )
         multiple_smiles_csv_file_path = os.path.join(
             test_data_dir, "test_data_many_smiles_columns.csv"
@@ -48,13 +48,15 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
-            task="classification",
+            task="binary_classification",
             featurizer=self.featurizer,
         )
 
         self.assertIsNotNone(dataset.df, "DataFrame should not be None")
         self.assertEqual(
-            dataset.task, "classification", "Task should be 'classification'"
+            dataset.task,
+            "binary_classification",
+            "Task should be 'binary_classification'",
         )
         self.assertEqual(
             dataset.smiles_cols, self.single_smiles_cols, "SMILES columns should match"
@@ -101,8 +103,8 @@ class TestDatasets(unittest.TestCase):
 
         self.assertIn(
             dataset.task,
-            ["regression", "classification"],
-            "Task should be either 'regression' or 'classification'",
+            ["regression", "binary_classification"],
+            "Task should be either 'regression' or 'binary_classification'",
         )
         self.assertEqual(len(dataset), 139, "The length of the dataset should be 139")
 
@@ -125,7 +127,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
-            task="classification",
+            task="binary_classification",
             featurizer=self.featurizer,
         )
 
@@ -139,7 +141,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=None,
             x_cols=self.x_cols,
-            task="classification",
+            task="binary_classification",
             featurizer=self.featurizer,
         )
 
@@ -154,7 +156,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=None,  # ["SMILES"],
                 x_cols=None,  # self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -166,7 +168,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=[],  # ["SMILES"],
                 x_cols=[],  # self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -177,7 +179,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=None,
-            task="classification",
+            task="binary_classification",
             featurizer=self.featurizer,
         )
         self.assertEqual(dataset.df.shape[1], 168, "DataFrame should have 170 columns")
@@ -191,7 +193,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=None,
             )
 
@@ -227,7 +229,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES", "Χ1"],  # Overlap with x_cols
                 x_cols=self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -239,7 +241,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES", "ACTIVITY"],  # Overlap with y_cols
                 x_cols=self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -251,7 +253,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=["ACTIVITY", "X2"],  # Overlap with x_cols
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -263,7 +265,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES2"],  # Non-existent column
                 x_cols=self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -275,7 +277,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=self.single_smiles_cols,
                 x_cols=["feat3"],  # Non-existent column
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -287,7 +289,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=["ACTIVITY2"],  # Non-existent column
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -298,7 +300,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=["ACTIVITY2"],  # Non-existent column
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -311,7 +313,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=["ACTIVITY2"],  # Non-existent column
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="classification",
+                task="binary_classification",
                 featurizer=self.featurizer,
             )
 
@@ -401,7 +403,7 @@ class TestDatasets(unittest.TestCase):
 
     # @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     # def test_smiles_torch_dataset(self):
-    #     dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='classification')
+    #     dataset = TorchGraphDataset(smiles=self.mols, y=self.ys, task='binary_classification')
     #     dataset.create()
 
     #     dataloader = DataLoader(dataset, batch_size=4,
@@ -416,7 +418,7 @@ class TestDatasets(unittest.TestCase):
 
     # @unittest.skip("Torch and graphs have not been tested in the current version of jaqpotpy")
     # def test_smiles_torch_tab_dataset(self):
-    #     dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=MordredDescriptors(ignore_3D=True),  task='classification')
+    #     dataset = SmilesDataset(smiles=self.mols, y=self.ys, featurizer=MordredDescriptors(ignore_3D=True),  task='binary_classification')
     #     dataset.create()
     #     dataloader = dl(dataset, batch_size=4,
     #                             shuffle=True, num_workers=0)
