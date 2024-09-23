@@ -1,5 +1,5 @@
 from typing import Dict, Callable, Any, Iterable
-from jaqpotpy.datasets.jaqpot_datasets import JaqpotpyDataset
+from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 
 
 class Evaluator:

@@ -6,7 +6,7 @@ Configuration variables for Jaqpotpy
 
 """
 x -> Test variable
-verbode -> Verbose outputs. eg descriptor creation, model training
+verbose -> Verbose outputs. eg descriptor creation, model training
 global_seed -> Seed for various descriptors and models
 version -> Jaqpotpy version
 """
