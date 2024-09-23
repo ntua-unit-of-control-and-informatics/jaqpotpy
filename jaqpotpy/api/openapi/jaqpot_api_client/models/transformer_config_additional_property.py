@@ -3,11 +3,11 @@ from typing import Any, Dict, List, Type, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="FeaturizerConfigAdditionalProperty")
+T = TypeVar("T", bound="TransformerConfigAdditionalProperty")
 
 
 @_attrs_define
-class FeaturizerConfigAdditionalProperty:
+class TransformerConfigAdditionalProperty:
     """ """
 
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -21,10 +21,10 @@ class FeaturizerConfigAdditionalProperty:
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
         d = src_dict.copy()
-        featurizer_config_additional_property = cls()
+        transformer_config_additional_property = cls()
 
-        featurizer_config_additional_property.additional_properties = d
-        return featurizer_config_additional_property
+        transformer_config_additional_property.additional_properties = d
+        return transformer_config_additional_property
 
     @property
     def additional_keys(self) -> List[str]:
