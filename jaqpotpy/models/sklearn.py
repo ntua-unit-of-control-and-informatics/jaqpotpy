@@ -3,7 +3,7 @@ import copy
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 from typing import Any, Dict, Optional
-from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
+from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
@@ -63,7 +63,6 @@ class SklearnModel(Model):
         self.libraries = None
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
-        self.jaqpotpy_docker = config.jaqpotpy_docker
         self.task = self.dataset.task
         self.onnx_model = None
         self.onnx_opset = None
