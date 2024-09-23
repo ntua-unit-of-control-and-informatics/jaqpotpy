@@ -36,7 +36,7 @@ molecularModel_t1 = SklearnModel(
 
 molecularModel_t1.fit()
 # # print(molecularModel_t1.transformers_y)
-pred_path = "/Users/vassilis/Documents/GitHub/jaqpotpy/jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
+pred_path = "./jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
 df = pd.read_csv(pred_path)
 
 # df = pd.DataFrame({
@@ -76,16 +76,13 @@ df_predictions = pd.DataFrame(
 print(df_predictions)
 
 
-with open("/Users/vassilis/Desktop/api_key.txt", "r") as file:
-    api_key = file.read().strip()
-
 # Upload locally
-# jaqpot = Jaqpot(base_url="http://localhost.jaqpot.org", app_url="http://localhost.jaqpot.org:3000", 
-#                 login_url="http://localhost.jaqpot.org:8070",
-#                 api_url="http://localhost.jaqpot.org:8080", keycloak_realm="jaqpot-local", 
-#                 keycloak_client_id="jaqpot-local-test")
+jaqpot = Jaqpot(base_url="http://localhost.jaqpot.org", app_url="http://localhost.jaqpot.org:3000", 
+                login_url="http://localhost.jaqpot.org:8070",
+                api_url="http://localhost.jaqpot.org:8080", keycloak_realm="jaqpot-local", 
+                keycloak_client_id="jaqpot-local-test")
 
-jaqpot = Jaqpot()
+# jaqpot = Jaqpot()
 jaqpot.login()
 # # # jaqpot = Jaqpot("https://api.appv2.jaqpot.org")
 
