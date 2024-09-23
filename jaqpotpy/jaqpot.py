@@ -58,7 +58,8 @@ class Jaqpot:
 
     """
 
-    def __init__(self, base_url=None, app_url=None, login_url=None, api_url=None, create_logs=False):
+    def __init__(self, base_url=None, app_url=None, login_url=None, api_url=None, keycloak_realm=None, 
+                 keycloak_client_id=None, create_logs=False):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
@@ -70,6 +71,8 @@ class Jaqpot:
         self.app_url = app_url or add_subdomain(self.base_url, "app")
         self.login_url = login_url or add_subdomain(self.base_url, "login")
         self.api_url = api_url or add_subdomain(self.base_url, "api")
+        self.keycloak_realm = keycloak_realm or 'jaqpot'
+        self.keycloak_client_id= keycloak_client_id or 'jaqpot-client'
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
@@ -80,8 +83,8 @@ class Jaqpot:
             # Configure Keycloak client
             keycloak_openid = KeycloakOpenID(
                 server_url=self.login_url,
-                client_id="jaqpot-client",
-                realm_name="jaqpot",
+                client_id=self.keycloak_client_id,
+                realm_name=self.keycloak_realm,
             )
 
             # Generate the authorization URL
@@ -106,8 +109,8 @@ class Jaqpot:
 
             access_token = token_response["access_token"]
             self.api_key = access_token
-        except Exception:
-            self.log.error("Could not login to jaqpot")
+        except Exception as ex:
+            self.log.error("Could not login to jaqpot", exc_info=ex)
 
     def set_api_key(self, api_key):
         """Set's api key for authentication on Jaqpot.
