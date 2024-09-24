@@ -5,6 +5,47 @@ from typing import Optional
 from torch_geometric.nn import SAGEConv, GCNConv, GATConv, GraphNorm, global_add_pool
 import torch.nn.init as init
 from torch import Tensor
+import base64
+import io
+
+
+def pyg_to_onnx(torch_model, featurizer):
+    if torch_model.training:
+        torch_model.eval()
+        torch_model = torch_model.cpu()
+
+    dummy_smile = "CCC"
+    dummy_input = featurizer.featurize(dummy_smile)
+    x = dummy_input.x
+    edge_index = dummy_input.edge_index
+    batch = torch.zeros(x.shape[0], dtype=torch.int64)
+    buffer = io.BytesIO()
+    torch.onnx.export(
+        torch_model,
+        args=(x, edge_index, batch),
+        f=buffer,
+        input_names=["x", "edge_index", "batch"],
+        dynamic_axes={"x": {0: "nodes"}, "edge_index": {1: "edges"}, "batch": [0]},
+    )
+    onnx_model_bytes = buffer.getvalue()
+    buffer.close()
+    model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode("utf-8")
+
+    return model_scripted_base64
+
+
+def pyg_to_torchscript(torch_model):
+
+    if torch_model.training:
+        torch_model.eval()
+    torch_model = torch_model.cpu()
+    script_model = torch.jit.script(torch_model)
+    model_buffer = io.BytesIO()
+    torch.jit.save(script_model, model_buffer)
+    model_buffer.seek(0)
+    script_base64 = base64.b64encode(model_buffer.getvalue()).decode("utf-8")
+
+    return script_base64
 
 
 class BaseGraphNetwork(nn.Module):
@@ -50,7 +91,7 @@ class BaseGraphNetwork(nn.Module):
         x: Tensor,
         edge_index: Tensor,
         batch: Optional[Tensor],
-        edge_attr: Optional[Tensor],
+        edge_attr: Optional[Tensor] = None,
     ) -> Tensor:
         if self.edge_dim is not None:
             for graph_layer in self.graph_layers:
@@ -72,6 +113,30 @@ class BaseGraphNetwork(nn.Module):
             x = global_add_pool(x, batch)
             x = self.fc(x)
             return x
+
+    def to_onnx(self, featurizer):
+        if self.model.training:
+            self.model.eval()
+            self.model = self.model.cpu()
+
+        dummy_smile = "CCC"
+        dummy_input = featurizer.featurize(dummy_smile)
+        x = dummy_input.x
+        edge_index = dummy_input.edge_index
+        batch = torch.zeros(x.shape[0], dtype=torch.int64)
+        buffer = io.BytesIO()
+        torch.onnx.export(
+            self.model,
+            args=(x, edge_index, batch),
+            f=buffer,
+            input_names=["x", "edge_index", "batch"],
+            dynamic_axes={"x": {0: "nodes"}, "edge_index": {1: "edges"}, "batch": [0]},
+        )
+        onnx_model_bytes = buffer.getvalue()
+        buffer.close()
+        model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode("utf-8")
+
+        return model_scripted_base64
 
     def _validate_inputs(self):
         if not isinstance(self.input_dim, int):
