@@ -15,9 +15,6 @@ from .feature_meta import FeatureMeta
 from .feature_meta_additional_property import FeatureMetaAdditionalProperty
 from .feature_possible_value import FeaturePossibleValue
 from .feature_type import FeatureType
-from .featurizer import Featurizer
-from .featurizer_config import FeaturizerConfig
-from .featurizer_config_additional_property import FeaturizerConfigAdditionalProperty
 from .get_datasets_response_200 import GetDatasetsResponse200
 from .get_models_response_200 import GetModelsResponse200
 from .get_shared_models_response_200 import GetSharedModelsResponse200
@@ -42,10 +39,10 @@ from .organization_visibility import OrganizationVisibility
 from .partial_update_organization_body import PartialUpdateOrganizationBody
 from .partially_update_model_body import PartiallyUpdateModelBody
 from .partially_update_model_feature_body import PartiallyUpdateModelFeatureBody
-from .preprocessor import Preprocessor
-from .preprocessor_config import PreprocessorConfig
-from .preprocessor_config_additional_property import PreprocessorConfigAdditionalProperty
 from .search_models_response_200 import SearchModelsResponse200
+from .transformer import Transformer
+from .transformer_config import TransformerConfig
+from .transformer_config_additional_property import TransformerConfigAdditionalProperty
 from .user import User
 
 __all__ = (
@@ -64,9 +61,6 @@ __all__ = (
     "FeatureMetaAdditionalProperty",
     "FeaturePossibleValue",
     "FeatureType",
-    "Featurizer",
-    "FeaturizerConfig",
-    "FeaturizerConfigAdditionalProperty",
     "GetDatasetsResponse200",
     "GetModelsResponse200",
     "GetSharedModelsResponse200",
@@ -91,9 +85,9 @@ __all__ = (
     "PartiallyUpdateModelBody",
     "PartiallyUpdateModelFeatureBody",
     "PartialUpdateOrganizationBody",
-    "Preprocessor",
-    "PreprocessorConfig",
-    "PreprocessorConfigAdditionalProperty",
     "SearchModelsResponse200",
+    "Transformer",
+    "TransformerConfig",
+    "TransformerConfigAdditionalProperty",
     "User",
 )

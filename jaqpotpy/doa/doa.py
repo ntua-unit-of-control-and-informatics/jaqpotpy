@@ -43,6 +43,10 @@ class DOA(ABC):
     def predict(self, data: Iterable[Any]) -> Iterable[Any]:
         raise NotImplementedError
 
+    @abstractmethod
+    def get_attributes(self):
+        raise NotImplementedError
+
 
 class Leverage(DOA):
     """Implements DOA method leverage.
@@ -62,6 +66,7 @@ class Leverage(DOA):
         self._data: Union[np.array, pd.DataFrame] = None
         self._doa_matrix = None
         self._h_star = None
+        self._doa_attributes = None
 
     def __getitem__(self, key):
         return key
@@ -96,6 +101,7 @@ class Leverage(DOA):
         self._data = self._validate_input(X)
         self.calculate_matrix()
         self.calculate_threshold()
+        self._doa_attributes = self.get_attributes()
 
     def predict(self, new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]:
         new_data = self._validate_input(new_data)
@@ -122,6 +128,9 @@ class Leverage(DOA):
         else:
             return data
 
+    def get_attributes(self):
+        return {"doa_matrix": self.doa_matrix, "h_star": self.h_star}
+
 
 class MeanVar(DOA):
     """Implements Mean and Variance domain of applicability .
@@ -138,17 +147,22 @@ class MeanVar(DOA):
 
     def __init__(self) -> None:
         self._data: np.array = None
+        self._bounds = None
+        self._doa_attributes = None
 
     def fit(self, X: np.array):
         self._data = X
-        columns = list(zip(*self._data))
-        shape = X.shape
         list_m_var = []
-        for i in range(shape[1]):
+        for i in range(self._data.shape[1]):
             list_m_var.append(
-                [np.mean(columns[i]), np.std(columns[i]), np.var(columns[i])]
+                [
+                    np.mean(self._data[:, i]),
+                    np.std(self._data[:, i]),
+                    np.var(self._data[:, i]),
+                ]
             )
-        self._data = np.array(list_m_var)
+        self._bounds = np.array(list_m_var)
+        self._doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
@@ -157,7 +171,7 @@ class MeanVar(DOA):
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
-                bounds = self._data[index]
+                bounds = self._bounds[index]
                 bounds_data = [bounds[0] - 4 * bounds[1], bounds[0] + 4 * bounds[1]]
                 if row >= bounds_data[0] and row <= bounds_data[1]:
                     continue
@@ -168,6 +182,9 @@ class MeanVar(DOA):
             self._doa.append(new_data)
             self._in_doa.append(in_doa)
         return doaAll
+
+    def get_attributes(self):
+        return {"mean_var": self._bounds}
 
 
 class BoundingBox(DOA):
@@ -180,15 +197,16 @@ class BoundingBox(DOA):
 
     def __init__(self) -> None:
         self._data: np.array = None
+        self._bounding_box = None
+        self._doa_attributes = None
 
     def fit(self, X: np.array):
         self._data = X
-        columns = list(zip(*self._data))
-        shape = X.shape
         list_m_var = []
-        for i in range(shape[1]):
-            list_m_var.append([np.min(columns[i]), np.max(columns[i])])
-        self._data = np.array(list_m_var)
+        for i in range(self._data.shape[1]):
+            list_m_var.append([np.min(self._data[:, i]), np.max(self._data[:, i])])
+        self._bounding_box = np.array(list_m_var)
+        self._doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
@@ -197,7 +215,7 @@ class BoundingBox(DOA):
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
-                bounds = self._data[index]
+                bounds = self._bounding_box[index]
                 bounds_data = [bounds[0], bounds[1]]
                 if row >= bounds_data[0] and row <= bounds_data[1]:
                     continue
@@ -208,3 +226,6 @@ class BoundingBox(DOA):
             self._doa.append(new_data)
             self._in_doa.append(in_doa)
         return doaAll
+
+    def get_attributes(self):
+        return {"bounding_box": self._bounding_box}

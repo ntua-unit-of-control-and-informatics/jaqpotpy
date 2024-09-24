@@ -1,7 +1,4 @@
-import sklearn.pipeline
-import copy
-from jaqpotpy.models.base_classes import Model
-from jaqpotpy.doa.doa import DOA
+import sklearn
 from typing import Any, Dict, Optional
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
@@ -11,23 +8,15 @@ from jaqpotpy.api.openapi.jaqpot_api_client.models import (
     FeatureType,
     ModelType,
     ModelExtraConfig,
-    Preprocessor,
-    Featurizer,
+    Transformer,
     ModelTask,
 )
-from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config import (
-    PreprocessorConfig,
+from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
+    TransformerConfig,
 )
-from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config import (
-    FeaturizerConfig,
+from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
+    TransformerConfigAdditionalProperty,
 )
-from jaqpotpy.api.openapi.jaqpot_api_client.models.preprocessor_config_additional_property import (
-    PreprocessorConfigAdditionalProperty,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.featurizer_config_additional_property import (
-    FeaturizerConfigAdditionalProperty,
-)
-import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
 from skl2onnx import convert_sklearn
@@ -35,14 +24,16 @@ from skl2onnx.common.data_types import FloatTensorType
 from onnxruntime import InferenceSession
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from jaqpotpy.models.base_classes import Model
+from jaqpotpy.doa.doa import DOA
 
 
 class SklearnModel(Model):
     def __init__(
         self,
         dataset: JaqpotpyDataset,
-        doa: DOA,
         model: Any,
+        doa: Optional[DOA or list] = None,
         preprocessor: Preprocess = None,
         evaluator: Evaluator = None,
     ):
@@ -52,10 +43,8 @@ class SklearnModel(Model):
         self.featurizer = dataset.featurizer
         self.model = model
         self.pipeline = None
-        self.pipeline = None
         self.trained_model = None
-        self.doa = doa
-        self.trained_doa = None
+        self.doa = doa if isinstance(doa, list) else [doa] if doa else []
         self.evaluator = evaluator
         self.preprocess = preprocessor
         self.preprocessing_y = None
@@ -64,7 +53,6 @@ class SklearnModel(Model):
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
         self.task = self.dataset.task
-        self.onnx_model = None
         self.onnx_opset = None
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
@@ -82,37 +70,46 @@ class SklearnModel(Model):
             elif feature["featureType"] in ["string, object"]:
                 feature["featureType"] = FeatureType.STRING
 
-    def _extract_attributes(self, trained_class):
-        attributes = trained_class.__dict__
+    def _extract_attributes(self, trained_class, trained_class_type):
+        if trained_class_type == "doa":
+            attributes = trained_class._doa_attributes
+        elif trained_class_type == "featurizer":
+            attributes = self.dataset.featurizers_attributes
+        else:
+            attributes = trained_class.__dict__
         return {
             k: (
                 v.tolist()
                 if isinstance(v, np.ndarray)
-                else v.item() if isinstance(v, (np.int64, np.float64)) else v
+                else v.item()
+                if isinstance(v, (np.int64, np.float64))
+                else v
             )
             for k, v in attributes.items()
         }
 
     def _add_class_to_extraconfig(self, added_class, added_class_type):
-        if added_class_type == "preprocessor":
-            config = PreprocessorConfig()
-            additional_property_type = PreprocessorConfigAdditionalProperty()
-        elif added_class_type == "featurizer":
-            config = FeaturizerConfig()
-            additional_property_type = FeaturizerConfigAdditionalProperty()
+        configurations = TransformerConfig()
+        additional_property_type = TransformerConfigAdditionalProperty()
 
-        for attr_name, attr_value in self._extract_attributes(added_class).items():
+        for attr_name, attr_value in self._extract_attributes(
+            added_class, added_class_type
+        ).items():
             additional_property = type(additional_property_type)()
             additional_property.additional_properties["value"] = attr_value
-            config.additional_properties[attr_name] = additional_property
+            configurations.additional_properties[attr_name] = additional_property
 
         if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
-                Preprocessor(name=added_class.__class__.__name__, config=config)
+                Transformer(name=added_class.__class__.__name__, config=configurations)
             )
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
-                Featurizer(name=added_class.__class__.__name__, config=config)
+                Transformer(name=added_class.__class__.__name__, config=configurations)
+            )
+        elif added_class_type == "doa":
+            self.extra_config.doa.append(
+                Transformer(name=added_class.__class__.__name__, config=configurations)
             )
 
     def fit(self, onnx_options: Optional[Dict] = None):
@@ -130,7 +127,12 @@ class SklearnModel(Model):
         y = self.dataset.__get_Y__()
 
         if self.doa:
-            self.trained_doa = self.doa.fit(X=X)
+            self.extra_config.doa = []
+            # if not isinstance(self.doa, list):
+            #     self.doa = [self.doa]
+            for doa_method in self.doa:
+                doa_method.fit(X=X)
+                self._add_class_to_extraconfig(doa_method, "doa")
 
         if len(self.dataset.y_cols) == 1:
             y = y.to_numpy().ravel()
@@ -178,12 +180,10 @@ class SklearnModel(Model):
                     self.preprocessing_y = preprocess_classes_y
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
             else:
-                self.trained_model = self.pipeline.fit(
-                    X.to_numpy(), y
-                )  # .to_numpy().ravel())
+                self.trained_model = self.pipeline.fit(X.to_numpy(), y)
         # case where no preprocessing was provided
         else:
-            self.trained_model = self.model.fit(X.to_numpy(), y)  # .to_numpy().ravel())
+            self.trained_model = self.model.fit(X.to_numpy(), y)
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -300,12 +300,10 @@ class SklearnModel(Model):
                 preprocess_func = self.preprocess.fitted_classes.get(pre_key)
                 X = preprocess_func.transform(X)
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        sess = InferenceSession(self.onnx_model.SerializeToString())
         input_name = sess.get_inputs()[0].name
         X = np.array(X.astype(float).copy())
         preds = sess.run(None, {input_name: X.astype(np.float32)})
         preds = preds[0].flatten()
-        # preds = self.trained_model.predict(X)
         preds_t = []
         for p in preds:
             try:
@@ -333,11 +331,6 @@ class SklearnModel(Model):
                 pass
             # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
             # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
-
-    def copy(self):
-        copied_model = copy.deepcopy(self)
-        copied_model.dataset = None
-        return copied_model
 
     def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
         jaqpot.deploy_sklearn_model(
