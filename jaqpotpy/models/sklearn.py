@@ -17,7 +17,6 @@ from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
 from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
     TransformerConfigAdditionalProperty,
 )
-import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
 from skl2onnx import convert_sklearn
@@ -27,22 +26,6 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
-from jaqpotpy.datasets import JaqpotpyDataset
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.models import Evaluator, Preprocess
-from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.jaqpot_api_client.models import (
-    FeatureType,
-    ModelType,
-    ModelExtraConfig,
-    Transformer,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
-    TransformerConfig,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
-    TransformerConfigAdditionalProperty,
-)
 
 
 class SklearnModel(Model):
