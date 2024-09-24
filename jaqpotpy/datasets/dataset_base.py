@@ -123,11 +123,16 @@ class BaseDataset(ABC):
 
     @task.setter
     def task(self, value):
-        if value is None:
-            raise ValueError("Task must be either 'regression' or 'classification'")
-        elif value.lower() not in ["regression", "classification"]:
-            raise ValueError("Task must be either 'regression' or 'classification'")
-        self._task = value
+        if value is None or value.upper() not in [
+            "REGRESSION",
+            "BINARY_CLASSIFICATION",
+            "MULTICLASS_CLASSIFICATION",
+        ]:
+            raise ValueError(
+                "Task must be either 'REGRESSION', BINARY_CLASSIFICATION' or 'MULTICLASS_CLASSIFICATION'."
+            )
+
+        self._task = value.upper()
 
     @property
     def dataset_name(self):

@@ -1,16 +1,16 @@
 import http.client as http_client
-import json
-import time
 import webbrowser
 
-import numpy as np
-import pandas as pd
-import jaqpotpy
 from keycloak import KeycloakOpenID
-import jaqpotpy.api.dataset_api as data_api
-import jaqpotpy.api.doa_api as doa_api
-import jaqpotpy.api.feature_api as featapi
-import jaqpotpy.api.models_api as models_api
+
+import jaqpotpy
+from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
+from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
+from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
+from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
+from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config import (
     ModelExtraConfig,
 )
@@ -20,24 +20,13 @@ from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config_torch_conf
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config_torch_config_additional_property import (
     ModelExtraConfigTorchConfigAdditionalProperty,
 )
-import jaqpotpy.api.task_api as task_api
-import jaqpotpy.doa.doa as jha
-import jaqpotpy.helpers.dataset_deserializer as ds
-from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
-from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_task import ModelTask
+from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
 from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import (
     ModelVisibility,
 )
-from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
-from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
-from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
-from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.helpers.logging import init_logger
-from jaqpotpy.helpers.serializer import JaqpotSerializer
 from jaqpotpy.utils.url_utils import add_subdomain
-from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 
 ENCODING = "utf-8"
 
@@ -230,285 +219,3 @@ class Jaqpot:
             # error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
 
-    def deploy_XGBoost(self, model, X, y, title, description, algorithm, doa=None):
-        """Deploys XGBoost model to Jaqpot.
-
-        Extended description of function.
-
-        Parameters
-        ----------
-        model : XGBoost trained model
-            model is a trained model that occurs from the XGBoost family of algorithms
-        X : pandas dataframe
-            The dataframe that is used to train the model (X variables).
-        y : pandas dataframe
-            The dataframe that is used to train the model (y variables).
-        title: String
-            The title of the model
-        description: String
-            The description of the model
-        algorithm: String
-            The algorithm that the model implements
-        doa: pandas dataframe
-            The dataset used to create the domain of applicability of the model
-
-        Returns
-        -------
-        string
-            The id of the model that uploaded
-
-        """
-        if isinstance(X, pd.DataFrame) is False:
-            raise Exception(
-                "Function deploy_glm supports pandas dataframe or series. X is not one"
-            )
-        if isinstance(y, pd.DataFrame) is False and isinstance(y, pd.Series) is False:
-            raise Exception(
-                "Function deploy_glm supports pandas dataframe or series. Y is not one"
-            )
-        # coef_flatten = model.coef_.flatten()
-        # intercept_flatten = model.intercept_.flatten()
-        # coef_df = pd.DataFrame(list(zip(list(X), coef_flatten)), columns=['Features', 'coeff'])
-        # intercept = pd.DataFrame([('(intercept)', intercept_flatten[0])], columns=['Features', 'coeff'])
-        # coefs_all = intercept.append(coef_df, ignore_index=True)
-        # coefs = {}
-        additionalInfo = {}
-        # for key in coefs_all.values:
-        #     coefs[key[0]] = key[1]
-        # additionalInfo['coefficients'] = coefs
-        additionalInfo["inputSeries"] = list(X)
-        pretrained = help.create_pretrain_req(
-            model,
-            X,
-            y,
-            title,
-            description,
-            algorithm,
-            "XGBoost model",
-            "XGBoost-model",
-            additionalInfo,
-        )
-        # j = json.dumps(pretrained)
-        j = json.dumps(pretrained, cls=JaqpotSerializer)
-        if doa is None:
-            response = models_api.post_pretrained_model(
-                self.base_url, self.api_key, j, self.log
-            )
-            if response.status_code < 300:
-                resp = response.json()
-                self.log.info(
-                    "Model with id: "
-                    + resp["modelId"]
-                    + " created. Please visit the application to proceed"
-                )
-                return resp["modelId"]
-            else:
-                resp = response.json()
-                self.log.error("Some error occured: " + resp["message"])
-                return
-        else:
-            response = models_api.post_pretrained_model(
-                self.base_url, self.api_key, j, self.log
-            )
-            if response.status_code < 300:
-                resp = response.json()
-                self.log.info(
-                    "Model with id: "
-                    + resp["modelId"]
-                    + " created. Storing Domain of applicability"
-                )
-                modid = resp["modelId"]
-            else:
-                resp = response.json()
-                self.log.error("Some error occured: " + resp["message"])
-                return
-            # loop = asyncio.get_event_loop()
-            # a = loop.create_task(jha.calculate_a(X))
-            # b = loop.create_task(jha.calculate_doa_matrix(X))
-
-            a = jha.calculate_a(X)
-            b = jha.calculate_doa_matrix(X)
-            # all_groups = asyncio.gather(a, b)
-            # results = loop.run_until_complete(all_groups)
-            doa = help.create_doa(inv_m=b.values.tolist(), a=a, modelid=resp["modelId"])
-            j = json.dumps(doa, cls=JaqpotSerializer)
-            resp = doa_api.post_models_doa(self.base_url, self.api_key, j, self.log)
-            if resp == 201:
-                self.log.info(
-                    "Stored Domain of applicability. Visit the application to proceed"
-                )
-                return modid
-
-    def get_model_by_id(self, model):
-        """Retrieves user's model by ID.
-
-        Parameters
-        ----------
-        model : str
-            The model's ID.
-
-
-        Returns
-        -------
-        Object
-            The particular model.
-
-        """
-        return models_api.get_model(self.base_url, self.api_key, model, self.log)
-
-    def get_feature_by_id(self, feature):
-        """Retrieves a Jaqpot feature.
-
-        Parameters
-        ----------
-        feature : str
-            The feature's ID.
-
-
-        Returns
-        -------
-        Object
-            The particular feature.
-
-        """
-        return featapi.get_feature(self.base_url, self.api_key, feature)
-
-    def get_my_models(self, minimum, maximum):
-        """Retrieves user's models.
-
-        Parameters
-        ----------
-        minimum : int
-            The index of the first model.
-        maximum : int
-            The index of the last model.
-
-        Returns
-        -------
-        Object
-            The models of the user.
-
-        """
-        return models_api.get_my_models(
-            self.base_url, self.api_key, minimum, maximum, self.log
-        )
-
-    def get_orgs_models(self, organization, minimum, maximum):
-        """Retrieves organization's models.
-
-        Parameters
-        ----------
-        organization: str
-            The organization's ID.
-        minimum : int
-            The index of the first model.
-        maximum : int
-            The index of the last model.
-
-        Returns
-        -------
-        Object
-            The models of the organization.
-
-        """
-        return models_api.get_orgs_models(
-            self.base_url, self.api_key, organization, minimum, maximum, self.log
-        )
-
-    def get_models_by_tag(self, tag, minimum, maximum):
-        """Retrieves models with a particular tag.
-
-        Parameters
-        ----------
-        tag: str
-            The model's tag.
-        minimum : int
-            The index of the first model.
-        maximum : int
-            The index of the last model.
-
-        Returns
-        -------
-        Object
-            The models of the organization.
-
-        """
-        return models_api.get_models_by_tag(
-            self.base_url, self.api_key, tag, minimum, maximum, self.log
-        )
-
-    def get_models_by_tag_and_org(self, organization, tag, minimum, maximum):
-        """Retrieves models of an organization with a particular tag.
-
-        Parameters
-        ----------
-        organization: str:
-            The organization's ID.
-        tag: str
-            The model's tag.
-        minimum : int
-            The index of the first model.
-        maximum : int
-            The index of the last model.
-
-        Returns
-        -------
-        Object
-            The models of the organization.
-
-        """
-        return models_api.get_models_by_tag(
-            self.base_url, self.api_key, organization, tag, minimum, maximum, self.log
-        )
-
-    def get_dataset(self, dataset):
-        """Retrieves a dataset.
-
-        Parameters
-        ----------
-        dataset: str
-            The dataset's ID.
-
-        Returns
-        -------
-        pd.DataFrame()
-            DataFrame of the dataset.
-
-        Note
-        ----
-        Mazimum rows retrieved: 1000.
-
-        """
-        dataRetrieved = data_api.get_dataset(
-            self.base_url, self.api_key, dataset, self.log
-        )
-
-        feats = ["" for i in range(len(dataRetrieved["features"]))]
-
-        for item in dataRetrieved["features"]:
-            feats[int(item["key"])] = item["name"]
-
-        indices = [item["entryId"]["name"] for item in dataRetrieved["dataEntry"]]
-
-        data = [
-            [item["values"][str(feats.index(col))] for col in feats]
-            for item in dataRetrieved["dataEntry"]
-        ]
-
-        return pd.DataFrame(data, index=indices, columns=feats)
-
-    def get_doa(self, model):
-        """Retrieves model's domain of applicability.
-
-        Parameters
-        ----------
-        model: str
-            The model's ID.
-
-        Returns
-        -------
-        Object
-            The model's domain of applicability.
-
-        """
-        return doa_api.get_models_doa(self.base_url, self.api_key, model, self.log)
