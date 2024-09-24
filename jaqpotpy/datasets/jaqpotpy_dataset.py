@@ -4,6 +4,7 @@ from typing import Iterable, Any, Optional
 import pandas as pd
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.datasets.dataset_base import BaseDataset
+import copy
 
 
 class JaqpotpyDataset(BaseDataset):
@@ -79,6 +80,8 @@ class JaqpotpyDataset(BaseDataset):
 
         self.init_df = self._df
         self.featurizer = featurizer
+        if self.featurizer is not None:
+            self.featurizers_attributes = copy.deepcopy(featurizer.__dict__)
         self._featurizer_name = None
         self.smiles = None
         self._x_cols_all = None
@@ -113,7 +116,6 @@ class JaqpotpyDataset(BaseDataset):
             )
 
     def _validate_column_space(self):
-
         for ix, col in enumerate(self.x_cols):
             if " " in col:
                 new_col = col.replace(" ", "_")
