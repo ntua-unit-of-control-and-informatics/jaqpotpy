@@ -52,17 +52,17 @@ class TestDoa(unittest.TestCase):
             mol
         ), f"Expected len(calc) == len(mol), got {len(calc)} != {len(mol)}"
         assert (
-                abs(doa.h_star - 16.434782608695652) < 0.00001
+            abs(doa.h_star - 16.434782608695652) < 0.00001
         ), f"Expected doa.a == 16.434782608695652, got {doa.h_star} != 16.434782608695652"
-        assert (
-            not calc[0]["in_doa"]
-        ), f"Expected calc[0]['in_doa'] == False, got {calc[0]['in_doa']} != False"
-        assert (
-            calc[1]["in_doa"]
-        ), f"Expected calc[0]['in_doa'] == True, got {calc[1]['in_doa']} != True"
-        assert (
-            calc[2]["in_doa"]
-        ), f"Expected calc[0]['in_doa'] == True, got {calc[2]['in_doa']} != True"
+        assert not calc[0][
+            "in_doa"
+        ], f"Expected calc[0]['in_doa'] == False, got {calc[0]['in_doa']} != False"
+        assert calc[1][
+            "in_doa"
+        ], f"Expected calc[0]['in_doa'] == True, got {calc[1]['in_doa']} != True"
+        assert calc[2][
+            "in_doa"
+        ], f"Expected calc[0]['in_doa'] == True, got {calc[2]['in_doa']} != True"
 
     def test_MeanVar(self):
         mols = [
@@ -95,15 +95,15 @@ class TestDoa(unittest.TestCase):
         ]
         descriptors = featurizer(mol)
         calc = doa.predict(descriptors)
-        diag = np.diag(doa.data)
+        diag = np.diag(doa._bounds)
 
         assert len(calc) == len(mol)
-        assert (
-            calc[0]["in_doa"]
-        ), f"Expected calc[0]['in_doa'] == True, got {calc[0]['in_doa']} != True"
-        assert (
-            not calc[1]["in_doa"]
-        ), f"Expected calc[0]['in_doa'] == False, got {calc[1]['in_doa']} != False"
+        assert calc[0][
+            "in_doa"
+        ], f"Expected calc[0]['in_doa'] == True, got {calc[0]['in_doa']} != True"
+        assert not calc[1][
+            "in_doa"
+        ], f"Expected calc[0]['in_doa'] == False, got {calc[1]['in_doa']} != False"
         assert np.allclose(
             diag, [1.31511044e01, 6.69162726e-01, 5.37187947e-03], atol=1e-5
         ), f"Expected diag == [1.31511044e+01, 6.69162726e-01, 5.37187947e-03], got diag != {diag}"
@@ -139,16 +139,16 @@ class TestDoa(unittest.TestCase):
         ]
         descriptors = featurizer(mol)
         calc = doa.predict(descriptors)
-        first_feature_bounds = doa.data[0]
-        last_feature_bounds = doa.data[-1]
+        first_feature_bounds = doa._bounding_box[0]
+        last_feature_bounds = doa._bounding_box[-1]
         print("Bounding box")
         assert len(calc) == len(mol)
-        assert (
-            calc[0]["in_doa"]
-        ), f"Expected calc[0]['in_doa'] == True, got {calc[0]['in_doa']} != True"
-        assert (
-            not calc[1]["in_doa"]
-        ), f"Expected calc[0]['in_doa'] == False, got {calc[1]['in_doa']} != False"
+        assert calc[0][
+            "in_doa"
+        ], f"Expected calc[0]['in_doa'] == True, got {calc[0]['in_doa']} != True"
+        assert not calc[1][
+            "in_doa"
+        ], f"Expected calc[0]['in_doa'] == False, got {calc[1]['in_doa']} != False"
         assert np.allclose(
             first_feature_bounds, [12.0648171, 14.92728396], atol=1e-5
         ), f"Expected first_feature_bounds == [12.0648171 , 14.92728396], got {first_feature_bounds} != [12.0648171 , 14.92728396]"
