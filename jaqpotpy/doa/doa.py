@@ -156,9 +156,9 @@ class MeanVar(DOA):
         for i in range(self._data.shape[1]):
             list_m_var.append(
                 [
-                    np.mean(self._data.iloc[:, i]),
-                    np.std(self._data.iloc[:, i]),
-                    np.var(self._data.iloc[:, i]),
+                    np.mean(self._data[:, i]),
+                    np.std(self._data[:, i]),
+                    np.var(self._data[:, i]),
                 ]
             )
         self._bounds = np.array(list_m_var)
@@ -204,9 +204,7 @@ class BoundingBox(DOA):
         self._data = X
         list_m_var = []
         for i in range(self._data.shape[1]):
-            list_m_var.append(
-                [np.min(self._data.iloc[:, i]), np.max(self._data.iloc[:, i])]
-            )
+            list_m_var.append([np.min(self._data[:, i]), np.max(self._data[:, i])])
         self._bounding_box = np.array(list_m_var)
         self._doa_attributes = self.get_attributes()
 
