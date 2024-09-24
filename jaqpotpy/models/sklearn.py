@@ -71,7 +71,6 @@ class SklearnModel(Model):
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
         self.task = self.dataset.task
-        self.onnx_model = None
         self.onnx_opset = None
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
@@ -114,16 +113,13 @@ class SklearnModel(Model):
         ).items():
             additional_property = type(additional_property_type)()
             additional_property.additional_properties["value"] = attr_value
-            additional_property.additional_properties["value"] = attr_value
             config.additional_properties[attr_name] = additional_property
 
-        if added_class_type == "preprocessor":
         if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
                 Transformer(name=added_class.__class__.__name__, config=config)
                 Transformer(name=added_class.__class__.__name__, config=config)
             )
-        elif added_class_type == "featurizer":
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
                 Transformer(name=added_class.__class__.__name__, config=config)
@@ -137,7 +133,6 @@ class SklearnModel(Model):
         self.libraries = get_installed_libraries()
         if isinstance(self.featurizer, MolecularFeaturizer):
             self.extra_config.featurizers = []
-            self._add_class_to_extraconfig(self.featurizer, "featurizer")
             self._add_class_to_extraconfig(self.featurizer, "featurizer")
 
         if self.dataset.y is None:
@@ -197,7 +192,6 @@ class SklearnModel(Model):
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
                         self._add_class_to_extraconfig(pre_y_function, "preprocessor")
-                        self._add_class_to_extraconfig(pre_y_function, "preprocessor")
 
                     if len(self.dataset.y_cols) == 1:
                         y_scaled = y_scaled.ravel()
@@ -206,10 +200,10 @@ class SklearnModel(Model):
             else:
                 self.trained_model = self.pipeline.fit(
                     X.to_numpy(), y
-                )  # .to_numpy().ravel())
+                )
         # case where no preprocessing was provided
         else:
-            self.trained_model = self.model.fit(X.to_numpy(), y)  # .to_numpy().ravel())
+            self.trained_model = self.model.fit(X.to_numpy(), y)
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -241,7 +235,6 @@ class SklearnModel(Model):
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=[
-                ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
                 ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
             ],
             name=name,
@@ -327,12 +320,10 @@ class SklearnModel(Model):
                 preprocess_func = self.preprocess.fitted_classes.get(pre_key)
                 X = preprocess_func.transform(X)
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        sess = InferenceSession(self.onnx_model.SerializeToString())
         input_name = sess.get_inputs()[0].name
         X = np.array(X.astype(float).copy())
         preds = sess.run(None, {input_name: X.astype(np.float32)})
         preds = preds[0].flatten()
-        # preds = self.trained_model.predict(X)
         preds_t = []
         for p in preds:
             try:
