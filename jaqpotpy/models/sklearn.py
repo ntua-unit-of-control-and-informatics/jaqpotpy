@@ -89,7 +89,7 @@ class SklearnModel(Model):
         }
 
     def _add_class_to_extraconfig(self, added_class, added_class_type):
-        config = TransformerConfig()
+        configurations = TransformerConfig()
         additional_property_type = TransformerConfigAdditionalProperty()
 
         for attr_name, attr_value in self._extract_attributes(
@@ -97,19 +97,19 @@ class SklearnModel(Model):
         ).items():
             additional_property = type(additional_property_type)()
             additional_property.additional_properties["value"] = attr_value
-            config.additional_properties[attr_name] = additional_property
+            configurations.additional_properties[attr_name] = additional_property
 
         if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
-                Transformer(name=added_class.__class__.__name__, config=config)
+                Transformer(name=added_class.__class__.__name__, config=configurations)
             )
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
-                Transformer(name=added_class.__class__.__name__, config=config)
+                Transformer(name=added_class.__class__.__name__, config=configurations)
             )
         elif added_class_type == "doa":
             self.extra_config.doa.append(
-                Transformer(name=added_class.__class__.__name__, config=config)
+                Transformer(name=added_class.__class__.__name__, config=configurations)
             )
 
     def fit(self, onnx_options: Optional[Dict] = None):
