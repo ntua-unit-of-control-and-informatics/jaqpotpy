@@ -1,4 +1,3 @@
-import copy
 import sklearn
 from typing import Any, Dict, Optional
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
@@ -349,11 +348,6 @@ class SklearnModel(Model):
                 pass
             # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
             # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
-
-    def copy(self):
-        copied_model = copy.deepcopy(self)
-        copied_model.dataset = None
-        return copied_model
 
     def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
         jaqpot.deploy_sklearn_model(
