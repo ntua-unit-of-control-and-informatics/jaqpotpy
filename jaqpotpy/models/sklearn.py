@@ -91,6 +91,8 @@ class SklearnModel(Model):
     def _extract_attributes(self, trained_class, trained_class_type):
         if trained_class_type == "doa":
             attributes = trained_class._doa_attributes
+        elif trained_class_type == "featurizer":
+            attributes = self.dataset.featurizers_attributes
         else:
             attributes = trained_class.__dict__
         return {
@@ -118,7 +120,6 @@ class SklearnModel(Model):
         if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
                 Transformer(name=added_class.__class__.__name__, config=config)
-                Transformer(name=added_class.__class__.__name__, config=config)
             )
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
@@ -142,7 +143,6 @@ class SklearnModel(Model):
         # Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
-
 
         if self.doa:
             self.extra_config.doa = []
@@ -198,9 +198,7 @@ class SklearnModel(Model):
                     self.preprocessing_y = preprocess_classes_y
                     self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
             else:
-                self.trained_model = self.pipeline.fit(
-                    X.to_numpy(), y
-                )
+                self.trained_model = self.pipeline.fit(X.to_numpy(), y)
         # case where no preprocessing was provided
         else:
             self.trained_model = self.model.fit(X.to_numpy(), y)
