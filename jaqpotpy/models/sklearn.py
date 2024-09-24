@@ -28,7 +28,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
-from jaqpotpy.datasets.molecular_datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
