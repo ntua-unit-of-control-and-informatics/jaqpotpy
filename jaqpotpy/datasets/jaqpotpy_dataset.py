@@ -1,6 +1,7 @@
 """Dataset classes for molecular modelling"""
 
 from typing import Iterable, Any, Optional
+import copy
 import pandas as pd
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.datasets.dataset_base import BaseDataset
@@ -79,6 +80,9 @@ class JaqpotpyDataset(BaseDataset):
 
         self.init_df = self._df
         self.featurizer = featurizer
+        # If featurizer is provided and it's for training, we need to copy the attributes
+        if self.featurizer and self.y_cols:
+            self.featurizers_attributes = copy.deepcopy(featurizer.__dict__)
         self._featurizer_name = None
         self.smiles = None
         self._x_cols_all = None
@@ -113,7 +117,6 @@ class JaqpotpyDataset(BaseDataset):
             )
 
     def _validate_column_space(self):
-
         for ix, col in enumerate(self.x_cols):
             if " " in col:
                 new_col = col.replace(" ", "_")
