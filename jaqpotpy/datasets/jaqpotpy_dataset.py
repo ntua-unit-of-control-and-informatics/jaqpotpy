@@ -1,10 +1,10 @@
 """Dataset classes for molecular modelling"""
 
 from typing import Iterable, Any, Optional
+import copy
 import pandas as pd
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.datasets.dataset_base import BaseDataset
-import copy
 
 
 class JaqpotpyDataset(BaseDataset):
@@ -80,7 +80,8 @@ class JaqpotpyDataset(BaseDataset):
 
         self.init_df = self._df
         self.featurizer = featurizer
-        if self.featurizer is not None:
+        # If featurizer is provided and it's for training, we need to copy the attributes
+        if self.featurizer and self.y_cols:
             self.featurizers_attributes = copy.deepcopy(featurizer.__dict__)
         self._featurizer_name = None
         self.smiles = None
