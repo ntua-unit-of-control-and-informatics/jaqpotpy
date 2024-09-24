@@ -6,9 +6,8 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
-    from ..models.featurizer import Featurizer
     from ..models.model_extra_config_torch_config import ModelExtraConfigTorchConfig
-    from ..models.preprocessor import Preprocessor
+    from ..models.transformer import Transformer
 
 
 T = TypeVar("T", bound="ModelExtraConfig")
@@ -20,13 +19,15 @@ class ModelExtraConfig:
 
     Attributes:
         torch_config (Union[Unset, ModelExtraConfigTorchConfig]):
-        preprocessors (Union[Unset, List['Preprocessor']]):
-        featurizers (Union[Unset, List['Featurizer']]):
+        preprocessors (Union[Unset, List['Transformer']]):
+        featurizers (Union[Unset, List['Transformer']]):
+        doa (Union[Unset, List['Transformer']]):
     """
 
     torch_config: Union[Unset, "ModelExtraConfigTorchConfig"] = UNSET
-    preprocessors: Union[Unset, List["Preprocessor"]] = UNSET
-    featurizers: Union[Unset, List["Featurizer"]] = UNSET
+    preprocessors: Union[Unset, List["Transformer"]] = UNSET
+    featurizers: Union[Unset, List["Transformer"]] = UNSET
+    doa: Union[Unset, List["Transformer"]] = UNSET
     additional_properties: Dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -48,6 +49,13 @@ class ModelExtraConfig:
                 featurizers_item = featurizers_item_data.to_dict()
                 featurizers.append(featurizers_item)
 
+        doa: Union[Unset, List[Dict[str, Any]]] = UNSET
+        if not isinstance(self.doa, Unset):
+            doa = []
+            for doa_item_data in self.doa:
+                doa_item = doa_item_data.to_dict()
+                doa.append(doa_item)
+
         field_dict: Dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -57,14 +65,15 @@ class ModelExtraConfig:
             field_dict["preprocessors"] = preprocessors
         if featurizers is not UNSET:
             field_dict["featurizers"] = featurizers
+        if doa is not UNSET:
+            field_dict["doa"] = doa
 
         return field_dict
 
     @classmethod
     def from_dict(cls: Type[T], src_dict: Dict[str, Any]) -> T:
-        from ..models.featurizer import Featurizer
         from ..models.model_extra_config_torch_config import ModelExtraConfigTorchConfig
-        from ..models.preprocessor import Preprocessor
+        from ..models.transformer import Transformer
 
         d = src_dict.copy()
         _torch_config = d.pop("torchConfig", UNSET)
@@ -77,21 +86,29 @@ class ModelExtraConfig:
         preprocessors = []
         _preprocessors = d.pop("preprocessors", UNSET)
         for preprocessors_item_data in _preprocessors or []:
-            preprocessors_item = Preprocessor.from_dict(preprocessors_item_data)
+            preprocessors_item = Transformer.from_dict(preprocessors_item_data)
 
             preprocessors.append(preprocessors_item)
 
         featurizers = []
         _featurizers = d.pop("featurizers", UNSET)
         for featurizers_item_data in _featurizers or []:
-            featurizers_item = Featurizer.from_dict(featurizers_item_data)
+            featurizers_item = Transformer.from_dict(featurizers_item_data)
 
             featurizers.append(featurizers_item)
+
+        doa = []
+        _doa = d.pop("doa", UNSET)
+        for doa_item_data in _doa or []:
+            doa_item = Transformer.from_dict(doa_item_data)
+
+            doa.append(doa_item)
 
         model_extra_config = cls(
             torch_config=torch_config,
             preprocessors=preprocessors,
             featurizers=featurizers,
+            doa=doa,
         )
 
         model_extra_config.additional_properties = d
