@@ -19,7 +19,6 @@ class BaseGraphNetwork(nn.Module):
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
         graph_norm: bool = False,
-        jittable: bool = True,
         seed=42,
         edge_dim: Optional[int] = None,
         heads: Optional[int] = None,
@@ -32,7 +31,6 @@ class BaseGraphNetwork(nn.Module):
         self.activation = activation
         self.dropout_proba = dropout_proba
         self.graph_norm = graph_norm
-        self.jittable = jittable
         self.seed = seed
         self.edge_dim = edge_dim
         self.heads = heads
@@ -45,10 +43,7 @@ class BaseGraphNetwork(nn.Module):
 
     def add_layer(self, conv_layer: nn.Module):
         """Helper function to add a convolution layer."""
-        if self.jittable:
-            self.graph_layers.append(conv_layer.jittable())
-        else:
-            self.graph_layers.append(conv_layer)
+        self.graph_layers.append(conv_layer)
 
     def forward(
         self,
@@ -93,8 +88,6 @@ class BaseGraphNetwork(nn.Module):
             raise TypeError("dropout must be of type float between 0 and 1")
         if not isinstance(self.graph_norm, bool):
             raise TypeError("graph_norm must be of type bool")
-        if not isinstance(self.jittable, bool):
-            raise TypeError("jittable must be of type bool")
 
 
 class GraphSageNetwork(BaseGraphNetwork):
@@ -109,7 +102,6 @@ class GraphSageNetwork(BaseGraphNetwork):
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
         graph_norm: bool = False,
-        jittable: bool = True,
         seed=42,
     ):
         super(GraphSageNetwork, self).__init__(
@@ -120,7 +112,6 @@ class GraphSageNetwork(BaseGraphNetwork):
             activation,
             dropout_proba,
             graph_norm,
-            jittable,
             seed,
         )
 
@@ -149,7 +140,6 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
         graph_norm: bool = False,
-        jittable: bool = True,
         seed=42,
     ):
         super(GraphConvolutionNetwork, self).__init__(
@@ -160,7 +150,6 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
             activation,
             dropout_proba,
             graph_norm,
-            jittable,
             seed,
         )
 
@@ -189,7 +178,6 @@ class GraphAttentionNetwork(BaseGraphNetwork):
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
         graph_norm: bool = False,
-        jittable: bool = True,
         seed=42,
         edge_dim: Optional[int] = None,
         heads: int = 1,
@@ -202,7 +190,6 @@ class GraphAttentionNetwork(BaseGraphNetwork):
             activation,
             dropout_proba,
             graph_norm,
-            jittable,
             seed,
             edge_dim,
             heads,
