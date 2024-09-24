@@ -1,7 +1,24 @@
 import copy
 import sklearn
 from typing import Any, Dict, Optional
-import sklearn.pipeline
+from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from jaqpotpy.models import Evaluator, Preprocess
+from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.openapi.jaqpot_api_client.models import (
+    FeatureType,
+    ModelType,
+    ModelExtraConfig,
+    Transformer,
+    ModelTask,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
+    TransformerConfig,
+)
+from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
+    TransformerConfigAdditionalProperty,
+)
+import sklearn
 from jaqpotpy.cfg import config
 import jaqpotpy
 from skl2onnx import convert_sklearn
@@ -53,7 +70,6 @@ class SklearnModel(Model):
         self.libraries = None
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
-        self.jaqpotpy_docker = config.jaqpotpy_docker
         self.task = self.dataset.task
         self.onnx_model = None
         self.onnx_opset = None
@@ -98,12 +114,16 @@ class SklearnModel(Model):
         ).items():
             additional_property = type(additional_property_type)()
             additional_property.additional_properties["value"] = attr_value
+            additional_property.additional_properties["value"] = attr_value
             config.additional_properties[attr_name] = additional_property
 
         if added_class_type == "preprocessor":
+        if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
                 Transformer(name=added_class.__class__.__name__, config=config)
+                Transformer(name=added_class.__class__.__name__, config=config)
             )
+        elif added_class_type == "featurizer":
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
                 Transformer(name=added_class.__class__.__name__, config=config)
@@ -118,6 +138,7 @@ class SklearnModel(Model):
         if isinstance(self.featurizer, MolecularFeaturizer):
             self.extra_config.featurizers = []
             self._add_class_to_extraconfig(self.featurizer, "featurizer")
+            self._add_class_to_extraconfig(self.featurizer, "featurizer")
 
         if self.dataset.y is None:
             raise TypeError(
@@ -126,6 +147,7 @@ class SklearnModel(Model):
         # Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
+
 
         if self.doa:
             self.extra_config.doa = []
@@ -154,7 +176,10 @@ class SklearnModel(Model):
             pre_y_keys = self.preprocess.classes_y.keys()
 
             if len(pre_y_keys) > 0:
-                if self.task == "classification":
+                if (
+                    self.task == "BINARY_CLASSIFICATION"
+                    or self.task == "MULTICLASS_CLASSIFICATION"
+                ):
                     raise ValueError(
                         "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
                     )
@@ -171,6 +196,7 @@ class SklearnModel(Model):
                         )
                         preprocess_names_y.append(pre_y_key)
                         preprocess_classes_y.append(pre_y_function)
+                        self._add_class_to_extraconfig(pre_y_function, "preprocessor")
                         self._add_class_to_extraconfig(pre_y_function, "preprocessor")
 
                     if len(self.dataset.y_cols) == 1:
@@ -215,6 +241,7 @@ class SklearnModel(Model):
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=[
+                ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
                 ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
             ],
             name=name,

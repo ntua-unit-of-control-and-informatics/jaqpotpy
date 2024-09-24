@@ -105,7 +105,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -118,7 +118,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
 
@@ -164,7 +164,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -179,7 +179,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
 
@@ -230,7 +230,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -253,7 +253,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -289,7 +289,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -314,7 +314,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -342,7 +342,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -357,7 +357,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
 
@@ -404,7 +404,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -435,7 +435,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -517,7 +517,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="classification",
+            task="binary_classification",
             featurizer=featurizer,
         )
 
