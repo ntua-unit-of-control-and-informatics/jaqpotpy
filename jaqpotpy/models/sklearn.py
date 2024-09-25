@@ -71,13 +71,14 @@ class SklearnModel(Model):
 
     def __dtypes_to_jaqpotypes__(self):
         for feature in self.independentFeatures + self.dependentFeatures:
+            print(feature)
             if feature["featureType"] in ["SMILES"]:
                 feature["featureType"] = FeatureType.SMILES
             elif feature["featureType"] in ["int", "int64"]:
                 feature["featureType"] = FeatureType.INTEGER
             elif feature["featureType"] in ["float", "float64"]:
                 feature["featureType"] = FeatureType.FLOAT
-            elif feature["featureType"] in ["string, object"]:
+            elif feature["featureType"] in ["string, object", "O"]:
                 feature["featureType"] = FeatureType.STRING
 
     def _extract_attributes(self, trained_class, trained_class_type):
@@ -206,14 +207,11 @@ class SklearnModel(Model):
                     if len(self.dataset.y_cols) == 1:
                         y_scaled = y_scaled.ravel()
                     self.preprocessing_y = preprocess_classes_y
-                    # self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
                     self.trained_model = self.pipeline.fit(X, y_scaled)
             else:
-                # self.trained_model = self.pipeline.fit(X.to_numpy(), y)
                 self.trained_model = self.pipeline.fit(X, y)
         # case where no preprocessing was provided
         else:
-            # self.trained_model = self.model.fit(X.to_numpy(), y)
             self.trained_model = self.model.fit(X, y)
 
         if self.dataset.smiles_cols:
@@ -266,10 +264,7 @@ class SklearnModel(Model):
     def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        sklearn_prediction = self.trained_model.predict(
-            # dataset.X.to_numpy().astype(np.float32)
-            dataset.X  # .astype(np.float32)
-        )
+        sklearn_prediction = self.trained_model.predict(dataset.X)
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y[::-1]:
@@ -286,7 +281,6 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
-        # sklearn_probs = self.trained_model.predict_proba(dataset.X.to_numpy())
         sklearn_probs = self.trained_model.predict_proba(dataset.X)
         sklearn_probs_list = [
             max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))
