@@ -1,6 +1,6 @@
+import numpy as np
 import inspect
 import logging
-import numpy as np
 from typing import Any, List, Iterable
 import pandas as pd
 from tqdm import tqdm
@@ -106,6 +106,7 @@ class AbstractFeaturizer(object):
         CGCNNFeaturizer[radius=8.0, max_neighbors=12, step=0.2]
 
         """
+
         args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
         args_names = [arg for arg in args_spec.args if arg != "self"]
         args_info = ""
@@ -261,7 +262,8 @@ class MolecularFeaturizer(AbstractFeaturizer):
           A pandas Dataframe containing a featurized representation of `datapoints`.
 
         """
-        return self._featurize_dataframe(datapoints, log_every_n, **kwargs)
+
+        raise NotImplementedError("Featurizer is not defined.")
 
 
 def get_print_threshold() -> int:
