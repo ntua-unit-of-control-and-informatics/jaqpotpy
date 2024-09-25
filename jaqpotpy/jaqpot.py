@@ -57,6 +57,7 @@ class Jaqpot:
         keycloak_client_id=None,
         create_logs=False,
     ):
+
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
@@ -172,8 +173,16 @@ class Jaqpot:
             # error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
 
-    def deploy_Torch_Graph_model(
-        self, onnx_model, featurizer, name, description, target_name, visibility, task
+    def deploy_torch_model(
+        self,
+        onnx_model,
+        type,
+        featurizer,
+        name,
+        description,
+        target_name,
+        visibility,
+        task,
     ):
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
@@ -197,9 +206,13 @@ class Jaqpot:
         )
         torch_config_json = {"featurizerConfig": featurizer_config.to_dict()}
         torch_config = ModelExtraConfigTorchConfig.from_dict(torch_config_json)
+        if type == "TORCHSCRIPT":
+            type = ModelType.TORCHSCRIPT
+        elif type == "TORCH_ONNX":
+            type = ModelType.TORCH_ONNX
         body_model = Model(
             name=name,
-            type=ModelType.TORCH,
+            type=type,
             jaqpotpy_version=jaqpotpy.__version__,
             libraries=get_installed_libraries(),
             dependent_features=[
@@ -214,7 +227,6 @@ class Jaqpot:
             actual_model=onnx_model,
             description=description,
         )
-
         response = create_model.sync_detailed(client=auth_client, body=body_model)
         if response.status_code < 300:
             self.log.info(
@@ -222,6 +234,5 @@ class Jaqpot:
                 + response.headers.get("Location")
             )
         else:
-            # error = response.headers.get("error")
-            # error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
+            self.log.error("Error message: " + response.content.decode("utf-8"))
