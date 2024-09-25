@@ -20,7 +20,15 @@ from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional
 from jaqpotpy.cfg import config
 import jaqpotpy
 from skl2onnx import convert_sklearn
-from skl2onnx.common.data_types import FloatTensorType
+from skl2onnx.common.data_types import (
+    FloatTensorType,
+    Int64TensorType,
+    Int32TensorType,
+    Int8TensorType,
+    UInt8TensorType,
+    BooleanTensorType,
+    StringTensorType,
+)
 from onnxruntime import InferenceSession
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -69,6 +77,11 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.FLOAT
             elif feature["featureType"] in ["string, object"]:
                 feature["featureType"] = FeatureType.STRING
+    
+    def set_onnx_initial_types(self):
+        for feature in self.dataset.df.columns:
+            if feature in self.dataset.x_cols:
+                
 
     def _extract_attributes(self, trained_class, trained_class_type):
         if trained_class_type == "doa":
@@ -111,6 +124,24 @@ class SklearnModel(Model):
             self.extra_config.doa.append(
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
+
+    def _map_onnx_dtype(dtype):
+        if dtype == "int64":
+            return Int64TensorType(shape=1)
+        elif dtype == "int32":
+            return Int32TensorType(shape=1)
+        elif dtype == "int8":
+            return Int8TensorType(shape=1)
+        elif dtype == "uint8":
+            return UInt8TensorType(shape=1)
+        elif dtype == "bool":
+            return BooleanTensorType(shape=1)
+        elif dtype == "float32" or dtype == "float":
+            return FloatTensorType(shape=1)
+        elif dtype in ["string", "object", "category"]:
+            return StringTensorType(shape=1)
+        else:
+            return None
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
@@ -178,12 +209,15 @@ class SklearnModel(Model):
                     if len(self.dataset.y_cols) == 1:
                         y_scaled = y_scaled.ravel()
                     self.preprocessing_y = preprocess_classes_y
-                    self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
+                    # self.trained_model = self.pipeline.fit(X.to_numpy(), y_scaled)
+                    self.trained_model = self.pipeline.fit(X, y_scaled)
             else:
-                self.trained_model = self.pipeline.fit(X.to_numpy(), y)
+                # self.trained_model = self.pipeline.fit(X.to_numpy(), y)
+                self.trained_model = self.pipeline.fit(X, y)
         # case where no preprocessing was provided
         else:
-            self.trained_model = self.model.fit(X.to_numpy(), y)
+            # self.trained_model = self.model.fit(X.to_numpy(), y)
+            self.trained_model = self.model.fit(X, y)
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -212,11 +246,14 @@ class SklearnModel(Model):
         self.__dtypes_to_jaqpotypes__()
 
         name = self.model.__class__.__name__ + "_ONNX"
+        initial_types = []
+        for i, feature in enumerate(self.dataset.X.columns):
+            initial_types.append(
+                (self.dataset.X.columns[i], self._map_onnx_dtype(self.dataset.X[feature].dtype.name))
+            )
         self.onnx_model = convert_sklearn(
             self.trained_model,
-            initial_types=[
-                ("float_input", FloatTensorType([None, X.to_numpy().shape[1]]))
-            ],
+            initial_types=initial_types,
             name=name,
             options={StandardScaler: {"div": "div_cast"}},
         )
@@ -230,7 +267,8 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sklearn_prediction = self.trained_model.predict(
-            dataset.X.to_numpy().astype(np.float32)
+            # dataset.X.to_numpy().astype(np.float32)
+            dataset.X.astype(np.float32)
         )
         if self.preprocess is not None:
             if self.preprocessing_y:
@@ -248,7 +286,8 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
-        sklearn_probs = self.trained_model.predict_proba(dataset.X.to_numpy())
+        # sklearn_probs = self.trained_model.predict_proba(dataset.X.to_numpy())
+        sklearn_probs = self.trained_model.predict_proba(dataset.X)
         sklearn_probs_list = [
             max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))
         ]
@@ -259,7 +298,9 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
         onnx_prediction = sess.run(
-            None, {"float_input": dataset.X.to_numpy().astype(np.float32)}
+            # None, {"float_input": dataset.X.to_numpy().astype(np.float32)}
+            None,
+            {"float_input": dataset.X.astype(np.float32)},
         )
         if len(self.y_cols) == 1:
             onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
@@ -280,7 +321,9 @@ class SklearnModel(Model):
             )
         sess = InferenceSession(self.onnx_model.SerializeToString())
         onnx_probs = sess.run(
-            None, {"float_input": dataset.X.to_numpy().astype(np.float32)}
+            # None, {"float_input": dataset.X.to_numpy().astype(np.float32)}
+            None,
+            {"float_input": dataset.X.astype(np.float32)},
         )
         onnx_probs_list = [
             max(onnx_probs[1][instance].values())
