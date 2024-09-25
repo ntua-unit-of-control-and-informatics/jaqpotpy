@@ -57,21 +57,11 @@ class Jaqpot:
         keycloak_client_id=None,
         create_logs=False,
     ):
-    def __init__(
-        self,
-        base_url=None,
-        app_url=None,
-        login_url=None,
-        api_url=None,
-        keycloak_realm=None,
-        keycloak_client_id=None,
-        create_logs=False,
-    ):
+
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
         )
-        if base_url:
         if base_url:
             self.base_url = base_url
         else:
