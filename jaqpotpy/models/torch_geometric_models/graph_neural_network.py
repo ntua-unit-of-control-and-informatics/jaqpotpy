@@ -2,7 +2,14 @@ import torch
 import numpy as np
 import torch.nn as nn
 from typing import Optional
-from torch_geometric.nn import SAGEConv, GCNConv, GATConv, GraphNorm, global_add_pool
+from torch_geometric.nn import (
+    SAGEConv,
+    GCNConv,
+    GATConv,
+    TransformerConv,
+    GraphNorm,
+    global_add_pool,
+)
 import torch.nn.init as init
 from torch import Tensor
 import base64
@@ -12,7 +19,7 @@ import io
 def pyg_to_onnx(torch_model, featurizer):
     if torch_model.training:
         torch_model.eval()
-        torch_model = torch_model.cpu()
+    torch_model = torch_model.cpu()
 
     dummy_smile = "CCC"
     dummy_input = featurizer.featurize(dummy_smile)
@@ -232,7 +239,7 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
 
 
 class GraphAttentionNetwork(BaseGraphNetwork):
-    """Graph Convolution Model"""
+    """Graph Attention Model"""
 
     def __init__(
         self,
@@ -265,6 +272,52 @@ class GraphAttentionNetwork(BaseGraphNetwork):
         for _ in range(hidden_layers):
             self.add_layer(
                 GATConv(hidden_dim * heads, hidden_dim, heads, edge_dim=edge_dim)
+            )
+
+        # Set up additional layers
+        self.dropout = nn.Dropout(dropout_proba)
+        self.norm_layer = GraphNorm(hidden_dim)
+        self.fc = nn.Linear(hidden_dim * heads, output_dim)
+        init.xavier_uniform_(self.fc.weight)
+        init.zeros_(self.fc.bias)
+
+
+class GraphTransformerNetwork(BaseGraphNetwork):
+    """Graph Transformer Model"""
+
+    def __init__(
+        self,
+        input_dim: int,
+        hidden_layers: int = 2,
+        hidden_dim: int = 16,
+        output_dim: int = 1,
+        activation: nn.Module = nn.ReLU(),
+        dropout_proba: float = 0.0,
+        graph_norm: bool = False,
+        seed=42,
+        edge_dim: Optional[int] = None,
+        heads: int = 1,
+    ):
+        super(GraphTransformerNetwork, self).__init__(
+            input_dim,
+            hidden_layers,
+            hidden_dim,
+            output_dim,
+            activation,
+            dropout_proba,
+            graph_norm,
+            seed,
+            edge_dim,
+            heads,
+        )
+
+        # Add TransformerConv layers
+        self.add_layer(TransformerConv(input_dim, hidden_dim, heads, edge_dim=edge_dim))
+        for _ in range(hidden_layers):
+            self.add_layer(
+                TransformerConv(
+                    hidden_dim * heads, hidden_dim, heads, edge_dim=edge_dim
+                )
             )
 
         # Set up additional layers
