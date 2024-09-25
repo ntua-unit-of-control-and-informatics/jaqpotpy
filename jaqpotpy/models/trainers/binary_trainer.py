@@ -333,27 +333,3 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         }
 
         return metrics_dict
-
-    def pyg_to_onnx(self, featurizer):
-        if self.model.training:
-            self.model.eval()
-            self.model = self.model.cpu()
-
-        dummy_smile = "CCC"
-        dummy_input = featurizer.featurize(dummy_smile)
-        x = dummy_input.x
-        edge_index = dummy_input.edge_index
-        batch = torch.zeros(x.shape[0], dtype=torch.int64)
-        buffer = io.BytesIO()
-        torch.onnx.export(
-            self.model,
-            args=(x, edge_index, batch),
-            f=buffer,
-            input_names=["x", "edge_index", "batch"],
-            dynamic_axes={"x": {0: "nodes"}, "edge_index": {1: "edges"}, "batch": [0]},
-        )
-        onnx_model_bytes = buffer.getvalue()
-        buffer.close()
-        model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode("utf-8")
-
-        return model_scripted_base64

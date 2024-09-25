@@ -2,11 +2,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-from jaqpotpy.descriptors.molecular import (
-    TopologicalFingerprint,
-    MordredDescriptors,
-    MACCSKeysFingerprint,
-)
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MordredDescriptors
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa.doa import Leverage
@@ -41,8 +37,7 @@ molecularModel_t1 = SklearnModel(
 molecularModel_t1.fit()
 # # # print(molecularModel_t1.transformers_y)
 # pred_path = "./jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
-pred_path = "/Users/vassilis/Desktop/test_csv.csv"
-df = pd.read_csv(pred_path)
+# df = pd.read_csv(pred_path)
 
 # # # # df = pd.DataFrame({
 # # # #     'SMILES': ['CC'],
@@ -59,26 +54,26 @@ prediction_dataset = JaqpotpyDataset(
 )
 # # # print(prediction_dataset.df)
 
-skl_predictions = molecularModel_t1.predict(prediction_dataset)
-# skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
-onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
-# onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
-print("SKLearn Predictions:", skl_predictions)
-# print('SKLearn Probabilities:', skl_probabilities)
-print("ONNX Predictions:", onnx_predictions)
-# print('ONNX Probabilities:', onnx_probs)
+# skl_predictions = molecularModel_t1.predict(prediction_dataset)
+# # skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
+# onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
+# # onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
+# print("SKLearn Predictions:", skl_predictions)
+# # print('SKLearn Probabilities:', skl_probabilities)
+# print("ONNX Predictions:", onnx_predictions)
+# # print('ONNX Probabilities:', onnx_probs)
 
 
-# Merge predictions and probabilities into a pandas DataFrame
-df_predictions = pd.DataFrame(
-    {
-        "SKLearn Predictions": skl_predictions,
-        # 'SKLearn Probabilities': skl_probabilities,
-        "ONNX Predictions": onnx_predictions,
-        # 'ONNX Probabilities': onnx_probs
-    }
-)
-print(df_predictions)
+# # Merge predictions and probabilities into a pandas DataFrame
+# df_predictions = pd.DataFrame(
+#     {
+#         "SKLearn Predictions": skl_predictions,
+#         # 'SKLearn Probabilities': skl_probabilities,
+#         "ONNX Predictions": onnx_predictions,
+#         # 'ONNX Probabilities': onnx_probs
+#     }
+# )
+# print(df_predictions)
 
 
 # # # # Upload locally
