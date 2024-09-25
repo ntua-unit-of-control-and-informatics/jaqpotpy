@@ -303,12 +303,7 @@ class SklearnModel(Model):
             ].values.reshape(-1, 1)
             for i in range(len(self.initial_types))
         }
-        onnx_prediction = sess.run(
-            # None, {"float_input": dataset.X.to_numpy().astype(np.float32)}
-            None,
-            input_data,
-            # {"float_input": dataset.X.astype(np.float32)},
-        )
+        onnx_prediction = sess.run(None, input_data)
         if len(self.y_cols) == 1:
             onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
         if self.preprocess is not None:
@@ -327,11 +322,13 @@ class SklearnModel(Model):
                 "predict_onnx_proba is available only for classification tasks"
             )
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        onnx_probs = sess.run(
-            # None, {"float_input": dataset.X.to_numpy().astype(np.float32)}
-            None,
-            {"float_input": dataset.X.astype(np.float32)},
-        )
+        input_data = {
+            sess.get_inputs()[i].name: dataset.X[
+                self.initial_types[i][0]
+            ].values.reshape(-1, 1)
+            for i in range(len(self.initial_types))
+        }
+        onnx_probs = sess.run(None, input_data)
         onnx_probs_list = [
             max(onnx_probs[1][instance].values())
             for instance in range(len(onnx_probs[1]))
