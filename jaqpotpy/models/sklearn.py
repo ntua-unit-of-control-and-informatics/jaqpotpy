@@ -77,11 +77,6 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.FLOAT
             elif feature["featureType"] in ["string, object"]:
                 feature["featureType"] = FeatureType.STRING
-    
-    def set_onnx_initial_types(self):
-        for feature in self.dataset.df.columns:
-            if feature in self.dataset.x_cols:
-                
 
     def _extract_attributes(self, trained_class, trained_class_type):
         if trained_class_type == "doa":
@@ -125,21 +120,21 @@ class SklearnModel(Model):
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
 
-    def _map_onnx_dtype(dtype):
+    def _map_onnx_dtype(self, dtype):
         if dtype == "int64":
-            return Int64TensorType(shape=1)
+            return Int64TensorType(shape=[None, 1])
         elif dtype == "int32":
-            return Int32TensorType(shape=1)
+            return Int32TensorType(shape=[None, 1])
         elif dtype == "int8":
-            return Int8TensorType(shape=1)
+            return Int8TensorType(shape=[None, 1])
         elif dtype == "uint8":
-            return UInt8TensorType(shape=1)
+            return UInt8TensorType(shape=[None, 1])
         elif dtype == "bool":
-            return BooleanTensorType(shape=1)
-        elif dtype == "float32" or dtype == "float":
-            return FloatTensorType(shape=1)
+            return BooleanTensorType(shape=[None, 1])
+        elif dtype == "float32" or dtype == "float64":
+            return FloatTensorType(shape=[None, 1])
         elif dtype in ["string", "object", "category"]:
-            return StringTensorType(shape=1)
+            return StringTensorType(shape=[None, 1])
         else:
             return None
 
@@ -249,7 +244,10 @@ class SklearnModel(Model):
         initial_types = []
         for i, feature in enumerate(self.dataset.X.columns):
             initial_types.append(
-                (self.dataset.X.columns[i], self._map_onnx_dtype(self.dataset.X[feature].dtype.name))
+                (
+                    self.dataset.X.columns[i],
+                    self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
+                )
             )
         self.onnx_model = convert_sklearn(
             self.trained_model,
