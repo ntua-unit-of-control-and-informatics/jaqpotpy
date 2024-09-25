@@ -47,21 +47,29 @@ class Jaqpot:
 
     """
 
-    def __init__(self, base_url=None, app_url=None, login_url=None, api_url=None, keycloak_realm=None, 
-                 keycloak_client_id=None, create_logs=False):
+    def __init__(
+        self,
+        base_url=None,
+        app_url=None,
+        login_url=None,
+        api_url=None,
+        keycloak_realm=None,
+        keycloak_client_id=None,
+        create_logs=False,
+    ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
         )
-        if base_url: 
+        if base_url:
             self.base_url = base_url
         else:
             self.base_url = "https://appv2.jaqpot.org/"
         self.app_url = app_url or add_subdomain(self.base_url, "app")
         self.login_url = login_url or add_subdomain(self.base_url, "login")
         self.api_url = api_url or add_subdomain(self.base_url, "api")
-        self.keycloak_realm = keycloak_realm or 'jaqpot'
-        self.keycloak_client_id= keycloak_client_id or 'jaqpot-client'
+        self.keycloak_realm = keycloak_realm or "jaqpot"
+        self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
@@ -165,8 +173,16 @@ class Jaqpot:
             # error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
 
-    def deploy_Torch_Graph_model(
-        self, onnx_model, featurizer, name, description, target_name, visibility, task
+    def deploy_torch_model(
+        self,
+        onnx_model,
+        type,
+        featurizer,
+        name,
+        description,
+        target_name,
+        visibility,
+        task,
     ):
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
@@ -190,9 +206,13 @@ class Jaqpot:
         )
         torch_config_json = {"featurizerConfig": featurizer_config.to_dict()}
         torch_config = ModelExtraConfigTorchConfig.from_dict(torch_config_json)
+        if type == "TORCHSCRIPT":
+            type = ModelType.TORCHSCRIPT
+        elif type == "TORCH_ONNX":
+            type = ModelType.TORCH_ONNX
         body_model = Model(
             name=name,
-            type=ModelType.TORCH,
+            type=type,
             jaqpotpy_version=jaqpotpy.__version__,
             libraries=get_installed_libraries(),
             dependent_features=[
@@ -207,7 +227,6 @@ class Jaqpot:
             actual_model=onnx_model,
             description=description,
         )
-
         response = create_model.sync_detailed(client=auth_client, body=body_model)
         if response.status_code < 300:
             self.log.info(
@@ -215,7 +234,5 @@ class Jaqpot:
                 + response.headers.get("Location")
             )
         else:
-            # error = response.headers.get("error")
-            # error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
-
+            self.log.error("Error message: " + response.content.decode("utf-8"))
