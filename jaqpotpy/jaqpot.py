@@ -6,6 +6,7 @@ from keycloak import KeycloakOpenID
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
+from jaqpotpy.api.openapi.jaqpot_api_client.types import UNSET
 from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
 from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
 from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
@@ -149,6 +150,9 @@ class Jaqpot:
                     key=feature_i["key"],
                     name=feature_i["name"],
                     feature_type=feature_i["featureType"],
+                    possible_values=feature_i["possible_values"]
+                    if "possible_values" in feature_i
+                    else UNSET,
                 )
                 for feature_i in model.independentFeatures
             ],

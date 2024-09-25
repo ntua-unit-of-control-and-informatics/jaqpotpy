@@ -6,6 +6,7 @@ from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.openapi.jaqpot_api_client.models import (
     FeatureType,
+    FeaturePossibleValue,
     ModelType,
     ModelExtraConfig,
     Transformer,
@@ -71,7 +72,6 @@ class SklearnModel(Model):
 
     def __dtypes_to_jaqpotypes__(self):
         for feature in self.independentFeatures + self.dependentFeatures:
-            print(feature)
             if feature["featureType"] in ["SMILES"]:
                 feature["featureType"] = FeatureType.SMILES
             elif feature["featureType"] in ["int", "int64"]:
@@ -79,7 +79,11 @@ class SklearnModel(Model):
             elif feature["featureType"] in ["float", "float64"]:
                 feature["featureType"] = FeatureType.FLOAT
             elif feature["featureType"] in ["string, object", "O"]:
-                feature["featureType"] = FeatureType.STRING
+                feature["featureType"] = FeatureType.CATEGORICAL
+                categories = self.dataset.X[feature["key"]].unique()
+                feature["possible_values"] = list(
+                    FeaturePossibleValue(category, category) for category in categories
+                )
 
     def _extract_attributes(self, trained_class, trained_class_type):
         if trained_class_type == "doa":
