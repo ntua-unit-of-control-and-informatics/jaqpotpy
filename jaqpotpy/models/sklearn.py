@@ -61,6 +61,8 @@ class SklearnModel(Model):
         self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
         self.task = self.dataset.task
+        self.initial_types = None
+        self.onnx_model = None
         self.onnx_opset = None
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
@@ -241,9 +243,9 @@ class SklearnModel(Model):
         self.__dtypes_to_jaqpotypes__()
 
         name = self.model.__class__.__name__ + "_ONNX"
-        initial_types = []
+        self.initial_types = []
         for i, feature in enumerate(self.dataset.X.columns):
-            initial_types.append(
+            self.initial_types.append(
                 (
                     self.dataset.X.columns[i],
                     self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
@@ -251,7 +253,7 @@ class SklearnModel(Model):
             )
         self.onnx_model = convert_sklearn(
             self.trained_model,
-            initial_types=initial_types,
+            initial_types=self.initial_types,
             name=name,
             options={StandardScaler: {"div": "div_cast"}},
         )
@@ -266,7 +268,7 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sklearn_prediction = self.trained_model.predict(
             # dataset.X.to_numpy().astype(np.float32)
-            dataset.X.astype(np.float32)
+            dataset.X  # .astype(np.float32)
         )
         if self.preprocess is not None:
             if self.preprocessing_y:
@@ -295,10 +297,17 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
+        input_data = {
+            sess.get_inputs()[i].name: dataset.X[
+                self.initial_types[i][0]
+            ].values.reshape(-1, 1)
+            for i in range(len(self.initial_types))
+        }
         onnx_prediction = sess.run(
             # None, {"float_input": dataset.X.to_numpy().astype(np.float32)}
             None,
-            {"float_input": dataset.X.astype(np.float32)},
+            input_data,
+            # {"float_input": dataset.X.astype(np.float32)},
         )
         if len(self.y_cols) == 1:
             onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
