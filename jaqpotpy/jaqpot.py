@@ -57,10 +57,21 @@ class Jaqpot:
         keycloak_client_id=None,
         create_logs=False,
     ):
+    def __init__(
+        self,
+        base_url=None,
+        app_url=None,
+        login_url=None,
+        api_url=None,
+        keycloak_realm=None,
+        keycloak_client_id=None,
+        create_logs=False,
+    ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
         )
+        if base_url:
         if base_url:
             self.base_url = base_url
         else:
@@ -68,6 +79,8 @@ class Jaqpot:
         self.app_url = app_url or add_subdomain(self.base_url, "app")
         self.login_url = login_url or add_subdomain(self.base_url, "login")
         self.api_url = api_url or add_subdomain(self.base_url, "api")
+        self.keycloak_realm = keycloak_realm or "jaqpot"
+        self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
         self.keycloak_realm = keycloak_realm or "jaqpot"
         self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
         self.api_key = None
@@ -130,7 +143,7 @@ class Jaqpot:
         :return:
         """
         auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
-        actual_model = model_to_b64encoding(model.copy().onnx_model.SerializeToString())
+        actual_model = model_to_b64encoding(model.onnx_model.SerializeToString())
         body_model = Model(
             name=name,
             type=model.type,
@@ -158,7 +171,6 @@ class Jaqpot:
             description=description,
             extra_config=model.extra_config,
         )
-
         response = create_model.sync_detailed(client=auth_client, body=body_model)
         if response.status_code < 300:
             model_url = response.headers.get("Location")
