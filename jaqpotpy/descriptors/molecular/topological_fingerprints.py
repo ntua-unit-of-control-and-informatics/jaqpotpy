@@ -87,7 +87,7 @@ class TopologicalFingerprint(MolecularFeaturizer):
         self.sparse = sparse
         self.smiles = smiles
 
-    def __getitem__(self):
+    def __getitem__(self, key):
         return self
 
     def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:

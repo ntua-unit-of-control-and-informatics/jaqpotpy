@@ -1,15 +1,13 @@
 import numpy as np
-
+from rdkit.Chem.rdMolDescriptors import GetMACCSKeysFingerprint
+from rdkit.DataStructs.cDataStructs import ConvertToNumpyArray
 from jaqpotpy.utils.types import RDKitMol
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from rdkit.Chem.AllChem import GetMACCSKeysFingerprint
-from rdkit.Chem import DataStructs
 
 
 class MACCSKeysFingerprint(MolecularFeaturizer):
     """MACCS Keys Fingerprint.
     The MACCS (Molecular ACCess System) keys are one of the most commonly used structural keys.
-    Please confirm the details in [1]_, [2]_.
 
     Examples:
     --------
@@ -38,11 +36,9 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
     def __name__(self):
         return "MACCSKeysFingerprint"
 
-    def __getitem__(self):
-        return self
-
     def __init__(self):
         """Initialize this featurizer."""
+        print("Hi")
         self.calculator = None
 
     def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
@@ -73,7 +69,7 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
 
         fp = self.calculator(datapoint)
         array = np.zeros((0,), dtype=np.int8)
-        DataStructs.ConvertToNumpyArray(fp, array)
+        ConvertToNumpyArray(fp, array)
         return np.asarray(array)
 
     def _get_column_names(self, **kwargs) -> list:
@@ -82,5 +78,6 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
             descriptors.append("f" + str(i))
         return descriptors
 
-    def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
-        return self._featurize(datapoint, **kwargs)
+    def _featurize_dataframe(self, datapoints, log_every_n, **kwargs) -> np.ndarray:
+        self.featurize(datapoints, **kwargs)
+        return

@@ -5,7 +5,6 @@ import numpy as np
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from rdkit.Chem import Descriptors
 import pickle
-# import dill as pickle
 
 RDKitMol = Any
 
@@ -86,7 +85,7 @@ class RDKitDescriptors(MolecularFeaturizer):
         self.descriptors = []
         self.descList = []
 
-    def __getitem__(self):
+    def __getitem__(self, key):
         return self
 
     def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
