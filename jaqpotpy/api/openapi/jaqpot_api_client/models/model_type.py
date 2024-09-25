@@ -14,7 +14,8 @@ class ModelType(str, Enum):
     R_TREE_CLASS = "R_TREE_CLASS"
     R_TREE_REGR = "R_TREE_REGR"
     SKLEARN = "SKLEARN"
-    TORCH = "TORCH"
+    TORCHSCRIPT = "TORCHSCRIPT"
+    TORCH_ONNX = "TORCH_ONNX"
 
     def __str__(self) -> str:
         return str(self.value)

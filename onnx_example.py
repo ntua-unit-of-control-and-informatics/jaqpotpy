@@ -2,11 +2,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-from jaqpotpy.descriptors.molecular import (
-    TopologicalFingerprint,
-    MordredDescriptors,
-    MACCSKeysFingerprint,
-)
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MordredDescriptors
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa.doa import Leverage
@@ -19,7 +15,7 @@ df = pd.read_csv(path).iloc[0:3, :]
 smiles_cols = ["SMILES"]
 y_cols = ["ACTIVITY"]
 x_cols = ["X1", "X2"]
-featurizer = MACCSKeysFingerprint()
+featurizer = MordredDescriptors()
 dataset = JaqpotpyDataset(
     df=df,
     y_cols=y_cols,
@@ -41,69 +37,64 @@ molecularModel_t1 = SklearnModel(
 molecularModel_t1.fit()
 # # # print(molecularModel_t1.transformers_y)
 # pred_path = "./jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
-pred_path = "/Users/vassilis/Desktop/test_csv.csv"
-df = pd.read_csv(pred_path)
+# df = pd.read_csv(pred_path)
 
-# # # # df = pd.DataFrame({
-# # # #     'SMILES': ['CC'],
-# # # #     'X1': [1],
-# # # #     'X2': [2]
-# # # })
-prediction_dataset = JaqpotpyDataset(
-    df=df,
-    y_cols=None,
-    smiles_cols=smiles_cols,
-    x_cols=x_cols,
-    task="regression",
-    featurizer=featurizer,
-)
+# # df = pd.DataFrame({
+# #     'SMILES': ['CC'],
+# #     'X1': [1],
+# #     'X2': [2]
+# # })
+# prediction_dataset = JaqpotpyDataset(
+#     df=df,
+#     y_cols=None,
+#     smiles_cols=smiles_cols,
+#     x_cols=x_cols,
+#     task="regression",
+#     featurizer=featurizer,
+# )
 # # print(prediction_dataset.df)
 
-skl_predictions = molecularModel_t1.predict(prediction_dataset)
-# skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
-onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
-# onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
-print("SKLearn Predictions:", skl_predictions)
-# print('SKLearn Probabilities:', skl_probabilities)
-print("ONNX Predictions:", onnx_predictions)
-# print('ONNX Probabilities:', onnx_probs)
+# skl_predictions = molecularModel_t1.predict(prediction_dataset)
+# # skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
+# onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
+# # onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
+# print("SKLearn Predictions:", skl_predictions)
+# # print('SKLearn Probabilities:', skl_probabilities)
+# print("ONNX Predictions:", onnx_predictions)
+# # print('ONNX Probabilities:', onnx_probs)
 
 
-# Merge predictions and probabilities into a pandas DataFrame
-df_predictions = pd.DataFrame(
-    {
-        "SKLearn Predictions": skl_predictions,
-        # 'SKLearn Probabilities': skl_probabilities,
-        "ONNX Predictions": onnx_predictions,
-        # 'ONNX Probabilities': onnx_probs
-    }
-)
-print(df_predictions)
-
-
-# # # Upload locally
-# jaqpot = Jaqpot(
-#     base_url="http://localhost.jaqpot.org",
-#     app_url="http://localhost.jaqpot.org:3000",
-#     login_url="http://localhost.jaqpot.org:8070",
-#     api_url="http://localhost.jaqpot.org:8080",
-#     keycloak_realm="jaqpot-local",
-#     keycloak_client_id="jaqpot-local-test",
+# # Merge predictions and probabilities into a pandas DataFrame
+# df_predictions = pd.DataFrame(
+#     {
+#         "SKLearn Predictions": skl_predictions,
+#         # 'SKLearn Probabilities': skl_probabilities,
+#         "ONNX Predictions": onnx_predictions,
+#         # 'ONNX Probabilities': onnx_probs
+#     }
 # )
+# print(df_predictions)
 
+
+# # Upload locally
 jaqpot = Jaqpot(
     base_url="http://localhost.jaqpot.org",
     app_url="http://localhost.jaqpot.org:3000",
     login_url="http://localhost.jaqpot.org:8070",
     api_url="http://localhost.jaqpot.org:8080",
+    keycloak_realm="jaqpot-local",
+    keycloak_client_id="jaqpot-local-test",
 )
-with open("/Users/vassilis/Desktop/api_key.txt", "r") as file:
-    api_key = file.read().strip()
-jaqpot.set_api_key(api_key)
+
+# # jaqpot = Jaqpot()
 # jaqpot.login()
+# # # # jaqpot = Jaqpot("https://api.appv2.jaqpot.org")
+
+# jaqpot=Jaqpot()
+jaqpot.login()
 molecularModel_t1.deploy_on_jaqpot(
     jaqpot=jaqpot,
-    name="Demo: Regression Maccs Keys",
+    name="Demo: Regression",
     description="Test new api files",
     visibility="PRIVATE",
 )
