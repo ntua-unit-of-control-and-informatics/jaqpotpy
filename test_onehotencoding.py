@@ -42,20 +42,37 @@ molecularModel_t1 = SklearnModel(
 )
 molecularModel_t1.fit()
 
-prediction_dataset = JaqpotpyDataset(
-    df=df.iloc[0:5, :],
-    y_cols=None,
-    smiles_cols=smiles_cols,
-    x_cols=x_cols,
-    task="regression",
-    featurizer=featurizer,
-)
+# prediction_dataset = JaqpotpyDataset(
+#     df=df.iloc[0:5, :],
+#     y_cols=None,
+#     smiles_cols=smiles_cols,
+#     x_cols=x_cols,
+#     task="regression",
+#     featurizer=featurizer,
+# )
 
-skl_predictions = molecularModel_t1.predict(prediction_dataset)
-skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
-onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
-onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
-print("SKLearn Predictions:", skl_predictions)
-print("SKLearn Probabilities:", skl_probabilities)
-print("ONNX Predictions:", onnx_predictions)
-print("ONNX Probabilities:", onnx_probs)
+# skl_predictions = molecularModel_t1.predict(prediction_dataset)
+# skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
+# onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
+# onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
+# print("SKLearn Predictions:", skl_predictions)
+# print("SKLearn Probabilities:", skl_probabilities)
+# print("ONNX Predictions:", onnx_predictions)
+# print("ONNX Probabilities:", onnx_probs)
+
+jaqpot = Jaqpot(
+    base_url="http://localhost.jaqpot.org",
+    app_url="http://localhost.jaqpot.org:3000",
+    login_url="http://localhost.jaqpot.org:8070",
+    api_url="http://localhost.jaqpot.org:8080",
+)
+with open("/Users/vassilis/Desktop/api_key.txt", "r") as file:
+    api_key = file.read().strip()
+jaqpot.set_api_key(api_key)
+# jaqpot.login()
+molecularModel_t1.deploy_on_jaqpot(
+    jaqpot=jaqpot,
+    name="Demo Classification: One Hot Encoding",
+    description="Test OHE",
+    visibility="PRIVATE",
+)
