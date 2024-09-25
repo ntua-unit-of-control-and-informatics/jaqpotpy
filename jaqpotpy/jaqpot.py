@@ -71,8 +71,6 @@ class Jaqpot:
         self.api_url = api_url or add_subdomain(self.base_url, "api")
         self.keycloak_realm = keycloak_realm or "jaqpot"
         self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
-        self.keycloak_realm = keycloak_realm or "jaqpot"
-        self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
         self.api_key = None
         self.user_id = None
         self.http_client = http_client
