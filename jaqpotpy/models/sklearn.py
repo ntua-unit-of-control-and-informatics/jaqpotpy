@@ -18,7 +18,6 @@ from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
 from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
     TransformerConfigAdditionalProperty,
 )
-from jaqpotpy.cfg import config
 import jaqpotpy
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import (
@@ -33,6 +32,7 @@ from skl2onnx.common.data_types import (
 from onnxruntime import InferenceSession
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 
@@ -127,23 +127,52 @@ class SklearnModel(Model):
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
 
-    def _map_onnx_dtype(self, dtype):
+    def _map_onnx_dtype(self, dtype, shape=1):
         if dtype == "int64":
-            return Int64TensorType(shape=[None, 1])
+            return Int64TensorType(shape=[None, shape])
         elif dtype == "int32":
-            return Int32TensorType(shape=[None, 1])
+            return Int32TensorType(shape=[None, shape])
         elif dtype == "int8":
-            return Int8TensorType(shape=[None, 1])
+            return Int8TensorType(shape=[None, shape])
         elif dtype == "uint8":
-            return UInt8TensorType(shape=[None, 1])
+            return UInt8TensorType(shape=[None, shape])
         elif dtype == "bool":
-            return BooleanTensorType(shape=[None, 1])
+            return BooleanTensorType(shape=[None, shape])
         elif dtype == "float32" or dtype == "float64":
-            return FloatTensorType(shape=[None, 1])
+            return FloatTensorType(shape=[None, shape])
         elif dtype in ["string", "object", "category"]:
-            return StringTensorType(shape=[None, 1])
+            return StringTensorType(shape=[None, shape])
         else:
             return None
+
+    def _create_onnx(self):
+        name = self.model.__class__.__name__ + "_ONNX"
+        self.initial_types = []
+        dtype_array = self.dataset.X.dtypes.values
+        dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
+        all_same_numerical = all(
+            dtype in ["float32", "float64", "int32", "int64", "bool"]
+            for dtype in dtype_str_array
+        )
+        if all_same_numerical:
+            self.initial_types = [
+                ("input", self._map_onnx_dtype("float32", len(self.dataset.X.columns)))
+            ]
+        else:
+            for i, feature in enumerate(self.dataset.X.columns):
+                self.initial_types.append(
+                    (
+                        self.dataset.X.columns[i],
+                        self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
+                    )
+                )
+        self.onnx_model = convert_sklearn(
+            self.trained_model,
+            initial_types=self.initial_types,
+            name=name,
+            options={StandardScaler: {"div": "div_cast"}},
+        )
+        self.onnx_opset = self.onnx_model.opset_import[0].version
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
@@ -244,22 +273,7 @@ class SklearnModel(Model):
         )
         self.__dtypes_to_jaqpotypes__()
 
-        name = self.model.__class__.__name__ + "_ONNX"
-        self.initial_types = []
-        for i, feature in enumerate(self.dataset.X.columns):
-            self.initial_types.append(
-                (
-                    self.dataset.X.columns[i],
-                    self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
-                )
-            )
-        self.onnx_model = convert_sklearn(
-            self.trained_model,
-            initial_types=self.initial_types,
-            name=name,
-            options={StandardScaler: {"div": "div_cast"}},
-        )
-        self.onnx_opset = self.onnx_model.opset_import[0].version
+        self._create_onnx()
 
         if self.evaluator:
             self.__eval__()
@@ -295,12 +309,22 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        input_data = {
-            sess.get_inputs()[i].name: dataset.X[
-                self.initial_types[i][0]
-            ].values.reshape(-1, 1)
-            for i in range(len(self.initial_types))
-        }
+        if len(self.initial_types) == 1:
+            input_dtype = (
+                "float32"
+                if isinstance(self.initial_types[0][1], FloatTensorType)
+                else "string"
+            )
+            input_data = {
+                sess.get_inputs()[0].name: dataset.X.values.astype(input_dtype)
+            }
+        else:
+            input_data = {
+                sess.get_inputs()[i].name: dataset.X[
+                    self.initial_types[i][0]
+                ].values.reshape(-1, 1)
+                for i in range(len(self.initial_types))
+            }
         onnx_prediction = sess.run(None, input_data)
         if len(self.y_cols) == 1:
             onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
@@ -320,12 +344,22 @@ class SklearnModel(Model):
                 "predict_onnx_proba is available only for classification tasks"
             )
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        input_data = {
-            sess.get_inputs()[i].name: dataset.X[
-                self.initial_types[i][0]
-            ].values.reshape(-1, 1)
-            for i in range(len(self.initial_types))
-        }
+        if len(self.initial_types) == 1:
+            input_dtype = (
+                "float32"
+                if isinstance(self.initial_types[0][1], FloatTensorType)
+                else "string"
+            )
+            input_data = {
+                sess.get_inputs()[0].name: dataset.X.values.astype(input_dtype)
+            }
+        else:
+            input_data = {
+                sess.get_inputs()[i].name: dataset.X[
+                    self.initial_types[i][0]
+                ].values.reshape(-1, 1)
+                for i in range(len(self.initial_types))
+            }
         onnx_probs = sess.run(None, input_data)
         onnx_probs_list = [
             max(onnx_probs[1][instance].values())
