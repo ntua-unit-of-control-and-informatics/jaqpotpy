@@ -74,7 +74,9 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
     def featurize_dataframe(
         self, datapoints, convert_nan=False, log_every_n=1000, **kwargs
     ) -> pd.DataFrame:
-        features = self.featurize(datapoints, log_every_n, **kwargs)
+        features = self.featurize(
+            datapoints, convert_nan=True, log_every_n=1000, **kwargs
+        )
         self.col_names = [f"f{i}" for i in range(167)]
         df = pd.DataFrame(features, columns=self.col_names)
         return df
