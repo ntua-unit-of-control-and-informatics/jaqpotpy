@@ -129,15 +129,6 @@ class AbstractFeaturizer(object):
         -------
         str
           The string represents the class.
-
-        Examples
-        --------
-        >>> import jaqpotpy as jt
-        >>> jt.descriptors.CircularFingerprint(size=1024, radius=4)
-        CircularFingerprint[radius=4, size=1024, chiral=False, bonds=True, features=False, sparse=False, smiles=False]
-        >>> jt.descriptors.CGCNNFeaturizer()
-        CGCNNFeaturizer[radius=8.0, max_neighbors=12, step=0.2]
-
         """
         args_spec = inspect.getfullargspec(self.__init__)  # type: ignore
         args_names = [arg for arg in args_spec.args if arg != "self"]
@@ -183,20 +174,12 @@ class MolecularFeaturizer(AbstractFeaturizer):
 
     """
 
-    def featurize(self, datapoints, log_every_n=1000, **kwargs) -> np.ndarray:
+    def featurize(
+        self, datapoints, convert_nan: bool = True, log_every_n=1000, **kwargs
+    ) -> np.ndarray:
         """Calculate features for molecules.
-
-        Parameters
-        ----------
-        datapoints: SMILES string
-        log_every_n: int, default 1000
-          Logging messages reported every `log_every_n` samples.
-
-        Returns
-        -------
-        features: np.ndarray
-          A numpy array containing a featurized representation of `datapoints`.
-
+        Parameters: datapoints--> SMILES string
+        Returns:features--> np.ndarray
         """
         try:
             from rdkit import Chem
@@ -247,7 +230,9 @@ class MolecularFeaturizer(AbstractFeaturizer):
 
         return np.asarray(features)
 
-    def featurize_dataframe(self, datapoints, log_every_n=1000, **kwargs) -> Any:
+    def featurize_dataframe(
+        self, datapoints, convert_nan: bool = True, log_every_n=1000, **kwargs
+    ) -> Any:
         """Calculate features for molecules.
 
         Parameters

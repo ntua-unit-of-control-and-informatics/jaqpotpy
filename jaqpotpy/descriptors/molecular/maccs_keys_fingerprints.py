@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from rdkit.Chem.rdMolDescriptors import GetMACCSKeysFingerprint
 from rdkit.DataStructs.cDataStructs import ConvertToNumpyArray
-from jaqpotpy.utils.types import RDKitMol
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 
 
@@ -40,8 +39,9 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
     def __init__(self):
         """Initialize this featurizer."""
         self.calculator = None
+        self.col_names = None
 
-    def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
+    def _featurize(self, datapoint, **kwargs) -> np.ndarray:
         """Calculate MACCS keys fingerprint.
 
         Parameters
@@ -72,9 +72,9 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
         return np.asarray(array)
 
     def featurize_dataframe(
-        self, datapoints, log_every_n=1000, **kwargs
+        self, datapoints, convert_nan=False, log_every_n=1000, **kwargs
     ) -> pd.DataFrame:
         features = self.featurize(datapoints, log_every_n, **kwargs)
-        col_names = [f"f{i}" for i in range(167)]
-        df = pd.DataFrame(features, columns=col_names)
+        self.col_names = [f"f{i}" for i in range(167)]
+        df = pd.DataFrame(features, columns=self.col_names)
         return df
