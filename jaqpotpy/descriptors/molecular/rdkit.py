@@ -1,12 +1,10 @@
 """Basic molecular features."""
 
 from typing import Any
+import pandas as pd
 import numpy as np
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from rdkit.Chem import Descriptors
-import pickle
-
-RDKitMol = Any
 
 
 class Wrapper(object):
@@ -28,41 +26,13 @@ class Wrapper(object):
 
 class RDKitDescriptors(MolecularFeaturizer):
     """RDKit descriptors.
-    This class computes a list of chemical descriptors like
-    molecular weight, number of valence electrons, maximum and
-    minimum partial charge, etc using RDKit.
-
-    Attributes:
-    ----------
-    descriptors: List[str]
-      List of RDKit descriptor names used in this class.
-
-    Note:
-    ----
-    This class requires RDKit to be installed.
-
     Examples:
     --------
     >>> import jaqpotpy as jt
     >>> smiles = ['CC(=O)OC1=CC=CC=C1C(=O)O']
     >>> featurizer = dc.feat.RDKitDescriptors()
     >>> features = featurizer.featurize(smiles)
-    >>> type(features[0])
-    <class 'numpy.ndarray'>
-    >>> features[0].shape
-    (208,)
-
     """
-
-    def pick(self):
-        with open("test.picl", "wb") as p:
-            pickle.dump(self, p)
-            # pickle.dump(self, p)
-
-    @classmethod
-    def unpick(cls, obj):
-        with open(obj, "rb") as p:
-            return pickle.load(p)
 
     @property
     def __name__(self):
@@ -84,30 +54,16 @@ class RDKitDescriptors(MolecularFeaturizer):
         self.ipc_avg = ipc_avg
         self.descriptors = []
         self.descList = []
+        self.col_names = []
+        self.counter = 0
 
-    def __getitem__(self, key):
-        return self
-
-    def _featurize(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
+    def _featurize(self, datapoint, **kwargs) -> np.ndarray:
         """Calculate RDKit descriptors.
 
-        Parameters
-        ----------
-        datapoint: rdkit.Chem.rdchem.Mol
-          RDKit Mol object
-
-        Returns
+        Parameters:datapoint --> rdkit.Chem.rdchem.Mol
+        Returns: features --> np.ndarray
         -------
-        np.ndarray
-          1D array of RDKit descriptors for `mol`.
-          The length is `len(self.descriptors)`.
-
         """
-        if "mol" in kwargs:
-            datapoint = kwargs.get("mol")
-            raise DeprecationWarning(
-                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
-            )
         # initialize
         if len(self.descList) == 0:
             try:
@@ -129,58 +85,20 @@ class RDKitDescriptors(MolecularFeaturizer):
             else:
                 feature = function(datapoint)
             features.append(feature)
+            if self.counter == 0:
+                self.col_names.append(desc_name)
+        self.counter += 1
         return np.asarray(features)
 
-    def _get_column_names(self, **kwargs) -> list:
-        descriptors = []
-        try:
-            for descriptor, function in Descriptors.descList:
-                if self.use_fragment is False and descriptor.startswith("fr_"):
-                    continue
-                descriptors.append(descriptor)
-        except ModuleNotFoundError:
-            raise ImportError("This class requires RDKit to be installed.")
-        return descriptors
-
-    def _featurize_dataframe(self, datapoint: RDKitMol, **kwargs) -> np.ndarray:
-        """Calculate RDKit descriptors.
-
-        Parameters
-        ----------
-        datapoint: rdkit.Chem.rdchem.Mol
-          RDKit Mol object
-
-        Returns
-        -------
-        np.ndarray
-          1D array of RDKit descriptors for `mol`.
-          The length is `len(self.descriptors)`.
-
+    def featurize_dataframe(
+        self, datapoints, convert_nan: bool = False, log_every_n=1000, **kwargs
+    ) -> pd.DataFrame:
+        """Calculate Mordred descriptors.
+        Parameters: datapoints --> list of SMILES
+        Returns: df --> pd.DataFrame
+            - If ignore_3D is True, the length is 1613.
+            - If ignore_3D is False, the length is 1826.
         """
-        if "mol" in kwargs:
-            datapoint = kwargs.get("mol")
-            raise DeprecationWarning(
-                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
-            )
-        # initialize
-        if len(self.descList) == 0:
-            try:
-                for descriptor, function in Descriptors.descList:
-                    if self.use_fragment is False and descriptor.startswith("fr_"):
-                        continue
-                    self.descriptors.append(descriptor)
-                    self.descList.append((descriptor, function))
-            except ModuleNotFoundError:
-                raise ImportError("This class requires RDKit to be installed.")
-
-        # check initialization
-        assert len(self.descriptors) == len(self.descList)
-
-        features = []
-        for desc_name, function in self.descList:
-            if desc_name == "Ipc" and self.ipc_avg:
-                feature = function(datapoint, avg=True)
-            else:
-                feature = function(datapoint)
-            features.append(feature)
-        return np.asarray(features)
+        features = self.featurize(datapoints, convert_nan, log_every_n, **kwargs)
+        df = pd.DataFrame(features, columns=self.col_names)
+        return df
