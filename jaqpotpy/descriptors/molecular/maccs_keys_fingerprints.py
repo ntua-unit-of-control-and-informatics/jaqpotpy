@@ -38,7 +38,6 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
 
     def __init__(self):
         """Initialize this featurizer."""
-        self.calculator = None
         self.col_names = None
 
     def _featurize(self, datapoint, **kwargs) -> np.ndarray:
@@ -54,19 +53,13 @@ class MACCSKeysFingerprint(MolecularFeaturizer):
           1D array of RDKit descriptors for `mol`. The length is 167.
 
         """
-        if "mol" in kwargs:
-            datapoint = kwargs.get("mol")
-            raise DeprecationWarning(
-                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
-            )
 
-        if self.calculator is None:
-            try:
-                self.calculator = GetMACCSKeysFingerprint
-            except ModuleNotFoundError:
-                raise ImportError("This class requires RDKit to be installed.")
+        try:
+            calculator = GetMACCSKeysFingerprint
+        except ModuleNotFoundError:
+            raise ImportError("This class requires RDKit to be installed.")
 
-        fp = self.calculator(datapoint)
+        fp = calculator(datapoint)
         array = np.zeros((0,), dtype=np.int8)
         ConvertToNumpyArray(fp, array)
         return np.asarray(array)
