@@ -1,6 +1,6 @@
 """Dataset classes for molecular modelling"""
 
-from typing import Iterable, Any, Optional
+from typing import Iterable, Optional, Any, List
 import copy
 import pandas as pd
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
@@ -31,7 +31,7 @@ class JaqpotpyDataset(BaseDataset):
         y_cols: Iterable[str] = None,
         x_cols: Optional[Iterable[str]] = None,
         smiles_cols: Optional[Iterable[str]] = None,
-        featurizer: Optional[MolecularFeaturizer] = None,
+        featurizer: Optional[List[MolecularFeaturizer]] = None,
         task: str = None,
     ) -> None:
         if not (
@@ -65,10 +65,19 @@ class JaqpotpyDataset(BaseDataset):
             self.smiles_cols = []
             self.smiles_cols_len = 0
 
-        if (featurizer is not None) and not (
-            isinstance(featurizer, MolecularFeaturizer)
-        ):
-            raise TypeError("featurizer should be a MolecularFeaturizer instance ")
+        if featurizer is not None:
+            if isinstance(featurizer, list):
+                for individual_featurizer in featurizer:
+                    if not isinstance(individual_featurizer, MolecularFeaturizer):
+                        raise TypeError(
+                            "Each featurizer in the featurizer list should be a MolecularFeaturizer instance."
+                        )
+            elif isinstance(featurizer, MolecularFeaturizer):
+                featurizer = [featurizer]
+            else:
+                raise TypeError(
+                    "featurizer should be a list containing MolecularFeaturizer instances."
+                )
 
         super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task=task)
 
@@ -81,16 +90,18 @@ class JaqpotpyDataset(BaseDataset):
         self.init_df = self._df
         self.featurizer = featurizer
         # If featurizer is provided and it's for training, we need to copy the attributes
-        if self.featurizer and self.y_cols:
-            self.featurizers_attributes = copy.deepcopy(featurizer.__dict__)
-        self._featurizer_name = None
+        if self.featurizer:
+            self.featurizers_attributes = [
+                copy.deepcopy(featurizer.__dict__) for featurizer in self.featurizer
+            ]
+        self._featurizer_name = []
         self.smiles = None
         self._x_cols_all = None
         self.create()
 
     @property
     def featurizer_name(self) -> Iterable[Any]:
-        return self.featurizer.__name__
+        return [featurizer.__name__ for featurizer in self.featurizer]
 
     @featurizer_name.setter
     def featurizer_name(self, value):
@@ -150,12 +161,31 @@ class JaqpotpyDataset(BaseDataset):
         if len(self.smiles_cols) == 1:
             # The method featurize_dataframe needs self.smiles to be pd.Series
             self.smiles = self._df[self.smiles_cols[0]]
-            descriptors = self.featurizer.featurize_dataframe(self.smiles)
-        elif len(self.smiles_cols) > 1:
-            featurized_dfs = [
-                self.featurizer.featurize_dataframe(self._df[[col]])
-                for col in self.smiles_cols
+
+            # Apply each featurizer to the data
+            descriptors_list = [
+                featurizer.featurize_dataframe(self.smiles)
+                for featurizer in self.featurizer
             ]
+
+            # Concatenate the results from all featurizers
+            descriptors = pd.concat(descriptors_list, axis=1)
+
+        elif len(self.smiles_cols) > 1:
+            featurized_dfs = []
+            for col in self.smiles_cols:
+                # Apply each featurizer to the column
+                featurized_dfs.append(
+                    pd.concat(
+                        [
+                            featurizer.featurize_dataframe(self._df[[col]])
+                            for featurizer in self.featurizer
+                        ],
+                        axis=1,
+                    )
+                )
+
+            # Concatenate the results from all SMILES columns and featurizers
             descriptors = pd.concat(featurized_dfs, axis=1)
         else:
             # Case where no smiles were provided
