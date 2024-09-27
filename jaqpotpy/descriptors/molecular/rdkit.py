@@ -7,23 +7,6 @@ from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from rdkit.Chem import Descriptors
 
 
-class Wrapper(object):
-    def __init__(self, method_name, module_name):
-        self.method_name = method_name
-        self.module_name = module_name
-
-    def __call__(self, *args, **kwargs):
-        method = __import__(
-            self.module_name,
-            globals(),
-            locals(),
-            [
-                self.method_name,
-            ],
-        )
-        return method(*args, **kwargs)
-
-
 class RDKitDescriptors(MolecularFeaturizer):
     """RDKit descriptors.
     Examples:

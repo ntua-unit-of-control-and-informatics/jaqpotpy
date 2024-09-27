@@ -227,7 +227,7 @@ class MolecularFeaturizer(AbstractFeaturizer):
                     )
                     logger.warning("Exception message: {}".format(e))
                 features.append(np.array([]))
-
+        print(features)
         return np.asarray(features)
 
     def featurize_dataframe(
