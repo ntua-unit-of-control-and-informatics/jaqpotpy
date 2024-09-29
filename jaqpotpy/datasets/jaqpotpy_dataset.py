@@ -81,7 +81,7 @@ class JaqpotpyDataset(BaseDataset):
         self.init_df = self._df
         self.featurizer = featurizer
         # If featurizer is provided and it's for training, we need to copy the attributes
-        if self.featurizer and self.y_cols:
+        if self.featurizer:  # and self.y_cols:
             self.featurizers_attributes = copy.deepcopy(featurizer.__dict__)
         self._featurizer_name = None
         self.smiles = None

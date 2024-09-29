@@ -28,6 +28,10 @@ dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
+# print(featurizer.__dict__)
+
+# attributes = copy.deepcopy(featurizer.__dict__)
+# print(attributes)
 pre = Preprocess()
 # pre.register_preprocess_class("Standard Scaler", StandardScaler())
 # pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
