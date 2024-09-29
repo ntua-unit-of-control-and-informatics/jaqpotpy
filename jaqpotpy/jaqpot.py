@@ -58,7 +58,6 @@ class Jaqpot:
         keycloak_client_id=None,
         create_logs=False,
     ):
-
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
@@ -66,7 +65,7 @@ class Jaqpot:
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = "https://appv2.jaqpot.org/"
+            self.base_url = "https://app.jaqpot.org/"
         self.app_url = app_url or add_subdomain(self.base_url, "app")
         self.login_url = login_url or add_subdomain(self.base_url, "login")
         self.api_url = api_url or add_subdomain(self.base_url, "api")
