@@ -7,7 +7,10 @@ import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.api.openapi.jaqpot_api_client.types import UNSET
-from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
+from jaqpotpy.api.openapi.jaqpot_api_client.api.model import (
+    create_model,
+    get_model_by_id,
+)
 from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
 from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
 from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
@@ -65,7 +68,7 @@ class Jaqpot:
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = "https://app.jaqpot.org/"
+            self.base_url = "https://jaqpot.org/"
         self.app_url = app_url or add_subdomain(self.base_url, "app")
         self.login_url = login_url or add_subdomain(self.base_url, "login")
         self.api_url = api_url or add_subdomain(self.base_url, "api")
@@ -120,6 +123,23 @@ class Jaqpot:
         """
         self.api_key = api_key
         self.log.info("api key is set")
+
+    def get_model_by_id(self, model_id):
+        """Get model by id.
+
+        Parameters
+        ----------
+        model_id : id of the model
+
+        """
+        auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
+        response = get_model_by_id.sync_detailed(client=auth_client, id=model_id)
+        if response.status_code < 300:
+            model = response.parsed
+            self.log.info("Model has been successfully retrieved")
+            return model
+        else:
+            self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_sklearn_model(self, model, name, description, visibility):
         """ "
