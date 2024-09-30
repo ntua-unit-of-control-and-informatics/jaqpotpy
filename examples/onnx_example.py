@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.feature_selection import VarianceThreshold
 
 from jaqpotpy.descriptors.molecular import (
     TopologicalFingerprint,
@@ -12,7 +13,6 @@ from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models.preprocessing import Preprocess
 from jaqpotpy import Jaqpot
-from sklearn.feature_selection import VarianceThreshold
 
 path = "./jaqpotpy/test_data/test_data_smiles_classification.csv"
 
