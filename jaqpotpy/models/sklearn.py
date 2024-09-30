@@ -70,7 +70,7 @@ class SklearnModel(Model):
         self.dependentFeatures = None
         self.extra_config = ModelExtraConfig()
 
-    def __dtypes_to_jaqpotypes__(self):
+    def _dtypes_to_jaqpotypes(self):
         for feature in self.independentFeatures + self.dependentFeatures:
             if feature["featureType"] in ["SMILES"]:
                 feature["featureType"] = FeatureType.SMILES
@@ -89,7 +89,9 @@ class SklearnModel(Model):
         if trained_class_type == "doa":
             attributes = trained_class._doa_attributes
         elif trained_class_type == "featurizer":
-            attributes = self.dataset.featurizers_attributes
+            attributes = self.dataset.featurizers_attributes.get(
+                trained_class.__class__.__name__
+            )
         else:
             attributes = trained_class.__dict__
         return {
@@ -176,9 +178,12 @@ class SklearnModel(Model):
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
-        if isinstance(self.featurizer, MolecularFeaturizer):
+        if isinstance(self.featurizer, (MolecularFeaturizer, list)):
+            if not isinstance(self.featurizer, list):
+                self.featurizer = [self.featurizer]
             self.extra_config.featurizers = []
-            self._add_class_to_extraconfig(self.featurizer, "featurizer")
+            for featurizer_i in self.featurizer:
+                self._add_class_to_extraconfig(featurizer_i, "featurizer")
 
         if self.dataset.y is None:
             raise TypeError(
@@ -271,7 +276,7 @@ class SklearnModel(Model):
             }
             for feature in self.dataset.y_cols
         )
-        self.__dtypes_to_jaqpotypes__()
+        self._dtypes_to_jaqpotypes()
 
         self._create_onnx()
 
