@@ -2,11 +2,11 @@ from jaqpotpy.api.openapi import Configuration, ApiClient
 
 
 class JaqpotApiClient(ApiClient):
-    def __init__(self, host=None, api_key=None):
+    def __init__(self, host=None, access_token=None):
         self.host = host or 'https://api.jaqpot.com'
         configuration = Configuration(
             host=self.host,
-            api_key={'Bearer': api_key} if api_key else None
+            access_token=access_token if access_token else None
         )
         super().__init__(configuration=configuration)
 

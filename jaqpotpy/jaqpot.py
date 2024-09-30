@@ -120,7 +120,7 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        jaqpot_api_client = JaqpotApiClient(host=self.api_url, api_key=self.api_key)
+        jaqpot_api_client = JaqpotApiClient(host=self.api_url, access_token=self.api_key)
         model_api = ModelApi(jaqpot_api_client)
         actual_model = model_to_b64encoding(model.onnx_model.SerializeToString())
         body_model = Model(
@@ -190,7 +190,7 @@ class Jaqpot:
         else:
             raise ValueError("Task should be either classification or regression")
         model_api = ModelApi(
-            JaqpotApiClient(host=self.api_url, api_key=self.api_key)
+            JaqpotApiClient(host=self.api_url, access_token=self.api_key)
         )
         # Change Base URL when not in local testing
         # baseurl: "http://localhost.jaqpot.org:8080/"
