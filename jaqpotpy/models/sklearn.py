@@ -46,8 +46,6 @@ class SklearnModel(Model):
         preprocessor: Preprocess = None,
         evaluator: Evaluator = None,
     ):
-        self.x_cols = dataset.x_cols
-        self.y_cols = dataset.y_cols
         self.dataset = dataset
         self.featurizer = dataset.featurizer
         self.model = model
