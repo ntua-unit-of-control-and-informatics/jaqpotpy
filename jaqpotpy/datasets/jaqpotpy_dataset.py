@@ -36,7 +36,7 @@ class JaqpotpyDataset(BaseDataset):
         y_cols: Iterable[str] = None,
         x_cols: Optional[Iterable[str]] = None,
         smiles_cols: Optional[Iterable[str]] = None,
-        featurizer: Optional[List[MolecularFeaturizer]] = None,
+        featurizer: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
         task: str = None,
     ) -> None:
         if not (
@@ -55,7 +55,7 @@ class JaqpotpyDataset(BaseDataset):
 
         if (smiles_cols is not None) and (featurizer is None):
             raise TypeError(
-                "Cannot estimate SMILES descriptors without a featurizer"
+                "Cannot estimate SMILES descriptors without a featurizer."
                 "Please provide a featurizer"
             )
 
@@ -96,10 +96,13 @@ class JaqpotpyDataset(BaseDataset):
         self.featurizer = featurizer
         # If featurizer is provided and it's for training, we need to copy the attributes
         if self.featurizer:
-            self.featurizers_attributes = [
-                copy.deepcopy(featurizer.__dict__) for featurizer in self.featurizer
-            ]
-        self.y_colnames = y_cols
+            self.featurizers_attributes = {}
+            for featurizer_i in self.featurizer:
+                self.featurizers_attributes[str(featurizer_i.__class__.__name__)] = (
+                    copy.deepcopy(featurizer_i.__dict__)
+                )
+        else:
+            self.featurizers_attributes = None
         self._featurizer_name = []
         self.smiles = None
         self.x_colnames = None

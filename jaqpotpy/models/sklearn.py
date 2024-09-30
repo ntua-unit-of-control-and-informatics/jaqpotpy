@@ -4,19 +4,13 @@ from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.jaqpot_api_client.models import (
+from jaqpotpy.api.openapi.models import (
     FeatureType,
     FeaturePossibleValue,
     ModelType,
     ModelExtraConfig,
     Transformer,
     ModelTask,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
-    TransformerConfig,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
-    TransformerConfigAdditionalProperty,
 )
 import jaqpotpy
 from skl2onnx import convert_sklearn
@@ -39,12 +33,12 @@ from jaqpotpy.doa.doa import DOA
 
 class SklearnModel(Model):
     def __init__(
-        self,
-        dataset: JaqpotpyDataset,
-        model: Any,
-        doa: Optional[DOA or list] = None,
-        preprocessor: Preprocess = None,
-        evaluator: Evaluator = None,
+            self,
+            dataset: JaqpotpyDataset,
+            model: Any,
+            doa: Optional[DOA or list] = None,
+            preprocessor: Preprocess = None,
+            evaluator: Evaluator = None,
     ):
         self.dataset = dataset
         self.featurizer = dataset.featurizer
@@ -68,7 +62,7 @@ class SklearnModel(Model):
         self.dependentFeatures = None
         self.extra_config = ModelExtraConfig()
 
-    def __dtypes_to_jaqpotypes__(self):
+    def _dtypes_to_jaqpotypes(self):
         for feature in self.independentFeatures + self.dependentFeatures:
             if feature["featureType"] in ["SMILES"]:
                 feature["featureType"] = FeatureType.SMILES
@@ -87,7 +81,9 @@ class SklearnModel(Model):
         if trained_class_type == "doa":
             attributes = trained_class._doa_attributes
         elif trained_class_type == "featurizer":
-            attributes = self.dataset.featurizers_attributes
+            attributes = self.dataset.featurizers_attributes.get(
+                trained_class.__class__.__name__
+            )
         else:
             attributes = trained_class.__dict__
         return {
@@ -102,15 +98,12 @@ class SklearnModel(Model):
         }
 
     def _add_class_to_extraconfig(self, added_class, added_class_type):
-        configurations = TransformerConfig()
-        additional_property_type = TransformerConfigAdditionalProperty()
+        configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
-            added_class, added_class_type
+                added_class, added_class_type
         ).items():
-            additional_property = type(additional_property_type)()
-            additional_property.additional_properties["value"] = attr_value
-            configurations.additional_properties[attr_name] = additional_property
+            configurations[attr_name] = attr_value
 
         if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
@@ -174,9 +167,12 @@ class SklearnModel(Model):
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
-        if isinstance(self.featurizer, MolecularFeaturizer):
+        if isinstance(self.featurizer, (MolecularFeaturizer, list)):
+            if not isinstance(self.featurizer, list):
+                self.featurizer = [self.featurizer]
             self.extra_config.featurizers = []
-            self._add_class_to_extraconfig(self.featurizer, "featurizer")
+            for featurizer_i in self.featurizer:
+                self._add_class_to_extraconfig(featurizer_i, "featurizer")
 
         if self.dataset.y is None:
             raise TypeError(
@@ -214,8 +210,8 @@ class SklearnModel(Model):
 
             if len(pre_y_keys) > 0:
                 if (
-                    self.task == "BINARY_CLASSIFICATION"
-                    or self.task == "MULTICLASS_CLASSIFICATION"
+                        self.task == "BINARY_CLASSIFICATION"
+                        or self.task == "MULTICLASS_CLASSIFICATION"
                 ):
                     raise ValueError(
                         "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
@@ -269,7 +265,7 @@ class SklearnModel(Model):
             }
             for feature in self.dataset.y_cols
         )
-        self.__dtypes_to_jaqpotypes__()
+        self._dtypes_to_jaqpotypes()
 
         self._create_onnx()
 
