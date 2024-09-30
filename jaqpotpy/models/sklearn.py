@@ -70,7 +70,7 @@ class SklearnModel(Model):
         self.dependentFeatures = None
         self.extra_config = ModelExtraConfig()
 
-    def __dtypes_to_jaqpotypes__(self):
+    def _dtypes_to_jaqpotypes(self):
         for feature in self.independentFeatures + self.dependentFeatures:
             if feature["featureType"] in ["SMILES"]:
                 feature["featureType"] = FeatureType.SMILES
@@ -276,7 +276,7 @@ class SklearnModel(Model):
             }
             for feature in self.dataset.y_cols
         )
-        self.__dtypes_to_jaqpotypes__()
+        self._dtypes_to_jaqpotypes()
 
         self._create_onnx()
 
