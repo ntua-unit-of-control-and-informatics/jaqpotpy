@@ -1,5 +1,5 @@
-from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
-from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
+from jaqpotpy.api.openapi.models.feature import Feature
+from jaqpotpy.api.openapi.models.feature_type import FeatureType
 from tqdm import tqdm
 import torch
 import io
@@ -27,16 +27,16 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         return cls.MODEL_TYPE
 
     def __init__(
-        self,
-        model,
-        n_epochs,
-        optimizer,
-        loss_fn,
-        scheduler=None,
-        device="cpu",
-        use_tqdm=True,
-        log_enabled=True,
-        log_filepath=None,
+            self,
+            model,
+            n_epochs,
+            optimizer,
+            loss_fn,
+            scheduler=None,
+            device="cpu",
+            use_tqdm=True,
+            log_enabled=True,
+            log_filepath=None,
     ):
         """
         The BinaryGraphModelTrainer constructor.

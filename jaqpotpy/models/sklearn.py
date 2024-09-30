@@ -4,19 +4,13 @@ from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.models import Evaluator, Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.jaqpot_api_client.models import (
+from jaqpotpy.api.openapi.models import (
     FeatureType,
     FeaturePossibleValue,
     ModelType,
     ModelExtraConfig,
     Transformer,
     ModelTask,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config import (
-    TransformerConfig,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.transformer_config_additional_property import (
-    TransformerConfigAdditionalProperty,
 )
 import jaqpotpy
 from skl2onnx import convert_sklearn
@@ -39,12 +33,12 @@ from jaqpotpy.doa.doa import DOA
 
 class SklearnModel(Model):
     def __init__(
-        self,
-        dataset: JaqpotpyDataset,
-        model: Any,
-        doa: Optional[DOA or list] = None,
-        preprocessor: Preprocess = None,
-        evaluator: Evaluator = None,
+            self,
+            dataset: JaqpotpyDataset,
+            model: Any,
+            doa: Optional[DOA or list] = None,
+            preprocessor: Preprocess = None,
+            evaluator: Evaluator = None,
     ):
         self.x_cols = dataset.x_cols
         self.y_cols = dataset.y_cols
@@ -104,15 +98,12 @@ class SklearnModel(Model):
         }
 
     def _add_class_to_extraconfig(self, added_class, added_class_type):
-        configurations = TransformerConfig()
-        additional_property_type = TransformerConfigAdditionalProperty()
+        configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
-            added_class, added_class_type
+                added_class, added_class_type
         ).items():
-            additional_property = type(additional_property_type)()
-            additional_property.additional_properties["value"] = attr_value
-            configurations.additional_properties[attr_name] = additional_property
+            configurations[attr_name] = attr_value
 
         if added_class_type == "preprocessor":
             self.extra_config.preprocessors.append(
@@ -216,8 +207,8 @@ class SklearnModel(Model):
 
             if len(pre_y_keys) > 0:
                 if (
-                    self.task == "BINARY_CLASSIFICATION"
-                    or self.task == "MULTICLASS_CLASSIFICATION"
+                        self.task == "BINARY_CLASSIFICATION"
+                        or self.task == "MULTICLASS_CLASSIFICATION"
                 ):
                     raise ValueError(
                         "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."

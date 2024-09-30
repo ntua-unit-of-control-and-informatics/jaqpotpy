@@ -17,9 +17,6 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictInt, StrictStr
-from typing import List, Optional
-from typing_extensions import Annotated
 from jaqpotpy.api.openapi.models.dataset import Dataset
 from jaqpotpy.api.openapi.models.dataset_csv import DatasetCSV
 from jaqpotpy.api.openapi.models.get_models200_response import GetModels200Response
@@ -38,28 +35,27 @@ class ModelApi:
     Do not edit the class manually.
     """
 
-    def __init__(self, api_client=None) -> None:
+    def __init__(self, api_client: object = None) -> None:
         if api_client is None:
             api_client = ApiClient.get_default()
         self.api_client = api_client
 
-
     @validate_call
     def create_model(
-        self,
-        model: Model,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model: Model,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> None:
         """Create a new model
 
@@ -86,7 +82,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._create_model_serialize(
             model=model,
@@ -110,23 +106,22 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def create_model_with_http_info(
-        self,
-        model: Model,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model: Model,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[None]:
         """Create a new model
 
@@ -153,7 +148,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._create_model_serialize(
             model=model,
@@ -177,23 +172,22 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def create_model_without_preload_content(
-        self,
-        model: Model,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model: Model,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Create a new model
 
@@ -220,7 +214,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._create_model_serialize(
             model=model,
@@ -240,14 +234,13 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _create_model_serialize(
-        self,
-        model,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            model,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -269,8 +262,6 @@ class ModelApi:
         # process the body parameter
         if model is not None:
             _body_params = model
-
-
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -306,25 +297,22 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def delete_model_by_id(
-        self,
-        id: Annotated[StrictInt, Field(description="The ID of the model to delete")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictInt, Field(description="The ID of the model to delete")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> None:
         """Delete a Model
 
@@ -352,7 +340,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._delete_model_by_id_serialize(
             id=id,
@@ -376,23 +364,22 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def delete_model_by_id_with_http_info(
-        self,
-        id: Annotated[StrictInt, Field(description="The ID of the model to delete")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictInt, Field(description="The ID of the model to delete")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[None]:
         """Delete a Model
 
@@ -420,7 +407,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._delete_model_by_id_serialize(
             id=id,
@@ -444,23 +431,22 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def delete_model_by_id_without_preload_content(
-        self,
-        id: Annotated[StrictInt, Field(description="The ID of the model to delete")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictInt, Field(description="The ID of the model to delete")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Delete a Model
 
@@ -488,7 +474,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._delete_model_by_id_serialize(
             id=id,
@@ -508,14 +494,13 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _delete_model_by_id_serialize(
-        self,
-        id,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            id,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -537,9 +522,6 @@ class ModelApi:
         # process the header parameters
         # process the form parameters
         # process the body parameter
-
-
-
 
         # authentication setting
         _auth_settings: List[str] = [
@@ -561,25 +543,22 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def get_legacy_model_by_id(
-        self,
-        id: Annotated[StrictStr, Field(description="The ID of the model to retrieve")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictStr, Field(description="The ID of the model to retrieve")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> Model:
         """Get a legacy model
 
@@ -607,7 +586,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_legacy_model_by_id_serialize(
             id=id,
@@ -631,23 +610,22 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def get_legacy_model_by_id_with_http_info(
-        self,
-        id: Annotated[StrictStr, Field(description="The ID of the model to retrieve")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictStr, Field(description="The ID of the model to retrieve")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[Model]:
         """Get a legacy model
 
@@ -675,7 +653,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_legacy_model_by_id_serialize(
             id=id,
@@ -699,23 +677,22 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def get_legacy_model_by_id_without_preload_content(
-        self,
-        id: Annotated[StrictStr, Field(description="The ID of the model to retrieve")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictStr, Field(description="The ID of the model to retrieve")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Get a legacy model
 
@@ -743,7 +720,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_legacy_model_by_id_serialize(
             id=id,
@@ -763,14 +740,13 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _get_legacy_model_by_id_serialize(
-        self,
-        id,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            id,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -793,7 +769,6 @@ class ModelApi:
         # process the form parameters
         # process the body parameter
 
-
         # set the HTTP header `Accept`
         if 'Accept' not in _header_params:
             _header_params['Accept'] = self.api_client.select_header_accept(
@@ -801,7 +776,6 @@ class ModelApi:
                     'application/json'
                 ]
             )
-
 
         # authentication setting
         _auth_settings: List[str] = [
@@ -823,25 +797,22 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def get_model_by_id(
-        self,
-        id: Annotated[StrictInt, Field(description="The ID of the model to retrieve")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictInt, Field(description="The ID of the model to retrieve")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> Model:
         """Get a Model
 
@@ -869,7 +840,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_model_by_id_serialize(
             id=id,
@@ -893,23 +864,22 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def get_model_by_id_with_http_info(
-        self,
-        id: Annotated[StrictInt, Field(description="The ID of the model to retrieve")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictInt, Field(description="The ID of the model to retrieve")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[Model]:
         """Get a Model
 
@@ -937,7 +907,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_model_by_id_serialize(
             id=id,
@@ -961,23 +931,22 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def get_model_by_id_without_preload_content(
-        self,
-        id: Annotated[StrictInt, Field(description="The ID of the model to retrieve")],
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: Annotated[StrictInt, Field(description="The ID of the model to retrieve")],
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Get a Model
 
@@ -1005,7 +974,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_model_by_id_serialize(
             id=id,
@@ -1025,14 +994,13 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _get_model_by_id_serialize(
-        self,
-        id,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            id,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -1055,7 +1023,6 @@ class ModelApi:
         # process the form parameters
         # process the body parameter
 
-
         # set the HTTP header `Accept`
         if 'Accept' not in _header_params:
             _header_params['Accept'] = self.api_client.select_header_accept(
@@ -1063,7 +1030,6 @@ class ModelApi:
                     'application/json'
                 ]
             )
-
 
         # authentication setting
         _auth_settings: List[str] = [
@@ -1085,27 +1051,24 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def get_models(
-        self,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        sort: Optional[List[StrictStr]] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            sort: Optional[List[StrictStr]] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> GetModels200Response:
         """Get paginated models
 
@@ -1136,7 +1099,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_models_serialize(
             page=page,
@@ -1162,25 +1125,24 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def get_models_with_http_info(
-        self,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        sort: Optional[List[StrictStr]] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            sort: Optional[List[StrictStr]] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[GetModels200Response]:
         """Get paginated models
 
@@ -1211,7 +1173,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_models_serialize(
             page=page,
@@ -1237,25 +1199,24 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def get_models_without_preload_content(
-        self,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        sort: Optional[List[StrictStr]] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            sort: Optional[List[StrictStr]] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Get paginated models
 
@@ -1286,7 +1247,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_models_serialize(
             page=page,
@@ -1308,16 +1269,15 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _get_models_serialize(
-        self,
-        page,
-        size,
-        sort,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            page,
+            size,
+            sort,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -1336,21 +1296,17 @@ class ModelApi:
         # process the path parameters
         # process the query parameters
         if page is not None:
-            
             _query_params.append(('page', page))
-            
+
         if size is not None:
-            
             _query_params.append(('size', size))
-            
+
         if sort is not None:
-            
             _query_params.append(('sort', sort))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
-
 
         # set the HTTP header `Accept`
         if 'Accept' not in _header_params:
@@ -1359,7 +1315,6 @@ class ModelApi:
                     'application/json'
                 ]
             )
-
 
         # authentication setting
         _auth_settings: List[str] = [
@@ -1381,28 +1336,25 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def get_shared_models(
-        self,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        sort: Optional[List[StrictStr]] = None,
-        organization_id: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            sort: Optional[List[StrictStr]] = None,
+            organization_id: Optional[StrictInt] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> GetModels200Response:
         """Get paginated shared models
 
@@ -1435,7 +1387,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_shared_models_serialize(
             page=page,
@@ -1462,26 +1414,25 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def get_shared_models_with_http_info(
-        self,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        sort: Optional[List[StrictStr]] = None,
-        organization_id: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            sort: Optional[List[StrictStr]] = None,
+            organization_id: Optional[StrictInt] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[GetModels200Response]:
         """Get paginated shared models
 
@@ -1514,7 +1465,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_shared_models_serialize(
             page=page,
@@ -1541,26 +1492,25 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def get_shared_models_without_preload_content(
-        self,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        sort: Optional[List[StrictStr]] = None,
-        organization_id: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            sort: Optional[List[StrictStr]] = None,
+            organization_id: Optional[StrictInt] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Get paginated shared models
 
@@ -1593,7 +1543,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._get_shared_models_serialize(
             page=page,
@@ -1616,17 +1566,16 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _get_shared_models_serialize(
-        self,
-        page,
-        size,
-        sort,
-        organization_id,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            page,
+            size,
+            sort,
+            organization_id,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -1645,25 +1594,20 @@ class ModelApi:
         # process the path parameters
         # process the query parameters
         if page is not None:
-            
             _query_params.append(('page', page))
-            
+
         if size is not None:
-            
             _query_params.append(('size', size))
-            
+
         if sort is not None:
-            
             _query_params.append(('sort', sort))
-            
+
         if organization_id is not None:
-            
             _query_params.append(('organizationId', organization_id))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
-
 
         # set the HTTP header `Accept`
         if 'Accept' not in _header_params:
@@ -1672,7 +1616,6 @@ class ModelApi:
                     'application/json'
                 ]
             )
-
 
         # authentication setting
         _auth_settings: List[str] = [
@@ -1694,26 +1637,23 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def partially_update_model(
-        self,
-        id: StrictInt,
-        partially_update_model_request: PartiallyUpdateModelRequest,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: StrictInt,
+            partially_update_model_request: PartiallyUpdateModelRequest,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> Model:
         """Partially update specific fields of a model
 
@@ -1742,7 +1682,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._partially_update_model_serialize(
             id=id,
@@ -1768,24 +1708,23 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def partially_update_model_with_http_info(
-        self,
-        id: StrictInt,
-        partially_update_model_request: PartiallyUpdateModelRequest,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: StrictInt,
+            partially_update_model_request: PartiallyUpdateModelRequest,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[Model]:
         """Partially update specific fields of a model
 
@@ -1814,7 +1753,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._partially_update_model_serialize(
             id=id,
@@ -1840,24 +1779,23 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def partially_update_model_without_preload_content(
-        self,
-        id: StrictInt,
-        partially_update_model_request: PartiallyUpdateModelRequest,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            id: StrictInt,
+            partially_update_model_request: PartiallyUpdateModelRequest,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Partially update specific fields of a model
 
@@ -1886,7 +1824,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._partially_update_model_serialize(
             id=id,
@@ -1908,15 +1846,14 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _partially_update_model_serialize(
-        self,
-        id,
-        partially_update_model_request,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            id,
+            partially_update_model_request,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -1940,7 +1877,6 @@ class ModelApi:
         # process the body parameter
         if partially_update_model_request is not None:
             _body_params = partially_update_model_request
-
 
         # set the HTTP header `Accept`
         if 'Accept' not in _header_params:
@@ -1984,26 +1920,23 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def predict_with_model(
-        self,
-        model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
-        dataset: Dataset,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
+            dataset: Dataset,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> None:
         """Predict with Model
 
@@ -2033,7 +1966,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._predict_with_model_serialize(
             model_id=model_id,
@@ -2060,24 +1993,23 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def predict_with_model_with_http_info(
-        self,
-        model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
-        dataset: Dataset,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
+            dataset: Dataset,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[None]:
         """Predict with Model
 
@@ -2107,7 +2039,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._predict_with_model_serialize(
             model_id=model_id,
@@ -2134,24 +2066,23 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def predict_with_model_without_preload_content(
-        self,
-        model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
-        dataset: Dataset,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
+            dataset: Dataset,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Predict with Model
 
@@ -2181,7 +2112,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._predict_with_model_serialize(
             model_id=model_id,
@@ -2204,15 +2135,14 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _predict_with_model_serialize(
-        self,
-        model_id,
-        dataset,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            model_id,
+            dataset,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -2236,8 +2166,6 @@ class ModelApi:
         # process the body parameter
         if dataset is not None:
             _body_params = dataset
-
-
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -2273,26 +2201,23 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def predict_with_model_csv(
-        self,
-        model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
-        dataset_csv: DatasetCSV,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
+            dataset_csv: DatasetCSV,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> None:
         """Predict using CSV with Model
 
@@ -2322,7 +2247,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._predict_with_model_csv_serialize(
             model_id=model_id,
@@ -2349,24 +2274,23 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def predict_with_model_csv_with_http_info(
-        self,
-        model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
-        dataset_csv: DatasetCSV,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
+            dataset_csv: DatasetCSV,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[None]:
         """Predict using CSV with Model
 
@@ -2396,7 +2320,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._predict_with_model_csv_serialize(
             model_id=model_id,
@@ -2423,24 +2347,23 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def predict_with_model_csv_without_preload_content(
-        self,
-        model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
-        dataset_csv: DatasetCSV,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            model_id: Annotated[StrictInt, Field(description="The ID of the model to use for prediction")],
+            dataset_csv: DatasetCSV,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Predict using CSV with Model
 
@@ -2470,7 +2393,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._predict_with_model_csv_serialize(
             model_id=model_id,
@@ -2493,15 +2416,14 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _predict_with_model_csv_serialize(
-        self,
-        model_id,
-        dataset_csv,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            model_id,
+            dataset_csv,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -2525,8 +2447,6 @@ class ModelApi:
         # process the body parameter
         if dataset_csv is not None:
             _body_params = dataset_csv
-
-
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -2562,27 +2482,24 @@ class ModelApi:
             _request_auth=_request_auth
         )
 
-
-
-
     @validate_call
     def search_models(
-        self,
-        query: StrictStr,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            query: StrictStr,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> GetModels200Response:
         """Search for models
 
@@ -2613,7 +2530,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._search_models_serialize(
             query=query,
@@ -2639,25 +2556,24 @@ class ModelApi:
             response_types_map=_response_types_map,
         ).data
 
-
     @validate_call
     def search_models_with_http_info(
-        self,
-        query: StrictStr,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            query: StrictStr,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[GetModels200Response]:
         """Search for models
 
@@ -2688,7 +2604,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._search_models_serialize(
             query=query,
@@ -2714,25 +2630,24 @@ class ModelApi:
             response_types_map=_response_types_map,
         )
 
-
     @validate_call
     def search_models_without_preload_content(
-        self,
-        query: StrictStr,
-        page: Optional[StrictInt] = None,
-        size: Optional[StrictInt] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
+            self,
+            query: StrictStr,
+            page: Optional[StrictInt] = None,
+            size: Optional[StrictInt] = None,
+            _request_timeout: Union[
+                None,
                 Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+                Tuple[
+                    Annotated[StrictFloat, Field(gt=0)],
+                    Annotated[StrictFloat, Field(gt=0)]
+                ]
+            ] = None,
+            _request_auth: Optional[Dict[StrictStr, Any]] = None,
+            _content_type: Optional[StrictStr] = None,
+            _headers: Optional[Dict[StrictStr, Any]] = None,
+            _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
         """Search for models
 
@@ -2763,7 +2678,7 @@ class ModelApi:
                             in the spec for a single request.
         :type _host_index: int, optional
         :return: Returns the result object.
-        """ # noqa: E501
+        """  # noqa: E501
 
         _param = self._search_models_serialize(
             query=query,
@@ -2785,16 +2700,15 @@ class ModelApi:
         )
         return response_data.response
 
-
     def _search_models_serialize(
-        self,
-        query,
-        page,
-        size,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
+            self,
+            query,
+            page,
+            size,
+            _request_auth,
+            _content_type,
+            _headers,
+            _host_index,
     ) -> RequestSerialized:
 
         _host = None
@@ -2812,21 +2726,17 @@ class ModelApi:
         # process the path parameters
         # process the query parameters
         if query is not None:
-            
             _query_params.append(('query', query))
-            
+
         if page is not None:
-            
             _query_params.append(('page', page))
-            
+
         if size is not None:
-            
             _query_params.append(('size', size))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
-
 
         # set the HTTP header `Accept`
         if 'Accept' not in _header_params:
@@ -2835,7 +2745,6 @@ class ModelApi:
                     'application/json'
                 ]
             )
-
 
         # authentication setting
         _auth_settings: List[str] = [
@@ -2856,5 +2765,3 @@ class ModelApi:
             _host=_host,
             _request_auth=_request_auth
         )
-
-
