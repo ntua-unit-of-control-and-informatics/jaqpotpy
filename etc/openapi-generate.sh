@@ -32,7 +32,7 @@ openapi-generator generate \
 mkdir -p $TARGET_DIR
 
 # Move only the necessary files
-mv $TEMP_DIR/jaqpotpy/api/openapi/* $TARGET_DIR/
+cp -r $TEMP_DIR/jaqpotpy/api/openapi/* $TARGET_DIR/
 
 # Clean up
 rm -rf $TEMP_DIR

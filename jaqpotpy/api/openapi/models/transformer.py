@@ -28,7 +28,7 @@ class Transformer(BaseModel):
     A preprocessor for the model
     """ # noqa: E501
     name: StrictStr
-    config: Dict[str, Dict[str, Any]]
+    config: Dict[str, Any]
     __properties: ClassVar[List[str]] = ["name", "config"]
 
     model_config = ConfigDict(
