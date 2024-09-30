@@ -1,12 +1,12 @@
 from jaqpotpy.doa.doa import DOA
-from jaqpotpy.descriptors.base_classes import Featurizer
+from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Iterable
 
 
 class Model(object):
     _model: Any
     _doa: DOA
-    _descriptors: Featurizer
+    _descriptors: MolecularFeaturizer
     _preprocessors: []
     _preprocessor_names: []
     _preprocessor_y_names: []
