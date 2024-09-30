@@ -3,24 +3,29 @@
 from typing import Iterable, Optional, Any, List
 import copy
 import pandas as pd
+import sklearn.feature_selection as skfs
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.datasets.dataset_base import BaseDataset
 
 
 class JaqpotpyDataset(BaseDataset):
-    """A dataset class for general and molecular data, inheriting from BaseDataset. This class is
+    """A dataset class that can also support molecular descriptors. This class is
     designed to handle datasets that include molecular structures represented by
     SMILES strings and use molecular featurizers to generate features from these
-    structures.
+    structures. The class can also support ordinary datasets.
 
     Attributes
     ----------
-        smiles_col (Optional[str]): The column containing SMILES strings.
-        smiles (pd.Series): The SMILES strings extracted from the DataFrame.
-        featurizer (Optional[MolecularFeaturizer]): The featurizer used to
-                                                    generate molecular features.
-        _featurizer_name (Optional[str]): The name of the featurizer.
-        x_colls_all (Optional[Iterable[str]]): All feature columns after featurization.
+        df:
+        path:
+        y_cols:
+        x_cols:
+        smiles_col : The column containing SMILES strings.
+        x_cols : The SMILES strings extracted from the DataFrame.
+
+        featurizer: The featurizer used to generate molecular features. It can be one of the supported
+                    featurizers or a list of supported featurizers
+        task : All feature columns after featurization.
 
     """
 
@@ -87,16 +92,19 @@ class JaqpotpyDataset(BaseDataset):
         self._validate_column_names(self.y_cols, "y_cols")
         self._validate_column_space()
 
-        self.init_df = self._df
+        self.init_df = self.df
         self.featurizer = featurizer
         # If featurizer is provided and it's for training, we need to copy the attributes
         if self.featurizer:
             self.featurizers_attributes = [
                 copy.deepcopy(featurizer.__dict__) for featurizer in self.featurizer
             ]
+        self.y_colnames = y_cols
         self._featurizer_name = []
         self.smiles = None
-        self._x_cols_all = None
+        self.x_colnames = None
+        self.active_features = None
+        self._X_old = None
         self.create()
 
     @property
@@ -107,20 +115,12 @@ class JaqpotpyDataset(BaseDataset):
     def featurizer_name(self, value):
         self._featurizer_name = value
 
-    @property
-    def x_cols_all(self) -> Iterable[str]:
-        return self._x_cols_all
-
-    @x_cols_all.setter
-    def x_cols_all(self, value):
-        self._x_cols_all = value
-
     def _validate_column_names(self, cols, col_type):
         """Validate if the columns specified in cols are present in the DataFrame."""
         if len(cols) == 0:
             return
 
-        missing_cols = [col for col in cols if col not in self._df.columns]
+        missing_cols = [col for col in cols if col not in self.df.columns]
 
         if missing_cols:
             raise ValueError(
@@ -132,7 +132,7 @@ class JaqpotpyDataset(BaseDataset):
             if " " in col:
                 new_col = col.replace(" ", "_")
                 self.x_cols[ix] = new_col
-                self._df.rename(columns={col: new_col}, inplace=True)
+                self.df.rename(columns={col: new_col}, inplace=True)
                 print(
                     f"Warning: Column names cannot have spaces. Column '{col}' has been renamed to '{new_col}'"
                 )
@@ -160,7 +160,7 @@ class JaqpotpyDataset(BaseDataset):
     def create(self):
         if len(self.smiles_cols) == 1:
             # The method featurize_dataframe needs self.smiles to be pd.Series
-            self.smiles = self._df[self.smiles_cols[0]]
+            self.smiles = self.df[self.smiles_cols[0]]
 
             # Apply each featurizer to the data
             descriptors_list = [
@@ -178,7 +178,7 @@ class JaqpotpyDataset(BaseDataset):
                 featurized_dfs.append(
                     pd.concat(
                         [
-                            featurizer.featurize_dataframe(self._df[[col]])
+                            featurizer.featurize_dataframe(self.df[[col]])
                             for featurizer in self.featurizer
                         ],
                         axis=1,
@@ -194,8 +194,8 @@ class JaqpotpyDataset(BaseDataset):
 
         if len(self.x_cols) == 0:
             if len(descriptors) > 0:
-                self._x = descriptors
-                self.x_cols_all = self._x.columns.tolist()
+                self.X = descriptors
+                self.x_colnames = self.X.columns.tolist()
             else:
                 raise ValueError(
                     "The design matrix X is empty. Please provide either"
@@ -203,17 +203,54 @@ class JaqpotpyDataset(BaseDataset):
                 )
 
         else:
-            self._x = pd.concat(
-                [self._df[self.x_cols], pd.DataFrame(descriptors)], axis=1
+            self.X = pd.concat(
+                [self.df[self.x_cols], pd.DataFrame(descriptors)], axis=1
             )
-            self.x_cols_all = self._x.columns.tolist()
+            self.x_colnames = self.X.columns.tolist()
 
         if not self.y_cols:
-            self._y = None
+            self.y = None
         else:
-            self._y = self._df[self.y_cols]
+            self.y = self.df[self.y_cols]
 
-        self._df = pd.concat([self._x, self._y], axis=1)
+        self.df = pd.concat([self.X, self.y], axis=1)
+        self.X.columns = self.X.columns.astype(str)
+        self.X.columns = self.X.columns.astype(str)
+        self.df.columns = self.df.columns.astype(str)
+
+    def select_features(self, FeatureSelector=None, SelectionList=None):
+        if (FeatureSelector is None and SelectionList is None) or (
+            FeatureSelector is not None and SelectionList is not None
+        ):
+            raise ValueError(
+                "Either FeatureSelector or SelectionList must be provided, but not both."
+            )
+
+        self._X_old = self.X
+
+        if FeatureSelector is not None:
+            # Get all valid feature selection classes from sklearn.feature_selection
+            valid_classes = [
+                getattr(skfs, name)
+                for name in dir(skfs)
+                if isinstance(getattr(skfs, name), type)
+            ]
+
+            # Check if FeatureSelector is an instance of one of these classes
+            if not isinstance(FeatureSelector, tuple(valid_classes)):
+                raise ValueError(
+                    f"FeatureSelector must be an instance of a valid class from sklearn.feature_selection, but got {type(FeatureSelector)}."
+                )
+            transformed_X = FeatureSelector.fit_transform(self.X)
+            selected_columns_mask = FeatureSelector.get_support()
+            self.active_features = self.X.columns[selected_columns_mask]
+            self.X = pd.DataFrame(data=transformed_X, columns=self.active_features)
+        elif SelectionList is not None:
+            if SelectionList not in self.X.columns:
+                raise ValueError(f"Provided features not in dataset features")
+            else:
+                self.X = self.X[SelectionList]
+                self.active_features = SelectionList
 
     def copy(self):
         """Create a copy of the dataset, including a deep copy of the underlying DataFrame
@@ -231,19 +268,19 @@ class JaqpotpyDataset(BaseDataset):
         return copied_instance
 
     def __get_X__(self):
-        return self._x.copy()
+        return self.X.copy()
 
     def __get_Y__(self):
-        return self._y.copy()
+        return self.y.copy()
 
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return instance.__dict__[self._df]
+        return instance.__dict__[self.df]
 
     def __getitem__(self, idx):
-        selected_x = self._df[self._x].iloc[idx].values
-        selected_y = self._df[self._y].iloc[idx].to_numpy()
+        selected_x = self.df[self.X].iloc[idx].values
+        selected_y = self.df[self.y].iloc[idx].to_numpy()
         return selected_x, selected_y
 
     def __len__(self):
@@ -255,3 +292,7 @@ class JaqpotpyDataset(BaseDataset):
             f"(smiles={True if self.smiles_cols is not None else False}, "
             f"featurizer={self.featurizer_name})"
         )
+
+
+if __name__ == "__main__":
+    ...
