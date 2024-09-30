@@ -1,6 +1,8 @@
 import pandas as pd
 
-df = pd.read_csv("jaqpotpy/test_data/test_data_smiles_classification.csv")
+from jaqpotpy.descriptors.graph import SmilesGraphFeaturizer
+
+df = pd.read_csv("./jaqpotpy/test_data/test_data_smiles_classification.csv")
 
 train_smiles = list(df["SMILES"].iloc[:100])
 train_y = list(df["ACTIVITY"].iloc[:100])
@@ -8,7 +10,6 @@ train_y = list(df["ACTIVITY"].iloc[:100])
 val_smiles = list(df["SMILES"].iloc[100:200])
 val_y = list(df["ACTIVITY"].iloc[100:200])
 
-from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
 from rdkit import Chem
 
 featurizer = SmilesGraphFeaturizer()
@@ -73,9 +74,6 @@ from jaqpotpy import Jaqpot
 
 jaqpot = Jaqpot()
 jaqpot.login()
-# jaqpot.set_api_key(
-#     "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJEQTQtalctUDRzRzc2cHM4WlNFUHVzZTdxQWNTUVUtSjFCcURjR0g1NXFRIn0.eyJleHAiOjE3MjczNjk2ODQsImlhdCI6MTcyNzMzMzY4NCwianRpIjoiY2ZiYzcyOGEtNDAyZC00NWU4LWE0MmQtMjc4YTAzOGIyNjg5IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdC5qYXFwb3Qub3JnOjgwNzAvcmVhbG1zL2phcXBvdC1sb2NhbCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiIyNjIwYTAxZi1kZWIxLTQ4MGQtOWYzMC1hNmI0MTI4YWFkMWEiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJqYXFwb3QtbG9jYWwtdGVzdCIsInNlc3Npb25fc3RhdGUiOiJlZTYyMjYxMS1kMmMyLTRiZWQtOWZjYS0xMDZlNWUwMjAzYTgiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIiIsIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImRlZmF1bHQtcm9sZXMtamFxcG90LWxvY2FsIiwib2ZmbGluZV9hY2Nlc3MiLCJhZG1pbiIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiZWU2MjI2MTEtZDJjMi00YmVkLTlmY2EtMTA2ZTVlMDIwM2E4IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiJqYXFwb3QgYWRtaW4iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqYXFwb3QtYWRtaW4iLCJnaXZlbl9uYW1lIjoiamFxcG90IiwiZmFtaWx5X25hbWUiOiJhZG1pbiIsImVtYWlsIjoiamFxcG90LWFkbWluQGphcXBvdC5vcmcifQ.eX5viBvNEVxWz0BLOQojwdlgHl9eQri3X2hXHF6CE9ifwvwyZStTatO-ZGoVHzDneftMaRZcifOMugIg8tEmdGbBR8K_SSSKGBPyed9MjR21HAGEGkhhHrD9Mzu5peQaQ-LvCxsvHZBHyZwzofyw2-6fuGKfHgkFxJq8o_TELniE4UhtBDj4KA7dyMZu1pBw3yH0bbRwdYfq7JrOAsRbhRlxbMK_U_fSm4ShgwcHI9oLTRlVn84YxVq-e6LfbUrZ2BHDHXJzCtGL50tCzPXoXfC8LlQybrlCy6JgfpxRcYjbXHndzm1tNbVzowpSyRdsBxA3BaH7-Q3r51_PGrPf4A"
-# )
 
 jaqpot.deploy_torch_model(
     torchscript_model,
