@@ -1,6 +1,17 @@
 import pandas as pd
-
 from jaqpotpy.descriptors.graph import SmilesGraphFeaturizer
+from rdkit import Chem
+from jaqpotpy.datasets import SmilesGraphDataset
+from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
+    GraphAttentionNetwork,
+    pyg_to_torchscript,
+)
+from jaqpotpy.models.trainers import BinaryGraphModelTrainer
+from torch.optim import Adam
+from torch.nn import BCEWithLogitsLoss
+
+from torch_geometric.loader import DataLoader
+from jaqpotpy import Jaqpot
 
 df = pd.read_csv("./jaqpotpy/test_data/test_data_smiles_classification.csv")
 
@@ -9,8 +20,6 @@ train_y = list(df["ACTIVITY"].iloc[:100])
 
 val_smiles = list(df["SMILES"].iloc[100:200])
 val_y = list(df["ACTIVITY"].iloc[100:200])
-
-from rdkit import Chem
 
 featurizer = SmilesGraphFeaturizer()
 featurizer.add_atom_feature("symbol", ["C", "O", "N", "F", "Cl", "Br", "I"])
@@ -25,8 +34,6 @@ featurizer.add_bond_feature(
     ],
 )
 
-from jaqpotpy.datasets import SmilesGraphDataset
-
 train_dataset = SmilesGraphDataset(
     smiles=train_smiles, y=train_y, featurizer=featurizer
 )
@@ -34,11 +41,6 @@ val_dataset = SmilesGraphDataset(smiles=val_smiles, y=val_y, featurizer=featuriz
 
 train_dataset.precompute_featurization()
 val_dataset.precompute_featurization()
-
-from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
-    GraphAttentionNetwork,
-    pyg_to_torchscript,
-)
 
 input_dim = featurizer.get_num_node_features()
 edge_dim = featurizer.get_num_edge_features()
@@ -55,12 +57,6 @@ model = GraphAttentionNetwork(
     heads=4,
 )
 
-from jaqpotpy.models.trainers import BinaryGraphModelTrainer
-from torch.optim import Adam
-from torch.nn import BCEWithLogitsLoss
-
-from torch_geometric.loader import DataLoader
-
 optimizer = Adam(model.parameters(), lr=0.001)
 loss = BCEWithLogitsLoss()
 epochs = 5
@@ -70,7 +66,6 @@ val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 trainer.train(train_loader, val_loader)
 
 torchscript_model = pyg_to_torchscript(model)
-from jaqpotpy import Jaqpot
 
 jaqpot = Jaqpot()
 jaqpot.login()
