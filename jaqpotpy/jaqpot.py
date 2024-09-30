@@ -4,8 +4,8 @@ import webbrowser
 from keycloak import KeycloakOpenID
 
 import jaqpotpy
-from jaqpotpy.api.api_client import JaqpotApiClient
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.api.openapi.api.model_api import ModelApi
 from jaqpotpy.api.openapi.models.model import Model
@@ -55,7 +55,7 @@ class Jaqpot:
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = "https://appv2.jaqpot.org/"
+            self.base_url = "https://jaqpot.org"
         self.app_url = app_url or add_subdomain(self.base_url, "app")
         self.login_url = login_url or add_subdomain(self.base_url, "login")
         self.api_url = api_url or add_subdomain(self.base_url, "api")
@@ -120,7 +120,8 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        model_api = ModelApi(JaqpotApiClient(host=self.api_url, api_key=self.api_key))
+        jaqpot_api_client = JaqpotApiClient(host=self.api_url, api_key=self.api_key)
+        model_api = ModelApi(jaqpot_api_client)
         actual_model = model_to_b64encoding(model.onnx_model.SerializeToString())
         body_model = Model(
             name=name,

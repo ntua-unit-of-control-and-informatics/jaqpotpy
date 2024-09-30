@@ -21,7 +21,7 @@ def get_installed_libraries():
             packages_list.append({"name": name, "version": version})
 
     libraries_list = [
-        Library(library["name"], library["version"]) for library in packages_list
+        Library(name=library["name"], version=library["version"]) for library in packages_list
     ]
 
     return libraries_list
