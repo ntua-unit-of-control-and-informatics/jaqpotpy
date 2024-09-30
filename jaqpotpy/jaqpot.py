@@ -7,29 +7,14 @@ import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
-from jaqpotpy.api.openapi.jaqpot_api_client.types import UNSET
-from jaqpotpy.api.openapi.jaqpot_api_client.api.model import (
-    create_model,
-    get_model_by_id,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
-from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
-from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
-from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config import (
-    ModelExtraConfig,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config_torch_config import (
-    ModelExtraConfigTorchConfig,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config_torch_config_additional_property import (
-    ModelExtraConfigTorchConfigAdditionalProperty,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_task import ModelTask
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import (
-    ModelVisibility,
-)
+from jaqpotpy.api.openapi.api.model_api import ModelApi
+from jaqpotpy.api.openapi.models.model import Model
+from jaqpotpy.api.openapi.models.feature import Feature
+from jaqpotpy.api.openapi.models.feature_type import FeatureType
+from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
+from jaqpotpy.api.openapi.models.model_task import ModelTask
+from jaqpotpy.api.openapi.models.model_type import ModelType
+from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.utils.url_utils import add_subdomain
 
@@ -125,19 +110,21 @@ class Jaqpot:
         self.api_key = api_key
         self.log.info("api key is set")
 
-    def get_model_by_id(self, model_id):
-        """Get model by id.
+    def get_model_id(self, model_id):
+        """Get model from Jaqpot.
 
         Parameters
         ----------
-        model_id : id of the model
+        model_id : model_id is the id of the model on Jaqpot
 
         """
-        auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
-        response = get_model_by_id.sync_detailed(client=auth_client, id=model_id)
+        jaqpot_api_client = JaqpotApiClient(
+            host=self.api_url, access_token=self.api_key
+        )
+        model_api = ModelApi(jaqpot_api_client)
+        response = model_api.get_model_by_id_with_http_info(id=model_id)
         if response.status_code < 300:
-            model = response.parsed
-            self.log.info("Model has been successfully retrieved")
+            model = response.data
             return model
         else:
             self.log.error("Error code: " + str(response.status_code.value))
