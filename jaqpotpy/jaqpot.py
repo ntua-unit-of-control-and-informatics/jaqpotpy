@@ -197,7 +197,7 @@ class Jaqpot:
         featurizer_dict = featurizer.get_dict()
 
         featurizer_config = featurizer_dict
-        torch_config_json = {"featurizerConfig": featurizer_config.to_dict()}
+        torch_config_json = {"featurizerConfig": featurizer_config}
         torch_config = torch_config_json
         if type == "TORCHSCRIPT":
             type = ModelType.TORCHSCRIPT
