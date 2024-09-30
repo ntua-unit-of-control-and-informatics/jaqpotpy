@@ -249,7 +249,7 @@ class JaqpotpyDataset(BaseDataset):
             self.active_features = self.X.columns[selected_columns_mask]
             self.X = pd.DataFrame(data=transformed_X, columns=self.active_features)
         elif SelectionList is not None:
-            if SelectionList not in self.X.columns:
+            if not all(item in self.X.columns for item in SelectionList):
                 raise ValueError(f"Provided features not in dataset features")
             else:
                 self.X = self.X[SelectionList]
