@@ -1,26 +1,14 @@
 from typing import Callable, List, Optional, Any
 import numpy as np
-
-# from deepchem.utils.typing import RDKitMol
+import pandas as pd
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-
-RDKitMol = Any
-RDKitAtom = Any
-RDKitBond = Any
-
-
 # warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 class MordredDescriptors(MolecularFeaturizer):
     """Mordred descriptors.
-    This class computes a list of chemical descriptors using Mordred.
-    Please see the details about all descriptors from [1]_, [2]_.
-
-    Attributes:
-    ----------
-    descriptors: List[str]
-      List of Mordred descriptor names used in this class.
+       descriptors: List[str]
+       List of Mordred descriptor names used in this class.
 
     References:
     ----------
@@ -28,21 +16,13 @@ class MordredDescriptors(MolecularFeaturizer):
        Journal of cheminformatics 10.1 (2018): 4.
     .. [2] http://mordred-descriptor.github.io/documentation/master/descriptors.html
 
-    Note:
-    ----
-    This class requires Mordred to be installed.
 
     Examples:
     --------
     >>> import jaqpotpy as jt
     >>> smiles = ['CC(=O)OC1=CC=CC=C1C(=O)O']
-    >>> featurizer = jt.descriptors.MordredDescriptors(ignore_3D=True)
+    >>> featurizer = jt.descriptors.MordredDescriptors()
     >>> features = featurizer.featurize(smiles)
-    >>> type(features[0])
-    <class 'numpy.ndarray'>
-    >>> features[0].shape
-    (1613,)
-
     """
 
     @property
@@ -56,36 +36,20 @@ class MordredDescriptors(MolecularFeaturizer):
           Whether to use 3D information or not.
 
         """
+        self.col_names = None
         self.ignore_3D = ignore_3D
         self.calc: Optional[Callable] = None
         self.descriptors: Optional[List] = None
 
-    def __getitem__(self):
-        return self
-
-    def _featurize(
-            self, datapoint: RDKitMol, convert_nan: bool = True, **kwargs
-    ) -> np.ndarray:
+    def _featurize(self, datapoint, convert_nan: bool = True, **kwargs) -> np.ndarray:
         """Calculate Mordred descriptors.
-
-        Parameters
-        ----------
-        datapoint: rdkit.Chem.rdchem.Mol
-          RDKit Mol object
-
-        Returns
-        -------
-        np.ndarray
+        Parameters:datapoint: rdkit.Chem.rdchem.Mol
+        Returns: np.ndarray
           1D array of Mordred descriptors for `mol`.
           If ignore_3D is True, the length is 1613.
           If ignore_3D is False, the length is 1826.
 
         """
-        if "mol" in kwargs:
-            datapoint = kwargs.get("mol")
-            raise DeprecationWarning(
-                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
-            )
         if self.calc is None:
             try:
                 from mordred import Calculator, descriptors, is_missing
@@ -97,6 +61,7 @@ class MordredDescriptors(MolecularFeaturizer):
                 raise ImportError("This class requires Mordred to be installed.")
 
         feature = self.calc(datapoint)
+        self.col_names = [key for key in feature.keys()]
         # convert errors to zero
         if convert_nan:
             feature = [
@@ -105,68 +70,15 @@ class MordredDescriptors(MolecularFeaturizer):
             ]
         return np.asarray(feature)
 
-    def _get_column_names(self, **kwargs) -> list:
-        """Return the column names"""
-        if "mol" in kwargs:
-            # datapoint = kwargs.get("mol")
-            raise DeprecationWarning(
-                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
-            )
-        if self.calc is None:
-            try:
-                from mordred import Calculator, descriptors, is_missing
-
-                self.is_missing = is_missing
-                self.calc = Calculator(descriptors, ignore_3D=self.ignore_3D)
-                self.descriptors = list(descriptors.__all__)
-            except ModuleNotFoundError:
-                raise ImportError("This class requires Mordred to be installed.")
-        from rdkit import Chem
-
-        smiles = "CC(=O)OC1=CC=CC=C1C(=O)O"
-        mol = Chem.MolFromSmiles(smiles)
-        feature = self.calc(mol).fill_missing(0).asdict()
-        names = [key for key in feature.keys()]
-
-        return names
-
-    def _featurize_dataframe(
-            self, datapoint: RDKitMol, convert_nan: bool = True, **kwargs
-    ) -> np.ndarray:
+    def featurize_dataframe(
+        self, datapoints, convert_nan: bool = True, log_every_n=1000, **kwargs
+    ) -> pd.DataFrame:
         """Calculate Mordred descriptors.
-
-        Parameters
-        ----------
-        datapoint: rdkit.Chem.rdchem.Mol
-        RDKit Mol object
-
-        Returns
-        -------
-        np.ndarray
-        1D array of Mordred descriptors for `mol`.
-        If ignore_3D is True, the length is 1613.
-        If ignore_3D is False, the length is 1826.
-
+        Parameters: datapoints --> list of SMILES
+        Returns: df --> pd.DataFrame
+            - If ignore_3D is True, the length is 1613.
+            - If ignore_3D is False, the length is 1826.
         """
-        if "mol" in kwargs:
-            datapoint = kwargs.get("mol")
-            raise DeprecationWarning(
-                'Mol is being phased out as a parameter, please pass "datapoint" instead.'
-            )
-        if self.calc is None:
-            try:
-                from mordred import Calculator, descriptors, is_missing
-
-                self.is_missing = is_missing
-                self.calc = Calculator(descriptors, ignore_3D=self.ignore_3D)
-                self.descriptors = list(descriptors.__all__)
-            except ModuleNotFoundError:
-                raise ImportError("This class requires Mordred to be installed.")
-        feature = self.calc(datapoint)
-        # convert errors to zero
-        if convert_nan:
-            feature = [
-                -1000.0 if self.is_missing(val) or isinstance(val, str) else val
-                for val in feature
-            ]
-        return np.asarray(feature)
+        features = self.featurize(datapoints, convert_nan, log_every_n, **kwargs)
+        df = pd.DataFrame(features, columns=self.col_names)
+        return df
