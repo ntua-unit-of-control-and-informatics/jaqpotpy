@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.dataset_csv import DatasetCSV
+from jaqpotpy.api.openapi.models.dataset_csv import DatasetCSV
 
 class TestDatasetCSV(unittest.TestCase):
     """DatasetCSV unit test stubs"""

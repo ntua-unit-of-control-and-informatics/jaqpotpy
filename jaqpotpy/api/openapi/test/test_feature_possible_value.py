@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.feature_possible_value import FeaturePossibleValue
+from jaqpotpy.api.openapi.models.feature_possible_value import FeaturePossibleValue
 
 class TestFeaturePossibleValue(unittest.TestCase):
     """FeaturePossibleValue unit test stubs"""

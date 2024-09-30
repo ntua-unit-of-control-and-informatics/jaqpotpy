@@ -21,7 +21,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```python
-from openapi_client.models.dataset_csv import DatasetCSV
+from jaqpotpy.api.openapi.models.dataset_csv import DatasetCSV
 
 # TODO update the JSON string below
 json = "{}"

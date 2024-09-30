@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.model_task import ModelTask
+from jaqpotpy.api.openapi.models.model_task import ModelTask
 
 class TestModelTask(unittest.TestCase):
     """ModelTask unit test stubs"""

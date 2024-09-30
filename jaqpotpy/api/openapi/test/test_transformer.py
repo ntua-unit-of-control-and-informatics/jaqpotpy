@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.transformer import Transformer
+from jaqpotpy.api.openapi.models.transformer import Transformer
 
 class TestTransformer(unittest.TestCase):
     """Transformer unit test stubs"""

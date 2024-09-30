@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.organization_visibility import OrganizationVisibility
+from jaqpotpy.api.openapi.models.organization_visibility import OrganizationVisibility
 
 class TestOrganizationVisibility(unittest.TestCase):
     """OrganizationVisibility unit test stubs"""

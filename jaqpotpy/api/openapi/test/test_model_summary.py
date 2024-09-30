@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.model_summary import ModelSummary
+from jaqpotpy.api.openapi.models.model_summary import ModelSummary
 
 class TestModelSummary(unittest.TestCase):
     """ModelSummary unit test stubs"""
@@ -40,7 +40,7 @@ class TestModelSummary(unittest.TestCase):
                 name = 'My Model',
                 visibility = 'PUBLIC',
                 description = 'A description of your model',
-                creator = openapi_client.models.user.User(
+                creator = jaqpotpy.api.openapi.models.user.User(
                     id = '', 
                     username = '', 
                     first_name = '', 
@@ -51,7 +51,7 @@ class TestModelSummary(unittest.TestCase):
                 dependent_features_length = 56,
                 independent_features_length = 56,
                 shared_with_organizations = [
-                    openapi_client.models.organization_summary.OrganizationSummary(
+                    jaqpotpy.api.openapi.models.organization_summary.OrganizationSummary(
                         id = 0, 
                         name = 'My Organization', )
                     ],
@@ -65,7 +65,7 @@ class TestModelSummary(unittest.TestCase):
                 visibility = 'PUBLIC',
                 type = 'SKLEARN',
                 shared_with_organizations = [
-                    openapi_client.models.organization_summary.OrganizationSummary(
+                    jaqpotpy.api.openapi.models.organization_summary.OrganizationSummary(
                         id = 0, 
                         name = 'My Organization', )
                     ],

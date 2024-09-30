@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```python
-from openapi_client.models.transformer import Transformer
+from jaqpotpy.api.openapi.models.transformer import Transformer
 
 # TODO update the JSON string below
 json = "{}"

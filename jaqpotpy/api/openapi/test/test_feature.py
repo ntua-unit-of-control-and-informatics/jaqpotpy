@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.feature import Feature
+from jaqpotpy.api.openapi.models.feature import Feature
 
 class TestFeature(unittest.TestCase):
     """Feature unit test stubs"""
@@ -48,7 +48,7 @@ class TestFeature(unittest.TestCase):
                 feature_dependency = 'DEPENDENT',
                 visible = True,
                 possible_values = [
-                    openapi_client.models.feature_possible_value.FeaturePossibleValue(
+                    jaqpotpy.api.openapi.models.feature_possible_value.FeaturePossibleValue(
                         key = 'value', 
                         value = 'value', )
                     ],

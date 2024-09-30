@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```python
-from openapi_client.models.get_models200_response import GetModels200Response
+from jaqpotpy.api.openapi.models.get_models200_response import GetModels200Response
 
 # TODO update the JSON string below
 json = "{}"

@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
+from jaqpotpy.api.openapi.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
 
 class TestPartiallyUpdateModelFeatureRequest(unittest.TestCase):
     """PartiallyUpdateModelFeatureRequest unit test stubs"""
@@ -41,7 +41,7 @@ class TestPartiallyUpdateModelFeatureRequest(unittest.TestCase):
                 description = 'An updated description for this feature',
                 feature_type = 'FLOAT',
                 possible_values = [
-                    openapi_client.models.feature_possible_value.FeaturePossibleValue(
+                    jaqpotpy.api.openapi.models.feature_possible_value.FeaturePossibleValue(
                         key = 'value', 
                         value = 'value', )
                     ]

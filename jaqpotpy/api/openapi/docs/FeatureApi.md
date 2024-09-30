@@ -1,4 +1,4 @@
-# openapi_client.FeatureApi
+# jaqpotpy.api.openapi.FeatureApi
 
 All URIs are relative to *https://api.jaqpot.org*
 
@@ -19,15 +19,15 @@ Update the name, description, and feature type of an existing feature within a s
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.feature import Feature
-from openapi_client.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.feature import Feature
+from jaqpotpy.api.openapi.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -37,17 +37,17 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.FeatureApi(api_client)
+    api_instance = jaqpotpy.api.openapi.FeatureApi(api_client)
     model_id = 56 # int | The ID of the model containing the feature
     feature_id = 56 # int | The ID of the feature to update
-    partially_update_model_feature_request = openapi_client.PartiallyUpdateModelFeatureRequest() # PartiallyUpdateModelFeatureRequest | 
+    partially_update_model_feature_request = jaqpotpy.api.openapi.PartiallyUpdateModelFeatureRequest() # PartiallyUpdateModelFeatureRequest | 
 
     try:
         # Update a feature for a specific model

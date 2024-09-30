@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.feature_type import FeatureType
+from jaqpotpy.api.openapi.models.feature_type import FeatureType
 
 class TestFeatureType(unittest.TestCase):
     """FeatureType unit test stubs"""

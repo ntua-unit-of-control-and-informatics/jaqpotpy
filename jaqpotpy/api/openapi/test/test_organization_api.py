@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.api.organization_api import OrganizationApi
+from jaqpotpy.api.openapi.api.organization_api import OrganizationApi
 
 
 class TestOrganizationApi(unittest.TestCase):

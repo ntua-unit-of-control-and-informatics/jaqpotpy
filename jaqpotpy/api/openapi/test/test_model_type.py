@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.model_type import ModelType
+from jaqpotpy.api.openapi.models.model_type import ModelType
 
 class TestModelType(unittest.TestCase):
     """ModelType unit test stubs"""

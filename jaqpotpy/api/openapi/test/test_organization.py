@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.organization import Organization
+from jaqpotpy.api.openapi.models.organization import Organization
 
 class TestOrganization(unittest.TestCase):
     """Organization unit test stubs"""
@@ -38,7 +38,7 @@ class TestOrganization(unittest.TestCase):
             return Organization(
                 id = 56,
                 name = 'my-awesome-org',
-                creator = openapi_client.models.user.User(
+                creator = jaqpotpy.api.openapi.models.user.User(
                     id = '', 
                     username = '', 
                     first_name = '', 
@@ -48,7 +48,7 @@ class TestOrganization(unittest.TestCase):
                 visibility = 'PUBLIC',
                 description = 'An awesome organization for managing models.',
                 organization_members = [
-                    openapi_client.models.organization_user.OrganizationUser(
+                    jaqpotpy.api.openapi.models.organization_user.OrganizationUser(
                         id = 56, 
                         user_id = '', 
                         username = '', 

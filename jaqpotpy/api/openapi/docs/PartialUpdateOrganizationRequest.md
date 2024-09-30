@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```python
-from openapi_client.models.partial_update_organization_request import PartialUpdateOrganizationRequest
+from jaqpotpy.api.openapi.models.partial_update_organization_request import PartialUpdateOrganizationRequest
 
 # TODO update the JSON string below
 json = "{}"

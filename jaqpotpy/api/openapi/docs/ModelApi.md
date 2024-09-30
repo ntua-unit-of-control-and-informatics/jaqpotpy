@@ -1,4 +1,4 @@
-# openapi_client.ModelApi
+# jaqpotpy.api.openapi.ModelApi
 
 All URIs are relative to *https://api.jaqpot.org*
 
@@ -26,14 +26,14 @@ Create a new model
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.model import Model
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.model import Model
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -43,15 +43,15 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
-    model = openapi_client.Model() # Model | 
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
+    model = jaqpotpy.api.openapi.Model() # Model | 
 
     try:
         # Create a new model
@@ -103,13 +103,13 @@ Delete a single model by its ID
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -119,14 +119,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     id = 0 # int | The ID of the model to delete
 
     try:
@@ -179,14 +179,14 @@ Retrieve a single model by its ID
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.model import Model
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.model import Model
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -196,14 +196,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     id = 'id_example' # str | The ID of the model to retrieve
 
     try:
@@ -258,14 +258,14 @@ Retrieve a single model by its ID
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.model import Model
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.model import Model
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -275,14 +275,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     id = 0 # int | The ID of the model to retrieve
 
     try:
@@ -335,14 +335,14 @@ Get paginated models
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.get_models200_response import GetModels200Response
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.get_models200_response import GetModels200Response
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -352,14 +352,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     page = 0 # int |  (optional) (default to 0)
     size = 10 # int |  (optional) (default to 10)
     sort = ['[\"field1|asc\",\"field2|desc\"]'] # List[str] |  (optional)
@@ -416,14 +416,14 @@ Get paginated shared models
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.get_models200_response import GetModels200Response
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.get_models200_response import GetModels200Response
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -433,14 +433,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     page = 0 # int |  (optional) (default to 0)
     size = 10 # int |  (optional) (default to 10)
     sort = ['[\"field1|asc\",\"field2|desc\"]'] # List[str] |  (optional)
@@ -499,15 +499,15 @@ Partially update specific fields of a model
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.model import Model
-from openapi_client.models.partially_update_model_request import PartiallyUpdateModelRequest
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.model import Model
+from jaqpotpy.api.openapi.models.partially_update_model_request import PartiallyUpdateModelRequest
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -517,16 +517,16 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     id = 56 # int | 
-    partially_update_model_request = openapi_client.PartiallyUpdateModelRequest() # PartiallyUpdateModelRequest | 
+    partially_update_model_request = jaqpotpy.api.openapi.PartiallyUpdateModelRequest() # PartiallyUpdateModelRequest | 
 
     try:
         # Partially update specific fields of a model
@@ -582,14 +582,14 @@ Submit a dataset for prediction using a specific model
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.dataset import Dataset
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.dataset import Dataset
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -599,16 +599,16 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     model_id = 0 # int | The ID of the model to use for prediction
-    dataset = openapi_client.Dataset() # Dataset | 
+    dataset = jaqpotpy.api.openapi.Dataset() # Dataset | 
 
     try:
         # Predict with Model
@@ -663,14 +663,14 @@ Submit a dataset for prediction using a specific model
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.dataset_csv import DatasetCSV
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.dataset_csv import DatasetCSV
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -680,16 +680,16 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     model_id = 0 # int | The ID of the model to use for prediction
-    dataset_csv = openapi_client.DatasetCSV() # DatasetCSV | 
+    dataset_csv = jaqpotpy.api.openapi.DatasetCSV() # DatasetCSV | 
 
     try:
         # Predict using CSV with Model
@@ -742,14 +742,14 @@ Search for models
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.get_models200_response import GetModels200Response
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.get_models200_response import GetModels200Response
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -759,14 +759,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.ModelApi(api_client)
+    api_instance = jaqpotpy.api.openapi.ModelApi(api_client)
     query = 'query_example' # str | 
     page = 0 # int |  (optional) (default to 0)
     size = 10 # int |  (optional) (default to 10)

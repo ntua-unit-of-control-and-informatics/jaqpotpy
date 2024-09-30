@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.api.feature_api import FeatureApi
+from jaqpotpy.api.openapi.api.feature_api import FeatureApi
 
 
 class TestFeatureApi(unittest.TestCase):

@@ -1,4 +1,4 @@
-# openapi_client.OrganizationInvitationApi
+# jaqpotpy.api.openapi.OrganizationInvitationApi
 
 All URIs are relative to *https://api.jaqpot.org*
 
@@ -23,14 +23,14 @@ This endpoint allows an organization admin to create new invitations for users.
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.create_invitations_request import CreateInvitationsRequest
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.create_invitations_request import CreateInvitationsRequest
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -40,16 +40,16 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationInvitationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationInvitationApi(api_client)
     org_name = 'org_name_example' # str | Name of the organization
-    create_invitations_request = openapi_client.CreateInvitationsRequest() # CreateInvitationsRequest | Invitation request payload
+    create_invitations_request = jaqpotpy.api.openapi.CreateInvitationsRequest() # CreateInvitationsRequest | Invitation request payload
 
     try:
         # Create new invitations for an organization
@@ -104,14 +104,14 @@ This endpoint allows an organization admin to get all invitations for their orga
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.organization_invitation import OrganizationInvitation
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.organization_invitation import OrganizationInvitation
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -121,14 +121,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationInvitationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationInvitationApi(api_client)
     org_name = 'org_name_example' # str | Name of the organization
 
     try:
@@ -185,14 +185,14 @@ This endpoint allows a user to check the status of an invitation.
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.organization_invitation import OrganizationInvitation
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.organization_invitation import OrganizationInvitation
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -202,14 +202,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationInvitationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationInvitationApi(api_client)
     name = 'name_example' # str | Name of the organization
     uuid = 'uuid_example' # str | UUID of the invitation
 
@@ -267,13 +267,13 @@ This endpoint allows an organization admin to resend an invitation email if it h
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -283,14 +283,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationInvitationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationInvitationApi(api_client)
     org_id = 56 # int | ID of the organization
     id = 'id_example' # str | ID of the invitation
 
@@ -348,14 +348,14 @@ This endpoint allows a user to update the status of an invitation.
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.organization_invitation import OrganizationInvitation
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.organization_invitation import OrganizationInvitation
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -365,17 +365,17 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationInvitationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationInvitationApi(api_client)
     name = 'name_example' # str | Name of the organization
     uuid = 'uuid_example' # str | UUID of the invitation
-    organization_invitation = openapi_client.OrganizationInvitation() # OrganizationInvitation | Invitation status update payload
+    organization_invitation = jaqpotpy.api.openapi.OrganizationInvitation() # OrganizationInvitation | Invitation status update payload
 
     try:
         # Update the status of an invitation

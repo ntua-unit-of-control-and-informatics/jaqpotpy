@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.api.dataset_api import DatasetApi
+from jaqpotpy.api.openapi.api.dataset_api import DatasetApi
 
 
 class TestDatasetApi(unittest.TestCase):

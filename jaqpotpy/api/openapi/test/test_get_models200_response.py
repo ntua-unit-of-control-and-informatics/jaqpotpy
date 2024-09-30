@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.get_models200_response import GetModels200Response
+from jaqpotpy.api.openapi.models.get_models200_response import GetModels200Response
 
 class TestGetModels200Response(unittest.TestCase):
     """GetModels200Response unit test stubs"""
@@ -37,12 +37,12 @@ class TestGetModels200Response(unittest.TestCase):
         if include_optional:
             return GetModels200Response(
                 content = [
-                    openapi_client.models.model_summary.ModelSummary(
+                    jaqpotpy.api.openapi.models.model_summary.ModelSummary(
                         id = 0, 
                         name = 'My Model', 
                         visibility = 'PUBLIC', 
                         description = 'A description of your model', 
-                        creator = openapi_client.models.user.User(
+                        creator = jaqpotpy.api.openapi.models.user.User(
                             id = '', 
                             username = '', 
                             first_name = '', 
@@ -53,7 +53,7 @@ class TestGetModels200Response(unittest.TestCase):
                         dependent_features_length = 56, 
                         independent_features_length = 56, 
                         shared_with_organizations = [
-                            openapi_client.models.organization_summary.OrganizationSummary(
+                            jaqpotpy.api.openapi.models.organization_summary.OrganizationSummary(
                                 id = 0, 
                                 name = 'My Organization', )
                             ], 

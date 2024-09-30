@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```python
-from openapi_client.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
+from jaqpotpy.api.openapi.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
 
 # TODO update the JSON string below
 json = "{}"

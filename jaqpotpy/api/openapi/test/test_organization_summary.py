@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.organization_summary import OrganizationSummary
+from jaqpotpy.api.openapi.models.organization_summary import OrganizationSummary
 
 class TestOrganizationSummary(unittest.TestCase):
     """OrganizationSummary unit test stubs"""

@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.partial_update_organization_request import PartialUpdateOrganizationRequest
+from jaqpotpy.api.openapi.models.partial_update_organization_request import PartialUpdateOrganizationRequest
 
 class TestPartialUpdateOrganizationRequest(unittest.TestCase):
     """PartialUpdateOrganizationRequest unit test stubs"""

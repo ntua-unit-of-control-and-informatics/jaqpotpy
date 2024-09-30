@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.api.organization_invitation_api import OrganizationInvitationApi
+from jaqpotpy.api.openapi.api.organization_invitation_api import OrganizationInvitationApi
 
 
 class TestOrganizationInvitationApi(unittest.TestCase):

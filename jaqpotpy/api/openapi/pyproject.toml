@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "openapi_client"
+name = "jaqpotpy.api.openapi"
 version = "1.0.0"
 description = "Jaqpot API"
 authors = ["Jaqpot <upci.ntua@gmail.com>"]
@@ -7,7 +7,7 @@ license = "Apache 2.0"
 readme = "README.md"
 repository = "https://github.com/GIT_USER_ID/GIT_REPO_ID"
 keywords = ["OpenAPI", "OpenAPI-Generator", "Jaqpot API"]
-include = ["openapi_client/py.typed"]
+include = ["jaqpotpy.api.openapi/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -34,7 +34,7 @@ extension-pkg-whitelist = "pydantic"
 
 [tool.mypy]
 files = [
-  "openapi_client",
+  "jaqpotpy.api.openapi",
   #"test",  # auto-generated tests
   "tests", # hand-written tests
 ]

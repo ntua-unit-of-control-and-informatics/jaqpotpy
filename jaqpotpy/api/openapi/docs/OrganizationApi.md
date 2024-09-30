@@ -1,4 +1,4 @@
-# openapi_client.OrganizationApi
+# jaqpotpy.api.openapi.OrganizationApi
 
 All URIs are relative to *https://api.jaqpot.org*
 
@@ -21,14 +21,14 @@ Create a new organization
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.organization import Organization
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.organization import Organization
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -38,15 +38,15 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationApi(api_client)
-    organization = openapi_client.Organization() # Organization | 
+    api_instance = jaqpotpy.api.openapi.OrganizationApi(api_client)
+    organization = jaqpotpy.api.openapi.Organization() # Organization | 
 
     try:
         # Create a new organization
@@ -95,14 +95,14 @@ Get all user organizations
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.organization import Organization
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.organization import Organization
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -112,14 +112,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationApi(api_client)
 
     try:
         # Get all user organizations
@@ -167,14 +167,14 @@ Get all organizations for a specific user
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.organization import Organization
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.organization import Organization
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -184,14 +184,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationApi(api_client)
 
     try:
         # Get all organizations for a specific user
@@ -239,14 +239,14 @@ Get organization by name
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.organization import Organization
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.organization import Organization
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -256,14 +256,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationApi(api_client)
     name = 'name_example' # str | 
 
     try:
@@ -316,15 +316,15 @@ Partially update an existing organization
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.organization import Organization
-from openapi_client.models.partial_update_organization_request import PartialUpdateOrganizationRequest
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.organization import Organization
+from jaqpotpy.api.openapi.models.partial_update_organization_request import PartialUpdateOrganizationRequest
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -334,16 +334,16 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.OrganizationApi(api_client)
+    api_instance = jaqpotpy.api.openapi.OrganizationApi(api_client)
     id = 56 # int | 
-    partial_update_organization_request = openapi_client.PartialUpdateOrganizationRequest() # PartialUpdateOrganizationRequest | 
+    partial_update_organization_request = jaqpotpy.api.openapi.PartialUpdateOrganizationRequest() # PartialUpdateOrganizationRequest | 
 
     try:
         # Partially update an existing organization

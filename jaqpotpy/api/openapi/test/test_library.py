@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.library import Library
+from jaqpotpy.api.openapi.models.library import Library
 
 class TestLibrary(unittest.TestCase):
     """Library unit test stubs"""

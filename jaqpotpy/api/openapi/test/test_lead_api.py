@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.api.lead_api import LeadApi
+from jaqpotpy.api.openapi.api.lead_api import LeadApi
 
 
 class TestLeadApi(unittest.TestCase):

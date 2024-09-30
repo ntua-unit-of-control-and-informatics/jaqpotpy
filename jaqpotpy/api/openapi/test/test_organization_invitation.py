@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.organization_invitation import OrganizationInvitation
+from jaqpotpy.api.openapi.models.organization_invitation import OrganizationInvitation
 
 class TestOrganizationInvitation(unittest.TestCase):
     """OrganizationInvitation unit test stubs"""

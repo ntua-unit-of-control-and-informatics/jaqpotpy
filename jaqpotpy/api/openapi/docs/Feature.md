@@ -21,7 +21,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```python
-from openapi_client.models.feature import Feature
+from jaqpotpy.api.openapi.models.feature import Feature
 
 # TODO update the JSON string below
 json = "{}"

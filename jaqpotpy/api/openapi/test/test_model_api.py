@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.api.model_api import ModelApi
+from jaqpotpy.api.openapi.api.model_api import ModelApi
 
 
 class TestModelApi(unittest.TestCase):

@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```python
-from openapi_client.models.model_extra_config import ModelExtraConfig
+from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
 
 # TODO update the JSON string below
 json = "{}"

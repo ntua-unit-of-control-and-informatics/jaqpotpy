@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.user import User
+from jaqpotpy.api.openapi.models.user import User
 
 class TestUser(unittest.TestCase):
     """User unit test stubs"""

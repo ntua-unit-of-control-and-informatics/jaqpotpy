@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.api.auth_api import AuthApi
+from jaqpotpy.api.openapi.api.auth_api import AuthApi
 
 
 class TestAuthApi(unittest.TestCase):

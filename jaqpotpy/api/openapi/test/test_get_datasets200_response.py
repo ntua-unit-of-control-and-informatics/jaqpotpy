@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.get_datasets200_response import GetDatasets200Response
+from jaqpotpy.api.openapi.models.get_datasets200_response import GetDatasets200Response
 
 class TestGetDatasets200Response(unittest.TestCase):
     """GetDatasets200Response unit test stubs"""
@@ -37,7 +37,7 @@ class TestGetDatasets200Response(unittest.TestCase):
         if include_optional:
             return GetDatasets200Response(
                 content = [
-                    openapi_client.models.dataset.Dataset(
+                    jaqpotpy.api.openapi.models.dataset.Dataset(
                         id = 1, 
                         type = 'PREDICTION', 
                         entry_type = 'ARRAY', 

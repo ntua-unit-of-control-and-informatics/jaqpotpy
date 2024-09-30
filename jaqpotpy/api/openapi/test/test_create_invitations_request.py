@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.create_invitations_request import CreateInvitationsRequest
+from jaqpotpy.api.openapi.models.create_invitations_request import CreateInvitationsRequest
 
 class TestCreateInvitationsRequest(unittest.TestCase):
     """CreateInvitationsRequest unit test stubs"""

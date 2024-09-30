@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.error_code import ErrorCode
+from jaqpotpy.api.openapi.models.error_code import ErrorCode
 
 class TestErrorCode(unittest.TestCase):
     """ErrorCode unit test stubs"""

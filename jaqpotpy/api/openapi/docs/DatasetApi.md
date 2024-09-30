@@ -1,4 +1,4 @@
-# openapi_client.DatasetApi
+# jaqpotpy.api.openapi.DatasetApi
 
 All URIs are relative to *https://api.jaqpot.org*
 
@@ -20,14 +20,14 @@ Retrieve a single dataset by its ID
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.dataset import Dataset
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.dataset import Dataset
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -37,14 +37,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.DatasetApi(api_client)
+    api_instance = jaqpotpy.api.openapi.DatasetApi(api_client)
     id = 0 # int | The ID of the dataset to retrieve
 
     try:
@@ -99,14 +99,14 @@ Retrieve all datasets associated with a specific user ID
 * Bearer (JWT) Authentication (bearerAuth):
 
 ```python
-import openapi_client
-from openapi_client.models.get_datasets200_response import GetDatasets200Response
-from openapi_client.rest import ApiException
+import jaqpotpy.api.openapi
+from jaqpotpy.api.openapi.models.get_datasets200_response import GetDatasets200Response
+from jaqpotpy.api.openapi.rest import ApiException
 from pprint import pprint
 
 # Defining the host is optional and defaults to https://api.jaqpot.org
 # See configuration.py for a list of all supported configuration parameters.
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     host = "https://api.jaqpot.org"
 )
 
@@ -116,14 +116,14 @@ configuration = openapi_client.Configuration(
 # satisfies your auth use case.
 
 # Configure Bearer authorization (JWT): bearerAuth
-configuration = openapi_client.Configuration(
+configuration = jaqpotpy.api.openapi.Configuration(
     access_token = os.environ["BEARER_TOKEN"]
 )
 
 # Enter a context with an instance of the API client
-with openapi_client.ApiClient(configuration) as api_client:
+with jaqpotpy.api.openapi.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = openapi_client.DatasetApi(api_client)
+    api_instance = jaqpotpy.api.openapi.DatasetApi(api_client)
     page = 0 # int |  (optional) (default to 0)
     size = 10 # int |  (optional) (default to 10)
     sort = ['[\"field1|asc\",\"field2|desc\"]'] # List[str] |  (optional)

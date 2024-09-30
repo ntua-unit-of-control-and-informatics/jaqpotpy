@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.model import Model
+from jaqpotpy.api.openapi.models.model import Model
 
 class TestModel(unittest.TestCase):
     """Model unit test stubs"""
@@ -45,7 +45,7 @@ class TestModel(unittest.TestCase):
                 type = 'SKLEARN',
                 jaqpotpy_version = '1.0.0',
                 libraries = [
-                    openapi_client.models.library.Library(
+                    jaqpotpy.api.openapi.models.library.Library(
                         id = 56, 
                         name = 'Library Name', 
                         version = '1.24.0', 
@@ -53,7 +53,7 @@ class TestModel(unittest.TestCase):
                         updated_at = '2023-01-01T12:00:00Z', )
                     ],
                 dependent_features = [
-                    openapi_client.models.feature.Feature(
+                    jaqpotpy.api.openapi.models.feature.Feature(
                         id = 1, 
                         meta = {
                             'key' : None
@@ -66,7 +66,7 @@ class TestModel(unittest.TestCase):
                         feature_dependency = 'DEPENDENT', 
                         visible = True, 
                         possible_values = [
-                            openapi_client.models.feature_possible_value.FeaturePossibleValue(
+                            jaqpotpy.api.openapi.models.feature_possible_value.FeaturePossibleValue(
                                 key = 'value', 
                                 value = 'value', )
                             ], 
@@ -74,7 +74,7 @@ class TestModel(unittest.TestCase):
                         updated_at = '2023-01-01T12:00:00Z', )
                     ],
                 independent_features = [
-                    openapi_client.models.feature.Feature(
+                    jaqpotpy.api.openapi.models.feature.Feature(
                         id = 1, 
                         meta = {
                             'key' : None
@@ -87,7 +87,7 @@ class TestModel(unittest.TestCase):
                         feature_dependency = 'DEPENDENT', 
                         visible = True, 
                         possible_values = [
-                            openapi_client.models.feature_possible_value.FeaturePossibleValue(
+                            jaqpotpy.api.openapi.models.feature_possible_value.FeaturePossibleValue(
                                 key = 'value', 
                                 value = 'value', )
                             ], 
@@ -95,10 +95,10 @@ class TestModel(unittest.TestCase):
                         updated_at = '2023-01-01T12:00:00Z', )
                     ],
                 shared_with_organizations = [
-                    openapi_client.models.organization.Organization(
+                    jaqpotpy.api.openapi.models.organization.Organization(
                         id = 56, 
                         name = 'my-awesome-org', 
-                        creator = openapi_client.models.user.User(
+                        creator = jaqpotpy.api.openapi.models.user.User(
                             id = '', 
                             username = '', 
                             first_name = '', 
@@ -108,7 +108,7 @@ class TestModel(unittest.TestCase):
                         visibility = 'PUBLIC', 
                         description = 'An awesome organization for managing models.', 
                         organization_members = [
-                            openapi_client.models.organization_user.OrganizationUser(
+                            jaqpotpy.api.openapi.models.organization_user.OrganizationUser(
                                 id = 56, 
                                 user_id = '', 
                                 username = '', 
@@ -127,7 +127,7 @@ class TestModel(unittest.TestCase):
                 visibility = 'PUBLIC',
                 task = 'REGRESSION',
                 actual_model = 'YQ==',
-                creator = openapi_client.models.user.User(
+                creator = jaqpotpy.api.openapi.models.user.User(
                     id = '', 
                     username = '', 
                     first_name = '', 
@@ -138,19 +138,19 @@ class TestModel(unittest.TestCase):
                 is_admin = True,
                 tags = '',
                 legacy_prediction_service = '',
-                extra_config = openapi_client.models.model_extra_config.ModelExtraConfig(
+                extra_config = jaqpotpy.api.openapi.models.model_extra_config.ModelExtraConfig(
                     torch_config = {
                         'key' : None
                         }, 
                     preprocessors = [
-                        openapi_client.models.transformer.Transformer(
+                        jaqpotpy.api.openapi.models.transformer.Transformer(
                             name = 'StandardScaler', 
                             config = {
                                 'key' : None
                                 }, )
                         ], 
                     featurizers = [
-                        openapi_client.models.transformer.Transformer(
+                        jaqpotpy.api.openapi.models.transformer.Transformer(
                             name = 'StandardScaler', 
                             config = {
                                 'key' : None
@@ -168,7 +168,7 @@ class TestModel(unittest.TestCase):
                 type = 'SKLEARN',
                 jaqpotpy_version = '1.0.0',
                 libraries = [
-                    openapi_client.models.library.Library(
+                    jaqpotpy.api.openapi.models.library.Library(
                         id = 56, 
                         name = 'Library Name', 
                         version = '1.24.0', 
@@ -176,7 +176,7 @@ class TestModel(unittest.TestCase):
                         updated_at = '2023-01-01T12:00:00Z', )
                     ],
                 dependent_features = [
-                    openapi_client.models.feature.Feature(
+                    jaqpotpy.api.openapi.models.feature.Feature(
                         id = 1, 
                         meta = {
                             'key' : None
@@ -189,7 +189,7 @@ class TestModel(unittest.TestCase):
                         feature_dependency = 'DEPENDENT', 
                         visible = True, 
                         possible_values = [
-                            openapi_client.models.feature_possible_value.FeaturePossibleValue(
+                            jaqpotpy.api.openapi.models.feature_possible_value.FeaturePossibleValue(
                                 key = 'value', 
                                 value = 'value', )
                             ], 
@@ -197,7 +197,7 @@ class TestModel(unittest.TestCase):
                         updated_at = '2023-01-01T12:00:00Z', )
                     ],
                 independent_features = [
-                    openapi_client.models.feature.Feature(
+                    jaqpotpy.api.openapi.models.feature.Feature(
                         id = 1, 
                         meta = {
                             'key' : None
@@ -210,7 +210,7 @@ class TestModel(unittest.TestCase):
                         feature_dependency = 'DEPENDENT', 
                         visible = True, 
                         possible_values = [
-                            openapi_client.models.feature_possible_value.FeaturePossibleValue(
+                            jaqpotpy.api.openapi.models.feature_possible_value.FeaturePossibleValue(
                                 key = 'value', 
                                 value = 'value', )
                             ], 

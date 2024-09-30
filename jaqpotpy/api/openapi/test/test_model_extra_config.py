@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.model_extra_config import ModelExtraConfig
+from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
 
 class TestModelExtraConfig(unittest.TestCase):
     """ModelExtraConfig unit test stubs"""
@@ -40,21 +40,21 @@ class TestModelExtraConfig(unittest.TestCase):
                     'key' : None
                     },
                 preprocessors = [
-                    openapi_client.models.transformer.Transformer(
+                    jaqpotpy.api.openapi.models.transformer.Transformer(
                         name = 'StandardScaler', 
                         config = {
                             'key' : None
                             }, )
                     ],
                 featurizers = [
-                    openapi_client.models.transformer.Transformer(
+                    jaqpotpy.api.openapi.models.transformer.Transformer(
                         name = 'StandardScaler', 
                         config = {
                             'key' : None
                             }, )
                     ],
                 doa = [
-                    openapi_client.models.transformer.Transformer(
+                    jaqpotpy.api.openapi.models.transformer.Transformer(
                         name = 'StandardScaler', 
                         config = {
                             'key' : None

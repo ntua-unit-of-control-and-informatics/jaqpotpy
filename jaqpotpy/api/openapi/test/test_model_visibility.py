@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.model_visibility import ModelVisibility
+from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 
 class TestModelVisibility(unittest.TestCase):
     """ModelVisibility unit test stubs"""

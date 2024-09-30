@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.organization_user_association_type import OrganizationUserAssociationType
+from jaqpotpy.api.openapi.models.organization_user_association_type import OrganizationUserAssociationType
 
 class TestOrganizationUserAssociationType(unittest.TestCase):
     """OrganizationUserAssociationType unit test stubs"""

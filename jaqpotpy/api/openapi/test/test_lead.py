@@ -15,7 +15,7 @@
 
 import unittest
 
-from openapi_client.models.lead import Lead
+from jaqpotpy.api.openapi.models.lead import Lead
 
 class TestLead(unittest.TestCase):
     """Lead unit test stubs"""
