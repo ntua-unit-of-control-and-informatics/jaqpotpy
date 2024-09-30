@@ -25,23 +25,23 @@ class JaqpotpyDataset(BaseDataset):
     """
 
     def __init__(
-        self,
-        df: pd.DataFrame = None,
-        path: Optional[str] = None,
-        y_cols: Iterable[str] = None,
-        x_cols: Optional[Iterable[str]] = None,
-        smiles_cols: Optional[Iterable[str]] = None,
-        featurizer: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
-        task: str = None,
+            self,
+            df: pd.DataFrame = None,
+            path: Optional[str] = None,
+            y_cols: Iterable[str] = None,
+            x_cols: Optional[Iterable[str]] = None,
+            smiles_cols: Optional[Iterable[str]] = None,
+            featurizer: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
+            task: str = None,
     ) -> None:
         if not (
-            isinstance(smiles_cols, str)
-            or (
-                isinstance(smiles_cols, list)
-                and all(isinstance(item, str) for item in smiles_cols)
-            )
-            or (isinstance(smiles_cols, list) and len(smiles_cols) == 0)
-            or (smiles_cols is None)
+                isinstance(smiles_cols, str)
+                or (
+                        isinstance(smiles_cols, list)
+                        and all(isinstance(item, str) for item in smiles_cols)
+                )
+                or (isinstance(smiles_cols, list) and len(smiles_cols) == 0)
+                or (smiles_cols is None)
         ):
             raise TypeError(
                 "smiles_cols should be either a string, an empty list"
@@ -50,7 +50,7 @@ class JaqpotpyDataset(BaseDataset):
 
         if (smiles_cols is not None) and (featurizer is None):
             raise TypeError(
-                "Cannot estimate SMILES descriptors without a featurizer"
+                "Cannot estimate SMILES descriptors without a featurizer."
                 "Please provide a featurizer"
             )
 

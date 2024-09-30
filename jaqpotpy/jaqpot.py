@@ -5,27 +5,16 @@ from keycloak import KeycloakOpenID
 
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
-from jaqpotpy.api.openapi.jaqpot_api_client.types import UNSET
-from jaqpotpy.api.openapi.jaqpot_api_client.api.model import create_model
-from jaqpotpy.api.openapi.jaqpot_api_client.client import AuthenticatedClient
-from jaqpotpy.api.openapi.jaqpot_api_client.models import Model
-from jaqpotpy.api.openapi.jaqpot_api_client.models.feature import Feature
-from jaqpotpy.api.openapi.jaqpot_api_client.models.feature_type import FeatureType
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config import (
-    ModelExtraConfig,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config_torch_config import (
-    ModelExtraConfigTorchConfig,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_extra_config_torch_config_additional_property import (
-    ModelExtraConfigTorchConfigAdditionalProperty,
-)
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_task import ModelTask
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_type import ModelType
-from jaqpotpy.api.openapi.jaqpot_api_client.models.model_visibility import (
-    ModelVisibility,
-)
+from jaqpotpy.api.openapi.api.model_api import ModelApi
+from jaqpotpy.api.openapi.models.model import Model
+from jaqpotpy.api.openapi.models.feature import Feature
+from jaqpotpy.api.openapi.models.feature_type import FeatureType
+from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
+from jaqpotpy.api.openapi.models.model_task import ModelTask
+from jaqpotpy.api.openapi.models.model_type import ModelType
+from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.utils.url_utils import add_subdomain
 
@@ -49,14 +38,14 @@ class Jaqpot:
     """
 
     def __init__(
-        self,
-        base_url=None,
-        app_url=None,
-        login_url=None,
-        api_url=None,
-        keycloak_realm=None,
-        keycloak_client_id=None,
-        create_logs=False,
+            self,
+            base_url=None,
+            app_url=None,
+            login_url=None,
+            api_url=None,
+            keycloak_realm=None,
+            keycloak_client_id=None,
+            create_logs=False,
     ):
 
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -66,7 +55,7 @@ class Jaqpot:
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = "https://appv2.jaqpot.org/"
+            self.base_url = "https://jaqpot.org"
         self.app_url = app_url or add_subdomain(self.base_url, "app")
         self.login_url = login_url or add_subdomain(self.base_url, "login")
         self.api_url = api_url or add_subdomain(self.base_url, "api")
@@ -116,7 +105,7 @@ class Jaqpot:
 
         Parameters
         ----------
-        api_key : api_key can be retireved from the application after logged in
+        api_key : api_key can be retrieved from the application after logged in
 
         """
         self.api_key = api_key
@@ -131,7 +120,8 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        auth_client = AuthenticatedClient(base_url=self.api_url, token=self.api_key)
+        jaqpot_api_client = JaqpotApiClient(host=self.api_url, access_token=self.api_key)
+        model_api = ModelApi(jaqpot_api_client)
         actual_model = model_to_b64encoding(model.onnx_model.SerializeToString())
         body_model = Model(
             name=name,
@@ -153,7 +143,7 @@ class Jaqpot:
                     feature_type=feature_i["featureType"],
                     possible_values=feature_i["possible_values"]
                     if "possible_values" in feature_i
-                    else UNSET,
+                    else None,
                 )
                 for feature_i in model.independentFeatures
             ],
@@ -163,7 +153,7 @@ class Jaqpot:
             description=description,
             extra_config=model.extra_config,
         )
-        response = create_model.sync_detailed(client=auth_client, body=body_model)
+        response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
             model_url = response.headers.get("Location")
             model_id = model_url.split("/")[-1]
@@ -178,15 +168,15 @@ class Jaqpot:
             self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_torch_model(
-        self,
-        onnx_model,
-        type,
-        featurizer,
-        name,
-        description,
-        target_name,
-        visibility,
-        task,
+            self,
+            onnx_model,
+            type,
+            featurizer,
+            name,
+            description,
+            target_name,
+            visibility,
+            task,
     ):
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
@@ -199,17 +189,16 @@ class Jaqpot:
             feature_type = FeatureType.INTEGER
         else:
             raise ValueError("Task should be either classification or regression")
-        auth_client = AuthenticatedClient(
-            base_url=self.api_url, token=self.api_key
-        )  # Change Base URL when not in local testing
+        model_api = ModelApi(
+            JaqpotApiClient(host=self.api_url, access_token=self.api_key)
+        )
+        # Change Base URL when not in local testing
         # baseurl: "http://localhost.jaqpot.org:8080/"
         featurizer_dict = featurizer.get_dict()
 
-        featurizer_config = ModelExtraConfigTorchConfigAdditionalProperty.from_dict(
-            featurizer_dict
-        )
-        torch_config_json = {"featurizerConfig": featurizer_config.to_dict()}
-        torch_config = ModelExtraConfigTorchConfig.from_dict(torch_config_json)
+        featurizer_config = featurizer_dict
+        torch_config_json = {"featurizerConfig": featurizer_config}
+        torch_config = torch_config_json
         if type == "TORCHSCRIPT":
             type = ModelType.TORCHSCRIPT
         elif type == "TORCH_ONNX":
@@ -231,7 +220,7 @@ class Jaqpot:
             actual_model=onnx_model,
             description=description,
         )
-        response = create_model.sync_detailed(client=auth_client, body=body_model)
+        response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
             self.log.info(
                 "Graph Pytorch Model has been successfully uploaded. The url of the model is "
