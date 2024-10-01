@@ -1,6 +1,6 @@
 import http.client as http_client
 import webbrowser
-
+import pandas as pd
 from keycloak import KeycloakOpenID
 
 import jaqpotpy
@@ -126,6 +126,65 @@ class Jaqpot:
         if response.status_code < 300:
             model = response.data
             return model
+        else:
+            self.log.error("Error code: " + str(response.status_code.value))
+
+    def get_shared_models(self, page=None, size=None, sort=None, organization_id=None):
+        """Get shared models from Jaqpot.
+
+        Parameters
+        ----------
+        page : page number
+        size : number of models per page
+        sort : sort models by
+        organization_id : organization id
+
+        """
+        jaqpot_api_client = JaqpotApiClient(
+            host=self.api_url, access_token=self.api_key
+        )
+        model_api = ModelApi(jaqpot_api_client)
+        response = model_api.get_shared_models_with_http_info(
+            page=page, size=size, sort=sort, organization_id=organization_id
+        )
+        if response.status_code < 300:
+            shared_models = response.data
+            data = []
+            for shared_model in shared_models.content:
+                model_info = {
+                    "Name": shared_model.name,
+                    "model_id": shared_model.id,
+                    # "description": shared_model.description,
+                    "Type": shared_model.type,
+                    "N_Dependent_Feats": shared_model.dependent_features_length,
+                    "N_Independent_Feats": shared_model.independent_features_length,
+                    "shared_with_organizations_id": shared_model.shared_with_organizations,
+                }
+                data.append(model_info)
+            df = pd.DataFrame(data)
+            return df
+        else:
+            self.log.error("Error code: " + str(response.status_code.value))
+
+    def predict_with_model(self, model_id, dataset):
+        """Predict with model on Jaqpot.
+
+        Parameters
+        ----------
+        model_id : model_id is the id of the model on Jaqpot
+        dataset : dataset to predict
+
+        """
+        jaqpot_api_client = JaqpotApiClient(
+            host=self.api_url, access_token=self.api_key
+        )
+        model_api = ModelApi(jaqpot_api_client)
+        response = model_api.predict_with_model_with_http_info(
+            model_id=model_id, dataset=dataset
+        )
+        if response.status_code < 300:
+            prediction = response.data
+            return prediction
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 
