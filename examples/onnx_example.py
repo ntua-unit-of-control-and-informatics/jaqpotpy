@@ -1,21 +1,26 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.feature_selection import VarianceThreshold
 
-from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MordredDescriptors
+from jaqpotpy.descriptors.molecular import (
+    TopologicalFingerprint,
+    MordredDescriptors,
+    MACCSKeysFingerprint,
+)
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models.preprocessing import Preprocess
 from jaqpotpy import Jaqpot
 
-path = "./jaqpotpy/test_data/test_data_smiles_regression.csv"
+path = "./jaqpotpy/test_data/test_data_smiles_classification.csv"
 
 df = pd.read_csv(path).iloc[0:100, :]
 smiles_cols = ["SMILES"]
 y_cols = ["ACTIVITY"]
 x_cols = ["X1", "X2"]
-featurizer = TopologicalFingerprint()
+featurizer = MACCSKeysFingerprint()
 dataset = JaqpotpyDataset(
     df=df,
     y_cols=y_cols,
@@ -24,10 +29,11 @@ dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
-# print(featurizer.__dict__)
 
-# attributes = copy.deepcopy(featurizer.__dict__)
-# print(attributes)
+# sel = ["X1", "X2", "ABC"]
+sel = VarianceThreshold(threshold=0.1)
+dataset.select_features(sel)
+print(dataset.X.shape)
 pre = Preprocess()
 # pre.register_preprocess_class("Standard Scaler", StandardScaler())
 # pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
@@ -58,7 +64,7 @@ prediction_dataset = JaqpotpyDataset(
 )
 # # # print(prediction_dataset.df)
 
-# skl_predictions = molecularModel_t1.predict(prediction_dataset)
+skl_predictions = molecularModel_t1.predict(prediction_dataset)
 # # skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
 # onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
 # # onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
