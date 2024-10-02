@@ -6,9 +6,12 @@ from keycloak import KeycloakOpenID
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
-from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
+from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding, csv_to_b64encoding
 from jaqpotpy.api.openapi.api.model_api import ModelApi
 from jaqpotpy.api.openapi.api.dataset_api import DatasetApi
+from jaqpotpy.api.openapi.models.dataset import Dataset
+from jaqpotpy.api.openapi.models.dataset_csv import DatasetCSV
+from jaqpotpy.api.openapi.models import DatasetType
 from jaqpotpy.api.openapi.models.model import Model
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.feature_type import FeatureType
@@ -196,6 +199,11 @@ class Jaqpot:
         dataset : dataset to predict
 
         """
+        dataset = Dataset(
+            type=DatasetType.PREDICTION,
+            entry_type="ARRAY",
+            input=dataset,
+        )
         jaqpot_api_client = JaqpotApiClient(
             host=self.api_url, access_token=self.api_key
         )
@@ -220,6 +228,42 @@ class Jaqpot:
                     time.sleep(2)  # Wait for 2 seconds before the next check
         else:
             self.log.error("Error code: " + str(response.status_code.value))
+
+    def predict_with_model_csv(self, model_id, csv_path):
+        """Predict with model on Jaqpot.
+
+        Parameters
+        ----------
+        model_id : model_id is the id of the model on Jaqpot
+        dataset_csv : csv dataset to predict
+
+        """
+        b64_dataset_csv = csv_to_b64encoding(csv_path)
+        dataset_csv = DatasetCSV(
+            type=DatasetType.PREDICTION, input_file=b64_dataset_csv
+        )
+        jaqpot_api_client = JaqpotApiClient(
+            host=self.api_url, access_token=self.api_key
+        )
+        model_api = ModelApi(jaqpot_api_client)
+        response = model_api.predict_with_model_csv_with_http_info(
+            model_id=model_id, dataset_csv=dataset_csv
+        )
+        if response.status_code < 300:
+            dataset_location = response.headers["Location"]
+            dataset_id = int(dataset_location.split("/")[-1])
+            completed_prediction = False
+            while not completed_prediction:
+                dataset = self.get_dataset_by_id(dataset_id)
+                if dataset.status == "SUCCESS":
+                    completed_prediction = True
+                    prediction = dataset.result
+                    return prediction
+                elif dataset.status == "FAILURE":
+                    self.log.error("Prediction failed")
+                    return
+                else:
+                    time.sleep(2)
 
     def deploy_sklearn_model(self, model, name, description, visibility):
         """ "
