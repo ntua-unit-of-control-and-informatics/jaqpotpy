@@ -130,7 +130,26 @@ class Jaqpot:
         response = model_api.get_model_by_id_with_http_info(id=model_id)
         if response.status_code < 300:
             model = response.data
-            return model
+            model_info = {
+                "Name": model.name,
+                "model_id": model.id,
+                "description": model.description,
+                "Type": model.type,
+                "Independent Features": [
+                    feature.name for feature in model.independent_features
+                ],
+                "Dependent Features": [
+                    feature.name for feature in model.dependent_features
+                ],
+                "shared_with_organizations_id": [
+                    organization.name
+                    for organization in model.shared_with_organizations
+                ],
+            }
+            model_summary = pd.DataFrame.from_dict(
+                model_info, orient="index", columns=["Model Summary"]
+            )
+            return {"response_data": model, "model_summary": model_summary}
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 
@@ -223,7 +242,6 @@ class Jaqpot:
                     return prediction
                 elif dataset.status == "FAILURE":
                     self.log.error("Prediction failed")
-                    return
                 else:
                     time.sleep(2)  # Wait for 2 seconds before the next check
         else:
