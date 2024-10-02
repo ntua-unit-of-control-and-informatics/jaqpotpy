@@ -7,8 +7,9 @@ from torch_geometric.nn import (
     GCNConv,
     GATConv,
     TransformerConv,
-    GraphNorm,
     global_add_pool,
+    global_mean_pool,
+    global_max_pool,
 )
 import torch.nn.init as init
 from torch import Tensor
@@ -42,7 +43,6 @@ def pyg_to_onnx(torch_model, featurizer):
 
 
 def pyg_to_torchscript(torch_model):
-
     if torch_model.training:
         torch_model.eval()
     torch_model = torch_model.cpu()
@@ -66,8 +66,9 @@ class BaseGraphNetwork(nn.Module):
         output_dim: int = 1,
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
-        graph_norm: bool = False,
+        batch_norm: bool = False,
         seed=42,
+        pooling: str = "mean",
         edge_dim: Optional[int] = None,
         heads: Optional[int] = None,
     ):
@@ -78,8 +79,9 @@ class BaseGraphNetwork(nn.Module):
         self.output_dim = output_dim
         self.activation = activation
         self.dropout_proba = dropout_proba
-        self.graph_norm = graph_norm
+        self.batch_norm = batch_norm
         self.seed = seed
+        self.pooling = pooling
         self.edge_dim = edge_dim
         self.heads = heads
         torch.manual_seed(self.seed)
@@ -93,6 +95,16 @@ class BaseGraphNetwork(nn.Module):
         """Helper function to add a convolution layer."""
         self.graph_layers.append(conv_layer)
 
+    def pooling_layer(self, x: Tensor, batch: Optional[Tensor]) -> Tensor:
+        if self.pooling == "mean":
+            return global_mean_pool(x, batch)
+        elif self.pooling == "add":
+            return global_add_pool(x, batch)
+        elif self.pooling == "max":
+            return global_max_pool(x, batch)
+        else:
+            raise ValueError("pooling must be either 'mean' or 'add'")
+
     def forward(
         self,
         x: Tensor,
@@ -103,21 +115,21 @@ class BaseGraphNetwork(nn.Module):
         if self.edge_dim is not None:
             for graph_layer in self.graph_layers:
                 x = graph_layer(x, edge_index, edge_attr)
-                if self.graph_norm:
-                    x = self.norm_layer(x, batch)
+                if self.batch_norm:
+                    x = self.norm_layer(x)
                 x = self.activation(x)
                 x = self.dropout(x)
-            x = global_add_pool(x, batch)
+            x = self.pooling_layer(x, batch)
             x = self.fc(x)
             return x
         else:
             for graph_layer in self.graph_layers:
                 x = graph_layer(x, edge_index)
-                if self.graph_norm:
-                    x = self.norm_layer(x, batch)
+                if self.batch_norm:
+                    x = self.norm_layer(x)
                 x = self.activation(x)
                 x = self.dropout(x)
-            x = global_add_pool(x, batch)
+            x = self.pooling_layer(x, batch)
             x = self.fc(x)
             return x
 
@@ -134,8 +146,8 @@ class BaseGraphNetwork(nn.Module):
             raise TypeError("activation must be a torch.nn.Module like nn.Relu()")
         if not isinstance(self.dropout_proba, float):
             raise TypeError("dropout must be of type float between 0 and 1")
-        if not isinstance(self.graph_norm, bool):
-            raise TypeError("graph_norm must be of type bool")
+        if not isinstance(self.batch_norm, bool):
+            raise TypeError("batch_norm must be of type bool")
 
 
 class GraphSageNetwork(BaseGraphNetwork):
@@ -149,8 +161,9 @@ class GraphSageNetwork(BaseGraphNetwork):
         output_dim: int = 1,
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
-        graph_norm: bool = False,
+        batch_norm: bool = False,
         seed=42,
+        pooling: str = "mean",
     ):
         super(GraphSageNetwork, self).__init__(
             input_dim,
@@ -159,8 +172,9 @@ class GraphSageNetwork(BaseGraphNetwork):
             output_dim,
             activation,
             dropout_proba,
-            graph_norm,
+            batch_norm,
             seed,
+            pooling,
         )
 
         # Add SAGEConv layers
@@ -170,7 +184,7 @@ class GraphSageNetwork(BaseGraphNetwork):
 
         # Set up additional layers
         self.dropout = nn.Dropout(dropout_proba)
-        self.norm_layer = GraphNorm(hidden_dim)
+        self.norm_layer = nn.BatchNorm1d(hidden_dim)
         self.fc = nn.Linear(hidden_dim, output_dim)
         init.xavier_uniform_(self.fc.weight)
         init.zeros_(self.fc.bias)
@@ -187,8 +201,9 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
         output_dim: int = 1,
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
-        graph_norm: bool = False,
+        batch_norm: bool = False,
         seed=42,
+        pooling: str = "mean",
     ):
         super(GraphConvolutionNetwork, self).__init__(
             input_dim,
@@ -197,8 +212,9 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
             output_dim,
             activation,
             dropout_proba,
-            graph_norm,
+            batch_norm,
             seed,
+            pooling,
         )
 
         # Add GCNConv layers
@@ -208,7 +224,7 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
 
         # Set up additional layers
         self.dropout = nn.Dropout(dropout_proba)
-        self.norm_layer = GraphNorm(hidden_dim)
+        self.norm_layer = nn.BatchNorm1d(hidden_dim)
         self.fc = nn.Linear(hidden_dim, output_dim)
         init.xavier_uniform_(self.fc.weight)
         init.zeros_(self.fc.bias)
@@ -225,8 +241,9 @@ class GraphAttentionNetwork(BaseGraphNetwork):
         output_dim: int = 1,
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
-        graph_norm: bool = False,
+        batch_norm: bool = False,
         seed=42,
+        pooling: str = "mean",
         edge_dim: Optional[int] = None,
         heads: int = 1,
     ):
@@ -237,8 +254,9 @@ class GraphAttentionNetwork(BaseGraphNetwork):
             output_dim,
             activation,
             dropout_proba,
-            graph_norm,
+            batch_norm,
             seed,
+            pooling,
             edge_dim,
             heads,
         )
@@ -252,7 +270,7 @@ class GraphAttentionNetwork(BaseGraphNetwork):
 
         # Set up additional layers
         self.dropout = nn.Dropout(dropout_proba)
-        self.norm_layer = GraphNorm(hidden_dim)
+        self.norm_layer = nn.BatchNorm1d(hidden_dim * heads)
         self.fc = nn.Linear(hidden_dim * heads, output_dim)
         init.xavier_uniform_(self.fc.weight)
         init.zeros_(self.fc.bias)
@@ -269,8 +287,9 @@ class GraphTransformerNetwork(BaseGraphNetwork):
         output_dim: int = 1,
         activation: nn.Module = nn.ReLU(),
         dropout_proba: float = 0.0,
-        graph_norm: bool = False,
+        batch_norm: bool = False,
         seed=42,
+        pooling: str = "mean",
         edge_dim: Optional[int] = None,
         heads: int = 1,
     ):
@@ -281,8 +300,9 @@ class GraphTransformerNetwork(BaseGraphNetwork):
             output_dim,
             activation,
             dropout_proba,
-            graph_norm,
+            batch_norm,
             seed,
+            pooling,
             edge_dim,
             heads,
         )
@@ -298,7 +318,7 @@ class GraphTransformerNetwork(BaseGraphNetwork):
 
         # Set up additional layers
         self.dropout = nn.Dropout(dropout_proba)
-        self.norm_layer = GraphNorm(hidden_dim)
+        self.norm_layer = nn.BatchNorm1d(hidden_dim * heads)
         self.fc = nn.Linear(hidden_dim * heads, output_dim)
         init.xavier_uniform_(self.fc.weight)
         init.zeros_(self.fc.bias)
