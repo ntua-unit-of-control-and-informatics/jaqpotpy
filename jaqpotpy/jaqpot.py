@@ -8,6 +8,7 @@ from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.api.openapi.api.model_api import ModelApi
+from jaqpotpy.api.openapi.api.dataset_api import DatasetApi
 from jaqpotpy.api.openapi.models.model import Model
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.feature_type import FeatureType
@@ -17,6 +18,7 @@ from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.utils.url_utils import add_subdomain
+import time
 
 ENCODING = "utf-8"
 
@@ -166,6 +168,25 @@ class Jaqpot:
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 
+    def get_dataset_by_id(self, dataset_id):
+        """Get dataset from Jaqpot.
+
+        Parameters
+        ----------
+        dataset_id : dataset_id is the id of the dataset on Jaqpot
+
+        """
+        jaqpot_api_client = JaqpotApiClient(
+            host=self.api_url, access_token=self.api_key
+        )
+        dataset_api = DatasetApi(jaqpot_api_client)
+        response = dataset_api.get_dataset_by_id_with_http_info(id=dataset_id)
+        if response.status_code < 300:
+            dataset = response.data
+            return dataset
+        else:
+            self.log.error("Error code: " + str(response.status_code.value))
+
     def predict_with_model(self, model_id, dataset):
         """Predict with model on Jaqpot.
 
@@ -183,8 +204,20 @@ class Jaqpot:
             model_id=model_id, dataset=dataset
         )
         if response.status_code < 300:
-            prediction = response.data
-            return prediction
+            dataset_location = response.headers["Location"]
+            dataset_id = int(dataset_location.split("/")[-1])
+            completed_prediction = False
+            while not completed_prediction:
+                dataset = self.get_dataset_by_id(dataset_id)
+                if dataset.status == "SUCCESS":
+                    completed_prediction = True
+                    prediction = dataset.result
+                    return prediction
+                elif dataset.status == "FAILURE":
+                    self.log.error("Prediction failed")
+                    return
+                else:
+                    time.sleep(2)  # Wait for 2 seconds before the next check
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 

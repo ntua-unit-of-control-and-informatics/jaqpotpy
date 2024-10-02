@@ -16,6 +16,7 @@ import jaqpotpy
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import (
     FloatTensorType,
+    DoubleTensorType,
     Int64TensorType,
     Int32TensorType,
     Int8TensorType,
@@ -33,12 +34,12 @@ from jaqpotpy.doa.doa import DOA
 
 class SklearnModel(Model):
     def __init__(
-            self,
-            dataset: JaqpotpyDataset,
-            model: Any,
-            doa: Optional[DOA or list] = None,
-            preprocessor: Preprocess = None,
-            evaluator: Evaluator = None,
+        self,
+        dataset: JaqpotpyDataset,
+        model: Any,
+        doa: Optional[DOA or list] = None,
+        preprocessor: Preprocess = None,
+        evaluator: Evaluator = None,
     ):
         self.x_cols = dataset.x_cols
         self.y_cols = dataset.y_cols
@@ -103,7 +104,7 @@ class SklearnModel(Model):
         configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
-                added_class, added_class_type
+            added_class, added_class_type
         ).items():
             configurations[attr_name] = attr_value
 
@@ -131,10 +132,32 @@ class SklearnModel(Model):
             return UInt8TensorType(shape=[None, shape])
         elif dtype == "bool":
             return BooleanTensorType(shape=[None, shape])
-        elif dtype == "float32" or dtype == "float64":
+        elif dtype == "float32":
             return FloatTensorType(shape=[None, shape])
+        elif dtype == "float64":
+            return DoubleTensorType(shape=[None, shape])
         elif dtype in ["string", "object", "category"]:
             return StringTensorType(shape=[None, shape])
+        else:
+            return None
+
+    def _map_dtype_from_onnx(self, onnx_dtype):
+        if isinstance(onnx_dtype, Int64TensorType):
+            return "int64"
+        elif isinstance(onnx_dtype, Int32TensorType):
+            return "int32"
+        elif isinstance(onnx_dtype, Int8TensorType):
+            return "int8"
+        elif isinstance(onnx_dtype, UInt8TensorType):
+            return "uint8"
+        elif isinstance(onnx_dtype, BooleanTensorType):
+            return "bool"
+        elif isinstance(onnx_dtype, FloatTensorType):
+            return "float32"
+        elif isinstance(onnx_dtype, DoubleTensorType):
+            return "float64"
+        elif isinstance(onnx_dtype, StringTensorType):
+            return "string"
         else:
             return None
 
@@ -143,13 +166,16 @@ class SklearnModel(Model):
         self.initial_types = []
         dtype_array = self.dataset.X.dtypes.values
         dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
-        all_same_numerical = all(
-            dtype in ["float32", "float64", "int32", "int64", "bool"]
+        all_numerical = all(
+            dtype in ["float32", "float64", "int32", "int64", "bool", "int8"]
             for dtype in dtype_str_array
         )
-        if all_same_numerical:
+        if all_numerical:
             self.initial_types = [
-                ("input", self._map_onnx_dtype("float32", len(self.dataset.X.columns)))
+                (
+                    "input",
+                    self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
+                )
             ]
         else:
             for i, feature in enumerate(self.dataset.X.columns):
@@ -164,6 +190,7 @@ class SklearnModel(Model):
             initial_types=self.initial_types,
             name=name,
             options={StandardScaler: {"div": "div_cast"}},
+            # options={"zipmap": False},
         )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
@@ -212,8 +239,8 @@ class SklearnModel(Model):
 
             if len(pre_y_keys) > 0:
                 if (
-                        self.task == "BINARY_CLASSIFICATION"
-                        or self.task == "MULTICLASS_CLASSIFICATION"
+                    self.task == "BINARY_CLASSIFICATION"
+                    or self.task == "MULTICLASS_CLASSIFICATION"
                 ):
                     raise ValueError(
                         "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
@@ -307,6 +334,7 @@ class SklearnModel(Model):
         sess = InferenceSession(self.onnx_model.SerializeToString())
         if len(self.initial_types) == 1:
             input_dtype = (
+                # self._map_dtype_from_onnx(self.initial_types[0][1])
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
                 else "string"
@@ -342,6 +370,7 @@ class SklearnModel(Model):
         sess = InferenceSession(self.onnx_model.SerializeToString())
         if len(self.initial_types) == 1:
             input_dtype = (
+                # self._map_dtype_from_onnx(self.initial_types[0][1])
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
                 else "string"
@@ -358,7 +387,7 @@ class SklearnModel(Model):
             }
         onnx_probs = sess.run(None, input_data)
         onnx_probs_list = [
-            max(onnx_probs[1][instance].values())
+            max(onnx_probs[1][instance])  # .values())
             for instance in range(len(onnx_probs[1]))
         ]
         return onnx_probs_list
