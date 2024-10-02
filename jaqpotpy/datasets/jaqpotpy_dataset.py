@@ -218,7 +218,6 @@ class JaqpotpyDataset(BaseDataset):
 
         self.df = pd.concat([self.X, self.y], axis=1)
         self.X.columns = self.X.columns.astype(str)
-        self.y.columns = self.y.columns.astype(str)
         self.df.columns = self.df.columns.astype(str)
 
     def select_features(self, FeatureSelector=None, SelectionList=None):
