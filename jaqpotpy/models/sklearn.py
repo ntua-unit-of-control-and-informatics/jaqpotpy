@@ -164,7 +164,7 @@ class SklearnModel(Model):
         self.initial_types = []
         dtype_array = self.dataset.X.dtypes.values
         dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
-        all_same_numerical = all(
+        all_numerical = all(
             dtype
             in [
                 "int8",
