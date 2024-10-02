@@ -276,7 +276,13 @@ class Jaqpot:
                 if dataset.status == "SUCCESS":
                     completed_prediction = True
                     prediction = dataset.result
-                    return prediction
+                    pred_df = pd.DataFrame(prediction)
+                    last_columns = ["Probabilities", "AD"]
+                    first_columns = [
+                        col for col in pred_df.columns if col not in last_columns
+                    ]
+                    pred_df = pred_df[first_columns + last_columns]
+                    return pred_df
                 elif dataset.status == "FAILURE":
                     self.log.error("Prediction failed")
                     return
