@@ -159,7 +159,7 @@ class SklearnModel(Model):
         else:
             return None
 
-    def _create_onnx(self):
+    def _create_onnx(self, onnx_options: Optional[Dict] = None):
         name = self.model.__class__.__name__ + "_ONNX"
         self.initial_types = []
         dtype_array = self.dataset.X.dtypes.values
@@ -197,12 +197,13 @@ class SklearnModel(Model):
                         self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
                     )
                 )
+        if not onnx_options:
+            onnx_options = {}
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=self.initial_types,
             name=name,
-            options={StandardScaler: {"div": "div_cast"}},
-            # options={"zipmap": False},
+            options=onnx_options.update({StandardScaler: {"div": "div_cast"}}),
         )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
@@ -308,7 +309,7 @@ class SklearnModel(Model):
         )
         self._dtypes_to_jaqpotypes()
 
-        self._create_onnx()
+        self._create_onnx(onnx_options=onnx_options)
 
         if self.evaluator:
             self.__eval__()
@@ -399,7 +400,7 @@ class SklearnModel(Model):
             }
         onnx_probs = sess.run(None, input_data)
         onnx_probs_list = [
-            max(onnx_probs[1][instance])  # .values())
+            max(onnx_probs[1][instance].values())
             for instance in range(len(onnx_probs[1]))
         ]
         return onnx_probs_list
