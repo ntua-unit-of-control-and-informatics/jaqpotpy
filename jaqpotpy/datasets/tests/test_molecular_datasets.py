@@ -3,6 +3,7 @@
 import os
 import unittest
 import pandas as pd
+import sklearn.feature_selection as skfs
 from jaqpotpy.descriptors.molecular import (
     MACCSKeysFingerprint,
     MordredDescriptors,
@@ -69,7 +70,9 @@ class TestDatasets(unittest.TestCase):
             "Task should be 'binary_classification'",
         )
         self.assertEqual(
-            dataset.smiles_cols, self.single_smiles_cols, "SMILES columns should match"
+            dataset.smiles_cols,
+            self.single_smiles_cols,
+            "SMILES columns should match",
         )
         self.assertEqual(dataset.y_cols, self.y_cols, "Y columns should match")
         self.assertEqual(dataset.x_cols, self.x_cols, "X columns should match")
@@ -106,9 +109,9 @@ class TestDatasets(unittest.TestCase):
         )
 
         self.assertGreater(
-            len(dataset.x_cols_all),
+            len(dataset.x_colnames),
             len(self.x_cols),
-            "x_cols_all should include both original and featurized columns",
+            "x_colnames should include both original and featurized columns",
         )
 
         self.assertIn(
@@ -340,6 +343,78 @@ class TestDatasets(unittest.TestCase):
 
         self.assertEqual(dataset.X.shape[1], 4038, "DataFrame should have 4038 columns")
         self.assertEqual(dataset.X.shape[0], 3, "DataFrame should have 3 rows")
+
+    def test_select_features_with_feature_selector(self):
+        # Test with a FeatureSelector (VarianceThreshold)
+        dataset = JaqpotpyDataset(
+            path=self.path,
+            y_cols=self.y_cols,
+            smiles_cols=self.single_smiles_cols,
+            x_cols=self.x_cols,
+            task="binary_classification",
+            featurizer=self.featurizer,
+        )
+        feature_selector = skfs.VarianceThreshold(threshold=0.1)
+        dataset.select_features(feature_selector)
+        self.assertEqual(dataset.X.shape[1], 69, "DataFrame should have 4038 columns")
+        self.assertIn("X1", dataset.active_features, "X1 should be selected")
+        self.assertNotIn(
+            "f1",
+            dataset.active_features,
+            "f1 should not be selected due to low variance",
+        )
+
+    def test_select_features_with_selection_list(self):
+        # Test with a predefined selection list
+        dataset = JaqpotpyDataset(
+            path=self.path,
+            y_cols=self.y_cols,
+            smiles_cols=self.single_smiles_cols,
+            x_cols=self.x_cols,
+            task="binary_classification",
+            featurizer=self.featurizer,
+        )
+        selection_list = ["X1", "X2"]
+        dataset.select_features(SelectionList=selection_list)
+        self.assertEqual(dataset.X.shape[1], 2, "DataFrame should have 2 columns")
+        self.assertEqual(
+            list(dataset.X.columns),
+            selection_list,
+            "Only X1 and X2 should be selected",
+        )
+        selection_list = ["X1", "X3"]
+
+        with self.assertRaises(ValueError):
+            dataset.select_features(SelectionList=selection_list)
+
+    def test_select_features_with_both_arguments(self):
+        # Test that passing both FeatureSelector and SelectionList raises an error
+        dataset = JaqpotpyDataset(
+            path=self.path,
+            y_cols=self.y_cols,
+            smiles_cols=self.single_smiles_cols,
+            x_cols=self.x_cols,
+            task="binary_classification",
+            featurizer=self.featurizer,
+        )
+        with self.assertRaises(ValueError):
+            dataset.select_features(
+                FeatureSelector=skfs.VarianceThreshold(threshold=0.01),
+                SelectionList=["X1", "X2"],
+            )
+
+    def test_select_features_with_neither_argument(self):
+        # Test that passing neither FeatureSelector nor SelectionList raises an error
+        dataset = JaqpotpyDataset(
+            path=self.path,
+            y_cols=self.y_cols,
+            smiles_cols=self.single_smiles_cols,
+            x_cols=self.x_cols,
+            task="binary_classification",
+            featurizer=self.featurizer,
+        )
+        with self.assertRaises(ValueError):
+            dataset.select_features()
 
 
 if __name__ == "__main__":

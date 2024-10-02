@@ -33,15 +33,13 @@ from jaqpotpy.doa.doa import DOA
 
 class SklearnModel(Model):
     def __init__(
-            self,
-            dataset: JaqpotpyDataset,
-            model: Any,
-            doa: Optional[DOA or list] = None,
-            preprocessor: Preprocess = None,
-            evaluator: Evaluator = None,
+        self,
+        dataset: JaqpotpyDataset,
+        model: Any,
+        doa: Optional[DOA or list] = None,
+        preprocessor: Preprocess = None,
+        evaluator: Evaluator = None,
     ):
-        self.x_cols = dataset.x_cols
-        self.y_cols = dataset.y_cols
         self.dataset = dataset
         self.featurizer = dataset.featurizer
         self.model = model
@@ -103,7 +101,7 @@ class SklearnModel(Model):
         configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
-                added_class, added_class_type
+            added_class, added_class_type
         ).items():
             configurations[attr_name] = attr_value
 
@@ -144,7 +142,21 @@ class SklearnModel(Model):
         dtype_array = self.dataset.X.dtypes.values
         dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
         all_same_numerical = all(
-            dtype in ["float32", "float64", "int32", "int64", "bool"]
+            dtype
+            in [
+                "int8",
+                "int16",
+                "int32",
+                "int64",
+                "uint8",
+                "uint16",
+                "uint32",
+                "uint64",
+                "float16",
+                "float32",
+                "float64",
+                "bool",
+            ]
             for dtype in dtype_str_array
         )
         if all_same_numerical:
@@ -212,8 +224,8 @@ class SklearnModel(Model):
 
             if len(pre_y_keys) > 0:
                 if (
-                        self.task == "BINARY_CLASSIFICATION"
-                        or self.task == "MULTICLASS_CLASSIFICATION"
+                    self.task == "BINARY_CLASSIFICATION"
+                    or self.task == "MULTICLASS_CLASSIFICATION"
                 ):
                     raise ValueError(
                         "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
@@ -282,7 +294,7 @@ class SklearnModel(Model):
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y[::-1]:
-                    if len(self.y_cols) == 1:
+                    if len(self.dataset.y_cols) == 1:
                         sklearn_prediction = f.inverse_transform(
                             sklearn_prediction.reshape(1, -1)
                         ).flatten()
@@ -322,13 +334,13 @@ class SklearnModel(Model):
                 for i in range(len(self.initial_types))
             }
         onnx_prediction = sess.run(None, input_data)
-        if len(self.y_cols) == 1:
+        if len(self.dataset.y_cols) == 1:
             onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
         if self.preprocess is not None:
             if self.preprocessing_y:
                 for f in self.preprocessing_y[::-1]:
                     onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
-        if len(self.y_cols) == 1:
+        if len(self.dataset.y_cols) == 1:
             return onnx_prediction[0].flatten()
         return onnx_prediction[0]
 
