@@ -178,10 +178,7 @@ class Jaqpot:
                 model_info = {
                     "Name": shared_model.name,
                     "model_id": shared_model.id,
-                    # "description": shared_model.description,
                     "Type": shared_model.type,
-                    "N_Dependent_Feats": shared_model.dependent_features_length,
-                    "N_Independent_Feats": shared_model.independent_features_length,
                     "shared_with_organizations_id": shared_model.shared_with_organizations,
                 }
                 data.append(model_info)
