@@ -7,7 +7,7 @@ TEMP_DIR=$(mktemp -d)
 TARGET_DIR=./jaqpotpy/api/openapi
 
 # Install openapi-generator-cli if not already installed
-if ! command -v openapi-generator &> /dev/null
+if ! command -v openapi-generator-cli &> /dev/null
 then
     echo "openapi-generator could not be found, installing..."
     npm install @openapitools/openapi-generator-cli -g
@@ -22,7 +22,7 @@ cd -
 sed -i.bak 's/DateTime/string/g' $JAQPOT_API_PATH/src/main/resources/openapi.yaml && rm $JAQPOT_API_PATH/src/main/resources/openapi.yaml.bak
 
 # Generate the OpenAPI client in a temporary directory
-openapi-generator generate \
+openapi-generator-cli generate \
     -i $JAQPOT_API_PATH/src/main/resources/openapi.yaml \
     -g python \
     -o $TEMP_DIR \
