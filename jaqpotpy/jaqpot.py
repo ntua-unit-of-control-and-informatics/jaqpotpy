@@ -115,7 +115,7 @@ class Jaqpot:
         self.api_key = api_key
         self.log.info("api key is set")
 
-    def get_model_id(self, model_id):
+    def get_model_by_id(self, model_id):
         """Get model from Jaqpot.
 
         Parameters
