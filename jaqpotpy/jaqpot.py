@@ -244,7 +244,7 @@ class Jaqpot:
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 
-    def predict_with_model_csv(self, model_id, csv_path):
+    def predict_with_csv(self, model_id, csv_path):
         """Predict with model on Jaqpot.
 
         Parameters
