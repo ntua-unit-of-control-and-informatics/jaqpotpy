@@ -239,6 +239,7 @@ class Jaqpot:
                     return prediction
                 elif dataset.status == "FAILURE":
                     self.log.error("Prediction failed")
+                    return
                 else:
                     time.sleep(2)  # Wait for 2 seconds before the next check
         else:
