@@ -139,26 +139,6 @@ class SklearnModel(Model):
         else:
             return None
 
-    def _map_dtype_from_onnx(self, onnx_dtype):
-        if isinstance(onnx_dtype, Int64TensorType):
-            return "int64"
-        elif isinstance(onnx_dtype, Int32TensorType):
-            return "int32"
-        elif isinstance(onnx_dtype, Int8TensorType):
-            return "int8"
-        elif isinstance(onnx_dtype, UInt8TensorType):
-            return "uint8"
-        elif isinstance(onnx_dtype, BooleanTensorType):
-            return "bool"
-        elif isinstance(onnx_dtype, FloatTensorType):
-            return "float32"
-        elif isinstance(onnx_dtype, DoubleTensorType):
-            return "float64"
-        elif isinstance(onnx_dtype, StringTensorType):
-            return "string"
-        else:
-            return None
-
     def _create_onnx(self, onnx_options: Optional[Dict] = None):
         name = self.model.__class__.__name__ + "_ONNX"
         self.initial_types = []
@@ -197,13 +177,12 @@ class SklearnModel(Model):
                         self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
                     )
                 )
-        if not onnx_options:
-            onnx_options = {}
+
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=self.initial_types,
             name=name,
-            options=onnx_options.update({StandardScaler: {"div": "div_cast"}}),
+            options=onnx_options,
         )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
@@ -347,7 +326,6 @@ class SklearnModel(Model):
         sess = InferenceSession(self.onnx_model.SerializeToString())
         if len(self.initial_types) == 1:
             input_dtype = (
-                # self._map_dtype_from_onnx(self.initial_types[0][1])
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
                 else "string"
@@ -383,7 +361,6 @@ class SklearnModel(Model):
         sess = InferenceSession(self.onnx_model.SerializeToString())
         if len(self.initial_types) == 1:
             input_dtype = (
-                # self._map_dtype_from_onnx(self.initial_types[0][1])
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
                 else "string"
