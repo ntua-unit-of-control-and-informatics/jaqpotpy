@@ -7,7 +7,7 @@ from keycloak import KeycloakOpenID
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
-from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding, csv_to_b64encoding
+from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding, file_to_b64encoding
 from jaqpotpy.api.openapi.api.model_api import ModelApi
 from jaqpotpy.api.openapi.api.dataset_api import DatasetApi
 from jaqpotpy.api.openapi.models.dataset import Dataset
@@ -293,7 +293,7 @@ class Jaqpot:
         # jaqpot_api_client = JaqpotApiClient(
         #     host=self.api_url, access_token=self.api_key
         # )
-        b64_dataset_csv = csv_to_b64encoding(csv_path)
+        b64_dataset_csv = file_to_b64encoding(csv_path)
         dataset_csv = DatasetCSV(
             type=DatasetType.PREDICTION, input_file=b64_dataset_csv
         )
