@@ -231,9 +231,6 @@ class Jaqpot:
 
         """
         jaqpot_api_client = self._create_jaqpot_api_client()
-        # jaqpot_api_client = JaqpotApiClient(
-        #     host=self.api_url, access_token=self.api_key
-        # )
         dataset_api = DatasetApi(jaqpot_api_client)
         response = dataset_api.get_dataset_by_id_with_http_info(id=dataset_id)
         if response.status_code < 300:
@@ -242,7 +239,7 @@ class Jaqpot:
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 
-    def predict_with_model_synch(self, model_id, dataset):
+    def predict_with_model_sync(self, model_id, dataset):
         """Predict with model on Jaqpot.
 
         Parameters
