@@ -1,6 +1,7 @@
 import http.client as http_client
 import webbrowser
 import pandas as pd
+import polling2
 from keycloak import KeycloakOpenID
 
 import jaqpotpy
@@ -241,7 +242,7 @@ class Jaqpot:
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 
-    def predict_with_model(self, model_id, dataset):
+    def predict_with_model_synch(self, model_id, dataset):
         """Predict with model on Jaqpot.
 
         Parameters
@@ -251,9 +252,6 @@ class Jaqpot:
 
         """
         jaqpot_api_client = self._create_jaqpot_api_client()
-        # jaqpot_api_client = JaqpotApiClient(
-        #     host=self.api_url, access_token=self.api_key
-        # )
         dataset = Dataset(
             type=DatasetType.PREDICTION,
             entry_type="ARRAY",
@@ -266,18 +264,22 @@ class Jaqpot:
         if response.status_code < 300:
             dataset_location = response.headers["Location"]
             dataset_id = int(dataset_location.split("/")[-1])
-            completed_prediction = False
-            while not completed_prediction:
+            try:
+                polling2.poll(
+                    lambda: self.get_dataset_by_id(dataset_id).status
+                    in ["SUCCESS", "FAILURE"],
+                    step=3,
+                    timeout=60,
+                )
                 dataset = self.get_dataset_by_id(dataset_id)
                 if dataset.status == "SUCCESS":
-                    completed_prediction = True
-                    prediction = dataset.result
-                    return prediction
+                    return dataset.result
                 elif dataset.status == "FAILURE":
                     self.log.error("Prediction failed")
                     return
-                else:
-                    time.sleep(2)  # Wait for 2 seconds before the next check
+            except polling2.TimeoutException:
+                self.log.error("Polling timed out")
+                return "TIMEOUT"
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 
