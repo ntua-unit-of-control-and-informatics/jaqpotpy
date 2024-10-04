@@ -104,6 +104,9 @@ class Jaqpot:
         except Exception as ex:
             self.log.error("Could not login to jaqpot", exc_info=ex)
 
+    def _create_jaqpot_api_client(self):
+        return JaqpotApiClient(host=self.api_url, access_token=self.api_key)
+
     def set_api_key(self, api_key):
         """Set's api key for authentication on Jaqpot.
 
@@ -123,11 +126,23 @@ class Jaqpot:
         model_id : model_id is the id of the model on Jaqpot
 
         """
-        jaqpot_api_client = JaqpotApiClient(
-            host=self.api_url, access_token=self.api_key
-        )
+        jaqpot_api_client = self._create_jaqpot_api_client()
         model_api = ModelApi(jaqpot_api_client)
         response = model_api.get_model_by_id_with_http_info(id=model_id)
+        if response.status_code < 300:
+            return response
+        else:
+            self.log.error("Error code: " + str(response.status_code.value))
+
+    def get_model_summary(self, model_id):
+        """Get model summary from Jaqpot.
+
+        Parameters
+        ----------
+        model_id : model_id is the id of the model on Jaqpot
+
+        """
+        response = self.get_model_by_id(model_id)
         if response.status_code < 300:
             model = response.data
             model_info = {
@@ -149,7 +164,7 @@ class Jaqpot:
             model_summary = pd.DataFrame.from_dict(
                 model_info, orient="index", columns=["Model Summary"]
             )
-            return {"response_data": model, "model_summary": model_summary}
+            return model_summary
         else:
             self.log.error("Error code: " + str(response.status_code.value))
 
@@ -164,11 +179,30 @@ class Jaqpot:
         organization_id : organization id
 
         """
-        jaqpot_api_client = JaqpotApiClient(
-            host=self.api_url, access_token=self.api_key
-        )
+        jaqpot_api_client = self._create_jaqpot_api_client()
         model_api = ModelApi(jaqpot_api_client)
         response = model_api.get_shared_models_with_http_info(
+            page=page, size=size, sort=sort, organization_id=organization_id
+        )
+        if response.status_code < 300:
+            return response
+        else:
+            self.log.error("Error code: " + str(response.status_code.value))
+
+    def get_shared_models_summary(
+        self, page=None, size=None, sort=None, organization_id=None
+    ):
+        """Get shared models summary from Jaqpot.
+
+        Parameters
+        ----------
+        page : page number
+        size : number of models per page
+        sort : sort models by
+        organization_id : organization id
+
+        """
+        response = self.get_shared_models(
             page=page, size=size, sort=sort, organization_id=organization_id
         )
         if response.status_code < 300:
@@ -195,9 +229,10 @@ class Jaqpot:
         dataset_id : dataset_id is the id of the dataset on Jaqpot
 
         """
-        jaqpot_api_client = JaqpotApiClient(
-            host=self.api_url, access_token=self.api_key
-        )
+        jaqpot_api_client = self._create_jaqpot_api_client()
+        # jaqpot_api_client = JaqpotApiClient(
+        #     host=self.api_url, access_token=self.api_key
+        # )
         dataset_api = DatasetApi(jaqpot_api_client)
         response = dataset_api.get_dataset_by_id_with_http_info(id=dataset_id)
         if response.status_code < 300:
@@ -215,13 +250,14 @@ class Jaqpot:
         dataset : dataset to predict
 
         """
+        jaqpot_api_client = self._create_jaqpot_api_client()
+        # jaqpot_api_client = JaqpotApiClient(
+        #     host=self.api_url, access_token=self.api_key
+        # )
         dataset = Dataset(
             type=DatasetType.PREDICTION,
             entry_type="ARRAY",
             input=dataset,
-        )
-        jaqpot_api_client = JaqpotApiClient(
-            host=self.api_url, access_token=self.api_key
         )
         model_api = ModelApi(jaqpot_api_client)
         response = model_api.predict_with_model_with_http_info(
@@ -254,13 +290,15 @@ class Jaqpot:
         dataset_csv : csv dataset to predict
 
         """
+        jaqpot_api_client = self._create_jaqpot_api_client()
+        # jaqpot_api_client = JaqpotApiClient(
+        #     host=self.api_url, access_token=self.api_key
+        # )
         b64_dataset_csv = csv_to_b64encoding(csv_path)
         dataset_csv = DatasetCSV(
             type=DatasetType.PREDICTION, input_file=b64_dataset_csv
         )
-        jaqpot_api_client = JaqpotApiClient(
-            host=self.api_url, access_token=self.api_key
-        )
+
         model_api = ModelApi(jaqpot_api_client)
         response = model_api.predict_with_model_csv_with_http_info(
             model_id=model_id, dataset_csv=dataset_csv
@@ -296,9 +334,10 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        jaqpot_api_client = JaqpotApiClient(
-            host=self.api_url, access_token=self.api_key
-        )
+        jaqpot_api_client = self._create_jaqpot_api_client()
+        # jaqpot_api_client = JaqpotApiClient(
+        #     host=self.api_url, access_token=self.api_key
+        # )
         model_api = ModelApi(jaqpot_api_client)
         actual_model = model_to_b64encoding(model.onnx_model.SerializeToString())
         body_model = Model(
