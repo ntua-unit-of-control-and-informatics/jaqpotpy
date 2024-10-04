@@ -271,10 +271,8 @@ class Jaqpot:
                 if dataset.status == "SUCCESS":
                     return dataset.result
                 elif dataset.status == "FAILURE":
-                    self.log.error("Prediction failed")
                     raise RuntimeError("Prediction failed")
             except polling2.TimeoutException:
-                self.log.error("Timeout error")
                 raise RuntimeError("Timeout error")
         else:
             self.log.error("Error code: " + str(response.status_code.value))
