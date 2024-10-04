@@ -136,6 +136,7 @@ class Jaqpot:
             return response
         else:
             self.log.error("Error code: " + str(response.status_code.value))
+            raise RuntimeError("Error code: " + str(response.status_code.value))
 
     def get_model_summary(self, model_id):
         """Get model summary from Jaqpot.
@@ -170,6 +171,7 @@ class Jaqpot:
             return model_summary
         else:
             self.log.error("Error code: " + str(response.status_code.value))
+            raise RuntimeError("Error code: " + str(response.status_code.value))
 
     def get_shared_models(self, page=None, size=None, sort=None, organization_id=None):
         """Get shared models from Jaqpot.
@@ -276,6 +278,7 @@ class Jaqpot:
                 raise RuntimeError("Timeout error")
         else:
             self.log.error("Error code: " + str(response.status_code.value))
+            raise RuntimeError("Error code: " + str(response.status_code.value))
 
     def predict_with_csv(self, model_id, csv_path):
         """Predict with model on Jaqpot.
