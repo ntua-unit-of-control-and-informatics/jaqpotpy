@@ -42,7 +42,7 @@ class Feature(BaseModel):
     visible: Optional[StrictBool] = None
     possible_values: Optional[List[FeaturePossibleValue]] = Field(default=None, alias="possibleValues")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
-    updated_at: Optional[StrictStr] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
+    updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
     __properties: ClassVar[List[str]] = ["id", "meta", "key", "name", "units", "description", "featureType", "featureDependency", "visible", "possibleValues", "createdAt", "updatedAt"]
 
     @field_validator('key')

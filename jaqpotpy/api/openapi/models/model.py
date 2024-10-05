@@ -57,7 +57,7 @@ class Model(BaseModel):
     legacy_prediction_service: Optional[StrictStr] = Field(default=None, alias="legacyPredictionService")
     extra_config: Optional[ModelExtraConfig] = Field(default=None, alias="extraConfig")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
-    updated_at: Optional[StrictStr] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
+    updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
     __properties: ClassVar[List[str]] = ["id", "meta", "name", "description", "type", "jaqpotpyVersion", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "actualModel", "creator", "canEdit", "isAdmin", "tags", "legacyPredictionService", "extraConfig", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(

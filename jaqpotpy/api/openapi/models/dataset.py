@@ -18,6 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
 from jaqpotpy.api.openapi.models.dataset_type import DatasetType
@@ -38,10 +39,10 @@ class Dataset(BaseModel):
     user_id: Optional[StrictStr] = Field(default=None, alias="userId")
     model_id: Optional[StrictInt] = Field(default=None, alias="modelId")
     model_name: Optional[StrictStr] = Field(default=None, alias="modelName")
-    executed_at: Optional[StrictStr] = Field(default=None, alias="executedAt")
-    execution_finished_at: Optional[StrictStr] = Field(default=None, alias="executionFinishedAt")
-    created_at: Optional[StrictStr] = Field(default=None, alias="createdAt")
-    updated_at: Optional[StrictStr] = Field(default=None, alias="updatedAt")
+    executed_at: Optional[datetime] = Field(default=None, alias="executedAt")
+    execution_finished_at: Optional[datetime] = Field(default=None, alias="executionFinishedAt")
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
     __properties: ClassVar[List[str]] = ["id", "type", "entryType", "input", "result", "status", "failureReason", "userId", "modelId", "modelName", "executedAt", "executionFinishedAt", "createdAt", "updatedAt"]
 
     @field_validator('entry_type')

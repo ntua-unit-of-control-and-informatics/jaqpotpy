@@ -18,6 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
@@ -31,7 +32,7 @@ class OrganizationInvitation(BaseModel):
     user_id: Optional[StrictStr] = Field(default=None, description="The user id associated with that invitation", alias="userId")
     user_email: StrictStr = Field(description="Email address of the invited user", alias="userEmail")
     status: StrictStr = Field(description="Status of the invitation")
-    expiration_date: StrictStr = Field(description="Expiration date of the invitation", alias="expirationDate")
+    expiration_date: datetime = Field(description="Expiration date of the invitation", alias="expirationDate")
     __properties: ClassVar[List[str]] = ["id", "userId", "userEmail", "status", "expirationDate"]
 
     @field_validator('status')
