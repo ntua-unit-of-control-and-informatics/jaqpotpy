@@ -328,6 +328,15 @@ class Jaqpot:
         )
         return prediction
 
+    def qsartoolbox_qsar_model_predict_sync(self, smiles, qsarGuid):
+        dataset = Dataset(
+            type=DatasetType.PREDICTION,
+            entry_type="ARRAY",
+            input=[{"smiles": smiles, "qsarGuid": qsarGuid}],
+        )
+        prediction = self.predict_with_model_sync(QSARTOOLBOX_MODEL_MODEL_ID, dataset)
+        return prediction
+
     def deploy_sklearn_model(self, model, name, description, visibility):
         """ "
         Deploy sklearn models on Jaqpot.
