@@ -271,11 +271,9 @@ class Jaqpot:
             if dataset.status == "SUCCESS":
                 return dataset.result
             elif dataset.status == "FAILURE":
-                # JaqpotPredictionError("Prediction failed")
-                print("Prediction failed")
-                return
+                raise JaqpotPredictionError(dataset.failure_reason)
         else:
-            JaqpotApiClient("Error code: " + str(response.status_code.value))
+            JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def predict_with_csv(self, model_id, csv_path):
         """Predict with model on Jaqpot.
@@ -318,20 +316,20 @@ class Jaqpot:
                     time.sleep(2)
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculatorGuid):
-        input = ([{"smiles": smiles, "calculatorGuid": calculatorGuid}],)
+        dataset = ([{"smiles": smiles, "calculatorGuid": calculatorGuid}],)
         prediction = self.predict_with_model_sync(
-            QSARTOOLBOX_CALCULATOR_MODEL_ID, input
+            QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset
         )
         return prediction
 
     def qsartoolbox_qsar_model_predict_sync(self, smiles, qsarGuid):
-        input = [{"smiles": smiles, "qsarGuid": qsarGuid}]
-        prediction = self.predict_with_model_sync(QSARTOOLBOX_MODEL_MODEL_ID, input)
+        dataset = [{"smiles": smiles, "qsarGuid": qsarGuid}]
+        prediction = self.predict_with_model_sync(QSARTOOLBOX_MODEL_MODEL_ID, dataset)
         return prediction
 
     def qsartoolbox_profiler_predict_sync(self, smiles, profilerGuid):
-        input = [{"smiles": smiles, "profilerGuid": profilerGuid}]
-        prediction = self.predict_with_model_sync(QSAR_PROFILER_MODEL_ID, input)
+        dataset = [{"smiles": smiles, "profilerGuid": profilerGuid}]
+        prediction = self.predict_with_model_sync(QSAR_PROFILER_MODEL_ID, dataset)
         return prediction
 
     def deploy_sklearn_model(self, model, name, description, visibility):
