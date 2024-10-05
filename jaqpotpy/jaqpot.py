@@ -5,6 +5,7 @@ import polling2
 from keycloak import KeycloakOpenID
 
 import jaqpotpy
+import time
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding, file_to_b64encoding
@@ -22,10 +23,18 @@ from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.utils.url_utils import add_subdomain
-import time
+from jaqpotpy.exceptions.exceptions import (
+    JaqpotPredictionError,
+    JaqpotPredictionTimeout,
+    JaqpotGetModelError,
+    JaqpotApiException,
+)
+
 
 ENCODING = "utf-8"
-
+QSARTOOLBOX_CALCULATOR_MODEL_ID = 6
+QSARTOOLBOX_MODEL_MODEL_ID = 1837
+QSAR_PROFILER_MODEL_ID = 1842
 
 # import matplotlib
 # matplotlib.use('TkAgg')
@@ -71,45 +80,36 @@ class Jaqpot:
         self.http_client = None
 
     def login(self):
-        """Logins on Jaqpot."""
-        try:
-            # Configure Keycloak client
-            keycloak_openid = KeycloakOpenID(
-                server_url=self.login_url,
-                client_id=self.keycloak_client_id,
-                realm_name=self.keycloak_realm,
-            )
+        # Configure Keycloak client
+        keycloak_openid = KeycloakOpenID(
+            server_url=self.login_url,
+            client_id=self.keycloak_client_id,
+            realm_name=self.keycloak_realm,
+        )
 
-            # Generate the authorization URL
-            redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
-            auth_url = keycloak_openid.auth_url(
-                redirect_uri=redirect_uri,
-                scope="openid email profile",
-                state="random_state_value",
-            )
+        # Generate the authorization URL
+        redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
+        auth_url = keycloak_openid.auth_url(
+            redirect_uri=redirect_uri,
+            scope="openid email profile",
+            state="random_state_value",
+        )
 
-            print(f"Open this URL in your browser and log in:\n{auth_url}")
+        print(f"Open this URL in your browser and log in:\n{auth_url}")
 
-            # Automatically open the browser (optional)
-            webbrowser.open(auth_url)
+        # Automatically open the browser (optional)
+        webbrowser.open(auth_url)
 
-            code = input("Enter the authorization code you received: ")
+        code = input("Enter the authorization code you received: ")
 
-            # Exchange the code for an access token
-            token_response = keycloak_openid.token(
-                grant_type="authorization_code", code=code, redirect_uri=redirect_uri
-            )
+        # Exchange the code for an access token
+        token_response = keycloak_openid.token(
+            grant_type="authorization_code", code=code, redirect_uri=redirect_uri
+        )
 
-            access_token = token_response["access_token"]
-            self.api_key = access_token
-            self.http_client = JaqpotApiClient(
-                host=self.api_url, access_token=self.api_key
-            )
-        except Exception as ex:
-            self.log.error("Could not login to jaqpot", exc_info=ex)
-
-    def _create_jaqpot_api_client(self):
-        return JaqpotApiClient(host=self.api_url, access_token=self.api_key)
+        access_token = token_response["access_token"]
+        self.api_key = access_token
+        self.http_client = JaqpotApiClient(host=self.api_url, access_token=self.api_key)
 
     def set_api_key(self, api_key):
         """Set's api key for authentication on Jaqpot.
@@ -135,8 +135,7 @@ class Jaqpot:
         if response.status_code < 300:
             return response
         else:
-            self.log.error("Error code: " + str(response.status_code.value))
-            raise RuntimeError("Error code: " + str(response.status_code.value))
+            JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def get_model_summary(self, model_id):
         """Get model summary from Jaqpot.
@@ -170,8 +169,7 @@ class Jaqpot:
             )
             return model_summary
         else:
-            self.log.error("Error code: " + str(response.status_code.value))
-            raise RuntimeError("Error code: " + str(response.status_code.value))
+            JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def get_shared_models(self, page=None, size=None, sort=None, organization_id=None):
         """Get shared models from Jaqpot.
@@ -191,7 +189,7 @@ class Jaqpot:
         if response.status_code < 300:
             return response
         else:
-            self.log.error("Error code: " + str(response.status_code.value))
+            JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def get_shared_models_summary(
         self, page=None, size=None, sort=None, organization_id=None
@@ -223,7 +221,7 @@ class Jaqpot:
             df = pd.DataFrame(data)
             return df
         else:
-            self.log.error("Error code: " + str(response.status_code.value))
+            JaqpotApiClient("Error code: " + str(response.status_code.value))
 
     def get_dataset_by_id(self, dataset_id):
         """Get dataset from Jaqpot.
@@ -239,7 +237,7 @@ class Jaqpot:
             dataset = response.data
             return dataset
         else:
-            self.log.error("Error code: " + str(response.status_code.value))
+            JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def predict_with_model_sync(self, model_id, dataset):
         """Predict with model on Jaqpot.
@@ -255,10 +253,15 @@ class Jaqpot:
             entry_type="ARRAY",
             input=dataset,
         )
-        model_api = ModelApi(self.http_client)
-        response = model_api.predict_with_model_with_http_info(
-            model_id=model_id, dataset=dataset
-        )
+        try:
+            model_api = ModelApi(self.http_client)
+            response = model_api.predict_with_model_with_http_info(
+                model_id=model_id, dataset=dataset
+            )
+        except JaqpotPredictionError:
+            self.log.error("Prediction failed")
+            raise
+
         if response.status_code < 300:
             dataset_location = response.headers["Location"]
             dataset_id = int(dataset_location.split("/")[-1])
@@ -273,12 +276,11 @@ class Jaqpot:
                 if dataset.status == "SUCCESS":
                     return dataset.result
                 elif dataset.status == "FAILURE":
-                    raise RuntimeError("Prediction failed")
+                    JaqpotPredictionError("Prediction failed")
             except polling2.TimeoutException:
-                raise RuntimeError("Timeout error")
+                JaqpotPredictionTimeout("Prediction timed out")
         else:
-            self.log.error("Error code: " + str(response.status_code.value))
-            raise RuntimeError("Error code: " + str(response.status_code.value))
+            JaqpotApiClient("Error code: " + str(response.status_code.value))
 
     def predict_with_csv(self, model_id, csv_path):
         """Predict with model on Jaqpot.
@@ -319,6 +321,14 @@ class Jaqpot:
                     return
                 else:
                     time.sleep(2)
+
+    def qsartoolbox_calculator_predict_sync(self, smiles, calculatorGuid):
+        dataset = Dataset(
+            type=DatasetType.PREDICTION,
+            entry_type="ARRAY",
+            input=[{smiles: smiles, calculatorGuid: calculatorGuid}],
+        )
+        return self.predict_with_model_sync(QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset)
 
     def deploy_sklearn_model(self, model, name, description, visibility):
         """ "
