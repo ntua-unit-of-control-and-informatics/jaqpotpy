@@ -318,23 +318,20 @@ class Jaqpot:
                     time.sleep(2)
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculatorGuid):
-        dataset = Dataset(
-            type=DatasetType.PREDICTION,
-            entry_type="ARRAY",
-            input=[{"smiles": smiles, "calculatorGuid": calculatorGuid}],
-        )
+        input = ([{"smiles": smiles, "calculatorGuid": calculatorGuid}],)
         prediction = self.predict_with_model_sync(
-            QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset
+            QSARTOOLBOX_CALCULATOR_MODEL_ID, input
         )
         return prediction
 
     def qsartoolbox_qsar_model_predict_sync(self, smiles, qsarGuid):
-        dataset = Dataset(
-            type=DatasetType.PREDICTION,
-            entry_type="ARRAY",
-            input=[{"smiles": smiles, "qsarGuid": qsarGuid}],
-        )
-        prediction = self.predict_with_model_sync(QSARTOOLBOX_MODEL_MODEL_ID, dataset)
+        input = [{"smiles": smiles, "qsarGuid": qsarGuid}]
+        prediction = self.predict_with_model_sync(QSARTOOLBOX_MODEL_MODEL_ID, input)
+        return prediction
+
+    def qsartoolbox_profiler_predict_sync(self, smiles, profilerGuid):
+        input = [{"smiles": smiles, "profilerGuid": profilerGuid}]
+        prediction = self.predict_with_model_sync(QSAR_PROFILER_MODEL_ID, input)
         return prediction
 
     def deploy_sklearn_model(self, model, name, description, visibility):
