@@ -253,32 +253,27 @@ class Jaqpot:
             entry_type="ARRAY",
             input=dataset,
         )
-        try:
-            model_api = ModelApi(self.http_client)
-            response = model_api.predict_with_model_with_http_info(
-                model_id=model_id, dataset=dataset
-            )
-        except JaqpotPredictionError:
-            self.log.error("Prediction failed")
-            raise
 
+        model_api = ModelApi(self.http_client)
+        response = model_api.predict_with_model_with_http_info(
+            model_id=model_id, dataset=dataset
+        )
         if response.status_code < 300:
             dataset_location = response.headers["Location"]
             dataset_id = int(dataset_location.split("/")[-1])
-            try:
-                polling2.poll(
-                    lambda: self.get_dataset_by_id(dataset_id).status
-                    in ["SUCCESS", "FAILURE"],
-                    step=3,
-                    timeout=60,
-                )
-                dataset = self.get_dataset_by_id(dataset_id)
-                if dataset.status == "SUCCESS":
-                    return dataset.result
-                elif dataset.status == "FAILURE":
-                    JaqpotPredictionError("Prediction failed")
-            except polling2.TimeoutException:
-                JaqpotPredictionTimeout("Prediction timed out")
+            polling2.poll(
+                lambda: self.get_dataset_by_id(dataset_id).status
+                in ["SUCCESS", "FAILURE"],
+                step=3,
+                timeout=60,
+            )
+            dataset = self.get_dataset_by_id(dataset_id)
+            if dataset.status == "SUCCESS":
+                return dataset.result
+            elif dataset.status == "FAILURE":
+                # JaqpotPredictionError("Prediction failed")
+                print("Prediction failed")
+                return
         else:
             JaqpotApiClient("Error code: " + str(response.status_code.value))
 
@@ -326,9 +321,12 @@ class Jaqpot:
         dataset = Dataset(
             type=DatasetType.PREDICTION,
             entry_type="ARRAY",
-            input=[{smiles: smiles, calculatorGuid: calculatorGuid}],
+            input=[{"smiles": smiles, "calculatorGuid": calculatorGuid}],
         )
-        return self.predict_with_model_sync(QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset)
+        prediction = self.predict_with_model_sync(
+            QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset
+        )
+        return prediction
 
     def deploy_sklearn_model(self, model, name, description, visibility):
         """ "
