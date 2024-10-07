@@ -10,7 +10,6 @@ from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.models import Model
 from jaqpotpy.utils.url_utils import add_subdomain
 
-
 API_KEY = os.getenv("JAQPOT_API_KEY")
 API_SECRET = os.getenv("JAQPOT_API_SECRET")
 
@@ -21,10 +20,10 @@ QSAR_PROFILER_MODEL_ID = 1842
 
 class JaqpotApiClient:
     def __init__(
-        self,
-        base_url=None,
-        api_url=None,
-        create_logs=False,
+            self,
+            base_url=None,
+            api_url=None,
+            create_logs=False,
     ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
@@ -38,7 +37,7 @@ class JaqpotApiClient:
         self.http_client = (JaqpotApiHttpClientBuilder(host=self.api_url)
                             .build_with_api_keys(API_KEY, API_SECRET)
                             .build())
-        
+
     def get_model_by_id(self, model_id) -> Model:
         """Get model from Jaqpot.
 
@@ -98,37 +97,6 @@ class JaqpotApiClient:
             return response
         raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
 
-    def get_shared_models_summary(
-            self, page=None, size=None, sort=None, organization_id=None
-    ):
-        """Get shared models summary from Jaqpot.
-
-        Parameters
-        ----------
-        page : page number
-        size : number of models per page
-        sort : sort models by
-        organization_id : organization id
-
-        """
-        response = self.get_shared_models(
-            page=page, size=size, sort=sort, organization_id=organization_id
-        )
-        if response.status_code < 300:
-            shared_models = response.data
-            data = []
-            for shared_model in shared_models.content:
-                model_info = {
-                    "Name": shared_model.name,
-                    "model_id": shared_model.id,
-                    "Type": shared_model.type,
-                    "shared_with_organizations_id": shared_model.shared_with_organizations,
-                }
-                data.append(model_info)
-            df = pd.DataFrame(data)
-            return df
-        raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
-
     def get_dataset_by_id(self, dataset_id):
         """Get dataset from Jaqpot.
 
@@ -144,7 +112,7 @@ class JaqpotApiClient:
             return dataset
         raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
 
-    def predict__sync(self, model_id, dataset):
+    def predict_sync(self, model_id, dataset):
         """Predict with model on Jaqpot.
 
         Parameters
@@ -171,7 +139,7 @@ class JaqpotApiClient:
                 raise JaqpotPredictionFailureException(dataset.failure_reason)
         raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
 
-    def predict_with_csv(self, model_id, csv_path):
+    def predict_with_csv_sync(self, model_id, csv_path):
         """Predict with model on Jaqpot.
 
         Parameters
@@ -216,17 +184,17 @@ class JaqpotApiClient:
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculator_guid):
         dataset = ([{"smiles": smiles, "calculatorGuid": calculator_guid}],)
-        prediction = self.predict__sync(
+        prediction = self.predict_sync(
             QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset
         )
         return prediction
 
     def qsartoolbox_qsar_model_predict_sync(self, smiles, qsar_guid):
         dataset = [{"smiles": smiles, "qsarGuid": qsar_guid}]
-        prediction = self.predict__sync(QSARTOOLBOX_MODEL_MODEL_ID, dataset)
+        prediction = self.predict_sync(QSARTOOLBOX_MODEL_MODEL_ID, dataset)
         return prediction
 
     def qsartoolbox_profiler_predict_sync(self, smiles, profiler_guid):
         dataset = [{"smiles": smiles, "profilerGuid": profiler_guid}]
-        prediction = self.predict__sync(QSAR_PROFILER_MODEL_ID, dataset)
+        prediction = self.predict_sync(QSAR_PROFILER_MODEL_ID, dataset)
         return prediction
