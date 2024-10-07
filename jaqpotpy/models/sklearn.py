@@ -1,18 +1,10 @@
 import sklearn
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import cross_val_score
+from sklearn import metrics
+import pandas as pd
+import numpy as np
 from typing import Any, Dict, Optional
-from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.models import Evaluator, Preprocess
-from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.models import (
-    FeatureType,
-    FeaturePossibleValue,
-    ModelType,
-    ModelExtraConfig,
-    Transformer,
-    ModelTask,
-)
-import jaqpotpy
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import (
     FloatTensorType,
@@ -24,9 +16,21 @@ from skl2onnx.common.data_types import (
     StringTensorType,
 )
 from onnxruntime import InferenceSession
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.compose import ColumnTransformer
+
+from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from jaqpotpy.models import Preprocess
+from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.openapi.models import (
+    FeatureType,
+    FeaturePossibleValue,
+    ModelType,
+    ModelExtraConfig,
+    Transformer,
+    ModelTask,
+)
+import jaqpotpy
+
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 
@@ -38,6 +42,7 @@ class SklearnModel(Model):
         model: Any,
         doa: Optional[DOA or list] = None,
         preprocessor: Preprocess = None,
+        cv=None,
     ):
         self.x_cols = dataset.x_cols
         self.y_cols = dataset.y_cols
@@ -61,6 +66,10 @@ class SklearnModel(Model):
         self.independentFeatures = None
         self.dependentFeatures = None
         self.extra_config = ModelExtraConfig()
+        self.cv = cv
+        self.test_metrics = {}
+        self.train_metrics = {}
+        self.cross_val_metrics = {}
 
     def _dtypes_to_jaqpotypes(self):
         for feature in self.independentFeatures + self.dependentFeatures:
@@ -237,9 +246,17 @@ class SklearnModel(Model):
                     self.trained_model = self.pipeline.fit(X, y_scaled)
             else:
                 self.trained_model = self.pipeline.fit(X, y)
+
         # case where no preprocessing was provided
         else:
             self.trained_model = self.model.fit(X, y)
+
+        y_pred = self.predict(self.dataset)
+        self.train_metrics = self._get_metrics(y, y_pred)
+        print("Goodness-of-fit metrics on training set:")
+        print(self.train_metrics)
+        if self.cv:
+            ...
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -266,9 +283,7 @@ class SklearnModel(Model):
             for feature in self.dataset.y_cols
         )
         self._dtypes_to_jaqpotypes()
-
         self._create_onnx()
-
         return self
 
     def predict(self, dataset: JaqpotpyDataset):
@@ -359,7 +374,97 @@ class SklearnModel(Model):
         ]
         return onnx_probs_list
 
-    def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
+    def _cross_val(self, X, y_true):
+        if self.task.upper() == "REGRESSION":
+            ...
+        else:
+            ...
+        return metrics
+
+    def evaluate(self, X, y_true):
+        if self.task.upper() == "REGRESSION":
+            ...
+        else:
+            ...
+        return metrics
+
+    def _get_metrics(self, y_true, y_pred):
+        if self.task.upper() == "REGRESSION":
+            return SklearnModel._get_regression_metrics(y_true, y_pred)
+        else:
+            return SklearnModel._get_classification_metrics(y_true, y_pred)
+
+    @staticmethod
+    def _get_classification_metrics(y_true, y_pred):
+        eval_metrics = {
+            "accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
+            "balanced_accuracy": metrics.balanced_accuracy_score(
+                y_true=y_true, y_pred=y_pred
+            ),
+            "precision": metrics.precision_score(y_true=y_true, y_pred=y_pred),
+            "recall": metrics.recall_score(y_true=y_true, y_pred=y_pred),
+            "f1": metrics.f1_score(y_true=y_true, y_pred=y_pred),
+            "f1_micro": metrics.f1_score(y_true=y_true, y_pred=y_pred, average="micro"),
+            "f1_macro": metrics.f1_score(y_true=y_true, y_pred=y_pred, average="macro"),
+            "jaccard": metrics.jaccard_score(y_true=y_true, y_pred=y_pred),
+        }
+        return eval_metrics
+
+    @staticmethod
+    def _get_regression_metrics(y_true, y_pred):
+        if isinstance(y_pred, list):
+            y_pred = np.array(y_pred)
+        if isinstance(y_true, list):
+            y_true = np.array(y_true)
+
+        mae = metrics.mean_absolute_error(y_true=y_true, y_pred=y_pred)
+        r2 = metrics.r2_score(y_true=y_true, y_pred=y_pred)
+        rmse = metrics.root_mean_squared_error(y_true=y_true, y_pred=y_pred)
+        # Corellation coefficient squared R2
+        cor_num_1 = y_true - y_true.mean()
+        cor_num_2 = y_pred - y_pred.mean()
+        cor_den_1 = ((y_true - y_true.mean()) ** 2).sum()
+        cor_den_2 = ((y_pred - y_pred.mean()) ** 2).sum()
+        cor_coeff = (cor_num_1 * cor_num_2).sum() / np.sqrt(cor_den_1 * cor_den_2)
+        cor_coeff_2 = cor_coeff**2
+
+        # Calculate k and k_hat
+        k = ((y_true * y_pred).sum()) / ((y_pred) ** 2).sum()
+        k_hat = ((y_true * y_pred).sum()) / ((y_true) ** 2).sum()
+
+        # Calculate R0^2 , R'0^2
+        # Calc y_r0, y_hat_r0 # CHECK
+        y_r0 = k * y_pred
+        y_hat_r0 = k_hat * y_true
+
+        # Calculate R0^2 # CHECK
+        R0_2_num = ((y_pred - y_r0) ** 2).sum()
+        R0_2_den = ((y_pred - y_pred.mean()) ** 2).sum()
+        R0_2 = 1 - R0_2_num / R0_2_den
+
+        # Calculate R'0^2 # CHECK
+        R0_2_hat_num = ((y_true - y_hat_r0) ** 2).sum()
+        R0_2_hat_den = ((y_true - y_true.mean()) ** 2).sum()
+        R0_2_hat = 1 - R0_2_hat_num / R0_2_hat_den
+
+        eval_metrics = {
+            "R^2 ": r2,
+            "MAE": mae,
+            "RMSE": rmse,
+            "(R^2 - R0^2_ / R^2 ": (cor_coeff_2 - R0_2) / cor_coeff_2,
+            "(R^2-R0_hat^2)/R2": (cor_coeff_2 - R0_2_hat) / cor_coeff_2,
+            "|R02^-R0_hat^2|": abs(R0_2 - R0_2_hat),
+            "k": k,
+            "k_hat": k_hat,
+        }
+
+        return eval_metrics
+
+    def deploy_on_jaqpot(self, jaqpot, name, description, visibility, upload_metrics):
         jaqpot.deploy_sklearn_model(
-            model=self, name=name, description=description, visibility=visibility
+            model=self,
+            name=name,
+            description=description,
+            visibility=visibility,
+            upload_metrics=upload_metrics,
         )
