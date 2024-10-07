@@ -97,7 +97,7 @@ class JaqpotApiClient:
             return response
         raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
 
-    def get_dataset_by_id(self, dataset_id):
+    def get_dataset_by_id(self, dataset_id) -> Dataset:
         """Get dataset from Jaqpot.
 
         Parameters
@@ -108,8 +108,7 @@ class JaqpotApiClient:
         dataset_api = DatasetApi(self.http_client)
         response = dataset_api.get_dataset_by_id_with_http_info(id=dataset_id)
         if response.status_code < 300:
-            dataset = response.data
-            return dataset
+            return response.data
         raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
 
     def predict_sync(self, model_id, dataset):
