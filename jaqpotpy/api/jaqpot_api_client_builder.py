@@ -3,7 +3,7 @@ from jaqpotpy.api.jaqpot_api_http_client import JaqpotApiHttpClient
 
 class JaqpotApiHttpClientBuilder:
     def __init__(self, host):
-        self.http_client = JaqpotApiHttpClient(host=host)  # Start with an empty car object
+        self.http_client = JaqpotApiHttpClient(host=host)  
         
     def build_with_access_token(self, access_token):
         self.http_client.set_access_token(access_token)
