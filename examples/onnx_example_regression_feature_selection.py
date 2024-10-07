@@ -31,7 +31,7 @@ pre = Preprocess()
 model = RandomForestRegressor(random_state=42)
 doa_method = Leverage()
 molecularModel_t1 = SklearnModel(
-    dataset=dataset, doa=None, model=model, preprocessor=None
+    dataset=dataset, doa=None, model=model, preprocessor=None, cv=None
 )
 
 molecularModel_t1.fit()
