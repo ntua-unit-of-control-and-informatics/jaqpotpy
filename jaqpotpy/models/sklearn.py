@@ -1,13 +1,11 @@
 import sklearn
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import cross_val_score
 from sklearn import metrics
 import pandas as pd
 import numpy as np
 from typing import Any, Dict, Optional
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.models import Evaluator, Preprocess
+from jaqpotpy.models import Preprocess
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.openapi.models import (
     FeatureType,
