@@ -32,7 +32,7 @@ class Feature(BaseModel):
     Feature
     """ # noqa: E501
     id: Optional[StrictInt] = None
-    meta: Optional[Dict[str, Dict[str, Any]]] = Field(default=None, description="A JSON object containing meta information.")
+    meta: Optional[Dict[str, Any]] = Field(default=None, description="A JSON object containing meta information.")
     key: Annotated[str, Field(strict=True)] = Field(description="A key that must start with a letter, followed by any combination of letters, digits, hyphens, or underscores. For example, 'abc123', 'abc-test', or 'Abc_test'. It cannot start with a digit.")
     name: Annotated[str, Field(strict=True, max_length=255)] = Field(description="A name for the feature that will appear on top of the form field")
     units: Optional[Annotated[str, Field(strict=True, max_length=255)]] = Field(default=None, description="A name for the feature that will appear on top of the form field")
