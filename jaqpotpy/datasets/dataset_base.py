@@ -13,13 +13,13 @@ class BaseDataset(ABC):
 
     Attributes
     ----------
-        _df (pd.DataFrame): The underlying DataFrame holding the dataset.
+        df (pd.DataFrame): The underlying DataFrame holding the dataset.
         x_cols (Optional[Iterable[str]]): The columns to be used as features.
         y_cols (Optional[Iterable[str]]): The columns to be used as labels.
         _task (str): The task type, either 'regression' or 'classification'.
         _dataset_name (str): The name of the dataset.
-        _y (Iterable[str]): The labels of the dataset.
-        _x (Iterable[str]): The features of the dataset.
+        y (Iterable[str]): The labels of the dataset.
+        X (Iterable[str]): The features of the dataset.
 
     """
 
@@ -40,13 +40,13 @@ class BaseDataset(ABC):
             if not isinstance(df, pd.DataFrame):
                 raise TypeError("Provided 'df' must be a pandas DataFrame.")
             else:
-                self._df = df
+                self.df = df
                 self.path = None
         elif path is not None:
             self.path = path
             extension = os.path.splitext(self.path)[1]
             if extension == ".csv":
-                self._df = pd.read_csv(path)
+                self.df = pd.read_csv(path)
             else:
                 raise ValueError("The provided file is not a valid CSV file.")
 
@@ -100,22 +100,8 @@ class BaseDataset(ABC):
 
         self.task = task
         self._dataset_name = None
-        self._y = None
-        self._x = None
-
-    @property
-    def df(self) -> pd.DataFrame:
-        return self._df
-
-    @df.setter
-    def df(self, value: pd.DataFrame):
-        if not isinstance(value, pd.DataFrame):
-            raise ValueError("The value must be a pandas DataFrame.")
-        self._df = value
-
-    @df.deleter
-    def df(self):
-        del self._df
+        self.y = None
+        self.X = None
 
     @property
     def task(self):
@@ -141,22 +127,6 @@ class BaseDataset(ABC):
     @dataset_name.setter
     def dataset_name(self, value):
         self._dataset_name = value
-
-    @property
-    def X(self) -> Iterable[str]:
-        return self._x
-
-    @X.setter
-    def X(self, value):
-        self._x = value
-
-    @property
-    def y(self) -> Iterable[str]:
-        return self._y
-
-    @y.setter
-    def y(self, value):
-        self._y = value
 
     def save(self):
         if self._dataset_name:
