@@ -22,7 +22,7 @@ y_cols = ["ACTIVITY"]
 x_cols = ["X1", "X2", "Cat_col"]
 # x_cols = ["Cat_col", "Cat_col2"]
 
-featurizer = TopologicalFingerprint(size=2)
+featurizer = TopologicalFingerprint(size=10)
 
 dataset = JaqpotpyDataset(
     df=df,
@@ -50,8 +50,10 @@ molecularModel_t1 = SklearnModel(
 )
 molecularModel_t1.fit()
 print(molecularModel_t1.initial_types)
+pred_path = "/Users/vassilis/Desktop/test_ohe.csv"
+df = pd.read_csv(pred_path)
 prediction_dataset = JaqpotpyDataset(
-    df=df.iloc[0:5, :],
+    df=df,
     y_cols=None,
     smiles_cols=smiles_cols,
     x_cols=x_cols,
@@ -59,14 +61,14 @@ prediction_dataset = JaqpotpyDataset(
     featurizer=featurizer,
 )
 
-skl_predictions = molecularModel_t1.predict(prediction_dataset)
-skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
+# skl_predictions = molecularModel_t1.predict(prediction_dataset)
+# skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
 onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
-onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
-print("SKLearn Predictions:", skl_predictions)
-print("SKLearn Probabilities:", skl_probabilities)
+# onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
+# print("SKLearn Predictions:", skl_predictions)
+# print("SKLearn Probabilities:", skl_probabilities)
 print("ONNX Predictions:", onnx_predictions)
-print("ONNX Probabilities:", onnx_probs)
+# print("ONNX Probabilities:", onnx_probs)
 
 # jaqpot = Jaqpot(
 #     base_url="http://localhost.jaqpot.org",
