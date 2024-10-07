@@ -32,7 +32,6 @@ class Feature(BaseModel):
     Feature
     """ # noqa: E501
     id: Optional[StrictInt] = None
-    meta: Optional[Dict[str, Any]] = Field(default=None, description="A JSON object containing meta information.")
     key: Annotated[str, Field(strict=True)] = Field(description="A key that must start with a letter, followed by any combination of letters, digits, hyphens, or underscores. For example, 'abc123', 'abc-test', or 'Abc_test'. It cannot start with a digit.")
     name: Annotated[str, Field(strict=True, max_length=255)] = Field(description="A name for the feature that will appear on top of the form field")
     units: Optional[Annotated[str, Field(strict=True, max_length=255)]] = Field(default=None, description="A name for the feature that will appear on top of the form field")
@@ -43,7 +42,7 @@ class Feature(BaseModel):
     possible_values: Optional[List[FeaturePossibleValue]] = Field(default=None, alias="possibleValues")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "meta", "key", "name", "units", "description", "featureType", "featureDependency", "visible", "possibleValues", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "key", "name", "units", "description", "featureType", "featureDependency", "visible", "possibleValues", "createdAt", "updatedAt"]
 
     @field_validator('key')
     def key_validate_regular_expression(cls, value):
@@ -121,7 +120,6 @@ class Feature(BaseModel):
 
         _obj = cls.model_validate({
             "id": obj.get("id"),
-            "meta": obj.get("meta"),
             "key": obj.get("key"),
             "name": obj.get("name"),
             "units": obj.get("units"),
