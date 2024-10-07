@@ -46,7 +46,7 @@ pre.register_preprocess_class("ColumnTransformer", column_transormer)
 
 model = RandomForestClassifier(random_state=42)
 molecularModel_t1 = SklearnModel(
-    dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+    dataset=dataset, doa=None, model=model, preprocessor=pre
 )
 molecularModel_t1.fit()
 print(molecularModel_t1.initial_types)

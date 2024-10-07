@@ -110,7 +110,7 @@ class TestModels(unittest.TestCase):
         )
         model = RandomForestClassifier(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=None
+            dataset=dataset, doa=None, model=model, preprocessor=None
         )
         jaqpot_model.fit()
         validation_dataset = dataset = JaqpotpyDataset(
@@ -171,7 +171,7 @@ class TestModels(unittest.TestCase):
         pre = Preprocess()
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(
@@ -237,7 +237,7 @@ class TestModels(unittest.TestCase):
         pre = Preprocess()
         pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         with self.assertRaises(ValueError) as context:
             jaqpot_model.fit()
@@ -260,7 +260,7 @@ class TestModels(unittest.TestCase):
         pre = Preprocess()
         pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         with self.assertRaises(ValueError) as context:
             jaqpot_model.fit()
@@ -297,7 +297,7 @@ class TestModels(unittest.TestCase):
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
 
         with self.assertRaises(ValueError) as context:
@@ -322,7 +322,7 @@ class TestModels(unittest.TestCase):
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         pre.register_preprocess_class_y("Standard Scaler", StandardScaler())
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
 
         with self.assertRaises(ValueError) as context:
@@ -349,7 +349,7 @@ class TestModels(unittest.TestCase):
         pre = Preprocess()
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(
@@ -411,7 +411,7 @@ class TestModels(unittest.TestCase):
         pre = Preprocess()
         pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
 
         with self.assertRaises(ValueError) as context:
@@ -443,7 +443,7 @@ class TestModels(unittest.TestCase):
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
 
         with self.assertRaises(ValueError) as context:
@@ -468,7 +468,7 @@ class TestModels(unittest.TestCase):
         )
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=None
+            dataset=dataset, doa=None, model=model, preprocessor=None
         )
         jaqpot_model.fit()
         validation_dataset = dataset = JaqpotpyDataset(
@@ -509,7 +509,7 @@ class TestModels(unittest.TestCase):
         pre.register_preprocess_class("Standard Scaler", StandardScaler())
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(
@@ -550,7 +550,7 @@ class TestModels(unittest.TestCase):
         pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         jaqpot_model.fit()
         validation_dataset = dataset = JaqpotpyDataset(
@@ -594,7 +594,7 @@ class TestModels(unittest.TestCase):
         pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(
@@ -636,7 +636,7 @@ class TestModels(unittest.TestCase):
 
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=None
+            dataset=dataset, doa=None, model=model, preprocessor=None
         )
         jaqpot_model.fit()
         validation_dataset = dataset = JaqpotpyDataset(
@@ -696,7 +696,7 @@ class TestModels(unittest.TestCase):
 
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(
@@ -756,7 +756,7 @@ class TestModels(unittest.TestCase):
 
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(
@@ -817,7 +817,7 @@ class TestModels(unittest.TestCase):
 
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
-            dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+            dataset=dataset, doa=None, model=model, preprocessor=pre
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(

@@ -33,12 +33,11 @@ from jaqpotpy.doa.doa import DOA
 
 class SklearnModel(Model):
     def __init__(
-            self,
-            dataset: JaqpotpyDataset,
-            model: Any,
-            doa: Optional[DOA or list] = None,
-            preprocessor: Preprocess = None,
-            evaluator: Evaluator = None,
+        self,
+        dataset: JaqpotpyDataset,
+        model: Any,
+        doa: Optional[DOA or list] = None,
+        preprocessor: Preprocess = None,
     ):
         self.x_cols = dataset.x_cols
         self.y_cols = dataset.y_cols
@@ -48,7 +47,6 @@ class SklearnModel(Model):
         self.pipeline = None
         self.trained_model = None
         self.doa = doa if isinstance(doa, list) else [doa] if doa else []
-        self.evaluator = evaluator
         self.preprocess = preprocessor
         self.preprocessing_y = None
         self.transformers_y = {}
@@ -103,7 +101,7 @@ class SklearnModel(Model):
         configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
-                added_class, added_class_type
+            added_class, added_class_type
         ).items():
             configurations[attr_name] = attr_value
 
@@ -212,8 +210,8 @@ class SklearnModel(Model):
 
             if len(pre_y_keys) > 0:
                 if (
-                        self.task == "BINARY_CLASSIFICATION"
-                        or self.task == "MULTICLASS_CLASSIFICATION"
+                    self.task == "BINARY_CLASSIFICATION"
+                    or self.task == "MULTICLASS_CLASSIFICATION"
                 ):
                     raise ValueError(
                         "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
@@ -271,8 +269,6 @@ class SklearnModel(Model):
 
         self._create_onnx()
 
-        if self.evaluator:
-            self.__eval__()
         return self
 
     def predict(self, dataset: JaqpotpyDataset):
@@ -362,50 +358,6 @@ class SklearnModel(Model):
             for instance in range(len(onnx_probs[1]))
         ]
         return onnx_probs_list
-
-    def __eval__(self):
-        if self.evaluator.dataset.df is not None:
-            pass
-        else:
-            self.evaluator.dataset.create()
-        X = self.evaluator.dataset.__get_X__()
-        if self.preprocess:
-            pre_keys = self.preprocess.classes.keys()
-            for pre_key in pre_keys:
-                preprocess_func = self.preprocess.fitted_classes.get(pre_key)
-                X = preprocess_func.transform(X)
-        sess = InferenceSession(self.onnx_model.SerializeToString())
-        input_name = sess.get_inputs()[0].name
-        X = np.array(X.astype(float).copy())
-        preds = sess.run(None, {input_name: X.astype(np.float32)})
-        preds = preds[0].flatten()
-        preds_t = []
-        for p in preds:
-            try:
-                if self.preprocessing_y:
-                    for f in self.preprocessing_y:
-                        p = f.inverse_transform(p.reshape(1, -1))
-                        preds_t.append(p)
-            except AttributeError:
-                pass
-            preds_t.append(p)
-        eval_keys = self.evaluator.functions.keys()
-        for eval_key in eval_keys:
-            eval_function = self.evaluator.functions.get(eval_key)
-            try:
-                if self.preprocessing_y:
-                    for f in self.preprocessing_y:
-                        truth = f.inverse_transform(self.evaluator.dataset.__get_Y__())
-                    print(eval_key + ": " + str(eval_function(truth, preds_t)))
-            except AttributeError:
-                print(
-                    eval_key
-                    + ": "
-                    + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t))
-                )
-                pass
-            # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
-            # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
 
     def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
         jaqpot.deploy_sklearn_model(
