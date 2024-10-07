@@ -296,24 +296,19 @@ class Jaqpot:
         if response.status_code < 300:
             dataset_location = response.headers["Location"]
             dataset_id = int(dataset_location.split("/")[-1])
-            completed_prediction = False
-            while not completed_prediction:
-                dataset = self.get_dataset_by_id(dataset_id)
-                if dataset.status == "SUCCESS":
-                    completed_prediction = True
-                    prediction = dataset.result
-                    pred_df = pd.DataFrame(prediction)
-                    last_columns = ["Probabilities", "AD"]
-                    first_columns = [
-                        col for col in pred_df.columns if col not in last_columns
-                    ]
-                    pred_df = pred_df[first_columns + last_columns]
-                    return pred_df
-                elif dataset.status == "FAILURE":
-                    self.log.error("Prediction failed")
-                    return
-                else:
-                    time.sleep(2)
+            polling2.poll(
+                lambda: self.get_dataset_by_id(dataset_id).status
+                in ["SUCCESS", "FAILURE"],
+                step=3,
+                timeout=60,
+            )
+            dataset = self.get_dataset_by_id(dataset_id)
+            if dataset.status == "SUCCESS":
+                return dataset.result
+            elif dataset.status == "FAILURE":
+                raise JaqpotPredictionError(dataset.failure_reason)
+        else:
+            JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculatorGuid):
         dataset = ([{"smiles": smiles, "calculatorGuid": calculatorGuid}],)
