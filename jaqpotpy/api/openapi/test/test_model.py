@@ -126,7 +126,7 @@ class TestModel(unittest.TestCase):
                     ],
                 visibility = 'PUBLIC',
                 task = 'REGRESSION',
-                actual_model = 'YQ==',
+                raw_model = 'YQ==',
                 creator = jaqpotpy.api.openapi.models.user.User(
                     id = '', 
                     username = '', 
@@ -219,7 +219,7 @@ class TestModel(unittest.TestCase):
                     ],
                 visibility = 'PUBLIC',
                 task = 'REGRESSION',
-                actual_model = 'YQ==',
+                raw_model = 'YQ==',
         )
         """
 

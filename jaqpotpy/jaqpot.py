@@ -103,7 +103,7 @@ class Jaqpot:
         :return:
         """
         model_api = ModelApi(self.http_client)
-        actual_model = model_to_b64encoding(model.onnx_model.SerializeToString())
+        raw_model = model_to_b64encoding(model.onnx_model.SerializeToString())
         body_model = Model(
             name=name,
             type=model.type,
@@ -130,7 +130,7 @@ class Jaqpot:
             ],
             visibility=ModelVisibility(visibility),
             task=ModelTask(model.task.upper()),
-            actual_model=actual_model,
+            raw_model=raw_model,
             description=description,
             extra_config=model.extra_config,
         )
@@ -196,7 +196,7 @@ class Jaqpot:
             extra_config=ModelExtraConfig(torch_config=torch_config),
             task=model_task,
             visibility=ModelVisibility(visibility),
-            actual_model=onnx_model,
+            raw_model=onnx_model,
             description=description,
         )
         response = model_api.create_model_with_http_info(model=body_model)

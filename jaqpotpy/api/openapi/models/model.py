@@ -38,7 +38,6 @@ class Model(BaseModel):
     Model
     """ # noqa: E501
     id: Optional[StrictInt] = None
-    meta: Optional[Dict[str, Any]] = Field(default=None, description="A JSON object containing meta information.")
     name: Annotated[str, Field(min_length=3, strict=True, max_length=255)]
     description: Optional[Annotated[str, Field(min_length=3, strict=True, max_length=50000)]] = None
     type: ModelType
@@ -49,7 +48,7 @@ class Model(BaseModel):
     shared_with_organizations: Optional[List[Organization]] = Field(default=None, alias="sharedWithOrganizations")
     visibility: ModelVisibility
     task: ModelTask
-    actual_model: Union[StrictBytes, StrictStr] = Field(description="A base64 representation of the actual model.", alias="actualModel")
+    raw_model: Union[StrictBytes, StrictStr] = Field(description="A base64 representation of the raw model.", alias="rawModel")
     creator: Optional[User] = None
     can_edit: Optional[StrictBool] = Field(default=None, description="If the current user can edit the model", alias="canEdit")
     is_admin: Optional[StrictBool] = Field(default=None, alias="isAdmin")
@@ -58,7 +57,7 @@ class Model(BaseModel):
     extra_config: Optional[ModelExtraConfig] = Field(default=None, alias="extraConfig")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "meta", "name", "description", "type", "jaqpotpyVersion", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "actualModel", "creator", "canEdit", "isAdmin", "tags", "legacyPredictionService", "extraConfig", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "rawModel", "creator", "canEdit", "isAdmin", "tags", "legacyPredictionService", "extraConfig", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -146,7 +145,6 @@ class Model(BaseModel):
 
         _obj = cls.model_validate({
             "id": obj.get("id"),
-            "meta": obj.get("meta"),
             "name": obj.get("name"),
             "description": obj.get("description"),
             "type": obj.get("type"),
@@ -157,7 +155,7 @@ class Model(BaseModel):
             "sharedWithOrganizations": [Organization.from_dict(_item) for _item in obj["sharedWithOrganizations"]] if obj.get("sharedWithOrganizations") is not None else None,
             "visibility": obj.get("visibility"),
             "task": obj.get("task"),
-            "actualModel": obj.get("actualModel"),
+            "rawModel": obj.get("rawModel"),
             "creator": User.from_dict(obj["creator"]) if obj.get("creator") is not None else None,
             "canEdit": obj.get("canEdit"),
             "isAdmin": obj.get("isAdmin"),
