@@ -28,7 +28,7 @@ class ModelExtraConfig(BaseModel):
     """
     A JSON object containing extra configuration for the model
     """ # noqa: E501
-    torch_config: Optional[Dict[str, Dict[str, Any]]] = Field(default=None, alias="torchConfig")
+    torch_config: Optional[Dict[str, Any]] = Field(default=None, alias="torchConfig")
     preprocessors: Optional[List[Transformer]] = None
     featurizers: Optional[List[Transformer]] = None
     doa: Optional[List[Transformer]] = None

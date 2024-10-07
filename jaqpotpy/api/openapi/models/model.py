@@ -38,7 +38,7 @@ class Model(BaseModel):
     Model
     """ # noqa: E501
     id: Optional[StrictInt] = None
-    meta: Optional[Dict[str, Dict[str, Any]]] = Field(default=None, description="A JSON object containing meta information.")
+    meta: Optional[Dict[str, Any]] = Field(default=None, description="A JSON object containing meta information.")
     name: Annotated[str, Field(min_length=3, strict=True, max_length=255)]
     description: Optional[Annotated[str, Field(min_length=3, strict=True, max_length=50000)]] = None
     type: ModelType
