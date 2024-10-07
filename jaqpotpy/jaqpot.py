@@ -295,18 +295,23 @@ class Jaqpot:
         if response.status_code < 300:
             dataset_location = response.headers["Location"]
             dataset_id = int(dataset_location.split("/")[-1])
-            polling2.poll(
-                lambda: self.get_dataset_by_id(dataset_id).status
-                in ["SUCCESS", "FAILURE"],
-                step=3,
-                timeout=60,
-            )
+            try:
+                polling2.poll(
+                    lambda: self.get_dataset_by_id(dataset_id).status
+                    in ["SUCCESS", "FAILURE"],
+                    step=3,
+                    timeout=60,
+                )
+            except polling2.TimeoutException:
+                raise JaqpotPredictionTimeout(
+                    "Polling timed out while waiting for prediction result."
+                )
             dataset = self.get_dataset_by_id(dataset_id)
             if dataset.status == "SUCCESS":
                 return dataset.result
             elif dataset.status == "FAILURE":
                 raise JaqpotPredictionError(dataset.failure_reason)
-        JaqpotApiException("Error code: " + str(response.status_code.value))
+        raise JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculatorGuid):
         dataset = ([{"smiles": smiles, "calculatorGuid": calculatorGuid}],)
