@@ -16,6 +16,7 @@ import jaqpotpy
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import (
     FloatTensorType,
+    DoubleTensorType,
     Int64TensorType,
     Int32TensorType,
     Int8TensorType,
@@ -129,19 +130,21 @@ class SklearnModel(Model):
             return UInt8TensorType(shape=[None, shape])
         elif dtype == "bool":
             return BooleanTensorType(shape=[None, shape])
-        elif dtype == "float32" or dtype == "float64":
+        elif dtype == "float32":
             return FloatTensorType(shape=[None, shape])
+        elif dtype == "float64":
+            return DoubleTensorType(shape=[None, shape])
         elif dtype in ["string", "object", "category"]:
             return StringTensorType(shape=[None, shape])
         else:
             return None
 
-    def _create_onnx(self):
+    def _create_onnx(self, onnx_options: Optional[Dict] = None):
         name = self.model.__class__.__name__ + "_ONNX"
         self.initial_types = []
         dtype_array = self.dataset.X.dtypes.values
         dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
-        all_same_numerical = all(
+        all_numerical = all(
             dtype
             in [
                 "int8",
@@ -159,9 +162,12 @@ class SklearnModel(Model):
             ]
             for dtype in dtype_str_array
         )
-        if all_same_numerical:
+        if all_numerical:
             self.initial_types = [
-                ("input", self._map_onnx_dtype("float32", len(self.dataset.X.columns)))
+                (
+                    "input",
+                    self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
+                )
             ]
         else:
             for i, feature in enumerate(self.dataset.X.columns):
@@ -171,11 +177,12 @@ class SklearnModel(Model):
                         self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
                     )
                 )
+
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=self.initial_types,
             name=name,
-            options={StandardScaler: {"div": "div_cast"}},
+            options=onnx_options,
         )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
@@ -281,7 +288,7 @@ class SklearnModel(Model):
         )
         self._dtypes_to_jaqpotypes()
 
-        self._create_onnx()
+        self._create_onnx(onnx_options=onnx_options)
 
         if self.evaluator:
             self.__eval__()

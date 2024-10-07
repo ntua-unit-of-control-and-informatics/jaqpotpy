@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
 from typing_extensions import Annotated
 from jaqpotpy.api.openapi.models.model_type import ModelType
@@ -43,7 +43,7 @@ class ModelSummary(BaseModel):
     independent_features_length: Optional[StrictInt] = Field(default=None, alias="independentFeaturesLength")
     shared_with_organizations: List[OrganizationSummary] = Field(alias="sharedWithOrganizations")
     created_at: datetime = Field(description="The date and time when the feature was created.", alias="createdAt")
-    updated_at: Optional[StrictStr] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
+    updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
     __properties: ClassVar[List[str]] = ["id", "name", "visibility", "description", "creator", "type", "dependentFeaturesLength", "independentFeaturesLength", "sharedWithOrganizations", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(

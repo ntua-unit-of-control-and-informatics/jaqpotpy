@@ -1,16 +1,16 @@
-import http.client as http_client
 import webbrowser
 
 from keycloak import KeycloakOpenID
 
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
+from jaqpotpy.api.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
+from jaqpotpy.api.jaqpot_api_http_client import JaqpotApiHttpClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.api.openapi.api.model_api import ModelApi
-from jaqpotpy.api.openapi.models.model import Model
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.feature_type import FeatureType
+from jaqpotpy.api.openapi.models.model import Model
 from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
 from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
@@ -19,11 +19,6 @@ from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.utils.url_utils import add_subdomain
 
 ENCODING = "utf-8"
-
-
-# import matplotlib
-# matplotlib.use('TkAgg')
-# import matplotlib.pyplot as plt
 
 
 class Jaqpot:
@@ -38,16 +33,15 @@ class Jaqpot:
     """
 
     def __init__(
-            self,
-            base_url=None,
-            app_url=None,
-            login_url=None,
-            api_url=None,
-            keycloak_realm=None,
-            keycloak_client_id=None,
-            create_logs=False,
+        self,
+        base_url=None,
+        app_url=None,
+        login_url=None,
+        api_url=None,
+        keycloak_realm=None,
+        keycloak_client_id=None,
+        create_logs=False,
     ):
-
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
@@ -61,55 +55,43 @@ class Jaqpot:
         self.api_url = api_url or add_subdomain(self.base_url, "api")
         self.keycloak_realm = keycloak_realm or "jaqpot"
         self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
-        self.api_key = None
-        self.user_id = None
-        self.http_client = http_client
+        self.access_token = None
+        self.http_client = None
 
     def login(self):
-        """Logins on Jaqpot."""
-        try:
-            # Configure Keycloak client
-            keycloak_openid = KeycloakOpenID(
-                server_url=self.login_url,
-                client_id=self.keycloak_client_id,
-                realm_name=self.keycloak_realm,
-            )
+        # Configure Keycloak client
+        keycloak_openid = KeycloakOpenID(
+            server_url=self.login_url,
+            client_id=self.keycloak_client_id,
+            realm_name=self.keycloak_realm,
+        )
 
-            # Generate the authorization URL
-            redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
-            auth_url = keycloak_openid.auth_url(
-                redirect_uri=redirect_uri,
-                scope="openid email profile",
-                state="random_state_value",
-            )
+        # Generate the authorization URL
+        redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
+        auth_url = keycloak_openid.auth_url(
+            redirect_uri=redirect_uri,
+            scope="openid email profile",
+            state="random_state_value",
+        )
 
-            print(f"Open this URL in your browser and log in:\n{auth_url}")
+        print(f"Open this URL in your browser and log in:\n{auth_url}")
 
-            # Automatically open the browser (optional)
-            webbrowser.open(auth_url)
+        # Automatically open the browser (optional)
+        webbrowser.open(auth_url)
 
-            code = input("Enter the authorization code you received: ")
+        code = input("Enter the authorization code you received: ")
 
-            # Exchange the code for an access token
-            token_response = keycloak_openid.token(
-                grant_type="authorization_code", code=code, redirect_uri=redirect_uri
-            )
+        # Exchange the code for an access token
+        token_response = keycloak_openid.token(
+            grant_type="authorization_code", code=code, redirect_uri=redirect_uri
+        )
 
-            access_token = token_response["access_token"]
-            self.api_key = access_token
-        except Exception as ex:
-            self.log.error("Could not login to jaqpot", exc_info=ex)
+        access_token = token_response["access_token"]
+        self.access_token = access_token
+        self.http_client = (JaqpotApiHttpClientBuilder(host=self.api_url)
+                            .build_with_access_token(self.access_token)
+                            .build())
 
-    def set_api_key(self, api_key):
-        """Set's api key for authentication on Jaqpot.
-
-        Parameters
-        ----------
-        api_key : api_key can be retrieved from the application after logged in
-
-        """
-        self.api_key = api_key
-        self.log.info("api key is set")
 
     def deploy_sklearn_model(self, model, name, description, visibility):
         """ "
@@ -120,8 +102,7 @@ class Jaqpot:
         :param visibility:
         :return:
         """
-        jaqpot_api_client = JaqpotApiClient(host=self.api_url, access_token=self.api_key)
-        model_api = ModelApi(jaqpot_api_client)
+        model_api = ModelApi(self.http_client)
         actual_model = model_to_b64encoding(model.onnx_model.SerializeToString())
         body_model = Model(
             name=name,
@@ -168,15 +149,15 @@ class Jaqpot:
             self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_torch_model(
-            self,
-            onnx_model,
-            type,
-            featurizer,
-            name,
-            description,
-            target_name,
-            visibility,
-            task,
+        self,
+        onnx_model,
+        type,
+        featurizer,
+        name,
+        description,
+        target_name,
+        visibility,
+        task,
     ):
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
@@ -189,9 +170,7 @@ class Jaqpot:
             feature_type = FeatureType.INTEGER
         else:
             raise ValueError("Task should be either classification or regression")
-        model_api = ModelApi(
-            JaqpotApiClient(host=self.api_url, access_token=self.api_key)
-        )
+        model_api = ModelApi(self.http_client)
         # Change Base URL when not in local testing
         # baseurl: "http://localhost.jaqpot.org:8080/"
         featurizer_dict = featurizer.get_dict()

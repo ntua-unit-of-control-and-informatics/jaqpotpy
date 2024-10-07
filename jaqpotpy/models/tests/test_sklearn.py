@@ -112,7 +112,7 @@ class TestModels(unittest.TestCase):
         jaqpot_model = SklearnModel(
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=None
         )
-        jaqpot_model.fit()
+        jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,

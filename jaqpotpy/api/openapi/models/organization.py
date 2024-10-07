@@ -18,6 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
+from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
 from typing_extensions import Annotated
@@ -43,8 +44,8 @@ class Organization(BaseModel):
     address: Optional[StrictStr] = None
     can_edit: Optional[StrictBool] = Field(default=None, description="If the current user can edit the organization", alias="canEdit")
     is_member: Optional[StrictBool] = Field(default=None, description="If the current user is a member of the organization", alias="isMember")
-    created_at: Optional[StrictStr] = None
-    updated_at: Optional[StrictStr] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     __properties: ClassVar[List[str]] = ["id", "name", "creator", "visibility", "description", "organizationMembers", "contactEmail", "contactPhone", "website", "address", "canEdit", "isMember", "created_at", "updated_at"]
 
     @field_validator('name')

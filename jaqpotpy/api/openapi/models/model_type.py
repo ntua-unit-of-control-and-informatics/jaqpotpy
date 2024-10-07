@@ -40,7 +40,9 @@ class ModelType(str, Enum):
     R_SVM = 'R_SVM'
     R_TREE_CLASS = 'R_TREE_CLASS'
     R_TREE_REGR = 'R_TREE_REGR'
-    QSAR_TOOLBOX = 'QSAR_TOOLBOX'
+    QSAR_TOOLBOX_CALCULATOR = 'QSAR_TOOLBOX_CALCULATOR'
+    QSAR_TOOLBOX_QSAR_MODEL = 'QSAR_TOOLBOX_QSAR_MODEL'
+    QSAR_TOOLBOX_PROFILER = 'QSAR_TOOLBOX_PROFILER'
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:

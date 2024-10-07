@@ -18,6 +18,7 @@
 __version__ = "1.0.0"
 
 # import apis into sdk package
+from jaqpotpy.api.openapi.api.api_keys_api import ApiKeysApi
 from jaqpotpy.api.openapi.api.auth_api import AuthApi
 from jaqpotpy.api.openapi.api.dataset_api import DatasetApi
 from jaqpotpy.api.openapi.api.feature_api import FeatureApi
@@ -38,6 +39,8 @@ from jaqpotpy.api.openapi.exceptions import ApiAttributeError
 from jaqpotpy.api.openapi.exceptions import ApiException
 
 # import models into sdk package
+from jaqpotpy.api.openapi.models.api_key import ApiKey
+from jaqpotpy.api.openapi.models.create_api_key201_response import CreateApiKey201Response
 from jaqpotpy.api.openapi.models.create_invitations_request import CreateInvitationsRequest
 from jaqpotpy.api.openapi.models.dataset import Dataset
 from jaqpotpy.api.openapi.models.dataset_csv import DatasetCSV
@@ -47,6 +50,7 @@ from jaqpotpy.api.openapi.models.error_response import ErrorResponse
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.feature_possible_value import FeaturePossibleValue
 from jaqpotpy.api.openapi.models.feature_type import FeatureType
+from jaqpotpy.api.openapi.models.get_all_api_keys_for_user200_response_inner import GetAllApiKeysForUser200ResponseInner
 from jaqpotpy.api.openapi.models.get_datasets200_response import GetDatasets200Response
 from jaqpotpy.api.openapi.models.get_models200_response import GetModels200Response
 from jaqpotpy.api.openapi.models.lead import Lead
@@ -67,4 +71,6 @@ from jaqpotpy.api.openapi.models.partial_update_organization_request import Part
 from jaqpotpy.api.openapi.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
 from jaqpotpy.api.openapi.models.partially_update_model_request import PartiallyUpdateModelRequest
 from jaqpotpy.api.openapi.models.transformer import Transformer
+from jaqpotpy.api.openapi.models.update_api_key200_response import UpdateApiKey200Response
+from jaqpotpy.api.openapi.models.update_api_key_request import UpdateApiKeyRequest
 from jaqpotpy.api.openapi.models.user import User
