@@ -134,8 +134,7 @@ class Jaqpot:
         response = model_api.get_model_by_id_with_http_info(id=model_id)
         if response.status_code < 300:
             return response
-        else:
-            JaqpotApiException("Error code: " + str(response.status_code.value))
+        raise JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def get_model_summary(self, model_id):
         """Get model summary from Jaqpot.
@@ -168,8 +167,7 @@ class Jaqpot:
                 model_info, orient="index", columns=["Model Summary"]
             )
             return model_summary
-        else:
-            JaqpotApiException("Error code: " + str(response.status_code.value))
+        raise JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def get_shared_models(self, page=None, size=None, sort=None, organization_id=None):
         """Get shared models from Jaqpot.
@@ -188,8 +186,7 @@ class Jaqpot:
         )
         if response.status_code < 300:
             return response
-        else:
-            JaqpotApiException("Error code: " + str(response.status_code.value))
+        raise JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def get_shared_models_summary(
         self, page=None, size=None, sort=None, organization_id=None
@@ -220,8 +217,7 @@ class Jaqpot:
                 data.append(model_info)
             df = pd.DataFrame(data)
             return df
-        else:
-            JaqpotApiClient("Error code: " + str(response.status_code.value))
+        raise JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def get_dataset_by_id(self, dataset_id):
         """Get dataset from Jaqpot.
@@ -236,8 +232,7 @@ class Jaqpot:
         if response.status_code < 300:
             dataset = response.data
             return dataset
-        else:
-            JaqpotApiException("Error code: " + str(response.status_code.value))
+        JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def predict_with_model_sync(self, model_id, dataset):
         """Predict with model on Jaqpot.
@@ -261,19 +256,23 @@ class Jaqpot:
         if response.status_code < 300:
             dataset_location = response.headers["Location"]
             dataset_id = int(dataset_location.split("/")[-1])
-            polling2.poll(
-                lambda: self.get_dataset_by_id(dataset_id).status
-                in ["SUCCESS", "FAILURE"],
-                step=3,
-                timeout=60,
-            )
+            try:
+                polling2.poll(
+                    lambda: self.get_dataset_by_id(dataset_id).status
+                    in ["SUCCESS", "FAILURE"],
+                    step=3,
+                    timeout=60,
+                )
+            except polling2.TimeoutException:
+                raise JaqpotPredictionTimeout(
+                    "Polling timed out while waiting for prediction result."
+                )
             dataset = self.get_dataset_by_id(dataset_id)
             if dataset.status == "SUCCESS":
                 return dataset.result
             elif dataset.status == "FAILURE":
                 raise JaqpotPredictionError(dataset.failure_reason)
-        else:
-            JaqpotApiException("Error code: " + str(response.status_code.value))
+        raise JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def predict_with_csv(self, model_id, csv_path):
         """Predict with model on Jaqpot.
@@ -307,8 +306,7 @@ class Jaqpot:
                 return dataset.result
             elif dataset.status == "FAILURE":
                 raise JaqpotPredictionError(dataset.failure_reason)
-        else:
-            JaqpotApiException("Error code: " + str(response.status_code.value))
+        JaqpotApiException("Error code: " + str(response.status_code.value))
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculatorGuid):
         dataset = ([{"smiles": smiles, "calculatorGuid": calculatorGuid}],)
