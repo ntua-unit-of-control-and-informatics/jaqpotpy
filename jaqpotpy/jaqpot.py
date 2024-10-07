@@ -170,9 +170,7 @@ class Jaqpot:
             feature_type = FeatureType.INTEGER
         else:
             raise ValueError("Task should be either classification or regression")
-        model_api = ModelApi(
-            JaqpotApiHttpClient(host=self.api_url, access_token=self.access_token)
-        )
+        model_api = ModelApi(self.http_client)
         # Change Base URL when not in local testing
         # baseurl: "http://localhost.jaqpot.org:8080/"
         featurizer_dict = featurizer.get_dict()
