@@ -209,7 +209,7 @@ class SklearnModel(Model):
             # if not isinstance(self.doa, list):
             #     self.doa = [self.doa]
             for doa_method in self.doa:
-                doa_method.fit(X=X)
+                doa_method.fit(X=X.to_numpy())
                 self._add_class_to_extraconfig(doa_method, "doa")
 
         if len(self.dataset.y_cols) == 1:
