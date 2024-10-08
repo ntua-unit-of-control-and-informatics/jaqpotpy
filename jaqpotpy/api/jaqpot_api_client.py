@@ -164,6 +164,32 @@ class JaqpotApiClient:
             status_code=response.status_code.value,
         )
 
+    def predict_async(self, model_id, dataset):
+        """Predict with model on Jaqpot.
+
+        Parameters
+        ----------
+        model_id : model_id is the id of the model on Jaqpot
+        dataset : dataset to predict
+
+        """
+        dataset = Dataset(
+            type=DatasetType.PREDICTION,
+            entry_type="ARRAY",
+            input=dataset,
+        )
+
+        model_api = ModelApi(self.http_client)
+        response = model_api.predict_with_model_with_http_info(
+            model_id=model_id, dataset=dataset
+        )
+        if response.status_code < 300:
+            return response
+        raise JaqpotApiException(
+            message=response.data.to_dict().message,
+            status_code=response.status_code.value,
+        )
+
     def predict_with_csv_sync(self, model_id, csv_path):
         """Predict with model on Jaqpot.
 
@@ -193,7 +219,33 @@ class JaqpotApiClient:
             status_code=response.status_code.value,
         )
 
+    def get_dataset(self, response):
+        """
+        Retrieves a dataset using the location provided in the response headers.
+        Args:
+            response (requests.Response): The HTTP response object containing the dataset location in the headers.
+        Returns:
+            dict: The dataset retrieved by its ID.
+        """
+
+        dataset_location = response.headers["Location"]
+        dataset_id = int(dataset_location.split("/")[-1])
+        return self.get_dataset_by_id(dataset_id)
+
     def _get_dataset_with_polling(self, response):
+        """
+        Retrieves a dataset by polling until the dataset is ready or a timeout occurs.
+        This method extracts the dataset location from the response headers, retrieves the dataset ID,
+        and then polls the server to check the status of the dataset. If the status is either "SUCCESS"
+        or "FAILURE", the polling stops. If the polling times out, a JaqpotPredictionTimeoutException is raised.
+        Args:
+            response (requests.Response): The HTTP response object containing the dataset location in the headers.
+        Returns:
+            dict: The dataset retrieved from the server.
+        Raises:
+            JaqpotPredictionTimeoutException: If polling times out while waiting for the dataset to be ready.
+        """
+
         dataset_location = response.headers["Location"]
         dataset_id = int(dataset_location.split("/")[-1])
         try:
@@ -211,16 +263,43 @@ class JaqpotApiClient:
         return dataset
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculator_guid):
+        """
+        Synchronously predicts using the QSAR Toolbox calculator.
+        Args:
+            smiles (str): The SMILES string representing the chemical structure.
+            calculator_guid (str): The unique identifier for the QSAR Toolbox calculator.
+        Returns:
+            dict: The prediction result from the QSAR Toolbox calculator.
+        """
+
         dataset = [{"smiles": smiles, "calculatorGuid": calculator_guid}]
         prediction = self.predict_sync(QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset)
         return prediction
 
     def qsartoolbox_qsar_model_predict_sync(self, smiles, qsar_guid):
+        """
+        Synchronously predicts QSAR model results using the QSAR Toolbox.
+        Args:
+            smiles (str): The SMILES string representing the chemical structure.
+            qsar_guid (str): The unique identifier for the QSAR model.
+        Returns:
+            dict: The prediction results from the QSAR model.
+        """
+
         dataset = [{"smiles": smiles, "qsarGuid": qsar_guid}]
         prediction = self.predict_sync(QSARTOOLBOX_MODEL_MODEL_ID, dataset)
         return prediction
 
     def qsartoolbox_profiler_predict_sync(self, smiles, profiler_guid):
+        """
+        Predicts the QSAR toolbox profiler synchronously.
+        Parameters:
+        smiles (str): The SMILES string representing the chemical structure.
+        profiler_guid (str): The unique identifier for the profiler.
+        Returns:
+        dict: The prediction result from the QSAR profiler model.
+        """
+
         dataset = [{"smiles": smiles, "profilerGuid": profiler_guid}]
         prediction = self.predict_sync(QSAR_PROFILER_MODEL_ID, dataset)
         return prediction
