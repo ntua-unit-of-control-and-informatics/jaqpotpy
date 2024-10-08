@@ -9,7 +9,7 @@ import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv(".env")
-from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient
+from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient  # noqa: E402
 
 jaqpot = JaqpotApiClient()
 # jaqpot.login()
