@@ -3,16 +3,25 @@ import os
 
 from jaqpotpy.api.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
 from jaqpotpy.api.model_to_b64encoding import file_to_b64encoding
-from jaqpotpy.api.openapi import ModelApi, DatasetApi, Dataset, DatasetType, DatasetCSV, Configuration
-from jaqpotpy.exceptions.exceptions import JaqpotApiException, JaqpotPredictionTimeoutException, \
-    JaqpotPredictionFailureException
+from jaqpotpy.api.openapi import (
+    ModelApi,
+    DatasetApi,
+    Dataset,
+    DatasetType,
+    DatasetCSV,
+    Configuration,
+)
+from jaqpotpy.exceptions.exceptions import (
+    JaqpotApiException,
+    JaqpotPredictionTimeoutException,
+    JaqpotPredictionFailureException,
+)
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.models import Model
 from jaqpotpy.utils.url_utils import add_subdomain
 
 API_KEY = os.getenv("JAQPOT_API_KEY")
 API_SECRET = os.getenv("JAQPOT_API_SECRET")
-
 QSARTOOLBOX_CALCULATOR_MODEL_ID = 6
 QSARTOOLBOX_MODEL_MODEL_ID = 1837
 QSAR_PROFILER_MODEL_ID = 1842
@@ -20,10 +29,10 @@ QSAR_PROFILER_MODEL_ID = 1842
 
 class JaqpotApiClient:
     def __init__(
-            self,
-            base_url=None,
-            api_url=None,
-            create_logs=False,
+        self,
+        base_url=None,
+        api_url=None,
+        create_logs=False,
     ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
@@ -34,9 +43,11 @@ class JaqpotApiClient:
         else:
             self.base_url = "https://jaqpot.org"
         self.api_url = api_url or add_subdomain(self.base_url, "api")
-        self.http_client = (JaqpotApiHttpClientBuilder(host=self.api_url)
-                            .build_with_api_keys(API_KEY, API_SECRET)
-                            .build())
+        self.http_client = (
+            JaqpotApiHttpClientBuilder(host=self.api_url)
+            .build_with_api_keys(API_KEY, API_SECRET)
+            .build()
+        )
 
     def get_model_by_id(self, model_id) -> Model:
         """Get model from Jaqpot.
@@ -50,7 +61,10 @@ class JaqpotApiClient:
         response = model_api.get_model_by_id_with_http_info(id=model_id)
         if response.status_code < 300:
             return response.data.to_dict()
-        raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
+        raise JaqpotApiException(
+            message=response.data.to_dict().message,
+            status_code=response.status_code.value,
+        )
 
     def get_model_summary(self, model_id):
         """Get model summary from Jaqpot.
@@ -73,10 +87,13 @@ class JaqpotApiClient:
                 ],
                 "dependentFeatures": [
                     feature.name for feature in model.dependent_features
-                ]
+                ],
             }
             return model_summary
-        raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
+        raise JaqpotApiException(
+            message=response.data.to_dict().message,
+            status_code=response.status_code.value,
+        )
 
     def get_shared_models(self, page=None, size=None, sort=None, organization_id=None):
         """Get shared models from Jaqpot.
@@ -95,7 +112,10 @@ class JaqpotApiClient:
         )
         if response.status_code < 300:
             return response
-        raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
+        raise JaqpotApiException(
+            message=response.data.to_dict().message,
+            status_code=response.status_code.value,
+        )
 
     def get_dataset_by_id(self, dataset_id) -> Dataset:
         """Get dataset from Jaqpot.
@@ -109,7 +129,10 @@ class JaqpotApiClient:
         response = dataset_api.get_dataset_by_id_with_http_info(id=dataset_id)
         if response.status_code < 300:
             return response.data
-        raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
+        raise JaqpotApiException(
+            message=response.data.to_dict().message,
+            status_code=response.status_code.value,
+        )
 
     def predict_sync(self, model_id, dataset):
         """Predict with model on Jaqpot.
@@ -136,15 +159,18 @@ class JaqpotApiClient:
                 return dataset.result
             elif dataset.status == "FAILURE":
                 raise JaqpotPredictionFailureException(dataset.failure_reason)
-        raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
+        raise JaqpotApiException(
+            message=response.data.to_dict().message,
+            status_code=response.status_code.value,
+        )
 
     def predict_with_csv_sync(self, model_id, csv_path):
         """Predict with model on Jaqpot.
 
         Parameters
         ----------
-        :param model_id: 
-        :param csv_path: 
+        :param model_id:
+        :param csv_path:
 
         """
 
@@ -162,7 +188,10 @@ class JaqpotApiClient:
                 return dataset.result
             elif dataset.status == "FAILURE":
                 raise JaqpotPredictionFailureException(message=dataset.failure_reason)
-        raise JaqpotApiException(message=response.data.to_dict().message, status_code=response.status_code.value)
+        raise JaqpotApiException(
+            message=response.data.to_dict().message,
+            status_code=response.status_code.value,
+        )
 
     def _get_dataset_with_polling(self, response):
         dataset_location = response.headers["Location"]
@@ -170,7 +199,7 @@ class JaqpotApiClient:
         try:
             polling2.poll(
                 lambda: self.get_dataset_by_id(dataset_id).status
-                        in ["SUCCESS", "FAILURE"],
+                in ["SUCCESS", "FAILURE"],
                 step=3,
                 timeout=60,
             )
@@ -182,10 +211,8 @@ class JaqpotApiClient:
         return dataset
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculator_guid):
-        dataset = ([{"smiles": smiles, "calculatorGuid": calculator_guid}],)
-        prediction = self.predict_sync(
-            QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset
-        )
+        dataset = [{"smiles": smiles, "calculatorGuid": calculator_guid}]
+        prediction = self.predict_sync(QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset)
         return prediction
 
     def qsartoolbox_qsar_model_predict_sync(self, smiles, qsar_guid):
