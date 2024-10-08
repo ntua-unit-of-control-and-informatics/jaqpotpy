@@ -1,5 +1,6 @@
 import sklearn
 from sklearn import metrics
+from sklearn.model_selection import KFold
 import pandas as pd
 import numpy as np
 from typing import Any, Dict, Optional
@@ -54,7 +55,6 @@ class SklearnModel(Model):
         model: Any,
         doa: Optional[DOA or list] = None,
         preprocessor: Preprocess = None,
-        cv=None,
     ):
         self.dataset = dataset
         self.featurizer = dataset.featurizer
@@ -76,7 +76,6 @@ class SklearnModel(Model):
         self.independentFeatures = None
         self.dependentFeatures = None
         self.extra_config = ModelExtraConfig()
-        self.cv = cv
         self.test_metrics = {}
         self.train_metrics = {}
         self.cross_val_metrics = {}
@@ -285,8 +284,6 @@ class SklearnModel(Model):
         self.train_metrics = self._get_metrics(y, y_pred)
         print("Goodness-of-fit metrics on training set:")
         print(self.train_metrics)
-        if self.cv:
-            ...
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -404,19 +401,69 @@ class SklearnModel(Model):
         ]
         return onnx_probs_list
 
-    def _cross_val(self, X, y_true):
-        if self.task.upper() == "REGRESSION":
-            ...
-        else:
-            ...
-        return metrics
+    # def cross_validate(self, n_splits =5, shuffle =True, random_state=42):
+    #     kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
+    #     X = self.dataset.__get_X__()
+    #     y = self.dataset.__get_Y__()
+    #     if len(self.dataset.y_cols) == 1:
+    #         y = y.to_numpy().ravel()
 
-    def evaluate(self, X, y_true):
-        if self.task.upper() == "REGRESSION":
-            ...
-        else:
-            ...
-        return metrics
+    #     if self.task.upper() == "REGRESSION":
+    #     for train_index, test_index in kf.split(X):
+    #         X_train, X_test = X[train_index], X[test_index]
+    #         y_train, y_test = y[train_index], y[test_index]
+    #         if self.preprocess is not None:
+    #             pre_y_keys = self.preprocess.classes_y.keys()
+    #             y_scaled = self.dataset.__get_Y__()
+    #                 self.extra_config.preprocessors = []
+    #                 for pre_y_key in pre_y_keys:
+    #                     pre_y_function = self.preprocess.classes_y.get(pre_y_key)
+    #                     y_scaled = pre_y_function.fit_transform(y_scaled)
+    #                     self.preprocess.register_fitted_class_y(
+    #                         pre_y_key, pre_y_function
+    #                     )
+    #                     preprocess_names_y.append(pre_y_key)
+    #                     preprocess_classes_y.append(pre_y_function)
+    #                     self._add_class_to_extraconfig(pre_y_function, "preprocessor")
+
+    #                 if len(self.dataset.y_cols) == 1:
+    #                     y_scaled = y_scaled.ravel()
+    #                 self.preprocessing_y = preprocess_classes_y
+    #                 self.trained_model = self.pipeline.fit(X, y_scaled)
+    #         else:
+    #             self.trained_model = self.pipeline.fit(X, y)
+
+    #     # case where no preprocessing was provided
+    #     else:
+    #         self.trained_model = self.model.fit(X, y)
+
+    #         model.fit(X_train, y_train)
+    #         y_pred = model.predict(X_test)
+
+    # # Calculate multiple metrics
+    # accuracies.append(accuracy_score(y_test, y_pred))
+    # precisions.append(precision_score(y_test, y_pred, average='macro'))
+    # recalls.append(recall_score(y_test, y_pred, average='macro'))
+    #         y_pred = self.predict(self.dataset)
+    #         self.train_metrics = self._get_metrics(y_true, y_pred)
+    #     else:
+    #         y_pred = self.predict(self.dataset)
+    #         self.train_metrics = self._get_metrics(y_true, y_pred)
+    #     return eval_metrics
+
+    def evaluate(self, prediction_dataset: JaqpotpyDataset):
+        if prediction_dataset.y is None:
+            raise TypeError(
+                "Please provide a dataset with a response by defining y_cols"
+            )
+        y_pred = self.predict(prediction_dataset)
+        y_true = self.dataset.__get_Y__()
+        if len(self.dataset.y_cols) == 1:
+            y_true = y_true.to_numpy().ravel()
+        self.test_metrics = self._get_metrics(y_true, y_pred)
+        print("Goodness-of-fit metrics on test set:")
+        print(self.test_metrics)
+        return
 
     def _get_metrics(self, y_true, y_pred):
         if self.task.upper() == "REGRESSION":
