@@ -1,18 +1,7 @@
-import sklearn
-from typing import Any, Dict, Optional
-from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.models import Evaluator, Preprocess
-from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.models import (
-    FeatureType,
-    FeaturePossibleValue,
-    ModelType,
-    ModelExtraConfig,
-    Transformer,
-    ModelTask,
-)
-import jaqpotpy
+from typing import Any, Dict, Optional, List
+from sklearn import preprocessing, pipeline
+import numpy as np
+from onnxruntime import InferenceSession
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import (
     FloatTensorType,
@@ -24,10 +13,19 @@ from skl2onnx.common.data_types import (
     BooleanTensorType,
     StringTensorType,
 )
-from onnxruntime import InferenceSession
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.compose import ColumnTransformer
+import jaqpotpy
+from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from jaqpotpy.models import Evaluator
+from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.openapi.models import (
+    FeatureType,
+    FeaturePossibleValue,
+    ModelType,
+    ModelExtraConfig,
+    Transformer,
+    ModelTask,
+)
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
 
@@ -38,8 +36,8 @@ class SklearnModel(Model):
         dataset: JaqpotpyDataset,
         model: Any,
         doa: Optional[DOA or list] = None,
-        preprocessor: Preprocess = None,
-        evaluator: Evaluator = None,
+        preprocess_x: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
+        preprocess_y: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
     ):
         self.dataset = dataset
         self.featurizer = dataset.featurizer
@@ -47,12 +45,16 @@ class SklearnModel(Model):
         self.pipeline = None
         self.trained_model = None
         self.doa = doa if isinstance(doa, list) else [doa] if doa else []
-        self.evaluator = evaluator
-        self.preprocess = preprocessor
-        self.preprocessing_y = None
+        self.preprocess_x = (
+            preprocess_x if isinstance(preprocess_x, list) else [preprocess_x]
+        )
+        SklearnModel.check_preprocessor(self.preprocess_x, feat_type="X")
+        self.preprocess_y = (
+            preprocess_y if isinstance(preprocess_y, list) else [preprocess_y]
+        )
+        SklearnModel.check_preprocessor(self.preprocess_y, feat_type="y")
         self.transformers_y = {}
         self.libraries = None
-        self.version = [sklearn.__version__]
         self.jaqpotpy_version = jaqpotpy.__version__
         self.task = self.dataset.task
         self.initial_types = None
@@ -214,53 +216,30 @@ class SklearnModel(Model):
         if len(self.dataset.y_cols) == 1:
             y = y.to_numpy().ravel()
 
-        # if preprocessing was applied to either X,y or both
-        if self.preprocess is not None:
-            self.pipeline = sklearn.pipeline.Pipeline(steps=[])
-            # Apply preprocessing on design matrix X
-            pre_keys = self.preprocess.classes.keys()
-            if len(pre_keys) > 0:
-                for preprocessor in pre_keys:
-                    self.pipeline.steps.append(
-                        (preprocessor, self.preprocess.classes.get(preprocessor))
-                    )
-            self.pipeline.steps.append(("model", self.model))
+        #  Build preprocessing pipeline that ends up with the model
+        self.pipeline = pipeline.Pipeline(steps=[])
+        if self.preprocess_x[0] is not None:
+            for preprocessor in self.preprocess_x:
+                self.pipeline.steps.append((str(preprocessor), preprocessor))
+        self.pipeline.steps.append(("model", self.model))
 
-            # Apply preprocessing of response vector y
-            pre_y_keys = self.preprocess.classes_y.keys()
-
-            if len(pre_y_keys) > 0:
-                if (
-                    self.task == "BINARY_CLASSIFICATION"
-                    or self.task == "MULTICLASS_CLASSIFICATION"
-                ):
-                    raise ValueError(
-                        "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
-                    )
-                else:
-                    preprocess_names_y = []
-                    preprocess_classes_y = []
-                    y_scaled = self.dataset.__get_Y__()
-                    self.extra_config.preprocessors = []
-                    for pre_y_key in pre_y_keys:
-                        pre_y_function = self.preprocess.classes_y.get(pre_y_key)
-                        y_scaled = pre_y_function.fit_transform(y_scaled)
-                        self.preprocess.register_fitted_class_y(
-                            pre_y_key, pre_y_function
-                        )
-                        preprocess_names_y.append(pre_y_key)
-                        preprocess_classes_y.append(pre_y_function)
-                        self._add_class_to_extraconfig(pre_y_function, "preprocessor")
-
-                    if len(self.dataset.y_cols) == 1:
-                        y_scaled = y_scaled.ravel()
-                    self.preprocessing_y = preprocess_classes_y
-                    self.trained_model = self.pipeline.fit(X, y_scaled)
+        # Apply preprocessing of response vector y
+        if self.preprocess_y[0] is not None:
+            if (
+                self.task == "BINARY_CLASSIFICATION"
+                or self.task == "MULTICLASS_CLASSIFICATION"
+            ):
+                raise ValueError(
+                    "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
+                )
             else:
-                self.trained_model = self.pipeline.fit(X, y)
-        # case where no preprocessing was provided
-        else:
-            self.trained_model = self.model.fit(X, y)
+                self.extra_config.preprocessors = []
+                for preprocessor in self.preprocess_y:
+                    y = preprocessor.fit_transform(y)
+                    self._add_class_to_extraconfig(preprocessor, str(preprocessor))
+                if len(self.dataset.y_cols) == 1:
+                    y = y.ravel()
+        self.trained_model = self.pipeline.fit(X, y)
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -290,23 +269,18 @@ class SklearnModel(Model):
 
         self._create_onnx(onnx_options=onnx_options)
 
-        if self.evaluator:
-            self.__eval__()
-        return self
-
     def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sklearn_prediction = self.trained_model.predict(dataset.X)
-        if self.preprocess is not None:
-            if self.preprocessing_y:
-                for f in self.preprocessing_y[::-1]:
-                    if len(self.dataset.y_cols) == 1:
-                        sklearn_prediction = f.inverse_transform(
-                            sklearn_prediction.reshape(1, -1)
-                        ).flatten()
-                    else:
-                        sklearn_prediction = f.inverse_transform(sklearn_prediction)
+        if self.preprocess_y[0] is not None:
+            for func in self.preprocess_y[::-1]:
+                if len(self.dataset.y_cols) == 1:
+                    sklearn_prediction = func.inverse_transform(
+                        sklearn_prediction.reshape(1, -1)
+                    ).flatten()
+                else:
+                    sklearn_prediction = func.inverse_transform(sklearn_prediction)
         return sklearn_prediction
 
     def predict_proba(self, dataset: JaqpotpyDataset):
@@ -343,10 +317,9 @@ class SklearnModel(Model):
         onnx_prediction = sess.run(None, input_data)
         if len(self.dataset.y_cols) == 1:
             onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
-        if self.preprocess is not None:
-            if self.preprocessing_y:
-                for f in self.preprocessing_y[::-1]:
-                    onnx_prediction[0] = f.inverse_transform(onnx_prediction[0])
+        if self.preprocess_y is not None:
+            for func in self.preprocess_y[::-1]:
+                onnx_prediction[0] = func.inverse_transform(onnx_prediction[0])
         if len(self.dataset.y_cols) == 1:
             return onnx_prediction[0].flatten()
         return onnx_prediction[0]
@@ -382,51 +355,30 @@ class SklearnModel(Model):
         ]
         return onnx_probs_list
 
-    def __eval__(self):
-        if self.evaluator.dataset.df is not None:
-            pass
-        else:
-            self.evaluator.dataset.create()
-        X = self.evaluator.dataset.__get_X__()
-        if self.preprocess:
-            pre_keys = self.preprocess.classes.keys()
-            for pre_key in pre_keys:
-                preprocess_func = self.preprocess.fitted_classes.get(pre_key)
-                X = preprocess_func.transform(X)
-        sess = InferenceSession(self.onnx_model.SerializeToString())
-        input_name = sess.get_inputs()[0].name
-        X = np.array(X.astype(float).copy())
-        preds = sess.run(None, {input_name: X.astype(np.float32)})
-        preds = preds[0].flatten()
-        preds_t = []
-        for p in preds:
-            try:
-                if self.preprocessing_y:
-                    for f in self.preprocessing_y:
-                        p = f.inverse_transform(p.reshape(1, -1))
-                        preds_t.append(p)
-            except AttributeError:
-                pass
-            preds_t.append(p)
-        eval_keys = self.evaluator.functions.keys()
-        for eval_key in eval_keys:
-            eval_function = self.evaluator.functions.get(eval_key)
-            try:
-                if self.preprocessing_y:
-                    for f in self.preprocessing_y:
-                        truth = f.inverse_transform(self.evaluator.dataset.__get_Y__())
-                    print(eval_key + ": " + str(eval_function(truth, preds_t)))
-            except AttributeError:
-                print(
-                    eval_key
-                    + ": "
-                    + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t))
-                )
-                pass
-            # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds_t)))
-            # print(eval_key + ": " + str(eval_function(self.evaluator.dataset.__get_Y__(), preds)))
-
     def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
         jaqpot.deploy_sklearn_model(
             model=self, name=name, description=description, visibility=visibility
         )
+
+    @staticmethod
+    def check_preprocessor(preprocessor_list: List, feat_type: str):
+        # Get all valid preprocessing classes from sklearn.preprocessing
+        valid_preprocessing_classes = [
+            getattr(preprocessing, name)
+            for name in dir(preprocessing)
+            if isinstance(getattr(preprocessing, name), type)
+        ]
+        for preprocessor in preprocessor_list:
+            # Check if preprocessor is an instance of one of these classes
+            if (
+                not isinstance(preprocessor, tuple(valid_preprocessing_classes))
+                and preprocessor is not None
+            ):
+                if feat_type == "X":
+                    raise ValueError(
+                        f"Feature preprocessing must be an instance of a valid class from sklearn.preprocessing, but got {type(preprocessor)}."
+                    )
+                elif feat_type == "y":
+                    raise ValueError(
+                        f"Response preprocessing must be an instance of a valid class from sklearn.preprocessing, but got {type(preprocessor)}."
+                    )
