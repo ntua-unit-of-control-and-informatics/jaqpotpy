@@ -165,14 +165,21 @@ class JaqpotApiClient:
         )
 
     def predict_async(self, model_id, dataset):
-        """Predict with model on Jaqpot.
-
-        Parameters
-        ----------
-        model_id : model_id is the id of the model on Jaqpot
-        dataset : dataset to predict
-
         """
+        Asynchronously predicts using a specified model and dataset.
+        This method sends a prediction request to the server using the provided model ID and dataset.
+        It constructs a Dataset object with the type set to PREDICTION and entry_type set to "ARRAY".
+        The method then uses the ModelApi to send the prediction request.
+        Args:
+            model_id (str): The ID of the model to use for prediction.
+            dataset (list or dict): The input data for prediction.
+        Returns:
+            int: The ID of the dataset containing the prediction results.
+        Raises:
+            JaqpotApiException: If the prediction request fails, an exception is raised with the error message
+                    and status code from the response.
+        """
+
         dataset = Dataset(
             type=DatasetType.PREDICTION,
             entry_type="ARRAY",
@@ -184,7 +191,9 @@ class JaqpotApiClient:
             model_id=model_id, dataset=dataset
         )
         if response.status_code < 300:
-            return response
+            dataset_location = response.headers["Location"]
+            dataset_id = int(dataset_location.split("/")[-1])
+            return dataset_id
         raise JaqpotApiException(
             message=response.data.to_dict().message,
             status_code=response.status_code.value,
@@ -218,19 +227,6 @@ class JaqpotApiClient:
             message=response.data.to_dict().message,
             status_code=response.status_code.value,
         )
-
-    def get_dataset(self, response):
-        """
-        Retrieves a dataset using the location provided in the response headers.
-        Args:
-            response (requests.Response): The HTTP response object containing the dataset location in the headers.
-        Returns:
-            dict: The dataset retrieved by its ID.
-        """
-
-        dataset_location = response.headers["Location"]
-        dataset_id = int(dataset_location.split("/")[-1])
-        return self.get_dataset_by_id(dataset_id)
 
     def _get_dataset_with_polling(self, response):
         """
