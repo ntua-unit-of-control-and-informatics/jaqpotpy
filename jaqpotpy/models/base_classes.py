@@ -7,10 +7,6 @@ class Model(object):
     _model: Any
     _doa: DOA
     _descriptors: MolecularFeaturizer
-    _preprocessors: []
-    _preprocessor_names: []
-    _preprocessor_y_names: []
-    _preprocessors_y: []
     _X: Iterable[str]
     _Y: Iterable[str]
     _X_indices: Iterable[int]
@@ -50,38 +46,6 @@ class Model(object):
     @doa.setter
     def doa(self, value):
         self._doa = value
-
-    @property
-    def preprocessing(self):
-        return self._preprocessors
-
-    @preprocessing.setter
-    def preprocessing(self, value):
-        self._preprocessors = value
-
-    @property
-    def preprocessing_y(self):
-        return self._preprocessors_y
-
-    @preprocessing_y.setter
-    def preprocessing_y(self, value):
-        self._preprocessors_y = value
-
-    @property
-    def preprocessor_names(self):
-        return self._preprocessor_names
-
-    @preprocessor_names.setter
-    def preprocessor_names(self, value):
-        self._preprocessor_names = value
-
-    @property
-    def preprocessor_y_names(self):
-        return self._preprocessor_names
-
-    @preprocessor_y_names.setter
-    def preprocessor_y_names(self, value):
-        self._preprocessor_y_names = value
 
     @property
     def X(self):
