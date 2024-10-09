@@ -42,9 +42,3 @@ molecularModel_t1 = SklearnModel(
 molecularModel_t1 = SklearnModel(
     dataset=dataset, model=model, preprocess_x=StandardScaler()
 )
-
-
-preprocess_x = [StandardScaler(), MinMaxScaler()]
-pipeline = sklearn.pipeline.Pipeline(steps=[])
-for preprocessor in preprocess_x:
-    pipeline.steps.append((str(preprocessor), preprocessor))
