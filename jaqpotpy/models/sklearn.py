@@ -76,7 +76,8 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.CATEGORICAL
                 categories = self.dataset.X[feature["key"]].unique()
                 feature["possible_values"] = list(
-                    FeaturePossibleValue(category, category) for category in categories
+                    FeaturePossibleValue(key=category, value=category)
+                    for category in categories
                 )
 
     def _extract_attributes(self, trained_class, trained_class_type):
