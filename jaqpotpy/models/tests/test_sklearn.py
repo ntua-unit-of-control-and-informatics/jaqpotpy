@@ -966,16 +966,17 @@ class TestModels(unittest.TestCase):
             task="regression",
             featurizer=featurizer,
         )
-        pre = StandardScaler()
         model = RandomForestRegressor(random_state=42)
         with self.assertRaises(ValueError):
             molecularmodel = SklearnModel(
                 dataset=dataset, model=model, preprocess_x=VarianceThreshold()
             )
+            molecularmodel.fit()
         with self.assertRaises(ValueError):
             molecularmodel = SklearnModel(
                 dataset=dataset, model=model, preprocess_y=VarianceThreshold()
             )
+            molecularmodel.fit()
 
 
 if __name__ == "__main__":
