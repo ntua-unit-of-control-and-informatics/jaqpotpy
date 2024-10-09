@@ -16,7 +16,6 @@ from skl2onnx.common.data_types import (
 import jaqpotpy
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.models import Evaluator
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.openapi.models import (
     FeatureType,
@@ -204,6 +203,8 @@ class SklearnModel(Model):
         # Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
+        if len(self.dataset.y_cols) == 1:
+            y = y.to_numpy().ravel()
 
         if self.doa:
             self.extra_config.doa = []
@@ -212,9 +213,6 @@ class SklearnModel(Model):
             for doa_method in self.doa:
                 doa_method.fit(X=X)
                 self._add_class_to_extraconfig(doa_method, "doa")
-
-        if len(self.dataset.y_cols) == 1:
-            y = y.to_numpy().ravel()
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
@@ -235,8 +233,9 @@ class SklearnModel(Model):
             else:
                 self.extra_config.preprocessors = []
                 for preprocessor in self.preprocess_y:
+                    y = self.dataset.__get_Y__()
                     y = preprocessor.fit_transform(y)
-                    self._add_class_to_extraconfig(preprocessor, str(preprocessor))
+                    self._add_class_to_extraconfig(preprocessor, "preprocessor")
                 if len(self.dataset.y_cols) == 1:
                     y = y.ravel()
         self.trained_model = self.pipeline.fit(X, y)
@@ -317,7 +316,7 @@ class SklearnModel(Model):
         onnx_prediction = sess.run(None, input_data)
         if len(self.dataset.y_cols) == 1:
             onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
-        if self.preprocess_y is not None:
+        if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
                 onnx_prediction[0] = func.inverse_transform(onnx_prediction[0])
         if len(self.dataset.y_cols) == 1:
