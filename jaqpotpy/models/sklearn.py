@@ -1,5 +1,7 @@
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Union
 from sklearn import preprocessing, pipeline
+from sklearn.base import BaseEstimator
+
 import numpy as np
 from onnxruntime import InferenceSession
 from skl2onnx import convert_sklearn
@@ -35,8 +37,8 @@ class SklearnModel(Model):
         dataset: JaqpotpyDataset,
         model: Any,
         doa: Optional[DOA or list] = None,
-        preprocess_x: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
-        preprocess_y: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
+        preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
+        preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
     ):
         self.dataset = dataset
         self.featurizer = dataset.featurizer
