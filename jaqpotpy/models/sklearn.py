@@ -34,7 +34,6 @@ from skl2onnx.common.shape_calculator import (
     calculate_linear_classifier_output_shapes,
     calculate_linear_regressor_output_shapes,
 )
-from xgboost import XGBClassifier, XGBRegressor
 from onnxmltools.convert.xgboost.operator_converters.XGBoost import convert_xgboost
 
 class SklearnModel(Model):
