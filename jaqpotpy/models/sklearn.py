@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, List, Union
-from sklearn import preprocessing, pipeline
+from sklearn import preprocessing, pipeline, compose
+from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator
 
 import numpy as np
@@ -76,7 +77,7 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.FLOAT
             elif feature["featureType"] in ["string, object", "O"]:
                 feature["featureType"] = FeatureType.CATEGORICAL
-                categories = self.dataset.X[feature["key"]].unique()
+                categories = self.dataset.df[feature["key"]].unique()
                 feature["possible_values"] = list(
                     FeaturePossibleValue(key=category, value=category)
                     for category in categories
@@ -229,14 +230,14 @@ class SklearnModel(Model):
             if (
                 self.task == "BINARY_CLASSIFICATION"
                 or self.task == "MULTICLASS_CLASSIFICATION"
-            ):
+            ) and not isinstance(self.preprocess_y[0], LabelEncoder):
                 raise ValueError(
                     "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
                 )
             else:
                 self.extra_config.preprocessors = []
+                y = self.dataset.__get_Y__()
                 for preprocessor in self.preprocess_y:
-                    y = self.dataset.__get_Y__()
                     y = preprocessor.fit_transform(y)
                     self._add_class_to_extraconfig(preprocessor, "preprocessor")
                 if len(self.dataset.y_cols) == 1:
@@ -279,7 +280,7 @@ class SklearnModel(Model):
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
                     sklearn_prediction = func.inverse_transform(
-                        sklearn_prediction.reshape(1, -1)
+                        sklearn_prediction.ravel()  # .reshape(-1, 1)
                     ).flatten()
                 else:
                     sklearn_prediction = func.inverse_transform(sklearn_prediction)
@@ -365,11 +366,20 @@ class SklearnModel(Model):
     @staticmethod
     def check_preprocessor(preprocessor_list: List, feat_type: str):
         # Get all valid preprocessing classes from sklearn.preprocessing
-        valid_preprocessing_classes = [
+        valid_preprocessing_classes_1 = [
             getattr(preprocessing, name)
             for name in dir(preprocessing)
             if isinstance(getattr(preprocessing, name), type)
         ]
+        valid_preprocessing_classes_2 = [
+            getattr(compose, name)
+            for name in dir(compose)
+            if isinstance(getattr(compose, name), type)
+        ]
+        valid_preprocessing_classes = (
+            valid_preprocessing_classes_1 + valid_preprocessing_classes_2
+        )
+
         for preprocessor in preprocessor_list:
             # Check if preprocessor is an instance of one of these classes
             if (
