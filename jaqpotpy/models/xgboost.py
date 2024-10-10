@@ -107,12 +107,6 @@ class XGBoostModel(SklearnModel):
             name=name,
             target_opset={"": 15, "ai.onnx.ml": 1},
         )
-        self.onnx_model = convert_sklearn(
-            self.trained_model,
-            initial_types=self.initial_types,
-            name=name,
-            options=onnx_options,
-        )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
         def _convert_regressor(self):
