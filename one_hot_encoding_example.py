@@ -10,7 +10,6 @@ from jaqpotpy.descriptors.molecular import (
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa.doa import Leverage
-from jaqpotpy.models.preprocessing import Preprocess
 from jaqpotpy import Jaqpot
 
 path = "jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification.csv"
@@ -41,12 +40,14 @@ column_transormer = ColumnTransformer(
     remainder="passthrough",
 )
 
-pre = Preprocess()
-pre.register_preprocess_class("ColumnTransformer", column_transormer)
 
 model = RandomForestClassifier(random_state=42)
 molecularModel_t1 = SklearnModel(
-    dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
+    dataset=dataset,
+    doa=None,
+    model=model,
+    evaluator=None,
+    preprocessor=column_transormer,
 )
 molecularModel_t1.fit()
 print(molecularModel_t1.initial_types)
