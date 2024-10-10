@@ -92,29 +92,27 @@ class XGBoostModel(SklearnModel):
                         self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
                     )
                 )
-        if "XGB" in type(self.model).__name__:
-            if (
-                self.task == "BINARY_CLASSIFICATION"
-                or self.task == "MULTICLASS_CLASSIFICATION"
-            ):
-                self._convert_classifier()
-            elif self.task == "REGRESSION":
-                self._convert_regressor()
-            else:
-                raise ValueError("Task not supported for XGBoost models")
-            self.onnx_model = to_onnx(
-                self.trained_model,
-                initial_types=self.initial_types,
-                name=name,
-                target_opset={"": 15, "ai.onnx.ml": 1},
-            )
+        if (
+            self.task == "BINARY_CLASSIFICATION"
+            or self.task == "MULTICLASS_CLASSIFICATION"
+        ):
+            self._convert_classifier()
+        elif self.task == "REGRESSION":
+            self._convert_regressor()
         else:
-            self.onnx_model = convert_sklearn(
-                self.trained_model,
-                initial_types=self.initial_types,
-                name=name,
-                options=onnx_options,
-            )
+            raise ValueError("Task not supported for XGBoost models")
+        self.onnx_model = to_onnx(
+            self.trained_model,
+            initial_types=self.initial_types,
+            name=name,
+            target_opset={"": 15, "ai.onnx.ml": 1},
+        )
+        self.onnx_model = convert_sklearn(
+            self.trained_model,
+            initial_types=self.initial_types,
+            name=name,
+            options=onnx_options,
+        )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
         def _convert_regressor(self):
