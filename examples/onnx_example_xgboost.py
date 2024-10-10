@@ -8,7 +8,9 @@ from jaqpotpy.descriptors.molecular import (
     MACCSKeysFingerprint,
 )
 from jaqpotpy.doa.doa import Leverage
-from jaqpotpy.models import SklearnModel
+
+# from jaqpotpy.models import SklearnModel
+from jaqpotpy.models import XGBoostModel
 from xgboost import XGBClassifier
 
 path = "jaqpotpy/test_data/test_data_smiles_classification.csv"
@@ -27,8 +29,7 @@ dataset = JaqpotpyDataset(
 )
 
 model = XGBClassifier(random_state=42)
-molecularModel_t1 = SklearnModel(
-    dataset=dataset, doa=None, model=model)
+molecularModel_t1 = XGBoostModel(dataset=dataset, doa=None, model=model)
 
 molecularModel_t1.fit()
 prediction_dataset = JaqpotpyDataset(
@@ -44,9 +45,9 @@ skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
 onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
 onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
 print("SKLearn Predictions:", skl_predictions)
-print('SKLearn Probabilities:', skl_probabilities)
+print("SKLearn Probabilities:", skl_probabilities)
 print("ONNX Predictions:", onnx_predictions)
-print('ONNX Probabilities:', onnx_probs)
+print("ONNX Probabilities:", onnx_probs)
 
 
 # Upload locally
@@ -62,7 +63,7 @@ jaqpot = Jaqpot(
 jaqpot.login()
 molecularModel_t1.deploy_on_jaqpot(
     jaqpot=jaqpot,
-    name="Demo: XGBOOST model",
+    name="Demo: XGBOOST model seperate",
     description="Compare with XGBOOST",
     visibility="PRIVATE",
 )

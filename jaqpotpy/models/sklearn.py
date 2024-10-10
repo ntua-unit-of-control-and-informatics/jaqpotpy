@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator
 
 import numpy as np
 from onnxruntime import InferenceSession
-from skl2onnx import convert_sklearn, to_onnx, update_registered_converter
+from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import (
     FloatTensorType,
     DoubleTensorType,
@@ -15,7 +15,6 @@ from skl2onnx.common.data_types import (
     BooleanTensorType,
     StringTensorType,
 )
-from xgboost import XGBClassifier, XGBRegressor
 import jaqpotpy
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
@@ -30,11 +29,7 @@ from jaqpotpy.api.openapi.models import (
 )
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa.doa import DOA
-from skl2onnx.common.shape_calculator import (
-    calculate_linear_classifier_output_shapes,
-    calculate_linear_regressor_output_shapes,
-)
-from onnxmltools.convert.xgboost.operator_converters.XGBoost import convert_xgboost
+
 
 class SklearnModel(Model):
     def __init__(
@@ -186,21 +181,8 @@ class SklearnModel(Model):
                         self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
                     )
                 )
-        if 'XGB' in type(self.model).__name__:
-            if self.task == "BINARY_CLASSIFICATION" or self.task == "MULTICLASS_CLASSIFICATION":
-                self._convert_classifier()
-            elif self.task == "REGRESSION":
-                self._convert_regressor()
-            else:
-                raise ValueError("Task not supported for XGBoost models")
-            self.onnx_model = to_onnx(
-            self.trained_model,
-            initial_types=self.initial_types,
-            name=name,
-            target_opset={"": 15, "ai.onnx.ml": 1}
-        )
-        else:    
-            self.onnx_model = convert_sklearn(
+
+        self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=self.initial_types,
             name=name,
@@ -208,22 +190,6 @@ class SklearnModel(Model):
         )
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
-    def _convert_regressor(self):
-        update_registered_converter(
-            model=XGBRegressor,
-            alias="XGBRegressor",
-            shape_fct=calculate_linear_regressor_output_shapes,
-            convert_fct=convert_xgboost,
-        )
-
-    def _convert_classifier(self):
-        update_registered_converter(
-            model=XGBClassifier,
-            alias="XGBClassifier",
-            shape_fct=calculate_linear_classifier_output_shapes,
-            convert_fct=convert_xgboost,
-            options={"nocl": [True, False], "zipmap": [True, False, "columns"]})
-        
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
         if isinstance(self.featurizer, (MolecularFeaturizer, list)):
