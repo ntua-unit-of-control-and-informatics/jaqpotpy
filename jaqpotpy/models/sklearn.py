@@ -73,7 +73,7 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.FLOAT
             elif feature["featureType"] in ["string, object", "O"]:
                 feature["featureType"] = FeatureType.CATEGORICAL
-                categories = self.dataset.X[feature["key"]].unique()
+                categories = self.dataset.df[feature["key"]].unique()
                 feature["possible_values"] = list(
                     FeaturePossibleValue(key=category, value=category)
                     for category in categories
@@ -235,28 +235,34 @@ class SklearnModel(Model):
                     self.task == "BINARY_CLASSIFICATION"
                     or self.task == "MULTICLASS_CLASSIFICATION"
                 ):
-                    raise ValueError(
-                        "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
-                    )
-                else:
-                    preprocess_names_y = []
-                    preprocess_classes_y = []
-                    y_scaled = self.dataset.__get_Y__()
-                    self.extra_config.preprocessors = []
-                    for pre_y_key in pre_y_keys:
-                        pre_y_function = self.preprocess.classes_y.get(pre_y_key)
-                        y_scaled = pre_y_function.fit_transform(y_scaled)
-                        self.preprocess.register_fitted_class_y(
-                            pre_y_key, pre_y_function
+                    if (
+                        str(list(self.preprocess.classes_y.values())[0])
+                        != "LabelEncoder()"
+                    ):
+                        raise ValueError(
+                            "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
                         )
-                        preprocess_names_y.append(pre_y_key)
-                        preprocess_classes_y.append(pre_y_function)
-                        self._add_class_to_extraconfig(pre_y_function, "preprocessor")
+                    else:
+                        preprocess_names_y = []
+                        preprocess_classes_y = []
+                        y_scaled = self.dataset.__get_Y__()
+                        self.extra_config.preprocessors = []
+                        for pre_y_key in pre_y_keys:
+                            pre_y_function = self.preprocess.classes_y.get(pre_y_key)
+                            y_scaled = pre_y_function.fit_transform(y_scaled)
+                            self.preprocess.register_fitted_class_y(
+                                pre_y_key, pre_y_function
+                            )
+                            preprocess_names_y.append(pre_y_key)
+                            preprocess_classes_y.append(pre_y_function)
+                            self._add_class_to_extraconfig(
+                                pre_y_function, "preprocessor"
+                            )
 
-                    if len(self.dataset.y_cols) == 1:
-                        y_scaled = y_scaled.ravel()
-                    self.preprocessing_y = preprocess_classes_y
-                    self.trained_model = self.pipeline.fit(X, y_scaled)
+                        if len(self.dataset.y_cols) == 1:
+                            y_scaled = y_scaled.ravel()
+                        self.preprocessing_y = preprocess_classes_y
+                        self.trained_model = self.pipeline.fit(X, y_scaled)
             else:
                 self.trained_model = self.pipeline.fit(X, y)
         # case where no preprocessing was provided
@@ -304,7 +310,7 @@ class SklearnModel(Model):
                 for f in self.preprocessing_y[::-1]:
                     if len(self.dataset.y_cols) == 1:
                         sklearn_prediction = f.inverse_transform(
-                            sklearn_prediction.reshape(1, -1)
+                            sklearn_prediction.reshape(-1, 1)
                         ).flatten()
                     else:
                         sklearn_prediction = f.inverse_transform(sklearn_prediction)

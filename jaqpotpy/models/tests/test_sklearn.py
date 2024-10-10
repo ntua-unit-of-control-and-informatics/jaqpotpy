@@ -113,7 +113,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=None
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -174,7 +174,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -352,7 +352,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_multiclass_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -471,7 +471,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=None
         )
         jaqpot_model.fit()
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -512,7 +512,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -553,7 +553,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
         )
         jaqpot_model.fit()
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -597,7 +597,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -639,7 +639,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=None
         )
         jaqpot_model.fit()
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -699,7 +699,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -759,7 +759,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -820,7 +820,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, evaluator=None, preprocessor=pre
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
-        validation_dataset = dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotpyDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
