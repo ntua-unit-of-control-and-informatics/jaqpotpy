@@ -1,6 +1,11 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder
+from sklearn.preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    OneHotEncoder,
+    LabelEncoder,
+)
 from sklearn.compose import ColumnTransformer
 from jaqpotpy.descriptors.molecular import (
     TopologicalFingerprint,
@@ -12,7 +17,7 @@ from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy import Jaqpot
 
-path = "jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification.csv"
+path = "jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS.csv"
 df = pd.read_csv(path)
 
 # df = df.drop(columns=["SMILES"])
@@ -31,7 +36,6 @@ dataset = JaqpotpyDataset(
     task="BINARY_CLASSIFICATION",
     featurizer=featurizer,
 )
-print(dataset.X.dtypes)
 column_transormer = ColumnTransformer(
     transformers=[
         # ("Standard Scaler", StandardScaler(), ["X1", "X2"]),
@@ -40,29 +44,28 @@ column_transormer = ColumnTransformer(
     remainder="passthrough",
 )
 
-
 model = RandomForestClassifier(random_state=42)
 molecularModel_t1 = SklearnModel(
     dataset=dataset,
     doa=None,
     model=model,
-    preprocess_y=column_transormer,
+    preprocess_x=column_transormer,
+    preprocess_y=[LabelEncoder()],
 )
 molecularModel_t1.fit()
-print(molecularModel_t1.initial_types)
-pred_path = "/Users/vassilis/Desktop/test_ohe.csv"
-df = pd.read_csv(pred_path)
-prediction_dataset = JaqpotpyDataset(
-    df=df,
-    y_cols=None,
-    smiles_cols=smiles_cols,
-    x_cols=x_cols,
-    task="BINARY_CLASSIFICATION",
-    featurizer=featurizer,
-)
-
-# skl_predictions = molecularModel_t1.predict(prediction_dataset)
-# skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
+# pred_path = "/Users/vassilis/Desktop/test_ohe.csv"
+# df = pd.read_csv(pred_path)
+# prediction_dataset = JaqpotpyDataset(
+#     df=df,
+#     y_cols=None,
+#     smiles_cols=smiles_cols,
+#     x_cols=x_cols,
+#     task="BINARY_CLASSIFICATION",
+#     featurizer=featurizer,
+# )
+prediction_dataset = dataset
+skl_predictions = molecularModel_t1.predict(prediction_dataset)
+skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
 onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
 # onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
 # print("SKLearn Predictions:", skl_predictions)
