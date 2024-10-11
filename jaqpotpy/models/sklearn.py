@@ -283,7 +283,7 @@ class SklearnModel(Model):
         )
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
-                if len(self.dataset.y_cols) == 1:
+                if len(self.dataset.y_cols) == 1 and not isinstance(func, LabelEncoder):
                     sklearn_prediction = func.inverse_transform(
                         sklearn_prediction.reshape(-1, 1)
                     ).flatten()
@@ -327,10 +327,10 @@ class SklearnModel(Model):
                 for i in range(len(self.initial_types))
             }
         onnx_prediction = sess.run(None, input_data)
-        if len(self.dataset.y_cols) == 1:
-            onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
+                if len(self.dataset.y_cols) == 1 and not isinstance(func, LabelEncoder):
+                    onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
                 onnx_prediction[0] = func.inverse_transform(onnx_prediction[0])
         if len(self.dataset.y_cols) == 1:
             return onnx_prediction[0].flatten()
