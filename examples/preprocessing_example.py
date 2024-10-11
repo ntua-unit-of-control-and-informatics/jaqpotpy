@@ -1,8 +1,14 @@
 import pandas as pd
 import sklearn
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    LabelEncoder,
+    OneHotEncoder,
+)
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.compose import ColumnTransformer
 
 from jaqpotpy import Jaqpot
 from jaqpotpy.datasets import JaqpotpyDataset
@@ -28,17 +34,20 @@ dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
+dataset.select_features(SelectionList=["X1"])
 
 
 model = RandomForestRegressor(random_state=42)
-molecularModel_t1 = SklearnModel(dataset=dataset, model=model, preprocess_x=None)
-molecularModel_t1 = SklearnModel(
-    dataset=dataset, model=model, preprocess_x=VarianceThreshold()
-)
-molecularModel_t1 = SklearnModel(
-    dataset=dataset, model=model, preprocess_y=VarianceThreshold()
-)
 
 molecularModel_t1 = SklearnModel(
-    dataset=dataset, model=model, preprocess_x=StandardScaler()
+    dataset=dataset,
+    model=model,
+    preprocess_x=ColumnTransformer(
+        transformers=[
+            # ("Standard Scaler", StandardScaler(), ["X1", "X2"]),
+            ("OneHotEncoder", OneHotEncoder(), ["Cat_col"]),
+        ],
+        remainder="passthrough",
+    ),
 )
+molecularModel_t1.predict(dataset)
