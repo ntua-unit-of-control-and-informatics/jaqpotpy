@@ -22,6 +22,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictBytes, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing_extensions import Annotated
+from jaqpotpy.api.openapi.models.doa import Doa
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.library import Library
 from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
@@ -42,6 +43,7 @@ class Model(BaseModel):
     description: Optional[Annotated[str, Field(min_length=3, strict=True, max_length=50000)]] = None
     type: ModelType
     jaqpotpy_version: StrictStr = Field(alias="jaqpotpyVersion")
+    doas: Optional[List[Doa]] = None
     libraries: List[Library]
     dependent_features: List[Feature] = Field(alias="dependentFeatures")
     independent_features: List[Feature] = Field(alias="independentFeatures")
@@ -57,7 +59,7 @@ class Model(BaseModel):
     extra_config: Optional[ModelExtraConfig] = Field(default=None, alias="extraConfig")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "rawModel", "creator", "canEdit", "isAdmin", "tags", "legacyPredictionService", "extraConfig", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "rawModel", "creator", "canEdit", "isAdmin", "tags", "legacyPredictionService", "extraConfig", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -98,6 +100,13 @@ class Model(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of each item in doas (list)
+        _items = []
+        if self.doas:
+            for _item_doas in self.doas:
+                if _item_doas:
+                    _items.append(_item_doas.to_dict())
+            _dict['doas'] = _items
         # override the default output from pydantic by calling `to_dict()` of each item in libraries (list)
         _items = []
         if self.libraries:
@@ -149,6 +158,7 @@ class Model(BaseModel):
             "description": obj.get("description"),
             "type": obj.get("type"),
             "jaqpotpyVersion": obj.get("jaqpotpyVersion"),
+            "doas": [Doa.from_dict(_item) for _item in obj["doas"]] if obj.get("doas") is not None else None,
             "libraries": [Library.from_dict(_item) for _item in obj["libraries"]] if obj.get("libraries") is not None else None,
             "dependentFeatures": [Feature.from_dict(_item) for _item in obj["dependentFeatures"]] if obj.get("dependentFeatures") is not None else None,
             "independentFeatures": [Feature.from_dict(_item) for _item in obj["independentFeatures"]] if obj.get("independentFeatures") is not None else None,

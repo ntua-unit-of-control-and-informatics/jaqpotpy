@@ -18,20 +18,18 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field
-from typing import Any, ClassVar, Dict, List, Optional
-from jaqpotpy.api.openapi.models.transformer import Transformer
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing import Optional, Set
 from typing_extensions import Self
 
-class ModelExtraConfig(BaseModel):
+class LeverageDoa(BaseModel):
     """
-    A JSON object containing extra configuration for the model
+    LeverageDoa
     """ # noqa: E501
-    torch_config: Optional[Dict[str, Any]] = Field(default=None, alias="torchConfig")
-    preprocessors: Optional[List[Transformer]] = None
-    featurizers: Optional[List[Transformer]] = None
-    __properties: ClassVar[List[str]] = ["torchConfig", "preprocessors", "featurizers"]
+    h_star: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="hStar")
+    array: Optional[List[List[Union[StrictFloat, StrictInt]]]] = None
+    __properties: ClassVar[List[str]] = ["hStar", "array"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -51,7 +49,7 @@ class ModelExtraConfig(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of ModelExtraConfig from a JSON string"""
+        """Create an instance of LeverageDoa from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -72,25 +70,11 @@ class ModelExtraConfig(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in preprocessors (list)
-        _items = []
-        if self.preprocessors:
-            for _item_preprocessors in self.preprocessors:
-                if _item_preprocessors:
-                    _items.append(_item_preprocessors.to_dict())
-            _dict['preprocessors'] = _items
-        # override the default output from pydantic by calling `to_dict()` of each item in featurizers (list)
-        _items = []
-        if self.featurizers:
-            for _item_featurizers in self.featurizers:
-                if _item_featurizers:
-                    _items.append(_item_featurizers.to_dict())
-            _dict['featurizers'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of ModelExtraConfig from a dict"""
+        """Create an instance of LeverageDoa from a dict"""
         if obj is None:
             return None
 
@@ -98,9 +82,8 @@ class ModelExtraConfig(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "torchConfig": obj.get("torchConfig"),
-            "preprocessors": [Transformer.from_dict(_item) for _item in obj["preprocessors"]] if obj.get("preprocessors") is not None else None,
-            "featurizers": [Transformer.from_dict(_item) for _item in obj["featurizers"]] if obj.get("featurizers") is not None else None
+            "hStar": obj.get("hStar"),
+            "array": obj.get("array")
         })
         return _obj
 
