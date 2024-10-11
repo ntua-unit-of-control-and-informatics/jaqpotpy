@@ -39,15 +39,6 @@ dataset.select_features(SelectionList=["X1"])
 
 model = RandomForestRegressor(random_state=42)
 
-molecularModel_t1 = SklearnModel(
-    dataset=dataset,
-    model=model,
-    preprocess_x=ColumnTransformer(
-        transformers=[
-            # ("Standard Scaler", StandardScaler(), ["X1", "X2"]),
-            ("OneHotEncoder", OneHotEncoder(), ["Cat_col"]),
-        ],
-        remainder="passthrough",
-    ),
-)
+molecularModel_t1 = SklearnModel(dataset=dataset, model=model, preprocess_x=None)
+molecularModel_t1.fit()
 molecularModel_t1.predict(dataset)

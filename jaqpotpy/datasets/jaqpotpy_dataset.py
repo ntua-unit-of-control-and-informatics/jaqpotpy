@@ -219,6 +219,7 @@ class JaqpotpyDataset(BaseDataset):
         self.df = pd.concat([self.X, self.y], axis=1)
         self.X.columns = self.X.columns.astype(str)
         self.df.columns = self.df.columns.astype(str)
+        self.active_features = self.X.columns.tolist()
 
     def select_features(self, FeatureSelector=None, SelectionList=None):
         if (FeatureSelector is None and SelectionList is None) or (
