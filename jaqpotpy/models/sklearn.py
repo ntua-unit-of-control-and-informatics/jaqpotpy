@@ -282,7 +282,7 @@ class SklearnModel(Model):
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
                     sklearn_prediction = func.inverse_transform(
-                        sklearn_prediction.ravel()  # .reshape(-1, 1)
+                        sklearn_prediction.reshape(-1, 1)
                     ).flatten()
                 else:
                     sklearn_prediction = func.inverse_transform(sklearn_prediction)
