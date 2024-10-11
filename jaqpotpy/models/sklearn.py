@@ -256,9 +256,12 @@ class SklearnModel(Model):
         else:
             self.independentFeatures = list()
         if self.dataset.x_cols:
+            intesection_of_features = list(
+                set(self.dataset.x_cols).intersection(set(self.dataset.active_features))
+            )
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
-                for feature in self.dataset.active_features
+                for feature in intesection_of_features
             )
         self.dependentFeatures = list(
             {
