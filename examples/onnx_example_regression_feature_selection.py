@@ -9,7 +9,6 @@ from jaqpotpy.descriptors.molecular import (
 )
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models import SklearnModel
-from jaqpotpy.models.preprocessing import Preprocess
 
 path = "../jaqpotpy/test_data/test_data_smiles_classification.csv"
 
@@ -30,9 +29,7 @@ dataset = JaqpotpyDataset(
 sel = VarianceThreshold(threshold=0.1)
 dataset.select_features(sel)
 print(dataset.X.shape)
-pre = Preprocess()
-# pre.register_preprocess_class("Standard Scaler", StandardScaler())
-# pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
+
 
 model = RandomForestRegressor(random_state=42)
 doa_method = Leverage()
