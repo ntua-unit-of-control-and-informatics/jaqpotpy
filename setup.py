@@ -27,7 +27,7 @@ setup(
         "requests==2.32.2",
         "pydantic==2.7.1",
         "rdkit==2023.9.6",
-        "mordredcommunity==2.0.5",  # Used as a replacement of mordred descriptors. Handles descriptor generation errors
+        "mordredcommunity==2.0.5",
         "scikit-learn==1.5.0",
         "tqdm==4.66.4",
         "kennard-stone==2.2.1",
