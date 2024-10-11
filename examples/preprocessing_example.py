@@ -34,6 +34,7 @@ dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
+dataset.select_features(SelectionList=["X1"])
 
 
 model = RandomForestRegressor(random_state=42)
@@ -49,3 +50,4 @@ molecularModel_t1 = SklearnModel(
         remainder="passthrough",
     ),
 )
+molecularModel_t1.predict(dataset)

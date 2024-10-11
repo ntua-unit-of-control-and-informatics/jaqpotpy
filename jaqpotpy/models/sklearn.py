@@ -258,7 +258,7 @@ class SklearnModel(Model):
         if self.dataset.x_cols:
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
-                for feature in self.dataset.x_cols
+                for feature in self.dataset.active_features
             )
         self.dependentFeatures = list(
             {
@@ -275,12 +275,14 @@ class SklearnModel(Model):
     def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        sklearn_prediction = self.trained_model.predict(dataset.X)
+        sklearn_prediction = self.trained_model.predict(
+            dataset.X[self.dataset.active_features]
+        )
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
                     sklearn_prediction = func.inverse_transform(
-                        sklearn_prediction.ravel()  # .reshape(-1, 1)
+                        sklearn_prediction.reshape(-1, 1)
                     ).flatten()
                 else:
                     sklearn_prediction = func.inverse_transform(sklearn_prediction)
@@ -291,7 +293,11 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
-        sklearn_probs = self.trained_model.predict_proba(dataset.X)
+
+        sklearn_probs = self.trained_model.predict_proba(
+            dataset.X[self.dataset.active_features]
+        )
+
         sklearn_probs_list = [
             max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))
         ]

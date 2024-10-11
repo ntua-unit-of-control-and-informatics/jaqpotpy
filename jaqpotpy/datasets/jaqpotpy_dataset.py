@@ -161,6 +161,8 @@ class JaqpotpyDataset(BaseDataset):
             raise ValueError(f"Overlap found between x_cols and y_cols: {overlap_x_y}")
 
     def create(self):
+        self.df = self.df.reset_index(drop=True)
+
         if len(self.smiles_cols) == 1:
             # The method featurize_dataframe needs self.smiles to be pd.Series
             self.smiles = self.df[self.smiles_cols[0]]
@@ -219,6 +221,7 @@ class JaqpotpyDataset(BaseDataset):
         self.df = pd.concat([self.X, self.y], axis=1)
         self.X.columns = self.X.columns.astype(str)
         self.df.columns = self.df.columns.astype(str)
+        self.active_features = self.X.columns.tolist()
 
     def select_features(self, FeatureSelector=None, SelectionList=None):
         if (FeatureSelector is None and SelectionList is None) or (
