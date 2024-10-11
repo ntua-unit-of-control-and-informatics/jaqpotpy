@@ -47,7 +47,6 @@ setup(
         "torch==2.3.0",
         "torch-geometric==2.5.0",
         "torchvision==0.18.0",
-        "torch-sparse==0.6.18",
     ],
     zip_safe=False,
 )
