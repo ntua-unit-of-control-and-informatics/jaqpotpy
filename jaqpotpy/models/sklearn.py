@@ -1,8 +1,7 @@
 from typing import Any, Dict, Optional, List, Union
-from sklearn import preprocessing, pipeline, compose
+from sklearn import preprocessing, pipeline, compose, metrics
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator
-
 import numpy as np
 from onnxruntime import InferenceSession
 from skl2onnx import convert_sklearn
@@ -407,3 +406,89 @@ class SklearnModel(Model):
                     raise ValueError(
                         f"Response preprocessing must be an instance of a valid class from sklearn.preprocessing, but got {type(preprocessor)}."
                     )
+
+    def _cross_val(self, X, y_true):
+        if self.task.upper() == "REGRESSION":
+            ...
+        else:
+            ...
+        return metrics
+
+    def evaluate(self, dataset: JaqpotpyDataset):
+        y_true = dataset.__get_Y__().values.flatten()
+        y_pred = self.predict(dataset)
+        self.test_metrics = self._get_metrics(y_true, y_pred)
+        print("Goodness-of-fit metrics on test set:")
+        print(self.test_metrics)
+
+    def _get_metrics(self, y_true, y_pred):
+        if self.task.upper() == "REGRESSION":
+            return SklearnModel._get_regression_metrics(y_true, y_pred)
+        else:
+            return SklearnModel._get_classification_metrics(y_true, y_pred)
+
+    @staticmethod
+    def _get_classification_metrics(y_true, y_pred):
+        eval_metrics = {
+            "accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
+            "balanced_accuracy": metrics.balanced_accuracy_score(
+                y_true=y_true, y_pred=y_pred
+            ),
+            "precision": metrics.precision_score(y_true=y_true, y_pred=y_pred),
+            "recall": metrics.recall_score(y_true=y_true, y_pred=y_pred),
+            "f1": metrics.f1_score(y_true=y_true, y_pred=y_pred),
+            "f1_micro": metrics.f1_score(y_true=y_true, y_pred=y_pred, average="micro"),
+            "f1_macro": metrics.f1_score(y_true=y_true, y_pred=y_pred, average="macro"),
+            "jaccard": metrics.jaccard_score(y_true=y_true, y_pred=y_pred),
+        }
+        return eval_metrics
+
+    @staticmethod
+    def _get_regression_metrics(y_true, y_pred):
+        if isinstance(y_pred, list):
+            y_pred = np.array(y_pred)
+        if isinstance(y_true, list):
+            y_true = np.array(y_true)
+
+        mae = metrics.mean_absolute_error(y_true=y_true, y_pred=y_pred)
+        r2 = metrics.r2_score(y_true=y_true, y_pred=y_pred)
+        rmse = metrics.root_mean_squared_error(y_true=y_true, y_pred=y_pred)
+        # Corellation coefficient squared R2
+        cor_num_1 = y_true - y_true.mean()
+        cor_num_2 = y_pred - y_pred.mean()
+        cor_den_1 = ((y_true - y_true.mean()) ** 2).sum()
+        cor_den_2 = ((y_pred - y_pred.mean()) ** 2).sum()
+        cor_coeff = (cor_num_1 * cor_num_2).sum() / np.sqrt(cor_den_1 * cor_den_2)
+        cor_coeff_2 = cor_coeff**2
+
+        # Calculate k and k_hat
+        k = ((y_true * y_pred).sum()) / ((y_pred) ** 2).sum()
+        k_hat = ((y_true * y_pred).sum()) / ((y_true) ** 2).sum()
+
+        # Calculate R0^2 , R'0^2
+        # Calc y_r0, y_hat_r0 # CHECK
+        y_r0 = k * y_pred
+        y_hat_r0 = k_hat * y_true
+
+        # Calculate R0^2 # CHECK
+        R0_2_num = ((y_pred - y_r0) ** 2).sum()
+        R0_2_den = ((y_pred - y_pred.mean()) ** 2).sum()
+        R0_2 = 1 - R0_2_num / R0_2_den
+
+        # Calculate R'0^2 # CHECK
+        R0_2_hat_num = ((y_true - y_hat_r0) ** 2).sum()
+        R0_2_hat_den = ((y_true - y_true.mean()) ** 2).sum()
+        R0_2_hat = 1 - R0_2_hat_num / R0_2_hat_den
+
+        eval_metrics = {
+            "R^2 ": r2,
+            "MAE": mae,
+            "RMSE": rmse,
+            "(R^2 - R0^2_ / R^2 ": (cor_coeff_2 - R0_2) / cor_coeff_2,
+            "(R^2-R0_hat^2)/R2": (cor_coeff_2 - R0_2_hat) / cor_coeff_2,
+            "|R02^-R0_hat^2|": abs(R0_2 - R0_2_hat),
+            "k": k,
+            "k_hat": k_hat,
+        }
+
+        return eval_metrics
