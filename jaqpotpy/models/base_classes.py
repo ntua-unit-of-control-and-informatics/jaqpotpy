@@ -154,8 +154,5 @@ class Model(object):
     def fit(self):
         raise NotImplementedError("Not implemented")
 
-    def eval(self):
-        raise NotImplementedError("Not implemented")
-
     def predict(self, X):
         raise NotImplementedError("Not implemented")
