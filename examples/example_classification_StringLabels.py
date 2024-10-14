@@ -21,7 +21,7 @@ path = "jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS.cs
 df = pd.read_csv(path)
 
 # df = df.drop(columns=["SMILES"])
-smiles_cols = None  # ["SMILES"]
+smiles_cols = ["SMILES"]
 y_cols = ["ACTIVITY"]
 x_cols = ["X1", "X2", "Cat_col"]
 # x_cols = ["Cat_col", "Cat_col2"]
@@ -53,7 +53,7 @@ molecularModel_t1 = SklearnModel(
     preprocess_y=[LabelEncoder()],
 )
 molecularModel_t1.fit()
-pred_path = "/Users/vassilis/Desktop/test_ohe.csv"
+pred_path = "/Users/vassilis/Desktop/test_ohe_smiles.csv"
 df = pd.read_csv(pred_path)
 prediction_dataset = JaqpotpyDataset(
     df=df,
@@ -64,28 +64,31 @@ prediction_dataset = JaqpotpyDataset(
     featurizer=featurizer,
 )
 
-# skl_predictions = molecularModel_t1.predict(prediction_dataset)
+skl_predictions = molecularModel_t1.predict(prediction_dataset)
 # skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
 onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
 # onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
-# print("SKLearn Predictions:", skl_predictions)
+print("SKLearn Predictions:", skl_predictions)
 # print("SKLearn Probabilities:", skl_probabilities)
 print("ONNX Predictions:", onnx_predictions)
 # print("ONNX Probabilities:", onnx_probs)
 
+# Upload locally
 # jaqpot = Jaqpot(
 #     base_url="http://localhost.jaqpot.org",
 #     app_url="http://localhost.jaqpot.org:3000",
 #     login_url="http://localhost.jaqpot.org:8070",
 #     api_url="http://localhost.jaqpot.org:8080",
+#     keycloak_realm="jaqpot-local",
+#     keycloak_client_id="jaqpot-local-test",
 # )
-# with open("/Users/vassilis/Desktop/api_key.txt", "r") as file:
-#     api_key = file.read().strip()
-# jaqpot.set_api_key(api_key)
-# # jaqpot.login()
+
+
+# # jaqpot = Jaqpot()
+# jaqpot.login()
 # molecularModel_t1.deploy_on_jaqpot(
 #     jaqpot=jaqpot,
-#     name="Demo Classification: One Hot Encoding",
-#     description="Test OHE",
+#     name="Demo: Classification with String Labels",
+#     description="Test",
 #     visibility="PRIVATE",
 # )
