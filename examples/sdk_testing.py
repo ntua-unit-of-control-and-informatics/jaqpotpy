@@ -1,11 +1,3 @@
-from jaqpotpy.jaqpot import Jaqpot
-from jaqpotpy.descriptors.molecular import TopologicalFingerprint
-from jaqpotpy.datasets import JaqpotpyDataset
-from jaqpotpy.api.openapi.models.dataset import Dataset
-from jaqpotpy.api.openapi.models import DatasetType
-
-import pandas as pd
-
 from dotenv import load_dotenv
 
 load_dotenv(".env")
@@ -14,7 +6,7 @@ from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient  # noqa: E402
 jaqpot = JaqpotApiClient()
 
 # Get a model by id
-model = jaqpot.get_model_by_id(model_id=6)  # 1812)
+model = jaqpot.get_model_by_id(model_id=1852)  # 1812)
 print(model)
 
 # Get model summary
@@ -25,16 +17,14 @@ print(model_summary)
 shared_models = jaqpot.get_shared_models()
 print(shared_models)
 
-# Take a synchronous prediction with a model
+# # Take a synchronous prediction with a model
 input_data = [{"SMILES": "CC", "X1": 1, "X2": 2}]
-prediction = jaqpot.predict_sync(model_id=1812, dataset=input_data)
+prediction = jaqpot.predict_sync(model_id=1852, dataset=input_data)
 print(prediction)
 
 # Take an asynchronous prediction with a model
 input_data = [{"SMILES": "CC", "X1": 1, "X2": 2}]
 prediction = jaqpot.predict_async(model_id=1812, dataset=input_data)
-prediction_dataset = jaqpot.get_dataset(response=prediction)
-print(prediction_dataset)
 
 # Take prediction with a model and a csv file
 csv_path = "/Users/vassilis/Desktop/test_csv.csv"
