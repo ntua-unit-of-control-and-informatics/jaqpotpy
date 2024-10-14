@@ -46,7 +46,7 @@ class SklearnModel(Model):
         self.model = model
         self.pipeline = None
         self.trained_model = None
-        self.doa = doa if isinstance(doa, list) else [doa] if doa else []
+        self.doa = doa if isinstance(doa, list) else [doa] if doa else None
         self.preprocess_x = (
             preprocess_x if isinstance(preprocess_x, list) else [preprocess_x]
         )
@@ -116,10 +116,6 @@ class SklearnModel(Model):
             )
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
-                Transformer(name=added_class.__class__.__name__, config=configurations)
-            )
-        elif added_class_type == "doa":
-            self.extra_config.doa.append(
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
 
@@ -209,12 +205,8 @@ class SklearnModel(Model):
             y = y.to_numpy().ravel()
 
         if self.doa:
-            self.extra_config.doa = []
-            # if not isinstance(self.doa, list):
-            #     self.doa = [self.doa]
             for doa_method in self.doa:
                 doa_method.fit(X=X)
-                self._add_class_to_extraconfig(doa_method, "doa")
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
