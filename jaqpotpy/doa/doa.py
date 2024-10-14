@@ -3,8 +3,10 @@ import pandas as pd
 import numpy as np
 from typing import Iterable, Any, Union
 
+from jaqpotpy.api.openapi.models.leverage_doa import LeverageDoa
 
-class DOA_abc(ABC):
+
+class DOA(ABC):
     """Abstract class for DOA methods"""
 
     @property
@@ -48,7 +50,7 @@ class DOA_abc(ABC):
         raise NotImplementedError
 
 
-class Leverage(DOA_abc):
+class Leverage(DOA):
     """Implements DOA method leverage.
     Initialized upon training data and holds the doa matrix and the threshold 'A' value.
     Calculates the DOA for a new instance of data or array of data.
@@ -59,7 +61,7 @@ class Leverage(DOA_abc):
 
     @property
     def __name__(self):
-        return "LeverageDoa"
+        return "LEVERAGE"
 
     def __init__(self) -> None:
         # self._scaler: BaseEstimator = scaler
@@ -129,10 +131,11 @@ class Leverage(DOA_abc):
             return data
 
     def get_attributes(self):
-        return {"doa_matrix": self.doa_matrix, "h_star": self.h_star}
+        Leverage_data = LeverageDoa(h_star=self.h_star, array=self.doa_matrix)
+        return Leverage_data
 
 
-class MeanVar(DOA_abc):
+class MeanVar(DOA):
     """Implements Mean and Variance domain of applicability .
     Initialized upon training data and holds the doa mean and the variance of the data.
     Calculates the mean and variance for a new instance of data or array of data and decides if in AD.
@@ -143,7 +146,7 @@ class MeanVar(DOA_abc):
 
     @property
     def __name__(self):
-        return "MeanVar"
+        return "MEAN_VAR"
 
     def __init__(self) -> None:
         self._data: np.array = None
@@ -187,13 +190,13 @@ class MeanVar(DOA_abc):
         return {"mean_var": self._bounds}
 
 
-class BoundingBox(DOA_abc):
+class BoundingBox(DOA):
     _doa = []
     _in_doa = []
 
     @property
     def __name__(self):
-        return "BoundingBox"
+        return "BOUNDING_BOX"
 
     def __init__(self) -> None:
         self._data: np.array = None

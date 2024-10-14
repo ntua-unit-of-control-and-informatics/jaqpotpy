@@ -26,10 +26,10 @@ from jaqpotpy.api.openapi.models import (
     ModelType,
     ModelExtraConfig,
     Transformer,
-    ModelTask,
+    Doa,
 )
 from jaqpotpy.models.base_classes import Model
-from jaqpotpy.doa.doa import DOA_abc
+from jaqpotpy.doa.doa import DOA
 
 
 class SklearnModel(Model):
@@ -42,7 +42,7 @@ class SklearnModel(Model):
         The dataset used for training the model.
     model : Any
         The Scikit-learn model to be trained.
-    doa : Optional[Union[DOA_abc, list]], optional
+    doa : Optional[Union[DOA, list]], optional
         Domain of Applicability methods, by default None.
     preprocess_x : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
         Preprocessors for the input features, by default None.
@@ -105,7 +105,7 @@ class SklearnModel(Model):
         self,
         dataset: JaqpotpyDataset,
         model: Any,
-        doa: Optional[Union[DOA_abc, list]] = None,
+        doa: Optional[Union[DOA, list]] = None,
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
         preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
     ):
@@ -275,6 +275,9 @@ class SklearnModel(Model):
         if self.doa:
             for doa_method in self.doa:
                 doa_method.fit(X=X)
+                # new_method = Doa(
+                #     method=doa_method.__name__, data=doa_method._doa_attributes
+                # )
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
