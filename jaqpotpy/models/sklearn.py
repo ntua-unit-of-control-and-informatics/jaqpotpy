@@ -29,7 +29,7 @@ from jaqpotpy.api.openapi.models import (
     ModelTask,
 )
 from jaqpotpy.models.base_classes import Model
-from jaqpotpy.doa.doa import DOA
+from jaqpotpy.doa.doa import DOA_abc
 
 
 class SklearnModel(Model):
@@ -37,7 +37,7 @@ class SklearnModel(Model):
         self,
         dataset: JaqpotpyDataset,
         model: Any,
-        doa: Optional[DOA or list] = None,
+        doa: Optional[DOA_abc or list] = None,
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
         preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
     ):

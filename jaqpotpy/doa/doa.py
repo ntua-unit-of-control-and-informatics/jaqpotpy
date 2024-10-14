@@ -4,7 +4,7 @@ import numpy as np
 from typing import Iterable, Any, Union
 
 
-class DOA(ABC):
+class DOA_abc(ABC):
     """Abstract class for DOA methods"""
 
     @property
@@ -48,7 +48,7 @@ class DOA(ABC):
         raise NotImplementedError
 
 
-class Leverage(DOA):
+class Leverage(DOA_abc):
     """Implements DOA method leverage.
     Initialized upon training data and holds the doa matrix and the threshold 'A' value.
     Calculates the DOA for a new instance of data or array of data.
@@ -132,7 +132,7 @@ class Leverage(DOA):
         return {"doa_matrix": self.doa_matrix, "h_star": self.h_star}
 
 
-class MeanVar(DOA):
+class MeanVar(DOA_abc):
     """Implements Mean and Variance domain of applicability .
     Initialized upon training data and holds the doa mean and the variance of the data.
     Calculates the mean and variance for a new instance of data or array of data and decides if in AD.
@@ -187,7 +187,7 @@ class MeanVar(DOA):
         return {"mean_var": self._bounds}
 
 
-class BoundingBox(DOA):
+class BoundingBox(DOA_abc):
     _doa = []
     _in_doa = []
 
