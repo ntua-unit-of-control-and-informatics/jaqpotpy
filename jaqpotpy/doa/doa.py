@@ -51,9 +51,26 @@ class DOA(ABC):
 
 
 class Leverage(DOA):
-    """Implements DOA method leverage.
-    Initialized upon training data and holds the doa matrix and the threshold 'A' value.
-    Calculates the DOA for a new instance of data or array of data.
+    """
+    Leverage class for Domain of Applicability (DOA) analysis.
+    Attributes:
+        _doa (list): List to store leverage values.
+        _in_doa (list): List to store boolean values indicating if data points are within the domain of applicability.
+        _data (Union[np.array, pd.DataFrame]): Input data used for DOA calculations.
+        _doa_matrix (np.array): Matrix used for leverage calculations.
+        _h_star (float): Threshold value for leverage.
+        _doa_attributes (LeverageDoa): Attributes of the leverage DOA.
+    Methods:
+        __name__: Returns the name of the DOA method.
+        __getitem__(key): Returns the key.
+        doa_matrix: Property to get and set the DOA matrix.
+        h_star: Property to get and set the threshold value for leverage.
+        calculate_threshold(): Calculates the threshold value for leverage.
+        calculate_matrix(): Calculates the DOA matrix.
+        fit(X): Fits the model to the input data.
+        predict(new_data): Predicts the leverage values and whether new data points are within the domain of applicability.
+        _validate_input(data): Validates and converts input data to numpy array if necessary.
+        get_attributes(): Returns the attributes of the leverage DOA.
     """
 
     _doa = []
@@ -103,7 +120,7 @@ class Leverage(DOA):
         self._data = self._validate_input(X)
         self.calculate_matrix()
         self.calculate_threshold()
-        self._doa_attributes = self.get_attributes()
+        self.doa_attributes = self.get_attributes()
 
     def predict(self, new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]:
         new_data = self._validate_input(new_data)

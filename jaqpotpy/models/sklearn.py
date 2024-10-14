@@ -17,6 +17,7 @@ from skl2onnx.common.data_types import (
     StringTensorType,
 )
 import jaqpotpy
+from jaqpotpy.api.openapi.models.doa_data import DoaData
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
@@ -275,9 +276,10 @@ class SklearnModel(Model):
         if self.doa:
             for doa_method in self.doa:
                 doa_method.fit(X=X)
-                # new_method = Doa(
-                #     method=doa_method.__name__, data=doa_method._doa_attributes
-                # )
+                new_method = Doa(
+                    method=doa_method.__name__,
+                    data=DoaData(doa_method.doa_attributes),
+                )
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
