@@ -6,11 +6,9 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from jaqpotpy import Jaqpot
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import MACCSKeysFingerprint, TopologicalFingerprint
-from jaqpotpy.descriptors.molecular import MACCSKeysFingerprint, TopologicalFingerprint
 from jaqpotpy.doa.doa import Leverage
 from jaqpotpy.models import SklearnModel
 
-path = "jaqpotpy/test_data/test_data_smiles_classification.csv"
 path = "jaqpotpy/test_data/test_data_smiles_classification.csv"
 
 df = pd.read_csv(path).iloc[0:100, :]
