@@ -61,7 +61,6 @@ class SklearnModel(Model):
         self.task = self.dataset.task
         self.initial_types = None
         self.onnx_model = None
-        self.onnx_opset = None
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
         self.dependentFeatures = None
@@ -189,7 +188,6 @@ class SklearnModel(Model):
             name=name,
             options=onnx_options,
         )
-        self.onnx_opset = self.onnx_model.opset_import[0].version
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
