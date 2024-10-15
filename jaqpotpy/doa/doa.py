@@ -137,7 +137,7 @@ class Leverage(DOA):
                 in_ad = False
             self._doa.append(d2)
             self._in_doa.append(in_ad)
-            doa = {"DOA": d2, "A": self._h_star, "in_doa": in_ad}
+            doa = {"h": d2, "h_star": self._h_star, "in_doa": in_ad}
             doaAll.append(doa)
         return doaAll
 
