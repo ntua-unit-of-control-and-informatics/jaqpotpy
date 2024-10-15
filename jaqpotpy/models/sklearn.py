@@ -274,12 +274,13 @@ class SklearnModel(Model):
             y = y.to_numpy().ravel()
 
         if self.doa:
-            for doa_method in self.doa:
+            for i, doa_method in enumerate(self.doa):
                 doa_method.fit(X=X)
-                new_method = Doa(
+                DOA_instance = Doa(
                     method=doa_method.__name__,
                     data=DoaData(doa_method.doa_attributes),
                 )
+                self.doa[i] = DOA_instance
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])

@@ -109,7 +109,7 @@ class Jaqpot:
             name=name,
             type=model.type,
             jaqpotpy_version=model.jaqpotpy_version,
-            doas=None,  # model.doas,
+            doas=model.doa,
             libraries=model.libraries,
             dependent_features=[
                 Feature(
