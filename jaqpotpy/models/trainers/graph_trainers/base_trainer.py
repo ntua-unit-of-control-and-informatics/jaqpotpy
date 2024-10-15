@@ -140,7 +140,6 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         subclass_info = {}
 
         for subclass in cls.__subclasses__():
-
             subclass_info[subclass.__name__] = {
                 "model_type": subclass.get_model_type(),
                 "parent": cls.__name__,
