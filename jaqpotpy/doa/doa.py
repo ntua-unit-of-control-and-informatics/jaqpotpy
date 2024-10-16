@@ -240,6 +240,7 @@ class BoundingBox(DOA):
         self.doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
+        new_data = self._validate_input(new_data)
         doaAll = []
         self._doa = []
         self._in_doa = []
@@ -257,6 +258,12 @@ class BoundingBox(DOA):
             self._doa.append(new_data)
             self._in_doa.append(in_doa)
         return doaAll
+
+    def _validate_input(self, data: Union[np.array, pd.DataFrame]):
+        if isinstance(data, pd.DataFrame):
+            return data.to_numpy()
+        else:
+            return data
 
     def get_attributes(self):
         return BoundingBoxDoa(bounding_box=self.bounding_box)
