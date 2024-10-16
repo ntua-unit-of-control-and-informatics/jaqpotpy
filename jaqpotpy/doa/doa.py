@@ -203,11 +203,11 @@ class MeanVar(DOA):
                 if row < bounds_data[0] or row > bounds_data[1]:
                     in_doa = False
                     break
-            out_of_bounds_count = sum(
+            out_of_doa_count = sum(
                 1 for row in nd if row < bounds_data[0] or row > bounds_data[1]
             )
-            out_of_bounds_percentage = (out_of_bounds_count / len(nd)) * 100
-            doa = {"outOfBoundsPercentage": out_of_bounds_percentage, "inDoa": in_doa}
+            out_of_doa_percentage = (out_of_doa_count / len(nd)) * 100
+            doa = {"outOfDoaPercentage": out_of_doa_percentage, "inDoa": in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
             self._in_doa.append(in_doa)
@@ -258,11 +258,11 @@ class BoundingBox(DOA):
                 if row < bounds_data[0] or row > bounds_data[1]:
                     in_doa = False
                     break
-            out_of_bounds_count = sum(
+            out_of_doa_count = sum(
                 1 for row in nd if row < bounds_data[0] or row > bounds_data[1]
             )
-            out_of_bounds_percentage = (out_of_bounds_count / len(nd)) * 100
-            doa = {"outOfBoundsPercentage": out_of_bounds_percentage, "inDoa": in_doa}
+            out_of_doa_percentage = (out_of_doa_count / len(nd)) * 100
+            doa = {"outOfDoaPercentage": out_of_doa_percentage, "inDoa": in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
             self._in_doa.append(in_doa)
