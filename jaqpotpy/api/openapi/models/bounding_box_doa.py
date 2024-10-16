@@ -18,8 +18,8 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict
-from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,8 +27,8 @@ class BoundingBoxDoa(BaseModel):
     """
     BoundingBoxDoa
     """ # noqa: E501
-    data: Optional[Dict[str, Any]] = None
-    __properties: ClassVar[List[str]] = ["data"]
+    bounding_box: Optional[List[List[Union[StrictFloat, StrictInt]]]] = Field(default=None, alias="boundingBox")
+    __properties: ClassVar[List[str]] = ["boundingBox"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -81,7 +81,7 @@ class BoundingBoxDoa(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "data": obj.get("data")
+            "boundingBox": obj.get("boundingBox")
         })
         return _obj
 
