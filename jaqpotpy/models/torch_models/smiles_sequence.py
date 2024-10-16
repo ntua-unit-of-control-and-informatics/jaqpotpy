@@ -2,6 +2,27 @@ import torch.nn as nn
 from typing import List
 import torch
 import torch.nn.functional as F
+import base64
+import io
+
+
+def lstm_to_onnx(torch_model, dataset):
+    if torch_model.training:
+        torch_model.eval()
+    torch_model = torch_model.cpu()
+    buffer = io.BytesIO()
+    torch.onnx.export(
+        torch_model,
+        args=(dataset.X[0]),
+        f=buffer,
+        input_names=["batch", "sequence", "features"],
+        dynamic_axes={"batch": [0]},
+    )
+    onnx_model_bytes = buffer.getvalue()
+    buffer.close()
+    model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode("utf-8")
+
+    return model_scripted_base64
 
 
 class Sequence_LSTM(nn.Module):

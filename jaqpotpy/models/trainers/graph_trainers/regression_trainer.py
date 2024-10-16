@@ -6,7 +6,7 @@ import io
 import base64
 from typing import Optional
 import inspect
-from jaqpotpy.models.trainers.base_trainer import TorchModelTrainer
+from jaqpotpy.models.trainers import TorchModelTrainer
 from sklearn import metrics
 import torch.nn.functional as F
 
@@ -22,18 +22,18 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         return cls.MODEL_TYPE
 
     def __init__(
-            self,
-            model,
-            n_epochs,
-            optimizer,
-            loss_fn,
-            scheduler=None,
-            device="cpu",
-            use_tqdm=True,
-            log_enabled=True,
-            log_filepath=None,
-            normalization_mean=0.5,
-            normalization_std=1.0,
+        self,
+        model,
+        n_epochs,
+        optimizer,
+        loss_fn,
+        scheduler=None,
+        device="cpu",
+        use_tqdm=True,
+        log_enabled=True,
+        log_filepath=None,
+        normalization_mean=0.5,
+        normalization_std=1.0,
     ):
         """The RegressionGraphModelTrainer constructor.
 

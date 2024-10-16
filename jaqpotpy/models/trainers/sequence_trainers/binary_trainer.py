@@ -11,9 +11,9 @@ from sklearn import metrics
 import torch.nn.functional as F
 
 
-class BinaryGraphModelTrainer(TorchModelTrainer):
+class BinarySequenceTrainer(TorchModelTrainer):
     """
-    Trainer class for Binary Classification using Graph Neural Networks for SMILES and external features.
+    Trainer class for Binary Classification using LSTM Networks for SMILES.
 
     Attributes:
         decision_threshold (float): Decision threshold for binary classification.
@@ -74,28 +74,6 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
             log_filepath=log_filepath,
         )
 
-    def get_model_kwargs(self, data):
-        """
-        Fetch the model's keyword arguments.
-
-        Args:
-            data (torch_geometric.data.Data): Data object returned as returned by the Dataloader
-
-        Returns:
-            dict: The required model kwargs. Set of keywords: {'*x*', '*edge_index*', '*batch*', '*edge_attr*'}. Note that '*edge_attr*' is only present if the model supports edge features.
-        """
-
-        kwargs = {}
-
-        kwargs["x"] = data.x
-        kwargs["edge_index"] = data.edge_index
-        kwargs["batch"] = data.batch
-
-        if "edge_attr" in inspect.signature(self.model.forward).parameters:
-            kwargs["edge_attr"] = data.edge_attr
-
-        return kwargs
-
     def train(self, train_loader, val_loader=None):
         """
         Train the model.
@@ -107,7 +85,7 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
             None
         """
 
-        for i in range(self.n_epochs):
+        for _ in range(self.n_epochs):
             self.current_epoch += 1
 
             train_loss = self._train_one_epoch(train_loader)
@@ -146,19 +124,11 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         )
 
         self.model.train()
-        for _, data in enumerate(tqdm_loader):
-            try:  # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
-                data = data.to(self.device)
-                y = data.y
-            except AttributeError:
-                data = [d.to(self.device) for d in data]
-                y = data[-1]
-
-            model_kwargs = self.get_model_kwargs(data)
-
+        for inputs, y in tqdm_loader:
+            inputs = inputs.to(self.device)
             self.optimizer.zero_grad()
 
-            outputs = self.model(**model_kwargs).squeeze(-1)
+            outputs = self.model(inputs).squeeze(-1)
             loss = self.loss_fn(outputs.float(), y.float())
 
             running_loss += loss.item() * y.size(0)
@@ -200,17 +170,10 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
 
         self.model.eval()
         with torch.no_grad():
-            for _, data in enumerate(val_loader):
-                try:  # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
-                    data = data.to(self.device)
-                    y = data.y
-                except AttributeError:
-                    data = [d.to(self.device) for d in data]
-                    y = data[-1]
+            for inputs, y in val_loader:
+                inputs = inputs.to(self.device)
 
-                model_kwargs = self.get_model_kwargs(data)
-
-                outputs = self.model(**model_kwargs).squeeze(-1)
+                outputs = self.model(inputs).squeeze(-1)
 
                 probs = F.sigmoid(outputs)
                 preds = (probs > 0.5).int()
@@ -245,15 +208,9 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         all_preds = []
         self.model.eval()
         with torch.no_grad():
-            for _, data in enumerate(val_loader):
-                try:  # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
-                    data = data.to(self.device)
-                except AttributeError:
-                    data = [d.to(self.device) for d in data]
-
-                model_kwargs = self.get_model_kwargs(data)
-
-                outputs = self.model(**model_kwargs).squeeze(-1)
+            for inputs, y in val_loader:
+                inputs = inputs.to(self.device)
+                outputs = self.model(inputs).squeeze(-1)
 
                 probs = F.sigmoid(outputs)
                 preds = (probs > 0.5).int()
@@ -274,15 +231,10 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         all_probs = []
         self.model.eval()
         with torch.no_grad():
-            for _, data in enumerate(val_loader):
-                try:  # data might come from torch_geomtric Dataloader or from torch.utils.Dataloader
-                    data = data.to(self.device)
-                except AttributeError:
-                    data = [d.to(self.device) for d in data]
+            for inputs, y in val_loader:
+                inputs = inputs.to(self.device)
 
-                model_kwargs = self.get_model_kwargs(data)
-
-                outputs = self.model(**model_kwargs).squeeze(-1)
+                outputs = self.model(inputs).squeeze(-1)
 
                 probs = F.sigmoid(outputs)
 

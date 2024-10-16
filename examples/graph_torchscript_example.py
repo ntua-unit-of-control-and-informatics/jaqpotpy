@@ -6,7 +6,7 @@ from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
     GraphAttentionNetwork,
     pyg_to_torchscript,
 )
-from jaqpotpy.models.trainers import BinaryGraphModelTrainer
+from jaqpotpy.models.trainers.graph_trainers import BinaryGraphModelTrainer
 from torch.optim import Adam
 from torch.nn import BCEWithLogitsLoss
 
@@ -51,7 +51,6 @@ model = GraphAttentionNetwork(
     hidden_dim=16,
     output_dim=1,
     dropout_proba=0.5,
-    graph_norm=False,  # Doesnt work with graph_norm
     seed=42,
     edge_dim=edge_dim,
     heads=4,
@@ -67,16 +66,16 @@ trainer.train(train_loader, val_loader)
 
 torchscript_model = pyg_to_torchscript(model)
 
-jaqpot = Jaqpot()
-jaqpot.login()
+# jaqpot = Jaqpot()
+# jaqpot.login()
 
-jaqpot.deploy_torch_model(
-    torchscript_model,
-    type="TORCHSCRIPT",
-    featurizer=featurizer,
-    name="Graph Attention Network with torchscript",
-    description="Graph Attention Network for binary classification",
-    target_name="ACTIVITY",
-    visibility="PRIVATE",
-    task="binary_classification",
-)
+# jaqpot.deploy_torch_model(
+#     torchscript_model,
+#     type="TORCHSCRIPT",
+#     featurizer=featurizer,
+#     name="Graph Attention Network with torchscript",
+#     description="Graph Attention Network for binary classification",
+#     target_name="ACTIVITY",
+#     visibility="PRIVATE",
+#     task="binary_classification",
+# )

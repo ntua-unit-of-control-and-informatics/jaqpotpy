@@ -1,4 +1,3 @@
-from jaqpotpy.models.trainers.graph_trainers.base_trainer import TorchModelTrainer
 from jaqpotpy.models.trainers.graph_trainers.binary_trainer import (
     BinaryGraphModelTrainer,
 )
