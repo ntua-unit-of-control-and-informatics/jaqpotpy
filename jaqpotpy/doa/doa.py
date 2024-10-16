@@ -222,7 +222,7 @@ class BoundingBox(DOA):
 
     def __init__(self) -> None:
         self._data: np.array = None
-        self._bounding_box = None
+        self.bounding_box = None
         self.doa_attributes = None
 
     def fit(self, X: np.array):
@@ -236,7 +236,7 @@ class BoundingBox(DOA):
             list_m_var.append(
                 [self._data.iloc[:, i].min(), self._data.iloc[:, i].max()]
             )
-        self._bounding_box = np.array(list_m_var)
+        self.bounding_box = np.array(list_m_var)
         self.doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
@@ -246,7 +246,7 @@ class BoundingBox(DOA):
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
-                bounds = self._bounding_box[index]
+                bounds = self.bounding_box[index]
                 bounds_data = [bounds[0], bounds[1]]
                 if row >= bounds_data[0] and row <= bounds_data[1]:
                     continue
@@ -259,4 +259,4 @@ class BoundingBox(DOA):
         return doaAll
 
     def get_attributes(self):
-        return BoundingBoxDoa(data={"_bounding_box": self._bounding_box})
+        return BoundingBoxDoa(data={"bounding_box": self.bounding_box})
