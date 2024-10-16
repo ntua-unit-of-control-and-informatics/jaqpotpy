@@ -2,21 +2,18 @@ from torch.utils.data import Dataset
 import torch
 
 
-class SMILESMolDataset(Dataset):
+class SmilesSeqDataset(Dataset):
     def __init__(self, molecules, y, vectorizer):
-        self.molecules = molecules
-        self.y = y
-        self.vectorizer = vectorizer
+        # Dims must be (samples, length, features)
+        self.vectorizer = vectorizer  # Vectorizer must be fitted
+        self.X = vectorizer.transform(molecules)  # .permute(0, 2, 1)
+        self.y = torch.tensor(y)
+
+    def get_feature_dim(self):
+        return self.X.shape[-1]
 
     def __len__(self):
-        return len(self.molecules)
+        return self.X.size(0)
 
     def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-
-        mols = self.molecules[idx]
-
-        sample = self.vectorizer.transform([mols])[0]
-        label = self.y[idx]
-        return sample, label
+        return self.X[idx], self.y[idx]

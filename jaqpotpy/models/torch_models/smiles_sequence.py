@@ -1,50 +1,53 @@
 import torch.nn as nn
 from typing import List
+import torch
+import torch.nn.functional as F
 
 
-class Sequence_NN(nn.Module):
+class Sequence_LSTM(nn.Module):
     def __init__(
         self,
         input_size,
         hidden_size,
-        num_seq_layers,
-        model_type,
+        num_layers,
+        output_size,
+        dropout,
         activation,
-        dropout_rate,
-        out_size,
-        bidirectional,
+        bidirectional=False,
     ):
-        super(Sequence_NN, self).__init__()
+        super(Sequence_LSTM, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.bidirectional = bidirectional
+        self.num_directions = 2 if bidirectional else 1
+        self.layer = nn.LSTM(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            batch_first=True,
+            dropout=dropout if num_layers > 1 else 0,
+            bidirectional=bidirectional,
+        )
 
-        if model_type == "rnn":
-            self.layer = nn.RNN(
-                input_size=input_size,
-                hidden_size=hidden_size,
-                num_layers=num_seq_layers,
-                batch_first=True,
-                bidirectional=bidirectional,
-            )
-        elif model_type == "lstm":
-            self.layer = nn.LSTM(
-                input_size=input_size,
-                hidden_size=hidden_size,
-                num_layers=num_seq_layers,
-                batch_first=True,
-                bidirectional=bidirectional,
-            )
-        if bidirectional:
-            self.fc1 = nn.Linear(2 * hidden_size, hidden_size)
-        else:
-            self.fc1 = nn.Linear(hidden_size, hidden_size)
+        self.dropout = nn.Dropout(dropout)
         self.activation = activation
-        self.fc_out = nn.Linear(hidden_size, out_size)
-        self.dropout = nn.Dropout(dropout_rate)
+        self.fc1 = nn.Linear(hidden_size * self.num_directions, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
-        out, (h_n, _) = self.layer(x)
-        out = self.dropout(h_n)
-        out = self.fc1(out)
-        out = self.activation(out)
+        h0 = torch.zeros(
+            self.num_layers * self.num_directions, x.size(0), self.hidden_size
+        ).to(x.device)
+        c0 = torch.zeros(
+            self.num_layers * self.num_directions, x.size(0), self.hidden_size
+        ).to(x.device)
+        out, (_, _) = self.layer(
+            x, (h0, c0)
+        )  # out: (batch, seq_length, hidden_size*num_directions)
+        # Take the output from the last time step
+        out = out[:, -1, :]  # (batch, hidden_size*num_directions)
         out = self.dropout(out)
-        out = self.fc_out(out)
+        out = self.activation(self.fc1(out))  # (batch, hidden_size)
+        out = self.fc2(out)  # (batch, num_classes)
+
         return out

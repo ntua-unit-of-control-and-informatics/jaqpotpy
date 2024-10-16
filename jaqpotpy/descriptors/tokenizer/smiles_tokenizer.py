@@ -3,7 +3,7 @@
 
 from rdkit import Chem
 import numpy as np
-import math
+import torch
 
 
 class SmilesVectorizer(object):
@@ -132,7 +132,7 @@ class SmilesVectorizer(object):
         :output: Numpy array with the vectorized molecules with shape [batch, maxlength+pad, charset]
         """
         # TODO make it possible to use both SMILES, RDKit mols and RDKit binary strings in input
-        one_hot = np.zeros([len(mols)] + list(self.dims), dtype=np.int8)
+        one_hot = torch.zeros([len(mols)] + list(self.dims), dtype=torch.float32)
 
         # Possibl override object settings
         if augment is None:

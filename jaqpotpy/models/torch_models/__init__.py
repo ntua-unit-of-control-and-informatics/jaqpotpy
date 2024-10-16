@@ -1,1 +1,1 @@
-from jaqpotpy.models.torch_models.smiles_sequence import Sequence_NN
+from jaqpotpy.models.torch_models.smiles_sequence import Sequence_LSTM
