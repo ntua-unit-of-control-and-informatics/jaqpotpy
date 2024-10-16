@@ -95,7 +95,7 @@ class TestDoa(unittest.TestCase):
         ]
         descriptors = featurizer(mol)
         calc = doa.predict(descriptors)
-        diag = np.diag(doa._bounds)
+        diag = np.diag(doa.bounds)
 
         assert len(calc) == len(mol)
         assert calc[0][
@@ -129,7 +129,7 @@ class TestDoa(unittest.TestCase):
 
         featurizer = RDKitDescriptors(use_fragment=False, ipc_avg=False)
         descriptors = featurizer(mols)
-
+        print(type(descriptors))
         doa = BoundingBox()
         doa.fit(descriptors)
 
@@ -139,8 +139,8 @@ class TestDoa(unittest.TestCase):
         ]
         descriptors = featurizer(mol)
         calc = doa.predict(descriptors)
-        first_feature_bounds = doa._bounding_box[0]
-        last_feature_bounds = doa._bounding_box[-1]
+        first_feature_bounds = doa.bounding_box[0]
+        last_feature_bounds = doa.bounding_box[-1]
         print("Bounding box")
         assert len(calc) == len(mol)
         assert calc[0][

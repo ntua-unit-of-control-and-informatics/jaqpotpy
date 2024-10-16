@@ -234,12 +234,11 @@ class BoundingBox(DOA):
         self.doa_attributes = None
 
     def fit(self, X: np.array):
+        X = self._validate_input(X)
         self._data = X
         list_m_var = []
         for i in range(self._data.shape[1]):
-            list_m_var.append(
-                [self._data.iloc[:, i].min(), self._data.iloc[:, i].max()]
-            )
+            list_m_var.append([self._data[:, i].min(), self._data[:, i].max()])
         self.bounding_box = np.array(list_m_var)
         self.doa_attributes = self.get_attributes()
 
