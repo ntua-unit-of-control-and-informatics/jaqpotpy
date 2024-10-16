@@ -61,17 +61,17 @@ class Leverage(DOA):
         _doa (list): List to store leverage values.
         _in_doa (list): List to store boolean values indicating if data points are within the domain of applicability.
         _data (Union[np.array, pd.DataFrame]): The input data used for fitting the model.
-        _doa_matrix (np.array): The matrix used for leverage calculations.
+        doa_matrix (np.array): The matrix used for leverage calculations.
         _h_star (float): The threshold value for determining if a data point is within the domain of applicability.
         doa_attributes (LeverageDoa): Object containing the attributes of the leverage model.
     Methods:
         __name__: Returns the name of the method ("LEVERAGE").
         __init__(): Initializes the Leverage object.
         __getitem__(key): Returns the key.
-        doa_matrix: Property to get and set the _doa_matrix attribute.
+        doa_matrix: Property to get and set the doa_matrix attribute.
         h_star: Property to get and set the _h_star attribute.
         calculate_threshold(): Calculates the threshold value (_h_star) based on the input data.
-        calculate_matrix(): Calculates the leverage matrix (_doa_matrix) using the input data.
+        calculate_matrix(): Calculates the leverage matrix (doa_matrix) using the input data.
         fit(X): Fits the model using the input data X.
         predict(new_data): Predicts whether new data points are within the domain of applicability.
         _validate_input(data): Validates and converts the input data to a numpy array if it is a pandas DataFrame.
@@ -88,7 +88,7 @@ class Leverage(DOA):
     def __init__(self) -> None:
         # self._scaler: BaseEstimator = scaler
         self._data: Union[np.array, pd.DataFrame] = None
-        self._doa_matrix = None
+        self.doa_matrix = None
         self._h_star = None
         self.doa_attributes = None
 
@@ -97,11 +97,11 @@ class Leverage(DOA):
 
     @property
     def doa_matrix(self):
-        return self._doa_matrix
+        return self.doa_matrix
 
     @doa_matrix.setter
     def doa_matrix(self, value):
-        self._doa_matrix = value
+        self.doa_matrix = value
 
     @property
     def h_star(self):
@@ -119,7 +119,7 @@ class Leverage(DOA):
     def calculate_matrix(self):
         x_T = self._data.transpose()
         x_out = x_T.dot(self._data)
-        self._doa_matrix = np.linalg.pinv(x_out)
+        self.doa_matrix = np.linalg.pinv(x_out)
 
     def fit(self, X: Union[np.array, pd.DataFrame]):
         self._data = self._validate_input(X)
