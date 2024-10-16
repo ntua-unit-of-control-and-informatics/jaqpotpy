@@ -228,10 +228,6 @@ class BoundingBox(DOA):
     def fit(self, X: np.array):
         self._data = X
         list_m_var = []
-        # if isinstance(self._data, pd.DataFrame):
-        #     self._data = self._data.to_numpy()
-        # for i in range(self._data.shape[1]):
-        #     list_m_var.append([np.min(self._data[:, i]), np.max(self._data[:, i])])
         for i in range(self._data.shape[1]):
             list_m_var.append(
                 [self._data.iloc[:, i].min(), self._data.iloc[:, i].max()]
