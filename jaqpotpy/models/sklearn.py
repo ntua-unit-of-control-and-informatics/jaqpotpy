@@ -276,9 +276,12 @@ class SklearnModel(Model):
         else:
             self.independentFeatures = list()
         if self.dataset.x_cols:
+            intesection_of_features = list(
+                set(self.dataset.x_cols).intersection(set(self.dataset.active_features))
+            )
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
-                for feature in self.dataset.active_features
+                for feature in intesection_of_features
             )
         self.dependentFeatures = list(
             {
@@ -299,7 +302,7 @@ class SklearnModel(Model):
         )
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
-                if len(self.dataset.y_cols) == 1:
+                if len(self.dataset.y_cols) == 1 and not isinstance(func, LabelEncoder):
                     sklearn_prediction = func.inverse_transform(
                         sklearn_prediction.reshape(-1, 1)
                     ).flatten()
@@ -355,10 +358,10 @@ class SklearnModel(Model):
                 for i in range(len(self.initial_types))
             }
         onnx_prediction = sess.run(None, input_data)
-        if len(self.dataset.y_cols) == 1:
-            onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
+                if len(self.dataset.y_cols) == 1 and not isinstance(func, LabelEncoder):
+                    onnx_prediction[0] = onnx_prediction[0].reshape(-1, 1)
                 onnx_prediction[0] = func.inverse_transform(onnx_prediction[0])
         if len(self.dataset.y_cols) == 1:
             return onnx_prediction[0].flatten()
