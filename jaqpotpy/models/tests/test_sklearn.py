@@ -64,17 +64,9 @@ class TestModels(unittest.TestCase):
         multi_classification_csv_file_path = os.path.join(
             test_data_dir, "test_data_smiles_multi_classification.csv"
         )
-        multi_classification_csv_file_path = os.path.join(
-            test_data_dir, "test_data_smiles_multi_classification.csv"
-        )
+
         regression_csv_file_path = os.path.join(
             test_data_dir, "test_data_smiles_regression.csv"
-        )
-        prediction_csv_file_path = os.path.join(
-            test_data_dir, "test_data_smiles_prediction_dataset.csv"
-        )
-        multiclass_csv_file_path = os.path.join(
-            test_data_dir, "test_data_smiles_prediction_dataset_multiclass.csv"
         )
         prediction_csv_file_path = os.path.join(
             test_data_dir, "test_data_smiles_prediction_dataset.csv"
@@ -345,7 +337,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task="multiclass_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -406,7 +398,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task="multiclass_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -436,7 +428,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task="multiclass_classification",
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -977,6 +969,123 @@ class TestModels(unittest.TestCase):
                 dataset=dataset, model=model, preprocess_y=VarianceThreshold()
             )
             molecularmodel.fit()
+
+    def test_metrics_regression(self):
+        """Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
+        applied only on the input features.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(
+            df=self.regression_df,
+            y_cols=["ACTIVITY"],
+            smiles_cols=["SMILES"],
+            x_cols=["X1", "X2"],
+            task="regression",
+            featurizer=featurizer,
+        )
+        pre = StandardScaler()
+        model = RandomForestRegressor(random_state=42)
+        jaqpot_model = SklearnModel(
+            dataset=dataset, doa=None, model=model, preprocess_x=pre
+        )
+        jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
+        validation_dataset = dataset
+
+        jaqpot_model.evaluate(validation_dataset)
+        jaqpot_model.cross_validate(dataset, n_splits=2)
+
+        assert np.allclose(
+            jaqpot_model.train_metrics["R^2"], 0.86953, atol=1e-02
+        ), f"Expected train R^2 to be 0.86953, got { jaqpot_model.train_metrics['R^2']}"
+
+        assert np.allclose(
+            jaqpot_model.test_metrics["R^2"], 0.86953, atol=1e-02
+        ), f"Expected train R^2 to be 0.86953, got { jaqpot_model.test_metrics['R^2']}"
+
+        assert np.allclose(
+            jaqpot_model.average_cross_val_metrics["R^2"], 0.056504, atol=1e-02
+        ), f"Expected train R^2 to be 0.86953, got { jaqpot_model.cross_val_metrics['R^2']}"
+
+    def test_metrics_classification(self):
+        """Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
+        applied only on the input features.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(
+            df=self.multi_classification_df,
+            y_cols=["ACTIVITY"],
+            smiles_cols=["SMILES"],
+            x_cols=["X1", "X2"],
+            task="multiclass_classification",
+            featurizer=featurizer,
+        )
+        pre = StandardScaler()
+        model = RandomForestClassifier(random_state=42)
+        jaqpot_model = SklearnModel(
+            dataset=dataset, doa=None, model=model, preprocess_x=pre
+        )
+        jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
+
+        jaqpot_model.evaluate(dataset)
+        jaqpot_model.cross_validate(dataset, n_splits=2)
+
+        assert np.allclose(
+            jaqpot_model.train_metrics["Accuracy"], 1, atol=1e-02
+        ), f"Expected train Accuracy to be 1.0, got { jaqpot_model.train_metrics['Accuracy']}"
+
+        assert np.allclose(
+            jaqpot_model.test_metrics["Accuracy"], 1, atol=1e-02
+        ), f"Expected train Accuracy to be 1.0, got { jaqpot_model.test_metrics['Accuracy']}"
+
+        assert np.allclose(
+            jaqpot_model.average_cross_val_metrics["Accuracy"], 0.3035, atol=1e-02
+        ), f"Expected train Accuracyto be 0.3035, got { jaqpot_model.cross_val_metrics['Accuracy']}"
+
+
+def test_metrics_multi_output_regressions(self):
+    """Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
+    applied only on the input features.
+    """
+    featurizer = TopologicalFingerprint()
+    dataset = JaqpotpyDataset(
+        df=self.regression_multioutput_df,
+        y_cols=["ACTIVITY", "ACTIVITY_2"],
+        smiles_cols=["SMILES"],
+        x_cols=["X1", "X2"],
+        task="regression",
+        featurizer=featurizer,
+    )
+    model = RandomForestClassifier(random_state=42)
+    jaqpot_model = SklearnModel(
+        dataset=dataset, doa=None, model=model, preprocess_x=pre
+    )
+    jaqpot_model.fit()
+    jaqpot_model.evaluate(dataset)
+    jaqpot_model.cross_validate(dataset, n_splits=2)
+
+    assert np.allclose(
+        jaqpot_model.train_metrics["output_1"]["R^2"], 0.8698, atol=1e-02
+    ), f"Expected train Accuracy to be 0.8698 got { jaqpot_model.train_metrics['Accuracy']}"
+
+    assert np.allclose(
+        jaqpot_model.train_metrics["output_2"]["R^2"], 0.8230, atol=1e-02
+    ), f"Expected train Accuracy to be  0.8230, got { jaqpot_model.train_metrics['Accuracy']}"
+
+    assert np.allclose(
+        jaqpot_model.test_metrics["output_1"]["R^2"], 0.8698, atol=1e-02
+    ), f"Expected train Accuracy to be 0.8698, got { jaqpot_model.test_metrics['Accuracy']}"
+
+    assert np.allclose(
+        jaqpot_model.test_metrics["output_2"]["R^2"], 0.8230, atol=1e-02
+    ), f"Expected train Accuracy to be  0.8230, got { jaqpot_model.test_metrics['Accuracy']}"
+
+    assert np.allclose(
+        jaqpot_model.average_cross_val_metrics["output_1"]["R^2"], 0.05650, atol=1e-02
+    ), f"Expected train Accuracyto be  0.05650, got { jaqpot_model.cross_val_metrics['Accuracy']}"
+
+    assert np.allclose(
+        jaqpot_model.average_cross_val_metrics["output_2"]["R^2"], -0.23025, atol=1e-02
+    ), f"Expected train Accuracyto be -0.23025, got { jaqpot_model.cross_val_metrics['Accuracy']}"
 
 
 if __name__ == "__main__":
