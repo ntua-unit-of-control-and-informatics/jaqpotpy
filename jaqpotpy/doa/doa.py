@@ -88,7 +88,7 @@ class Leverage(DOA):
     def __init__(self) -> None:
         # self._scaler: BaseEstimator = scaler
         self._data: Union[np.array, pd.DataFrame] = None
-        self.doa_matrix = None
+        self._doa_matrix = None
         self._h_star = None
         self.doa_attributes = None
 
@@ -97,11 +97,11 @@ class Leverage(DOA):
 
     @property
     def doa_matrix(self):
-        return self.doa_matrix
+        return self._doa_matrix
 
     @doa_matrix.setter
     def doa_matrix(self, value):
-        self.doa_matrix = value
+        self._doa_matrix = value
 
     @property
     def h_star(self):
@@ -119,7 +119,7 @@ class Leverage(DOA):
     def calculate_matrix(self):
         x_T = self._data.transpose()
         x_out = x_T.dot(self._data)
-        self.doa_matrix = np.linalg.pinv(x_out)
+        self._doa_matrix = np.linalg.pinv(x_out)
 
     def fit(self, X: Union[np.array, pd.DataFrame]):
         self._data = self._validate_input(X)
@@ -259,4 +259,4 @@ class BoundingBox(DOA):
         return doaAll
 
     def get_attributes(self):
-        return BoundingBoxDoa(data={"bounding_box": self.bounding_box})
+        return BoundingBoxDoa(bounding_box=self.bounding_box)
