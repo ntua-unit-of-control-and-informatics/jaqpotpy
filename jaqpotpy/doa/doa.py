@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import Iterable, Any, Union
 
+from jaqpotpy.api.openapi.models.bounding_box_doa import BoundingBoxDoa
 from jaqpotpy.api.openapi.models.leverage_doa import LeverageDoa
 
 
@@ -53,24 +54,28 @@ class DOA(ABC):
 class Leverage(DOA):
     """
     Leverage class for Domain of Applicability (DOA) analysis.
+    This class implements the Leverage method for determining the domain of applicability
+    of a given dataset. It provides methods to fit the model, predict new data points,
+    and calculate the necessary matrices and thresholds.
     Attributes:
         _doa (list): List to store leverage values.
         _in_doa (list): List to store boolean values indicating if data points are within the domain of applicability.
-        _data (Union[np.array, pd.DataFrame]): Input data used for DOA calculations.
-        _doa_matrix (np.array): Matrix used for leverage calculations.
-        _h_star (float): Threshold value for leverage.
-        _doa_attributes (LeverageDoa): Attributes of the leverage DOA.
+        _data (Union[np.array, pd.DataFrame]): The input data used for fitting the model.
+        _doa_matrix (np.array): The matrix used for leverage calculations.
+        _h_star (float): The threshold value for determining if a data point is within the domain of applicability.
+        doa_attributes (LeverageDoa): Object containing the attributes of the leverage model.
     Methods:
-        __name__: Returns the name of the DOA method.
+        __name__: Returns the name of the method ("LEVERAGE").
+        __init__(): Initializes the Leverage object.
         __getitem__(key): Returns the key.
-        doa_matrix: Property to get and set the DOA matrix.
-        h_star: Property to get and set the threshold value for leverage.
-        calculate_threshold(): Calculates the threshold value for leverage.
-        calculate_matrix(): Calculates the DOA matrix.
-        fit(X): Fits the model to the input data.
-        predict(new_data): Predicts the leverage values and whether new data points are within the domain of applicability.
-        _validate_input(data): Validates and converts input data to numpy array if necessary.
-        get_attributes(): Returns the attributes of the leverage DOA.
+        doa_matrix: Property to get and set the _doa_matrix attribute.
+        h_star: Property to get and set the _h_star attribute.
+        calculate_threshold(): Calculates the threshold value (_h_star) based on the input data.
+        calculate_matrix(): Calculates the leverage matrix (_doa_matrix) using the input data.
+        fit(X): Fits the model using the input data X.
+        predict(new_data): Predicts whether new data points are within the domain of applicability.
+        _validate_input(data): Validates and converts the input data to a numpy array if it is a pandas DataFrame.
+        get_attributes(): Returns the attributes of the leverage model as a LeverageDoa object.
     """
 
     _doa = []
@@ -85,7 +90,7 @@ class Leverage(DOA):
         self._data: Union[np.array, pd.DataFrame] = None
         self._doa_matrix = None
         self._h_star = None
-        self._doa_attributes = None
+        self.doa_attributes = None
 
     def __getitem__(self, key):
         return key
@@ -148,7 +153,7 @@ class Leverage(DOA):
             return data
 
     def get_attributes(self):
-        Leverage_data = LeverageDoa(h_star=self.h_star, array=self.doa_matrix)
+        Leverage_data = LeverageDoa(h_star=self.h_star, doa_matrix=self.doa_matrix)
         return Leverage_data
 
 
@@ -168,7 +173,7 @@ class MeanVar(DOA):
     def __init__(self) -> None:
         self._data: np.array = None
         self._bounds = None
-        self._doa_attributes = None
+        self.doa_attributes = None
 
     def fit(self, X: np.array):
         self._data = X
@@ -182,7 +187,7 @@ class MeanVar(DOA):
                 ]
             )
         self._bounds = np.array(list_m_var)
-        self._doa_attributes = self.get_attributes()
+        self.doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
@@ -204,7 +209,7 @@ class MeanVar(DOA):
         return doaAll
 
     def get_attributes(self):
-        return {"mean_var": self._bounds}
+        return {"_bounds": self._bounds}
 
 
 class BoundingBox(DOA):
@@ -218,15 +223,21 @@ class BoundingBox(DOA):
     def __init__(self) -> None:
         self._data: np.array = None
         self._bounding_box = None
-        self._doa_attributes = None
+        self.doa_attributes = None
 
     def fit(self, X: np.array):
         self._data = X
         list_m_var = []
+        # if isinstance(self._data, pd.DataFrame):
+        #     self._data = self._data.to_numpy()
+        # for i in range(self._data.shape[1]):
+        #     list_m_var.append([np.min(self._data[:, i]), np.max(self._data[:, i])])
         for i in range(self._data.shape[1]):
-            list_m_var.append([np.min(self._data[:, i]), np.max(self._data[:, i])])
+            list_m_var.append(
+                [self._data.iloc[:, i].min(), self._data.iloc[:, i].max()]
+            )
         self._bounding_box = np.array(list_m_var)
-        self._doa_attributes = self.get_attributes()
+        self.doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
         doaAll = []
@@ -248,4 +259,4 @@ class BoundingBox(DOA):
         return doaAll
 
     def get_attributes(self):
-        return {"bounding_box": self._bounding_box}
+        return BoundingBoxDoa(data={"_bounding_box": self._bounding_box})
