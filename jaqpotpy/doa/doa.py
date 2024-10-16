@@ -172,7 +172,7 @@ class MeanVar(DOA):
 
     def __init__(self) -> None:
         self._data: np.array = None
-        self._bounds = None
+        self.bounds = None
         self.doa_attributes = None
 
     def fit(self, X: np.array):
@@ -186,7 +186,7 @@ class MeanVar(DOA):
                     np.var(self._data[:, i]),
                 ]
             )
-        self._bounds = np.array(list_m_var)
+        self.bounds = np.array(list_m_var)
         self.doa_attributes = self.get_attributes()
 
     def predict(self, new_data: np.array) -> Iterable[Any]:
@@ -196,7 +196,7 @@ class MeanVar(DOA):
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
-                bounds = self._bounds[index]
+                bounds = self.bounds[index]
                 bounds_data = [bounds[0] - 4 * bounds[1], bounds[0] + 4 * bounds[1]]
                 if row >= bounds_data[0] and row <= bounds_data[1]:
                     continue
@@ -209,7 +209,7 @@ class MeanVar(DOA):
         return doaAll
 
     def get_attributes(self):
-        return {"_bounds": self._bounds}
+        return {"bounds": self.bounds}
 
 
 class BoundingBox(DOA):
