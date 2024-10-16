@@ -1,32 +1,14 @@
-from abc import ABC, abstractmethod, ABCMeta
+from abc import ABC, abstractmethod
 import torch
 import logging
 import sys
-
-import requests
 import os
-from typing import List, Optional, Union
-
-# from jaqpotpy.schemas import Feature, Library, Organization
-from jaqpotpy.utils.installed_packages import get_installed_packages
+from typing import Optional
 import inspect
 from torch.optim.lr_scheduler import LambdaLR
 
 
-class TorchModelTrainerMeta(ABCMeta):
-    def __new__(cls, name, bases, dct):
-        """
-        A metaclass for torch model training, ensuring:
-        - 'get_model_type' method is defined as a class method
-        """
-        if "get_model_type" in dct:
-            method = dct["get_model_type"]
-            if not isinstance(method, classmethod):
-                raise TypeError(f"{name}.get_model_type must be a class method")
-        return super().__new__(cls, name, bases, dct)
-
-
-class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
+class TorchModelTrainer(ABC):
     """
     An abstract class for training a model and deploying it on Jaqpot.
 
@@ -44,17 +26,6 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         json_data_for_deployment (dict or None): The data to be sent to the API of Jaqpot in JSON format. Note that `prepare_for_deployment` must be called to compute this attribute.
         logger (logging.Logger): The logger object at INFO level used for logging during model training.
     """
-
-    @classmethod
-    @abstractmethod
-    def get_model_type(cls):
-        """
-        Return the type of the model as a string.
-
-        Returns:
-            str: The model type.
-        """
-        pass
 
     def __init__(
         self,
@@ -140,7 +111,6 @@ class TorchModelTrainer(ABC, metaclass=TorchModelTrainerMeta):
         subclass_info = {}
 
         for subclass in cls.__subclasses__():
-
             subclass_info[subclass.__name__] = {
                 "model_type": subclass.get_model_type(),
                 "parent": cls.__name__,
