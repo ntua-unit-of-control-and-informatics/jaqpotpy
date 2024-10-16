@@ -51,9 +51,23 @@ torch.manual_seed(0)
 torch_pred = model(example)
 print(torch_pred)
 onnx_model = lstm_to_onnx(model, train_dataset)
+
+
+#### Will be used for inference
 import onnxruntime
 import base64
 
 onnx_model = base64.b64decode(onnx_model)
-sess = onnxruntime.InferenceSession(onnx_model)
-print(sess.run(None, example))
+
+
+def to_numpy(tensor):
+    return (
+        tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+    )
+
+
+ort_session = onnxruntime.InferenceSession(onnx_model)
+# compute ONNX Runtime output prediction
+ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(example)}
+ort_outs = ort_session.run(None, ort_inputs)
+print(ort_outs)

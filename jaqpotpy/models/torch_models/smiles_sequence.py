@@ -13,7 +13,7 @@ def lstm_to_onnx(torch_model, dataset):
     buffer = io.BytesIO()
     torch.onnx.export(
         torch_model,
-        args=(dataset.X[0]),
+        args=(dataset.X),
         f=buffer,
         input_names=["batch", "sequence", "features"],
         dynamic_axes={"batch": [0]},
