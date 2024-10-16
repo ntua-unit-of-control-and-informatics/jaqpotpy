@@ -2,6 +2,7 @@ from typing import Any, Dict, Optional, List, Union
 from sklearn import preprocessing, pipeline, compose, metrics
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator
+from sklearn.model_selection import KFold
 import numpy as np
 from onnxruntime import InferenceSession
 from skl2onnx import convert_sklearn
@@ -67,6 +68,7 @@ class SklearnModel(Model):
         self.extra_config = ModelExtraConfig()
         self.test_metrics = {}
         self.train_metrics = {}
+        self.average_cross_val_metrics = {}
         self.cross_val_metrics = {}
 
     def _dtypes_to_jaqpotypes(self):
@@ -209,8 +211,9 @@ class SklearnModel(Model):
         # Get X and y from dataset
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
+        y = y.to_numpy()
         if len(self.dataset.y_cols) == 1:
-            y = y.to_numpy().ravel()
+            y = y.ravel()
 
         if self.doa:
             self.extra_config.doa = []
@@ -247,9 +250,19 @@ class SklearnModel(Model):
         self.trained_model = self.pipeline.fit(X, y)
 
         y_pred = self.predict(self.dataset)
-        self.train_metrics = self._get_metrics(y, y_pred)
-        print("Goodness-of-fit metrics on training set:")
-        print(self.train_metrics)
+        if y_pred.ndim > 1 and y_pred.shape[1] > 1:
+            n_output = 1
+            for output in range(y_pred.shape[1]):
+                self.train_metrics["output_" + str(n_output)] = self._get_metrics(
+                    y[:, output], y_pred[:, output]
+                )
+                print(f"Goodness-of-fit metrics of output {n_output} on training set:")
+                print(self.train_metrics["output_" + str(n_output)])
+                n_output += 1
+        else:
+            self.train_metrics = self._get_metrics(y, y_pred)
+            print("Goodness-of-fit metrics on training set:")
+            print(self.train_metrics)
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -284,6 +297,18 @@ class SklearnModel(Model):
         sklearn_prediction = self.trained_model.predict(
             dataset.X[self.dataset.active_features]
         )
+        if self.preprocess_y[0] is not None:
+            for func in self.preprocess_y[::-1]:
+                if len(self.dataset.y_cols) == 1:
+                    sklearn_prediction = func.inverse_transform(
+                        sklearn_prediction.reshape(-1, 1)
+                    ).flatten()
+                else:
+                    sklearn_prediction = func.inverse_transform(sklearn_prediction)
+        return sklearn_prediction
+
+    def _predict_with_X(self, X, model):
+        sklearn_prediction = model.predict(X[self.dataset.active_features])
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
@@ -407,39 +432,118 @@ class SklearnModel(Model):
                         f"Response preprocessing must be an instance of a valid class from sklearn.preprocessing, but got {type(preprocessor)}."
                     )
 
-    def _cross_val(self, X, y_true):
-        if self.task.upper() == "REGRESSION":
-            ...
+    def cross_validate(self, dataset: JaqpotpyDataset, n_splits=5):
+        n_output = 1
+        if dataset.y.ndim > 1 and dataset.y.shape[1] > 1:
+            for output in range(dataset.y.shape[1]):
+                y_target = dataset.y.iloc[:, output]
+                self.average_cross_val_metrics["output_" + str(n_output)] = (
+                    self._single_cross_validation(
+                        dataset=dataset,
+                        y=y_target,
+                        n_splits=n_splits,
+                        n_output=n_output,
+                    )
+                )
+                n_output += 1
+
         else:
-            ...
-        return metrics
+            self.average_cross_val_metrics = self._single_cross_validation(
+                dataset=dataset, y=dataset.y, n_splits=n_splits, n_output=n_output
+            )
+        return self.average_cross_val_metrics
+
+    def _single_cross_validation(
+        self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=1
+    ):
+        kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+
+        if not self.trained_model:
+            raise ValueError(
+                "You need to first run SklearnModel.fit() and train a model"
+            )
+
+        X_mat = dataset.X[self.dataset.active_features]
+        sum_metrics = None
+
+        fold = 1
+        for train_index, test_index in kf.split(X_mat):
+            X_train, X_test = X_mat.iloc[train_index, :], X_mat.iloc[test_index, :]
+            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+            if self.preprocess_y[0] is not None:
+                for preprocessor in self.preprocess_y:
+                    y_train = preprocessor.fit_transform(y_train)
+            trained_model = self.pipeline.fit(X_train, y_train.to_numpy().ravel())
+            y_pred = self._predict_with_X(X_test, trained_model).reshape(-1, 1)
+            metrics_result = self._get_metrics(
+                y_test.to_numpy().ravel(), y_pred.ravel()
+            )
+            self.cross_val_metrics["output_" + str(n_output) + "_fold_" + str(fold)] = (
+                metrics_result
+            )
+            fold += 1
+
+            if sum_metrics is None:
+                sum_metrics = {k: 0 for k in metrics_result.keys()}
+
+            for key, value in metrics_result.items():
+                sum_metrics[key] += value
+
+        avg_metrics = {key: value / n_splits for key, value in sum_metrics.items()}
+
+        return avg_metrics
 
     def evaluate(self, dataset: JaqpotpyDataset):
-        y_true = dataset.__get_Y__().values.flatten()
+        if not dataset.y_cols:
+            raise ValueError("y_cols must be provided to obtain y_true")
+        y_true = dataset.__get_Y__().to_numpy()
         y_pred = self.predict(dataset)
-        self.test_metrics = self._get_metrics(y_true, y_pred)
-        print("Goodness-of-fit metrics on test set:")
-        print(self.test_metrics)
+        if y_pred.ndim > 1 and y_pred.shape[1] > 1:
+            n_output = 1
+            for output in range(y_pred.shape[1]):
+                self.test_metrics["output_" + str(n_output)] = self._get_metrics(
+                    y_true[:, output], y_pred[:, output]
+                )
+                n_output += 1
+        else:
+            self.test_metrics = self._get_metrics(y_true, y_pred)
+
+        return self.test_metrics
 
     def _get_metrics(self, y_true, y_pred):
         if self.task.upper() == "REGRESSION":
             return SklearnModel._get_regression_metrics(y_true, y_pred)
+        elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
+            return SklearnModel._get_classification_metrics(
+                y_true, y_pred, binary=False
+            )
         else:
-            return SklearnModel._get_classification_metrics(y_true, y_pred)
+            return SklearnModel._get_classification_metrics(y_true, y_pred, binary=True)
 
     @staticmethod
-    def _get_classification_metrics(y_true, y_pred):
+    def _get_classification_metrics(y_true, y_pred, binary=True):
+        if binary:
+            conf_mat = metrics.confusion_matrix(y_true=y_true, y_pred=y_pred)
+        else:
+            conf_mat = metrics.multilabel_confusion_matrix(y_true=y_true, y_pred=y_pred)
+
         eval_metrics = {
-            "accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
-            "balanced_accuracy": metrics.balanced_accuracy_score(
+            "Accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
+            "BalancedAccuracy": metrics.balanced_accuracy_score(
                 y_true=y_true, y_pred=y_pred
             ),
-            "precision": metrics.precision_score(y_true=y_true, y_pred=y_pred),
-            "recall": metrics.recall_score(y_true=y_true, y_pred=y_pred),
-            "f1": metrics.f1_score(y_true=y_true, y_pred=y_pred),
-            "f1_micro": metrics.f1_score(y_true=y_true, y_pred=y_pred, average="micro"),
-            "f1_macro": metrics.f1_score(y_true=y_true, y_pred=y_pred, average="macro"),
-            "jaccard": metrics.jaccard_score(y_true=y_true, y_pred=y_pred),
+            "Precision": metrics.recall_score(
+                y_true=y_true, y_pred=y_pred, average=None
+            ),
+            "Recall": metrics.precision_score(
+                y_true=y_true, y_pred=y_pred, average=None
+            ),
+            "F1score": metrics.f1_score(y_true=y_true, y_pred=y_pred, average=None),
+            "Jaccard": metrics.jaccard_score(
+                y_true=y_true, y_pred=y_pred, average=None
+            ),
+            "MatthewsCorrCoef": metrics.matthews_corrcoef(y_true=y_true, y_pred=y_pred),
+            "ConfusionMatrix": conf_mat,
         }
         return eval_metrics
 
@@ -481,7 +585,7 @@ class SklearnModel(Model):
         R0_2_hat = 1 - R0_2_hat_num / R0_2_hat_den
 
         eval_metrics = {
-            "R^2 ": r2,
+            "R^2": r2,
             "MAE": mae,
             "RMSE": rmse,
             "(R^2 - R0^2_ / R^2 ": (cor_coeff_2 - R0_2) / cor_coeff_2,
