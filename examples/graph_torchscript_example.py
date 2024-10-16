@@ -66,16 +66,16 @@ trainer.train(train_loader, val_loader)
 
 torchscript_model = pyg_to_torchscript(model)
 
-# jaqpot = Jaqpot()
-# jaqpot.login()
+jaqpot = Jaqpot()
+jaqpot.login()
 
-# jaqpot.deploy_torch_model(
-#     torchscript_model,
-#     type="TORCHSCRIPT",
-#     featurizer=featurizer,
-#     name="Graph Attention Network with torchscript",
-#     description="Graph Attention Network for binary classification",
-#     target_name="ACTIVITY",
-#     visibility="PRIVATE",
-#     task="binary_classification",
-# )
+jaqpot.deploy_torch_model(
+    torchscript_model,
+    type="TORCHSCRIPT",
+    featurizer=featurizer,
+    name="Graph Attention Network with torchscript",
+    description="Graph Attention Network for binary classification",
+    target_name="ACTIVITY",
+    visibility="PRIVATE",
+    task="binary_classification",
+)

@@ -155,9 +155,8 @@ class SmilesVectorizer(object):
             # TODO, Improvement make a "jitter", with random offset within the possible frame
             # TODO, Improvement make it report to many "?"'s
 
-            l = len(ss)
             if self.leftpad:
-                offset = self.dims[0] - l - 1
+                offset = self.dims[0] - len(ss) - 1
             else:
                 offset = 1
 
@@ -168,7 +167,7 @@ class SmilesVectorizer(object):
             # Pad the start
             one_hot[i, offset - 1, self._char_to_int[self.startchar]] = 1
             # Pad the end
-            one_hot[i, offset + l :, self._char_to_int[self.endchar]] = 1
+            one_hot[i, offset + len(ss) :, self._char_to_int[self.endchar]] = 1
             # Pad the space in front of start (Could this lead to funky effects during sampling?)
             # one_hot[i,:offset-1,self._char_to_int[self.endchar]] = 1
 

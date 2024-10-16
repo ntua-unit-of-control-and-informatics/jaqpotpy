@@ -7,6 +7,8 @@ from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
 from jaqpotpy.datasets.tokenizer_dataset import SmilesSeqDataset
 from jaqpotpy.models.trainers.sequence_trainers import BinarySequenceTrainer
 from torch.utils.data import DataLoader
+import onnxruntime
+import base64
 
 path = "AllPublicnew.csv"
 smiles_train = list(pd.read_csv(path).iloc[0:500, :]["SMILES"])
@@ -54,9 +56,6 @@ onnx_model = lstm_to_onnx(model, train_dataset)
 
 
 #### Will be used for inference
-import onnxruntime
-import base64
-
 onnx_model = base64.b64decode(onnx_model)
 
 
