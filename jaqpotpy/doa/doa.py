@@ -142,7 +142,7 @@ class Leverage(DOA):
                 in_ad = False
             self._doa.append(d2)
             self._in_doa.append(in_ad)
-            doa = {"h": d2, "h_star": self._h_star, "in_doa": in_ad}
+            doa = {"h": d2, "hStar": self._h_star, "inDoa": in_ad}
             doaAll.append(doa)
         return doaAll
 
@@ -204,7 +204,7 @@ class MeanVar(DOA):
                     continue
                 else:
                     in_doa = False
-            doa = {"in_doa": in_doa}
+            doa = {"inDoa": in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
             self._in_doa.append(in_doa)
@@ -256,7 +256,7 @@ class BoundingBox(DOA):
                     continue
                 else:
                     in_doa = False
-            doa = {"in_doa": in_doa}
+            doa = {"inDoa": in_doa}
             doaAll.append(doa)
             self._doa.append(new_data)
             self._in_doa.append(in_doa)

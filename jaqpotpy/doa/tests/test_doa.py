@@ -55,14 +55,14 @@ class TestDoa(unittest.TestCase):
             abs(doa.h_star - 16.434782608695652) < 0.00001
         ), f"Expected doa.a == 16.434782608695652, got {doa.h_star} != 16.434782608695652"
         assert not calc[0][
-            "in_doa"
-        ], f"Expected calc[0]['in_doa'] == False, got {calc[0]['in_doa']} != False"
+            "inDoa"
+        ], f"Expected calc[0]['inDoa'] == False, got {calc[0]['inDoa']} != False"
         assert calc[1][
-            "in_doa"
-        ], f"Expected calc[0]['in_doa'] == True, got {calc[1]['in_doa']} != True"
+            "inDoa"
+        ], f"Expected calc[0]['inDoa'] == True, got {calc[1]['inDoa']} != True"
         assert calc[2][
-            "in_doa"
-        ], f"Expected calc[0]['in_doa'] == True, got {calc[2]['in_doa']} != True"
+            "inDoa"
+        ], f"Expected calc[0]['inDoa'] == True, got {calc[2]['inDoa']} != True"
 
     def test_MeanVar(self):
         mols = [
@@ -99,11 +99,11 @@ class TestDoa(unittest.TestCase):
 
         assert len(calc) == len(mol)
         assert calc[0][
-            "in_doa"
-        ], f"Expected calc[0]['in_doa'] == True, got {calc[0]['in_doa']} != True"
+            "inDoa"
+        ], f"Expected calc[0]['inDoa'] == True, got {calc[0]['inDoa']} != True"
         assert not calc[1][
-            "in_doa"
-        ], f"Expected calc[0]['in_doa'] == False, got {calc[1]['in_doa']} != False"
+            "inDoa"
+        ], f"Expected calc[0]['inDoa'] == False, got {calc[1]['inDoa']} != False"
         assert np.allclose(
             diag, [1.31511044e01, 6.69162726e-01, 5.37187947e-03], atol=1e-5
         ), f"Expected diag == [1.31511044e+01, 6.69162726e-01, 5.37187947e-03], got diag != {diag}"
@@ -144,11 +144,11 @@ class TestDoa(unittest.TestCase):
         print("Bounding box")
         assert len(calc) == len(mol)
         assert calc[0][
-            "in_doa"
-        ], f"Expected calc[0]['in_doa'] == True, got {calc[0]['in_doa']} != True"
+            "inDoa"
+        ], f"Expected calc[0]['inDoa'] == True, got {calc[0]['inDoa']} != True"
         assert not calc[1][
-            "in_doa"
-        ], f"Expected calc[0]['in_doa'] == False, got {calc[1]['in_doa']} != False"
+            "inDoa"
+        ], f"Expected calc[0]['inDoa'] == False, got {calc[1]['inDoa']} != False"
         assert np.allclose(
             first_feature_bounds, [12.0648171, 14.92728396], atol=1e-5
         ), f"Expected first_feature_bounds == [12.0648171 , 14.92728396], got {first_feature_bounds} != [12.0648171 , 14.92728396]"
