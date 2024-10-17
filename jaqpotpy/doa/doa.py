@@ -54,29 +54,27 @@ class DOA(ABC):
 
 class Leverage(DOA):
     """
-    Leverage class for Domain of Applicability (DOA) analysis.
-    This class implements the Leverage method for determining the domain of applicability
-    of a given dataset. It provides methods to fit the model, predict new data points,
-    and calculate the necessary matrices and thresholds.
+    Leverage class for Domain of Applicability (DOA) calculation using leverage method.
     Attributes:
         _doa (list): List to store leverage values.
-        _in_doa (list): List to store boolean values indicating if data points are within the domain of applicability.
-        _data (Union[np.array, pd.DataFrame]): The input data used for fitting the model.
-        doa_matrix (np.array): The matrix used for leverage calculations.
-        _h_star (float): The threshold value for determining if a data point is within the domain of applicability.
-        doa_attributes (LeverageDoa): Object containing the attributes of the leverage model.
+        _in_doa (list): List to store boolean values indicating if data points are within DOA.
+        _data (Union[np.array, pd.DataFrame]): Input data used for DOA calculation.
+        _doa_matrix (np.array): Matrix used for leverage calculation.
+        _h_star (float): Threshold value for leverage.
+        doa_attributes (LeverageDoa): Attributes of the leverage DOA.
+    Properties:
+        __name__ (str): Name of the DOA method.
+        doa_matrix (np.array): Getter and setter for the DOA matrix.
+        h_star (float): Getter and setter for the leverage threshold.
     Methods:
-        __name__: Returns the name of the method ("LEVERAGE").
-        __init__(): Initializes the Leverage object.
+        __init__(): Initializes the Leverage class.
         __getitem__(key): Returns the key.
-        doa_matrix: Property to get and set the doa_matrix attribute.
-        h_star: Property to get and set the _h_star attribute.
-        calculate_threshold(): Calculates the threshold value (_h_star) based on the input data.
-        calculate_matrix(): Calculates the leverage matrix (doa_matrix) using the input data.
-        fit(X): Fits the model using the input data X.
-        predict(new_data): Predicts whether new data points are within the domain of applicability.
-        _validate_input(data): Validates and converts the input data to a numpy array if it is a pandas DataFrame.
-        get_attributes(): Returns the attributes of the leverage model as a LeverageDoa object.
+        calculate_threshold(): Calculates the leverage threshold (_h_star).
+        calculate_matrix(): Calculates the DOA matrix (_doa_matrix) using the input data.
+        fit(X: Union[np.array, pd.DataFrame]): Fits the model using the input data X.
+        predict(new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]: Predicts if new data points are within DOA.
+        _validate_input(data: Union[np.array, pd.DataFrame]): Validates and converts input data to numpy array if necessary.
+        get_attributes(): Returns the attributes of the leverage DOA.
     """
 
     _doa = []
