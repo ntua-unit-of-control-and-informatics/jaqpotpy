@@ -182,7 +182,7 @@ class MeanVar(DOA):
         for nd in new_data:
             for index, feature in enumerate(nd):
                 bounds = self.bounds[index]
-                bounds_data = [bounds[0] - 4 * bounds[1], bounds[0] + 4 * bounds[1]]
+                bounds_data = [bounds[0] - 3 * bounds[1], bounds[0] + 3 * bounds[1]]
                 if feature < bounds_data[0] or feature > bounds_data[1]:
                     in_doa = False
                     break
