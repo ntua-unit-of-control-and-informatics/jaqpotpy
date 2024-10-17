@@ -1,4 +1,4 @@
-from jaqpotpy.doa.doa import DOA
+from jaqpotpy.doa import DOA
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Iterable
 
@@ -152,9 +152,6 @@ class Model(object):
         self._jaqpotpy_docker = value
 
     def fit(self):
-        raise NotImplementedError("Not implemented")
-
-    def eval(self):
         raise NotImplementedError("Not implemented")
 
     def predict(self, X):

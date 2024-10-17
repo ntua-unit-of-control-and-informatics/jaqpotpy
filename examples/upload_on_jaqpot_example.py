@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MordredDescriptors
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
-from jaqpotpy.doa.doa import Leverage
+from jaqpotpy.doa import Leverage
 from jaqpotpy.models.preprocessing import Preprocess
 from jaqpotpy import Jaqpot
 

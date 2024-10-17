@@ -88,10 +88,11 @@ class Jaqpot:
 
         access_token = token_response["access_token"]
         self.access_token = access_token
-        self.http_client = (JaqpotApiHttpClientBuilder(host=self.api_url)
-                            .build_with_access_token(self.access_token)
-                            .build())
-
+        self.http_client = (
+            JaqpotApiHttpClientBuilder(host=self.api_url)
+            .build_with_access_token(self.access_token)
+            .build()
+        )
 
     def deploy_sklearn_model(self, model, name, description, visibility):
         """ "
@@ -108,6 +109,7 @@ class Jaqpot:
             name=name,
             type=model.type,
             jaqpotpy_version=model.jaqpotpy_version,
+            doas=model.doa,
             libraries=model.libraries,
             dependent_features=[
                 Feature(

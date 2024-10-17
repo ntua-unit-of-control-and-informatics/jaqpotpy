@@ -8,7 +8,7 @@ from jaqpotpy.api.openapi.models import (
     ModelType,
     ModelExtraConfig,
 )
-from jaqpotpy.doa.doa import DOA
+from jaqpotpy.doa import DOA
 from skl2onnx.common.shape_calculator import (
     calculate_linear_classifier_output_shapes,
     calculate_linear_regressor_output_shapes,

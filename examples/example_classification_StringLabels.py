@@ -14,7 +14,7 @@ from jaqpotpy.descriptors.molecular import (
 )
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
-from jaqpotpy.doa.doa import Leverage
+from jaqpotpy.doa import Leverage
 from jaqpotpy import Jaqpot
 
 path = "jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS.csv"

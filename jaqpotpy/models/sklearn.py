@@ -17,6 +17,7 @@ from skl2onnx.common.data_types import (
     StringTensorType,
 )
 import jaqpotpy
+from jaqpotpy.api.openapi.models.doa_data import DoaData
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
@@ -26,18 +27,86 @@ from jaqpotpy.api.openapi.models import (
     ModelType,
     ModelExtraConfig,
     Transformer,
-    ModelTask,
+    Doa,
 )
 from jaqpotpy.models.base_classes import Model
-from jaqpotpy.doa.doa import DOA
+from jaqpotpy.doa import DOA
 
 
 class SklearnModel(Model):
+    """
+    A class to represent a Scikit-learn model within the Jaqpot framework.
+
+    Attributes
+    ----------
+    dataset : JaqpotpyDataset
+        The dataset used for training the model.
+    model : Any
+        The Scikit-learn model to be trained.
+    doa : Optional[Union[DOA, list]], optional
+        Domain of Applicability methods, by default None.
+    preprocess_x : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
+        Preprocessors for the input features, by default None.
+    preprocess_y : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
+        Preprocessors for the target variable, by default None.
+    pipeline : sklearn.pipeline.Pipeline
+        The pipeline that includes preprocessing steps and the model.
+    trained_model : Any
+        The trained Scikit-learn model.
+    transformers_y : dict
+        Dictionary to store transformers for the target variable.
+    libraries : list
+        List of installed libraries.
+    jaqpotpy_version : str
+        Version of the Jaqpotpy library.
+    task : str
+        The task type (e.g., regression, classification).
+    initial_types : list
+        Initial types for ONNX conversion.
+    onnx_model : onnx.ModelProto
+        The ONNX model.
+    type : ModelType
+        The type of the model.
+    independentFeatures : list
+        List of independent features.
+    dependentFeatures : list
+        List of dependent features.
+    extra_config : ModelExtraConfig
+        Extra configuration for the model.
+
+    Methods
+    -------
+    _dtypes_to_jaqpotypes():
+        Converts data types to Jaqpot feature types.
+    _extract_attributes(trained_class, trained_class_type):
+        Extracts attributes from a trained class.
+    _add_class_to_extraconfig(added_class, added_class_type):
+        Adds a class to the extra configuration.
+    _map_onnx_dtype(dtype, shape=1):
+        Maps data types to ONNX tensor types.
+    _create_onnx(onnx_options=None):
+        Creates an ONNX model.
+    fit(onnx_options=None):
+        Fits the model to the dataset.
+    predict(dataset):
+        Predicts using the trained model.
+    predict_proba(dataset):
+        Predicts probabilities using the trained model.
+    predict_onnx(dataset):
+        Predicts using the ONNX model.
+    predict_proba_onnx(dataset):
+        Predicts probabilities using the ONNX model.
+    deploy_on_jaqpot(jaqpot, name, description, visibility):
+        Deploys the model on the Jaqpot platform.
+    check_preprocessor(preprocessor_list, feat_type):
+        Checks if the preprocessors are valid.
+    """
+
     def __init__(
         self,
         dataset: JaqpotpyDataset,
         model: Any,
-        doa: Optional[DOA or list] = None,
+        doa: Optional[Union[DOA, list]] = None,
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
         preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
     ):
@@ -46,7 +115,7 @@ class SklearnModel(Model):
         self.model = model
         self.pipeline = None
         self.trained_model = None
-        self.doa = doa if isinstance(doa, list) else [doa] if doa else []
+        self.doa = doa if isinstance(doa, list) else [doa] if doa else None
         self.preprocess_x = (
             preprocess_x if isinstance(preprocess_x, list) else [preprocess_x]
         )
@@ -61,7 +130,6 @@ class SklearnModel(Model):
         self.task = self.dataset.task
         self.initial_types = None
         self.onnx_model = None
-        self.onnx_opset = None
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
         self.dependentFeatures = None
@@ -121,10 +189,6 @@ class SklearnModel(Model):
             )
         elif added_class_type == "featurizer":
             self.extra_config.featurizers.append(
-                Transformer(name=added_class.__class__.__name__, config=configurations)
-            )
-        elif added_class_type == "doa":
-            self.extra_config.doa.append(
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
 
@@ -193,7 +257,6 @@ class SklearnModel(Model):
             name=name,
             options=onnx_options,
         )
-        self.onnx_opset = self.onnx_model.opset_import[0].version
 
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
@@ -216,12 +279,13 @@ class SklearnModel(Model):
             y = y.ravel()
 
         if self.doa:
-            self.extra_config.doa = []
-            # if not isinstance(self.doa, list):
-            #     self.doa = [self.doa]
-            for doa_method in self.doa:
+            for i, doa_method in enumerate(self.doa):
                 doa_method.fit(X=X)
-                self._add_class_to_extraconfig(doa_method, "doa")
+                DOA_instance = Doa(
+                    method=doa_method.__name__,
+                    data=DoaData(doa_method.doa_attributes),
+                )
+                self.doa[i] = DOA_instance
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
