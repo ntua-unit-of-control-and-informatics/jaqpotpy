@@ -297,21 +297,12 @@ class SklearnModel(Model):
     def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        sklearn_prediction = self.trained_model.predict(
-            dataset.X[self.dataset.active_features]
-        )
-        if self.preprocess_y[0] is not None:
-            for func in self.preprocess_y[::-1]:
-                if len(self.dataset.y_cols) == 1 and not isinstance(func, LabelEncoder):
-                    sklearn_prediction = func.inverse_transform(
-                        sklearn_prediction.reshape(-1, 1)
-                    ).flatten()
-                else:
-                    sklearn_prediction = func.inverse_transform(sklearn_prediction)
+        X_mat = dataset.X[self.dataset.active_features]
+        sklearn_prediction = self._predict_with_X(X_mat, self.trained_model)
         return sklearn_prediction
 
     def _predict_with_X(self, X, model):
-        sklearn_prediction = model.predict(X[self.dataset.active_features])
+        sklearn_prediction = model.predict(X)
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
