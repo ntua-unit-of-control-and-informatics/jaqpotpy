@@ -1,4 +1,4 @@
-from jaqpotpy.doa.doa import DOA
+from jaqpotpy.doa import DOA
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Iterable
 

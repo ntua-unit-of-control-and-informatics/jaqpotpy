@@ -30,7 +30,7 @@ from jaqpotpy.api.openapi.models import (
     Doa,
 )
 from jaqpotpy.models.base_classes import Model
-from jaqpotpy.doa.doa import DOA
+from jaqpotpy.doa import DOA
 
 
 class SklearnModel(Model):
