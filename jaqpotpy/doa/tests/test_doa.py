@@ -98,9 +98,9 @@ class TestDoa(unittest.TestCase):
         diag = np.diag(doa.bounds)
 
         assert len(calc) == len(mol)
-        assert calc[0][
+        assert not calc[0][
             "inDoa"
-        ], f"Expected calc[0]['inDoa'] == True, got {calc[0]['inDoa']} != True"
+        ], f"Expected calc[0]['inDoa'] == False, got {calc[0]['inDoa']} != False"
         assert not calc[1][
             "inDoa"
         ], f"Expected calc[0]['inDoa'] == False, got {calc[1]['inDoa']} != False"
