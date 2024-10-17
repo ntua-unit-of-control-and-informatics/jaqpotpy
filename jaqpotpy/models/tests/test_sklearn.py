@@ -1056,6 +1056,8 @@ def test_metrics_multi_output_regressions(self):
         featurizer=featurizer,
     )
     model = RandomForestClassifier(random_state=42)
+    pre = StandardScaler()
+
     jaqpot_model = SklearnModel(
         dataset=dataset, doa=None, model=model, preprocess_x=pre
     )
