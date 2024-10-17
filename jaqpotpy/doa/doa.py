@@ -51,6 +51,13 @@ class DOA(ABC):
     def get_attributes(self):
         raise NotImplementedError
 
+    @abstractmethod
+    def _validate_input(self, data: Union[np.array, pd.DataFrame]):
+        if isinstance(data, pd.DataFrame):
+            return data.to_numpy()
+        else:
+            return data
+
 
 class Leverage(DOA):
     """
@@ -145,12 +152,6 @@ class Leverage(DOA):
             doaAll.append(doa)
         return doaAll
 
-    def _validate_input(self, data: Union[np.array, pd.DataFrame]):
-        if isinstance(data, pd.DataFrame):
-            return data.to_numpy()
-        else:
-            return data
-
     def get_attributes(self):
         Leverage_data = LeverageDoa(h_star=self.h_star, doa_matrix=self.doa_matrix)
         return Leverage_data
@@ -212,12 +213,6 @@ class MeanVar(DOA):
             self._in_doa.append(in_doa)
         return doaAll
 
-    def _validate_input(self, data: Union[np.array, pd.DataFrame]):
-        if isinstance(data, pd.DataFrame):
-            return data.to_numpy()
-        else:
-            return data
-
     def get_attributes(self):
         return MeanVarDoa(bounds=self.bounds)
 
@@ -266,12 +261,6 @@ class BoundingBox(DOA):
             self._doa.append(new_data)
             self._in_doa.append(in_doa)
         return doaAll
-
-    def _validate_input(self, data: Union[np.array, pd.DataFrame]):
-        if isinstance(data, pd.DataFrame):
-            return data.to_numpy()
-        else:
-            return data
 
     def get_attributes(self):
         return BoundingBoxDoa(bounding_box=self.bounding_box)
