@@ -10,16 +10,17 @@ from torch.utils.data import DataLoader
 import onnxruntime
 import base64
 
-path = "AllPublicnew.csv"
-smiles_train = list(pd.read_csv(path).iloc[0:500, :]["SMILES"])
-y_train = list(pd.read_csv(path).iloc[0:500, :]["ReadyBiodegradability"])
-smiles_test = list(pd.read_csv(path).iloc[600:700, :]["SMILES"])
-y_test = list(pd.read_csv(path).iloc[600:700, :]["ReadyBiodegradability"])
+path = "jaqpotpy/test_data/test_data_smiles_classification.csv"
+smiles_train = list(pd.read_csv(path).iloc[0:100, :]["SMILES"])
+y_train = list(pd.read_csv(path).iloc[0:100, :]["ReadyBiodegradability"])
+smiles_test = list(pd.read_csv(path).iloc[100:130, :]["SMILES"])
+y_test = list(pd.read_csv(path).iloc[100:130, :]["ReadyBiodegradability"])
 
 mols1 = [Chem.MolFromSmiles(smile) for smile in smiles_train]
 mols2 = [Chem.MolFromSmiles(smile) for smile in smiles_test]
 
 smivec = SmilesVectorizer(pad=1, leftpad=True, canonical=False, augment=False)
+smivec.fit(mols1)
 train_dataset = SmilesSeqDataset(mols1, y_train, smivec)
 test_dataset = SmilesSeqDataset(mols2, y_test, smivec)
 

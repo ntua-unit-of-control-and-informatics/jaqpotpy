@@ -1,13 +1,10 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import VarianceThreshold
 
 from jaqpotpy import Jaqpot
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors.molecular import (
     MACCSKeysFingerprint,
 )
-from jaqpotpy.doa.doa import Leverage
 
 # from jaqpotpy.models import SklearnModel
 from jaqpotpy.models import XGBoostModel
