@@ -1041,53 +1041,56 @@ class TestModels(unittest.TestCase):
             jaqpot_model.average_cross_val_metrics["Accuracy"], 0.3035, atol=1e-02
         ), f"Expected train Accuracyto be 0.3035, got { jaqpot_model.cross_val_metrics['Accuracy']}"
 
+    def test_metrics_multi_output_regressions(self):
+        """Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
+        applied only on the input features.
+        """
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(
+            df=self.regression_multioutput_df,
+            y_cols=["ACTIVITY", "ACTIVITY_2"],
+            smiles_cols=["SMILES"],
+            x_cols=["X1", "X2"],
+            task="regression",
+            featurizer=featurizer,
+        )
+        model = RandomForestClassifier(random_state=42)
+        pre = StandardScaler()
 
-def test_metrics_multi_output_regressions(self):
-    """Test RandomForestRegressor on a molecular dataset with TopologicalFingerprint fingerprints for regression, with preprocessing
-    applied only on the input features.
-    """
-    featurizer = TopologicalFingerprint()
-    dataset = JaqpotpyDataset(
-        df=self.regression_multioutput_df,
-        y_cols=["ACTIVITY", "ACTIVITY_2"],
-        smiles_cols=["SMILES"],
-        x_cols=["X1", "X2"],
-        task="regression",
-        featurizer=featurizer,
-    )
-    model = RandomForestClassifier(random_state=42)
-    pre = StandardScaler()
+        jaqpot_model = SklearnModel(
+            dataset=dataset, doa=None, model=model, preprocess_x=pre
+        )
+        jaqpot_model.fit()
+        jaqpot_model.evaluate(dataset)
+        jaqpot_model.cross_validate(dataset, n_splits=2)
 
-    jaqpot_model = SklearnModel(
-        dataset=dataset, doa=None, model=model, preprocess_x=pre
-    )
-    jaqpot_model.fit()
-    jaqpot_model.evaluate(dataset)
-    jaqpot_model.cross_validate(dataset, n_splits=2)
+        assert np.allclose(
+            jaqpot_model.train_metrics["output_1"]["R^2"], 0.8698, atol=1e-02
+        ), f"Expected train Accuracy to be 0.8698 got { jaqpot_model.train_metrics['Accuracy']}"
 
-    assert np.allclose(
-        jaqpot_model.train_metrics["output_1"]["R^2"], 0.8698, atol=1e-02
-    ), f"Expected train Accuracy to be 0.8698 got { jaqpot_model.train_metrics['Accuracy']}"
+        assert np.allclose(
+            jaqpot_model.train_metrics["output_2"]["R^2"], 0.8230, atol=1e-02
+        ), f"Expected train Accuracy to be  0.8230, got { jaqpot_model.train_metrics['Accuracy']}"
 
-    assert np.allclose(
-        jaqpot_model.train_metrics["output_2"]["R^2"], 0.8230, atol=1e-02
-    ), f"Expected train Accuracy to be  0.8230, got { jaqpot_model.train_metrics['Accuracy']}"
+        assert np.allclose(
+            jaqpot_model.test_metrics["output_1"]["R^2"], 0.8698, atol=1e-02
+        ), f"Expected train Accuracy to be 0.8698, got { jaqpot_model.test_metrics['Accuracy']}"
 
-    assert np.allclose(
-        jaqpot_model.test_metrics["output_1"]["R^2"], 0.8698, atol=1e-02
-    ), f"Expected train Accuracy to be 0.8698, got { jaqpot_model.test_metrics['Accuracy']}"
+        assert np.allclose(
+            jaqpot_model.test_metrics["output_2"]["R^2"], 0.8230, atol=1e-02
+        ), f"Expected train Accuracy to be  0.8230, got { jaqpot_model.test_metrics['Accuracy']}"
 
-    assert np.allclose(
-        jaqpot_model.test_metrics["output_2"]["R^2"], 0.8230, atol=1e-02
-    ), f"Expected train Accuracy to be  0.8230, got { jaqpot_model.test_metrics['Accuracy']}"
+        assert np.allclose(
+            jaqpot_model.average_cross_val_metrics["output_1"]["R^2"],
+            0.05650,
+            atol=1e-02,
+        ), f"Expected train Accuracyto be  0.05650, got { jaqpot_model.cross_val_metrics['Accuracy']}"
 
-    assert np.allclose(
-        jaqpot_model.average_cross_val_metrics["output_1"]["R^2"], 0.05650, atol=1e-02
-    ), f"Expected train Accuracyto be  0.05650, got { jaqpot_model.cross_val_metrics['Accuracy']}"
-
-    assert np.allclose(
-        jaqpot_model.average_cross_val_metrics["output_2"]["R^2"], -0.23025, atol=1e-02
-    ), f"Expected train Accuracyto be -0.23025, got { jaqpot_model.cross_val_metrics['Accuracy']}"
+        assert np.allclose(
+            jaqpot_model.average_cross_val_metrics["output_2"]["R^2"],
+            -0.23025,
+            atol=1e-02,
+        ), f"Expected train Accuracyto be -0.23025, got { jaqpot_model.cross_val_metrics['Accuracy']}"
 
 
 if __name__ == "__main__":
