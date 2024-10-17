@@ -1054,7 +1054,7 @@ class TestModels(unittest.TestCase):
             task="regression",
             featurizer=featurizer,
         )
-        model = RandomForestClassifier(random_state=42)
+        model = RandomForestRegressor(random_state=42)
         pre = StandardScaler()
 
         jaqpot_model = SklearnModel(
@@ -1066,31 +1066,31 @@ class TestModels(unittest.TestCase):
 
         assert np.allclose(
             jaqpot_model.train_metrics["output_1"]["R^2"], 0.8698, atol=1e-02
-        ), f"Expected train Accuracy to be 0.8698 got { jaqpot_model.train_metrics['Accuracy']}"
+        ), f"Expected train R^2 to be 0.8698 got { jaqpot_model.train_metrics['output_1']['R^2']}"
 
         assert np.allclose(
             jaqpot_model.train_metrics["output_2"]["R^2"], 0.8230, atol=1e-02
-        ), f"Expected train Accuracy to be  0.8230, got { jaqpot_model.train_metrics['Accuracy']}"
+        ), f"Expected train R^2 to be  0.8230, got { jaqpot_model.train_metrics['output_2']['R^2']}"
 
         assert np.allclose(
             jaqpot_model.test_metrics["output_1"]["R^2"], 0.8698, atol=1e-02
-        ), f"Expected train Accuracy to be 0.8698, got { jaqpot_model.test_metrics['Accuracy']}"
+        ), f"Expected train R^2 to be 0.8698, got { jaqpot_model.test_metrics['output_1']['R^2']}"
 
         assert np.allclose(
             jaqpot_model.test_metrics["output_2"]["R^2"], 0.8230, atol=1e-02
-        ), f"Expected train Accuracy to be  0.8230, got { jaqpot_model.test_metrics['Accuracy']}"
+        ), f"Expected train R^2 to be  0.8230, got { jaqpot_model.test_metrics['output_2']['R^2']}"
 
         assert np.allclose(
             jaqpot_model.average_cross_val_metrics["output_1"]["R^2"],
             0.05650,
             atol=1e-02,
-        ), f"Expected train Accuracyto be  0.05650, got { jaqpot_model.cross_val_metrics['Accuracy']}"
+        ), f"Expected train R^2 be  0.05650, got { jaqpot_model.cross_val_metrics['output_1']['R^2']}"
 
         assert np.allclose(
             jaqpot_model.average_cross_val_metrics["output_2"]["R^2"],
             -0.23025,
             atol=1e-02,
-        ), f"Expected train Accuracyto be -0.23025, got { jaqpot_model.cross_val_metrics['Accuracy']}"
+        ), f"Expected train R^2 to be -0.23025, got { jaqpot_model.cross_val_metrics['output_2']['R^2']}"
 
 
 if __name__ == "__main__":
