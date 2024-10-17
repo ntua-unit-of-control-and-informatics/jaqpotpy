@@ -5,6 +5,7 @@ from typing import Iterable, Any, Union
 
 from jaqpotpy.api.openapi.models.bounding_box_doa import BoundingBoxDoa
 from jaqpotpy.api.openapi.models.leverage_doa import LeverageDoa
+from jaqpotpy.api.openapi.models.mean_var_doa import MeanVarDoa
 
 
 class DOA(ABC):
@@ -220,7 +221,7 @@ class MeanVar(DOA):
             return data
 
     def get_attributes(self):
-        return {"bounds": self.bounds}
+        return MeanVarDoa(bounds=self.bounds)
 
 
 class BoundingBox(DOA):
