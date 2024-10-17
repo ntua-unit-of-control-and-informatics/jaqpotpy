@@ -16,6 +16,7 @@ from skl2onnx.common.shape_calculator import (
 from xgboost import XGBClassifier, XGBRegressor
 from onnxmltools.convert.xgboost.operator_converters.XGBoost import convert_xgboost
 from jaqpotpy.models.sklearn import SklearnModel
+from sklearn.preprocessing import StandardScaler
 
 
 class XGBoostModel(SklearnModel):
@@ -54,7 +55,7 @@ class XGBoostModel(SklearnModel):
         self.dependentFeatures = None
         self.extra_config = ModelExtraConfig()
 
-    def convert_to_onnx(self, onnx_options: Optional[Dict] = None):
+    def _create_onnx(self, onnx_options: Optional[Dict] = None):
         name = self.model.__class__.__name__ + "_ONNX"
         self.initial_types = []
         dtype_array = self.dataset.X.dtypes.values
@@ -97,31 +98,31 @@ class XGBoostModel(SklearnModel):
             or self.task == "MULTICLASS_CLASSIFICATION"
         ):
             self._convert_classifier()
-        elif self.task == "REGRESSION":
-            self._convert_regressor()
         else:
-            raise ValueError("Task not supported for XGBoost models")
-        self.onnx_model = to_onnx(
+            self._convert_regressor()
+        self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=self.initial_types,
             name=name,
+            options={StandardScaler: {"div": "div_cast"}},
             target_opset={"": 15, "ai.onnx.ml": 1},
         )
+
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
-        def _convert_regressor(self):
-            update_registered_converter(
-                model=XGBRegressor,
-                alias="XGBRegressor",
-                shape_fct=calculate_linear_regressor_output_shapes,
-                convert_fct=convert_xgboost,
-            )
+    def _convert_regressor(self):
+        update_registered_converter(
+            model=XGBRegressor,
+            alias="XGBRegressor",
+            shape_fct=calculate_linear_regressor_output_shapes,
+            convert_fct=convert_xgboost,
+        )
 
-        def _convert_classifier(self):
-            update_registered_converter(
-                model=XGBClassifier,
-                alias="XGBClassifier",
-                shape_fct=calculate_linear_classifier_output_shapes,
-                convert_fct=convert_xgboost,
-                options={"nocl": [True, False], "zipmap": [True, False, "columns"]},
-            )
+    def _convert_classifier(self):
+        update_registered_converter(
+            model=XGBClassifier,
+            alias="XGBClassifier",
+            shape_fct=calculate_linear_classifier_output_shapes,
+            convert_fct=convert_xgboost,
+            options={"nocl": [True, False], "zipmap": [True, False, "columns"]},
+        )
