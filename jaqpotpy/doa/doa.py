@@ -180,14 +180,16 @@ class MeanVar(DOA):
         doaAll = []
         in_doa = True
         for nd in new_data:
-            for index, row in enumerate(nd):
+            for index, feature in enumerate(nd):
                 bounds = self.bounds[index]
                 bounds_data = [bounds[0] - 4 * bounds[1], bounds[0] + 4 * bounds[1]]
-                if row < bounds_data[0] or row > bounds_data[1]:
+                if feature < bounds_data[0] or feature > bounds_data[1]:
                     in_doa = False
                     break
             out_of_doa_count = sum(
-                1 for row in nd if row < bounds_data[0] or row > bounds_data[1]
+                1
+                for feature in nd
+                if feature < bounds_data[0] or feature > bounds_data[1]
             )
             out_of_doa_percentage = (out_of_doa_count / len(nd)) * 100
             doa = {"outOfDoaPercentage": out_of_doa_percentage, "inDoa": in_doa}
@@ -223,14 +225,16 @@ class BoundingBox(DOA):
         doaAll = []
         in_doa = True
         for nd in new_data:
-            for index, row in enumerate(nd):
+            for index, feature in enumerate(nd):
                 bounds = self.bounding_box[index]
                 bounds_data = [bounds[0], bounds[1]]
-                if row < bounds_data[0] or row > bounds_data[1]:
+                if feature < bounds_data[0] or feature > bounds_data[1]:
                     in_doa = False
                     break
             out_of_doa_count = sum(
-                1 for row in nd if row < bounds_data[0] or row > bounds_data[1]
+                1
+                for feature in nd
+                if feature < bounds_data[0] or feature > bounds_data[1]
             )
             out_of_doa_percentage = (out_of_doa_count / len(nd)) * 100
             doa = {"outOfDoaPercentage": out_of_doa_percentage, "inDoa": in_doa}
