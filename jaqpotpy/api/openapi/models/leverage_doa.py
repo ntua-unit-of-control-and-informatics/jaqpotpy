@@ -28,8 +28,8 @@ class LeverageDoa(BaseModel):
     LeverageDoa
     """ # noqa: E501
     h_star: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="hStar")
-    array: Optional[List[List[Union[StrictFloat, StrictInt]]]] = None
-    __properties: ClassVar[List[str]] = ["hStar", "array"]
+    doa_matrix: Optional[List[List[Union[StrictFloat, StrictInt]]]] = Field(default=None, alias="doaMatrix")
+    __properties: ClassVar[List[str]] = ["hStar", "doaMatrix"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -83,7 +83,7 @@ class LeverageDoa(BaseModel):
 
         _obj = cls.model_validate({
             "hStar": obj.get("hStar"),
-            "array": obj.get("array")
+            "doaMatrix": obj.get("doaMatrix")
         })
         return _obj
 
