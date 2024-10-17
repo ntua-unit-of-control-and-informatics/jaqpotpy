@@ -16,14 +16,6 @@ class DOA(ABC):
         return NotImplementedError
 
     @property
-    def doa_new(self):
-        return self._doa
-
-    @doa_new.setter
-    def doa_new(self, value):
-        self._doa = value
-
-    @property
     def in_doa(self):
         return self._in_doa
 
@@ -51,7 +43,6 @@ class DOA(ABC):
     def get_attributes(self):
         raise NotImplementedError
 
-    @abstractmethod
     def _validate_input(self, data: Union[np.array, pd.DataFrame]):
         if isinstance(data, pd.DataFrame):
             return data.to_numpy()
@@ -92,7 +83,7 @@ class Leverage(DOA):
         return "LEVERAGE"
 
     def __init__(self) -> None:
-        # self._scaler: BaseEstimator = scaler
+        super().__init__()
         self._data: Union[np.array, pd.DataFrame] = None
         self._doa_matrix = None
         self._h_star = None
@@ -136,8 +127,6 @@ class Leverage(DOA):
     def predict(self, new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]:
         new_data = self._validate_input(new_data)
         doaAll = []
-        self._doa = []
-        self._in_doa = []
         for nd in new_data:
             d1 = np.dot(nd, self.doa_matrix)
             ndt = np.transpose(nd)
@@ -146,8 +135,6 @@ class Leverage(DOA):
                 in_ad = True
             else:
                 in_ad = False
-            self._doa.append(d2)
-            self._in_doa.append(in_ad)
             doa = {"h": d2, "hStar": self._h_star, "inDoa": in_ad}
             doaAll.append(doa)
         return doaAll
@@ -163,14 +150,12 @@ class MeanVar(DOA):
     Calculates the mean and variance for a new instance of data or array of data and decides if in AD.
     """
 
-    _doa = []
-    _in_doa = []
-
     @property
     def __name__(self):
         return "MEAN_VAR"
 
     def __init__(self) -> None:
+        super().__init__()
         self._data: np.array = None
         self.bounds = None
         self.doa_attributes = None
@@ -193,8 +178,6 @@ class MeanVar(DOA):
     def predict(self, new_data: np.array) -> Iterable[Any]:
         new_data = self._validate_input(new_data)
         doaAll = []
-        self._doa = []
-        self._in_doa = []
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
@@ -209,8 +192,6 @@ class MeanVar(DOA):
             out_of_doa_percentage = (out_of_doa_count / len(nd)) * 100
             doa = {"outOfDoaPercentage": out_of_doa_percentage, "inDoa": in_doa}
             doaAll.append(doa)
-            self._doa.append(new_data)
-            self._in_doa.append(in_doa)
         return doaAll
 
     def get_attributes(self):
@@ -218,14 +199,12 @@ class MeanVar(DOA):
 
 
 class BoundingBox(DOA):
-    _doa = []
-    _in_doa = []
-
     @property
     def __name__(self):
         return "BOUNDING_BOX"
 
     def __init__(self) -> None:
+        super().__init__()
         self._data: np.array = None
         self.bounding_box = None
         self.doa_attributes = None
@@ -242,8 +221,6 @@ class BoundingBox(DOA):
     def predict(self, new_data: np.array) -> Iterable[Any]:
         new_data = self._validate_input(new_data)
         doaAll = []
-        self._doa = []
-        self._in_doa = []
         in_doa = True
         for nd in new_data:
             for index, row in enumerate(nd):
@@ -258,8 +235,6 @@ class BoundingBox(DOA):
             out_of_doa_percentage = (out_of_doa_count / len(nd)) * 100
             doa = {"outOfDoaPercentage": out_of_doa_percentage, "inDoa": in_doa}
             doaAll.append(doa)
-            self._doa.append(new_data)
-            self._in_doa.append(in_doa)
         return doaAll
 
     def get_attributes(self):
