@@ -1105,11 +1105,10 @@ class TestModels(unittest.TestCase):
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
 
         prediction_dataset = JaqpotpyDataset(
-            df=self.prediction_df,
+            df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
             task="regression",
             featurizer=featurizer,
         )
@@ -1118,16 +1117,22 @@ class TestModels(unittest.TestCase):
         )
 
         assert np.allclose(
-            jaqpot_model.randomization_test_results["iteration_0"]["Train"]["r2"], 0.80179, atol=1e-02
-        ), f"Expected iteration 1 train R^2 to be 0.80179, got { jaqpot_model.randomization_test_results['iteration_0']['Train']['r2']}"
+            jaqpot_model.randomization_test_results["iteration_0"]["Train"]["r2"],
+            0.80179,
+            atol=1e-02,
+        ), f"Expected iteration 0 train R^2 to be 0.80179, got { jaqpot_model.randomization_test_results['iteration_0']['Train']['r2']}"
 
         assert np.allclose(
-            jaqpot_model.randomization_test_results["iteration_0"]["Test"]["r2"], -0.3653, atol=1e-02
-        ), f"Expected iteration 1 test R^2 to be -0.3653, got {jaqpot_model.randomization_test_results['iteration_0']['Test']['r2']}"
+            jaqpot_model.randomization_test_results["iteration_0"]["Test"]["r2"],
+            -0.3653,
+            atol=1e-02,
+        ), f"Expected iteration 0 test R^2 to be -0.3653, got {jaqpot_model.randomization_test_results['iteration_0']['Test']['r2']}"
 
         assert np.allclose(
-            jaqpot_model.randomization_test_results["iteration_1"]["Test"]["r2"], 0.83610, atol=1e-02
-        ), f"Expected iteration 2 train R^2 to be  0.83610, got { jaqpot_model.randomization_test_results['iteration_1']['Test']['r2']}"
+            jaqpot_model.randomization_test_results["iteration_1"]["Train"]["r2"],
+            0.836109,
+            atol=1e-02,
+        ), f"Expected iteration 1 train R^2 to be  0.836109, got { jaqpot_model.randomization_test_results['iteration_1']['Train']['r2']}"
 
 
 if __name__ == "__main__":
