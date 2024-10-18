@@ -109,9 +109,11 @@ class SklearnModel(Model):
         doa: Optional[Union[DOA, list]] = None,
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
         preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
+        random_seed: Optional[int] = 1311,
     ):
         self.dataset = dataset
         self.featurizer = dataset.featurizer
+        self.random_seed = random_seed
         self.model = model
         self.pipeline = None
         self.trained_model = None
@@ -134,10 +136,11 @@ class SklearnModel(Model):
         self.independentFeatures = None
         self.dependentFeatures = None
         self.extra_config = ModelExtraConfig()
-        self.test_metrics = {}
-        self.train_metrics = {}
-        self.average_cross_val_metrics = {}
-        self.cross_val_metrics = {}
+        self.test_scores = {}
+        self.train_scores = {}
+        self.average_cross_val_scores = {}
+        self.cross_val_scores = {}
+        self.randomization_test_results = {}
 
     def _dtypes_to_jaqpotypes(self):
         for feature in self.independentFeatures + self.dependentFeatures:
@@ -315,18 +318,16 @@ class SklearnModel(Model):
 
         y_pred = self.predict(self.dataset)
         if y_pred.ndim > 1 and y_pred.shape[1] > 1:
-            n_output = 1
             for output in range(y_pred.shape[1]):
-                self.train_metrics["output_" + str(n_output)] = self._get_metrics(
+                self.train_scores["output_" + str(output)] = self._get_metrics(
                     y[:, output], y_pred[:, output]
                 )
-                print(f"Goodness-of-fit metrics of output {n_output} on training set:")
-                print(self.train_metrics["output_" + str(n_output)])
-                n_output += 1
+                print(f"Goodness-of-fit metrics of output {output} on training set:")
+                print(self.train_scores["output_" + str(output)])
         else:
-            self.train_metrics = self._get_metrics(y, y_pred)
+            self.train_scores = self._get_metrics(y, y_pred)
             print("Goodness-of-fit metrics on training set:")
-            print(self.train_metrics)
+            print(self.train_scores)
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -491,30 +492,27 @@ class SklearnModel(Model):
                     )
 
     def cross_validate(self, dataset: JaqpotpyDataset, n_splits=5):
-        n_output = 1
         if dataset.y.ndim > 1 and dataset.y.shape[1] > 1:
             for output in range(dataset.y.shape[1]):
                 y_target = dataset.y.iloc[:, output]
-                self.average_cross_val_metrics["output_" + str(n_output)] = (
+                self.average_cross_val_scores["output_" + str(output)] = (
                     self._single_cross_validation(
                         dataset=dataset,
                         y=y_target,
                         n_splits=n_splits,
-                        n_output=n_output,
+                        n_output=output,
                     )
                 )
-                n_output += 1
-
         else:
-            self.average_cross_val_metrics = self._single_cross_validation(
-                dataset=dataset, y=dataset.y, n_splits=n_splits, n_output=n_output
+            self.average_cross_val_scores = self._single_cross_validation(
+                dataset=dataset, y=dataset.y, n_splits=n_splits, n_output=0
             )
-        return self.average_cross_val_metrics
+        return self.average_cross_val_scores
 
     def _single_cross_validation(
-        self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=1
+        self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=0
     ):
-        kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+        kf = KFold(n_splits=n_splits, shuffle=True, random_state=self.random_seed)
 
         if not self.trained_model:
             raise ValueError(
@@ -536,7 +534,8 @@ class SklearnModel(Model):
             metrics_result = self._get_metrics(
                 y_test.to_numpy().ravel(), y_pred.ravel()
             )
-            self.cross_val_metrics["output_" + str(n_output) + "_fold_" + str(fold)] = (
+            self.cross_val_scores.setdefault("output_" + str(n_output), {})
+            self.cross_val_scores["output_" + str(n_output)]["_fold_" + str(fold)] = (
                 metrics_result
             )
             fold += 1
@@ -555,18 +554,91 @@ class SklearnModel(Model):
         if not dataset.y_cols:
             raise ValueError("y_cols must be provided to obtain y_true")
         y_true = dataset.__get_Y__().to_numpy()
-        y_pred = self.predict(dataset)
-        if y_pred.ndim > 1 and y_pred.shape[1] > 1:
-            n_output = 1
-            for output in range(y_pred.shape[1]):
-                self.test_metrics["output_" + str(n_output)] = self._get_metrics(
-                    y_true[:, output], y_pred[:, output]
+        if y_true.ndim > 1 and y_true.shape[1] > 1:
+            for output in range(y_true.shape[1]):
+                self.test_scores["output_" + str(output)] = self._evaluate_with_model(
+                    y_true, dataset.X, self.trained_model, output=output
                 )
-                n_output += 1
         else:
-            self.test_metrics = self._get_metrics(y_true, y_pred)
+            if y_true.ndim > 1:
+                self.test_scores = self._evaluate_with_model(
+                    y_true, dataset.X, self.trained_model, output=0
+                )
+            else:
+                self.test_scores = self._evaluate_with_model(
+                    y_true.reshape(-1, 1), dataset.X, self.trained_model, output=0
+                )
 
-        return self.test_metrics
+        return self.test_scores
+
+    def _evaluate_with_model(self, y_true, X_mat, model, output=1):
+        y_pred = self._predict_with_X(X_mat, model)
+        if y_pred.ndim == 1:
+            y_pred = y_pred.reshape(-1, 1)
+        return self._get_metrics(y_true[:, output], y_pred[:, output])
+
+    def randomization_test(
+        self, train_dataset: JaqpotpyDataset, test_dataset: JaqpotpyDataset, n_iters=10
+    ):
+        for iteration in range(n_iters):
+            np.random.seed(iteration)
+            if train_dataset.y.ndim > 1 and train_dataset.y.shape[1] > 1:
+                for output in range(train_dataset.y.shape[1]):
+                    y_train_shuffled = np.random.permutation(train_dataset.y)
+                    if self.preprocess_y[0] is not None:
+                        for preprocessor in self.preprocess_y:
+                            y_train_shuffled = preprocessor.fit_transform(
+                                y_train_shuffled
+                            )
+                    trained_model = self.pipeline.fit(
+                        train_dataset.X, y_train_shuffled.ravel()
+                    )
+                    y_pred_train = self._predict_with_X(
+                        train_dataset.X, trained_model
+                    ).reshape(-1, 1)
+                    train_metrics_result = self._get_metrics(
+                        y_train_shuffled.ravel(), y_pred_train.ravel()
+                    )
+                    test_metrics_result = self._evaluate_with_model(
+                        test_dataset.y.to_numpy(),
+                        test_dataset.X,
+                        trained_model,
+                        output=output,
+                    )
+                    self.randomization_test_results.setdefault(
+                        "iteration_" + str(iteration), {}
+                    )
+
+                    self.randomization_test_results["iteration_" + str(iteration)][
+                        "output_" + str(output)
+                    ] = {"Train": train_metrics_result, "Test": test_metrics_result}
+
+            else:
+                y_train_shuffled = np.random.permutation(train_dataset.y)
+                if self.preprocess_y[0] is not None:
+                    for preprocessor in self.preprocess_y:
+                        y_train_shuffled = preprocessor.fit_transform(y_train_shuffled)
+                trained_model = self.pipeline.fit(
+                    train_dataset.X, y_train_shuffled.ravel()
+                )
+                y_pred_train = self._predict_with_X(
+                    train_dataset.X, trained_model
+                ).reshape(-1, 1)
+                train_metrics_result = self._get_metrics(
+                    y_train_shuffled.ravel(), y_pred_train.ravel()
+                )
+                test_metrics_result = self._evaluate_with_model(
+                    test_dataset.y.to_numpy(),
+                    test_dataset.X,
+                    trained_model,
+                    output=0,
+                )
+                self.randomization_test_results["iteration_" + str(iteration)] = {
+                    "Train": train_metrics_result,
+                    "Test": test_metrics_result,
+                }
+
+        return self.randomization_test_results
 
     def _get_metrics(self, y_true, y_pred):
         if self.task.upper() == "REGRESSION":
@@ -586,22 +658,22 @@ class SklearnModel(Model):
             conf_mat = metrics.multilabel_confusion_matrix(y_true=y_true, y_pred=y_pred)
 
         eval_metrics = {
-            "Accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
-            "BalancedAccuracy": metrics.balanced_accuracy_score(
+            "accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
+            "balancedAccuracy": metrics.balanced_accuracy_score(
                 y_true=y_true, y_pred=y_pred
             ),
-            "Precision": metrics.recall_score(
+            "precision": metrics.recall_score(
                 y_true=y_true, y_pred=y_pred, average=None
             ),
-            "Recall": metrics.precision_score(
+            "recall": metrics.precision_score(
                 y_true=y_true, y_pred=y_pred, average=None
             ),
-            "F1score": metrics.f1_score(y_true=y_true, y_pred=y_pred, average=None),
-            "Jaccard": metrics.jaccard_score(
+            "f1Score": metrics.f1_score(y_true=y_true, y_pred=y_pred, average=None),
+            "jaccard": metrics.jaccard_score(
                 y_true=y_true, y_pred=y_pred, average=None
             ),
-            "MatthewsCorrCoef": metrics.matthews_corrcoef(y_true=y_true, y_pred=y_pred),
-            "ConfusionMatrix": conf_mat,
+            "matthewsCorrCoef": metrics.matthews_corrcoef(y_true=y_true, y_pred=y_pred),
+            "confusionMatrix": conf_mat,
         }
         return eval_metrics
 
@@ -643,14 +715,14 @@ class SklearnModel(Model):
         R0_2_hat = 1 - R0_2_hat_num / R0_2_hat_den
 
         eval_metrics = {
-            "R^2": r2,
-            "MAE": mae,
-            "RMSE": rmse,
-            "(R^2 - R0^2_ / R^2 ": (cor_coeff_2 - R0_2) / cor_coeff_2,
-            "(R^2-R0_hat^2)/R2": (cor_coeff_2 - R0_2_hat) / cor_coeff_2,
-            "|R02^-R0_hat^2|": abs(R0_2 - R0_2_hat),
+            "r2": r2,
+            "mae": mae,
+            "rmse": rmse,
+            "rSquaredDiffRZero": (cor_coeff_2 - R0_2) / cor_coeff_2,
+            "rSquaredDiffRZeroHat": (cor_coeff_2 - R0_2_hat) / cor_coeff_2,
+            "absDiffRZeroHat": abs(R0_2 - R0_2_hat),
             "k": k,
-            "k_hat": k_hat,
+            "khat": k_hat,
         }
 
         return eval_metrics
