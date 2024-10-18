@@ -23,11 +23,12 @@ dataset = JaqpotpyDataset(
     featurizer=featurizer,
 )
 
+pre = StandardScaler()
 
 model = RandomForestRegressor(random_state=42)
-TestModel = SklearnModel(dataset=dataset, doa=None, model=model)
+testModel = SklearnModel(dataset=dataset, doa=None, model=model, preprocess_x=pre)
 
-TestModel.fit()
+testModel.fit()
 
 path = "./jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
 df2 = pd.read_csv(path)
@@ -43,9 +44,9 @@ prediction_dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
-x = TestModel.evaluate(prediction_dataset)
-y = TestModel.cross_validate(dataset, n_splits=2)
-
+x = testModel.evaluate(prediction_dataset)
+y = testModel.cross_validate(dataset, n_splits=2)
+z = testModel.randomization_test(train_dataset=dataset, test_dataset=prediction_dataset)
 
 # Classification example
 path_multi_class = "./jaqpotpy/test_data/test_data_smiles_multi_classification.csv"
