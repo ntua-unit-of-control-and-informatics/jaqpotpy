@@ -643,7 +643,9 @@ class SklearnModel(Model):
     def _get_metrics(self, y_true, y_pred):
         if self.task.upper() == "REGRESSION":
             return SklearnModel._get_regression_metrics(y_true, y_pred)
-        elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
+        if self.preprocess_y and isinstance(self.preprocess_y[0], LabelEncoder):
+            y_pred = self.preprocess_y[0].transform(y_pred)
+        if self.task.upper() == "MULTICLASS_CLASSIFICATION":
             return SklearnModel._get_classification_metrics(
                 y_true, y_pred, binary=False
             )
