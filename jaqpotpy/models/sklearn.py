@@ -282,13 +282,19 @@ class SklearnModel(Model):
             y = y.ravel()
 
         if self.doa:
+            if self.preprocess_x:
+                x_doa = X
+                for func in self.preprocess_x:
+                    x_doa = func.fit_transform(x_doa)
+            else:
+                x_doa = X
             for i, doa_method in enumerate(self.doa):
-                doa_method.fit(X=X)
-                DOA_instance = Doa(
+                doa_method.fit(X=x_doa)
+                doa_instance = Doa(
                     method=doa_method.__name__,
                     data=DoaData(doa_method.doa_attributes),
                 )
-                self.doa[i] = DOA_instance
+                self.doa[i] = doa_instance
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
@@ -312,7 +318,7 @@ class SklearnModel(Model):
                 for preprocessor in self.preprocess_y:
                     y = preprocessor.fit_transform(y)
                     self._add_class_to_extraconfig(preprocessor, "preprocessor")
-                if len(self.dataset.y_cols) == 1:
+                if len(self.dataset.y_cols) == 1 and y.ndim > 1:
                     y = y.ravel()
         self.trained_model = self.pipeline.fit(X, y)
 
@@ -535,7 +541,7 @@ class SklearnModel(Model):
                 y_test.to_numpy().ravel(), y_pred.ravel()
             )
             self.cross_val_scores.setdefault("output_" + str(n_output), {})
-            self.cross_val_scores["output_" + str(n_output)]["_fold_" + str(fold)] = (
+            self.cross_val_scores["output_" + str(n_output)]["fold_" + str(fold)] = (
                 metrics_result
             )
             fold += 1
@@ -572,6 +578,11 @@ class SklearnModel(Model):
         return self.test_scores
 
     def _evaluate_with_model(self, y_true, X_mat, model, output=1):
+        if (
+            self.task.upper() in ["BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"]
+            and self.preprocess_y
+        ):
+            y_true = self.preprocess_y[0].transform(y_true)
         y_pred = self._predict_with_X(X_mat, model)
         if y_pred.ndim == 1:
             y_pred = y_pred.reshape(-1, 1)
