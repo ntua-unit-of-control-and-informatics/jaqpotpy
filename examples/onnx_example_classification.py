@@ -5,7 +5,6 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MordredDescriptors
 from jaqpotpy.datasets import JaqpotpyDataset
-from jaqpotpy.doa import BoundingBox
 from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa import Leverage, BoundingBox, MeanVar
 from jaqpotpy import Jaqpot
