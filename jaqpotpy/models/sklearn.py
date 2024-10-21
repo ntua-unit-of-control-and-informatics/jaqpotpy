@@ -580,8 +580,7 @@ class SklearnModel(Model):
     def _evaluate_with_model(self, y_true, X_mat, model, output=1):
         if (
             self.task.upper() in ["BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"]
-            and self.preprocess_y
-        ):
+        ) and isinstance(self.preprocess_y[0], LabelEncoder):
             y_true = self.preprocess_y[0].transform(y_true)
         y_pred = self._predict_with_X(X_mat, model)
         if y_pred.ndim == 1:
