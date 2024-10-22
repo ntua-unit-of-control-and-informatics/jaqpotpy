@@ -318,7 +318,7 @@ class SklearnModel(Model):
                 for preprocessor in self.preprocess_y:
                     y = preprocessor.fit_transform(y)
                     self._add_class_to_extraconfig(preprocessor, "preprocessor")
-                if len(self.dataset.y_cols) == 1 and y.ndim > 1:
+                if len(self.dataset.y_cols) == 1 and y.ndim == 2:
                     y = y.ravel()
         self.trained_model = self.pipeline.fit(X, y)
 
