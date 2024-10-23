@@ -49,7 +49,7 @@ class AbstractFeaturizer(object):
             except:
                 if config.verbose is True:
                     logger.warning(
-                        "Failed to featurize datapoint %d. Appending array with Nana"
+                        "Failed to featurize datapoint %d. Appending array with nan"
                     )
                 features.append(np.array([]))
 
