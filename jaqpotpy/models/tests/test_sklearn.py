@@ -5,9 +5,15 @@ import pandas as pd
 import os
 import numpy as np
 
+from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import (
+    OneHotEncoder,
+    StandardScaler,
+    MinMaxScaler,
+    LabelEncoder,
+)
 from jaqpotpy.descriptors.molecular import TopologicalFingerprint
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
@@ -61,6 +67,9 @@ class TestModels(unittest.TestCase):
         clasification_csv_file_path = os.path.join(
             test_data_dir, "test_data_smiles_classification.csv"
         )
+        classification_categorical_string_labels_csv_file_path = os.path.join(
+            test_data_dir, "test_data_smiles_CATEGORICAL_classification_LABELS_new.csv"
+        )
         multi_classification_csv_file_path = os.path.join(
             test_data_dir, "test_data_smiles_multi_classification.csv"
         )
@@ -71,6 +80,9 @@ class TestModels(unittest.TestCase):
         prediction_csv_file_path = os.path.join(
             test_data_dir, "test_data_smiles_prediction_dataset.csv"
         )
+        prediction_categorical_csv_file_path = os.path.join(
+            test_data_dir, "test_data_smiles_categorical_prediction_dataset.csv"
+        )
         multiclass_csv_file_path = os.path.join(
             test_data_dir, "test_data_smiles_prediction_dataset_multiclass.csv"
         )
@@ -79,12 +91,18 @@ class TestModels(unittest.TestCase):
         )
 
         self.classification_df = pd.read_csv(clasification_csv_file_path)
+        self.classification_categorical_string_labels_df = pd.read_csv(
+            classification_categorical_string_labels_csv_file_path
+        )
         self.multi_classification_df = pd.read_csv(multi_classification_csv_file_path)
         self.regression_df = pd.read_csv(regression_csv_file_path)
         self.regression_multioutput_df = pd.read_csv(
             multioutput_regression_csv_file_path
         )
         self.prediction_df = pd.read_csv(prediction_csv_file_path)
+        self.prediction_categorical_df = pd.read_csv(
+            prediction_categorical_csv_file_path
+        )
         self.prediction_multiclass_df = pd.read_csv(multiclass_csv_file_path)
 
     def test_SklearnModel_classification_no_preprocessing(self):
@@ -1133,6 +1151,55 @@ class TestModels(unittest.TestCase):
             0.836109,
             atol=1e-02,
         ), f"Expected iteration 1 train R^2 to be  0.836109, got { jaqpot_model.randomization_test_results['iteration_1']['Train']['r2']}"
+
+    def test_binary_categorical_classification_string_labels(self):
+        """Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for binary classification with string labels."""
+        smiles_cols = ["SMILES"]
+        y_cols = ["ACTIVITY"]
+        x_cols = ["X1", "X2", "Cat_col"]
+        featurizer = TopologicalFingerprint()
+        dataset = JaqpotpyDataset(
+            df=self.classification_categorical_string_labels_df.iloc[0:100, :],
+            y_cols=y_cols,
+            smiles_cols=smiles_cols,
+            x_cols=x_cols,
+            task="BINARY_CLASSIFICATION",
+            featurizer=featurizer,
+        )
+        model = RandomForestClassifier(random_state=42)
+        preprocess_x = ColumnTransformer(
+            transformers=[
+                ("OneHotEncoder", OneHotEncoder(), ["Cat_col"]),
+            ],
+            remainder="passthrough",
+        )
+        jaqpot_model = SklearnModel(
+            dataset=dataset,
+            doa=None,
+            model=model,
+            preprocess_x=preprocess_x,
+            preprocess_y=LabelEncoder(),
+        )
+        jaqpot_model.fit()
+        validation_dataset = JaqpotpyDataset(
+            df=self.prediction_categorical_df,
+            smiles_cols=smiles_cols,
+            x_cols=x_cols,
+            y_cols=y_cols,
+            task="BINARY_CLASSIFICATION",
+            featurizer=featurizer,
+        )
+
+        # skl_predictions = jaqpot_model.predict(validation_dataset)
+        # onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
+        evaluation_metrics = jaqpot_model.evaluate(dataset=validation_dataset)
+
+        assert np.array_equal(
+            evaluation_metrics["accuracy"], 0.6
+        ), f'Expected evaluation_metrics["accuracy"] == 0.6, got evaluation_metrics["accuracy"] {evaluation_metrics["accuracy"]}'
+        assert np.array_equal(
+            evaluation_metrics["confusionMatrix"], np.array([[2, 0], [2, 1]])
+        ), f'Expected evaluation_metrics["confusionMatrix"] == [[2, 0],[2, 1]], got evaluation_metrics["confusionMatrix"] {evaluation_metrics["confusionMatrix"]}'
 
 
 if __name__ == "__main__":
