@@ -49,6 +49,8 @@ class SklearnModel(Model):
         Preprocessors for the input features, by default None.
     preprocess_y : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
         Preprocessors for the target variable, by default None.
+    random_seed : Optional[int], optional
+        Random seed for reproducibility, by default 1311.
     pipeline : sklearn.pipeline.Pipeline
         The pipeline that includes preprocessing steps and the model.
     trained_model : Any
@@ -73,6 +75,16 @@ class SklearnModel(Model):
         List of dependent features.
     extra_config : ModelExtraConfig
         Extra configuration for the model.
+    test_scores : dict
+        Dictionary to store test scores.
+    train_scores : dict
+        Dictionary to store training scores.
+    average_cross_val_scores : dict
+        Dictionary to store average cross-validation scores.
+    cross_val_scores : dict
+        Dictionary to store cross-validation scores.
+    randomization_test_results : dict
+        Dictionary to store randomization test results.
 
     Methods
     -------
@@ -100,6 +112,18 @@ class SklearnModel(Model):
         Deploys the model on the Jaqpot platform.
     check_preprocessor(preprocessor_list, feat_type):
         Checks if the preprocessors are valid.
+    cross_validate(dataset, n_splits=5):
+        Performs cross-validation on the dataset.
+    evaluate(dataset):
+        Evaluates the model on a given dataset.
+    randomization_test(train_dataset, test_dataset, n_iters=10):
+        Performs a randomization test.
+    _get_metrics(y_true, y_pred):
+        Computes evaluation metrics.
+    _get_classification_metrics(y_true, y_pred, binary=True):
+        Computes classification metrics.
+    _get_regression_metrics(y_true, y_pred):
+        Computes regression metrics.
     """
 
     def __init__(
@@ -588,13 +612,9 @@ class SklearnModel(Model):
         return self.test_scores
 
     def _evaluate_with_model(self, y_true, X_mat, model, output=1):
-        if self._labels_are_strings(y_true):
-            y_true = self.preprocess_y[0].transform(y_true.ravel())
         if y_true.ndim == 1:
             y_true = y_true.reshape(-1, 1)
         y_pred = self._predict_with_X(X_mat, model)
-        if self._labels_are_strings(y_pred):
-            y_pred = self.preprocess_y[0].transform(y_pred.ravel())
         if y_pred.ndim == 1:
             y_pred = y_pred.reshape(-1, 1)
         return self._get_metrics(y_true[:, output], y_pred[:, output])
@@ -666,7 +686,9 @@ class SklearnModel(Model):
         if self.task.upper() == "REGRESSION":
             return SklearnModel._get_regression_metrics(y_true, y_pred)
         if self._labels_are_strings(y_pred):
-            y_pred = self.preprocess_y[0].transform(y_pred.ravel())
+            y_pred = self.preprocess_y[0].transform(y_pred)
+        if self._labels_are_strings(y_true):
+            y_true = self.preprocess_y[0].transform(y_true)
         if self.task.upper() == "MULTICLASS_CLASSIFICATION":
             return SklearnModel._get_classification_metrics(
                 y_true, y_pred, binary=False
