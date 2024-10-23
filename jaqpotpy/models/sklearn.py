@@ -347,12 +347,12 @@ class SklearnModel(Model):
             else:
                 self.extra_config.preprocessors = []
                 if len(self.dataset.y_cols) == 1 and self._labels_are_strings(y):
-                    y = y.ravel()
+                    y = y.ravel()  # this transformation is exclusively for LabelEncoder which is the only allowed preprocessor for y in classification tasks
                 for preprocessor in self.preprocess_y:
                     y = preprocessor.fit_transform(y)
                     self._add_class_to_extraconfig(preprocessor, "preprocessor")
-                if len(self.dataset.y_cols) == 1 and y.ndim == 2:
-                    y = y.ravel()
+        if len(self.dataset.y_cols) == 1 and y.ndim == 2:
+            y = y.ravel()
         self.trained_model = self.pipeline.fit(X, y)
 
         y_pred = self.predict(self.dataset)
