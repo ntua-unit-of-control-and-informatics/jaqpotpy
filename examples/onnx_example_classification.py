@@ -26,7 +26,7 @@ dataset = JaqpotpyDataset(
 )
 
 model = RandomForestClassifier(random_state=42)
-preprocess_x = column_transormer = ColumnTransformer(
+preprocess_x = ColumnTransformer(
     transformers=[
         ("OneHotEncoder", OneHotEncoder(), ["Cat_col"]),
     ],
@@ -42,28 +42,31 @@ molecularModel_t1 = SklearnModel(
 )
 
 molecularModel_t1.fit()
-# # # print(molecularModel_t1.transformers_y)
-# pred_path = "./jaqpotpy/test_data/test_data_smiles_prediction_dataset.csv"
-# df = pd.read_csv(pred_path)
+pred_path = "./jaqpotpy/test_data/test_data_smiles_categorical_prediction_dataset.csv"
+test_dataset = pd.read_csv(pred_path)
 
 prediction_dataset = JaqpotpyDataset(
-    df=df.iloc[0:5, :],
-    y_cols=None,
+    df=test_dataset,
     smiles_cols=smiles_cols,
     x_cols=x_cols,
+    y_cols=y_cols,
     task="BINARY_CLASSIFICATION",
     featurizer=featurizer,
 )
+# molecularModel_t1.evaluate(dataset)
+# print(molecularModel_t1.train_scores)
+# print(molecularModel_t1.test_scores)
+print("TEST", molecularModel_t1.evaluate(dataset=prediction_dataset))
+evaluation_metrics = molecularModel_t1.evaluate(dataset=prediction_dataset)
 
-
-skl_predictions = molecularModel_t1.predict(prediction_dataset)
-skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
-onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
-onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
-print("SKLearn Predictions:", skl_predictions)
-print("SKLearn Probabilities:", skl_probabilities)
-print("ONNX Predictions:", onnx_predictions)
-print("ONNX Probabilities:", onnx_probs)
+# skl_predictions = molecularModel_t1.predict(prediction_dataset)
+# skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)
+# onnx_predictions = molecularModel_t1.predict_onnx(prediction_dataset)
+# onnx_probs = molecularModel_t1.predict_proba_onnx(prediction_dataset)
+# print("SKLearn Predictions:", skl_predictions)
+# print("SKLearn Probabilities:", skl_probabilities)
+# print("ONNX Predictions:", onnx_predictions)
+# print("ONNX Probabilities:", onnx_probs)
 
 # Upload locally
 # jaqpot = Jaqpot(
@@ -75,11 +78,11 @@ print("ONNX Probabilities:", onnx_probs)
 #     keycloak_client_id="jaqpot-local-test",
 # )
 
-jaqpot = Jaqpot()
-jaqpot.login()
-molecularModel_t1.deploy_on_jaqpot(
-    jaqpot=jaqpot,
-    name="Demo: Regression topological and minmax scaler on y",
-    description="Test",
-    visibility="PRIVATE",
-)
+# jaqpot = Jaqpot()
+# jaqpot.login()
+# molecularModel_t1.deploy_on_jaqpot(
+#     jaqpot=jaqpot,
+#     name="Demo: Regression topological and minmax scaler on y",
+#     description="Test",
+#     visibility="PRIVATE",
+# )
