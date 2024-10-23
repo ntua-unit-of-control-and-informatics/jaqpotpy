@@ -261,6 +261,16 @@ class SklearnModel(Model):
             options=onnx_options,
         )
 
+    def _labels_are_strings(self, y):
+        return (
+            (
+                self.task.upper()
+                in ["BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"]
+            )
+            and y.dtype in ["object", "string"]
+            and isinstance(self.preprocess_y[0], LabelEncoder)
+        )
+
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
         if isinstance(self.featurizer, (MolecularFeaturizer, list)):
@@ -578,11 +588,13 @@ class SklearnModel(Model):
         return self.test_scores
 
     def _evaluate_with_model(self, y_true, X_mat, model, output=1):
-        if (
-            self.task.upper() in ["BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"]
-        ) and isinstance(self.preprocess_y[0], LabelEncoder):
-            y_true = self.preprocess_y[0].transform(y_true)
+        if self._labels_are_strings(y_true):
+            y_true = self.preprocess_y[0].transform(y_true.ravel())
+        if y_true.ndim == 1:
+            y_true = y_true.reshape(-1, 1)
         y_pred = self._predict_with_X(X_mat, model)
+        if self._labels_are_strings(y_pred):
+            y_pred = self.preprocess_y[0].transform(y_pred.ravel())
         if y_pred.ndim == 1:
             y_pred = y_pred.reshape(-1, 1)
         return self._get_metrics(y_true[:, output], y_pred[:, output])
@@ -653,8 +665,8 @@ class SklearnModel(Model):
     def _get_metrics(self, y_true, y_pred):
         if self.task.upper() == "REGRESSION":
             return SklearnModel._get_regression_metrics(y_true, y_pred)
-        if self.preprocess_y and isinstance(self.preprocess_y[0], LabelEncoder):
-            y_pred = self.preprocess_y[0].transform(y_pred)
+        if self._labels_are_strings(y_pred):
+            y_pred = self.preprocess_y[0].transform(y_pred.ravel())
         if self.task.upper() == "MULTICLASS_CLASSIFICATION":
             return SklearnModel._get_classification_metrics(
                 y_true, y_pred, binary=False
