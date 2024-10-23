@@ -49,6 +49,8 @@ class SklearnModel(Model):
         Preprocessors for the input features, by default None.
     preprocess_y : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
         Preprocessors for the target variable, by default None.
+    random_seed : Optional[int], optional
+        Random seed for reproducibility, by default 1311.
     pipeline : sklearn.pipeline.Pipeline
         The pipeline that includes preprocessing steps and the model.
     trained_model : Any
@@ -73,6 +75,16 @@ class SklearnModel(Model):
         List of dependent features.
     extra_config : ModelExtraConfig
         Extra configuration for the model.
+    test_scores : dict
+        Dictionary to store test scores.
+    train_scores : dict
+        Dictionary to store training scores.
+    average_cross_val_scores : dict
+        Dictionary to store average cross-validation scores.
+    cross_val_scores : dict
+        Dictionary to store cross-validation scores.
+    randomization_test_results : dict
+        Dictionary to store randomization test results.
 
     Methods
     -------
@@ -100,6 +112,18 @@ class SklearnModel(Model):
         Deploys the model on the Jaqpot platform.
     check_preprocessor(preprocessor_list, feat_type):
         Checks if the preprocessors are valid.
+    cross_validate(dataset, n_splits=5):
+        Performs cross-validation on the dataset.
+    evaluate(dataset):
+        Evaluates the model on a given dataset.
+    randomization_test(train_dataset, test_dataset, n_iters=10):
+        Performs a randomization test.
+    _get_metrics(y_true, y_pred):
+        Computes evaluation metrics.
+    _get_classification_metrics(y_true, y_pred, binary=True):
+        Computes classification metrics.
+    _get_regression_metrics(y_true, y_pred):
+        Computes regression metrics.
     """
 
     def __init__(
@@ -261,6 +285,16 @@ class SklearnModel(Model):
             options=onnx_options,
         )
 
+    def _labels_are_strings(self, y):
+        return (
+            (
+                self.task.upper()
+                in ["BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"]
+            )
+            and y.dtype in ["object", "string"]
+            and isinstance(self.preprocess_y[0], LabelEncoder)
+        )
+
     def fit(self, onnx_options: Optional[Dict] = None):
         self.libraries = get_installed_libraries()
         if isinstance(self.featurizer, (MolecularFeaturizer, list)):
@@ -278,17 +312,21 @@ class SklearnModel(Model):
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
         y = y.to_numpy()
-        if len(self.dataset.y_cols) == 1:
-            y = y.ravel()
 
         if self.doa:
+            if self.preprocess_x:
+                x_doa = X
+                for func in self.preprocess_x:
+                    x_doa = func.fit_transform(x_doa)
+            else:
+                x_doa = X
             for i, doa_method in enumerate(self.doa):
-                doa_method.fit(X=X)
-                DOA_instance = Doa(
+                doa_method.fit(X=x_doa)
+                doa_instance = Doa(
                     method=doa_method.__name__,
                     data=DoaData(doa_method.doa_attributes),
                 )
-                self.doa[i] = DOA_instance
+                self.doa[i] = doa_instance
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
@@ -308,12 +346,13 @@ class SklearnModel(Model):
                 )
             else:
                 self.extra_config.preprocessors = []
-                y = self.dataset.__get_Y__()
+                if len(self.dataset.y_cols) == 1 and self._labels_are_strings(y):
+                    y = y.ravel()  # this transformation is exclusively for LabelEncoder which is the only allowed preprocessor for y in classification tasks
                 for preprocessor in self.preprocess_y:
                     y = preprocessor.fit_transform(y)
                     self._add_class_to_extraconfig(preprocessor, "preprocessor")
-                if len(self.dataset.y_cols) == 1:
-                    y = y.ravel()
+        if len(self.dataset.y_cols) == 1 and y.ndim == 2:
+            y = y.ravel()
         self.trained_model = self.pipeline.fit(X, y)
 
         y_pred = self.predict(self.dataset)
@@ -371,8 +410,10 @@ class SklearnModel(Model):
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
+                    if not isinstance(func, LabelEncoder):
+                        sklearn_prediction = sklearn_prediction.reshape(-1, 1)
                     sklearn_prediction = func.inverse_transform(
-                        sklearn_prediction.reshape(-1, 1)
+                        sklearn_prediction
                     ).flatten()
                 else:
                     sklearn_prediction = func.inverse_transform(sklearn_prediction)
@@ -528,14 +569,18 @@ class SklearnModel(Model):
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
             if self.preprocess_y[0] is not None:
                 for preprocessor in self.preprocess_y:
+                    if isinstance(preprocessor, LabelEncoder):
+                        y_train = y_train.to_numpy().flatten()
                     y_train = preprocessor.fit_transform(y_train)
-            trained_model = self.pipeline.fit(X_train, y_train.to_numpy().ravel())
+            else:
+                y_train = y_train.to_numpy()
+            trained_model = self.pipeline.fit(X_train, y_train.ravel())
             y_pred = self._predict_with_X(X_test, trained_model).reshape(-1, 1)
             metrics_result = self._get_metrics(
                 y_test.to_numpy().ravel(), y_pred.ravel()
             )
             self.cross_val_scores.setdefault("output_" + str(n_output), {})
-            self.cross_val_scores["output_" + str(n_output)]["_fold_" + str(fold)] = (
+            self.cross_val_scores["output_" + str(n_output)]["fold_" + str(fold)] = (
                 metrics_result
             )
             fold += 1
@@ -572,6 +617,8 @@ class SklearnModel(Model):
         return self.test_scores
 
     def _evaluate_with_model(self, y_true, X_mat, model, output=1):
+        if y_true.ndim == 1:
+            y_true = y_true.reshape(-1, 1)
         y_pred = self._predict_with_X(X_mat, model)
         if y_pred.ndim == 1:
             y_pred = y_pred.reshape(-1, 1)
@@ -643,7 +690,11 @@ class SklearnModel(Model):
     def _get_metrics(self, y_true, y_pred):
         if self.task.upper() == "REGRESSION":
             return SklearnModel._get_regression_metrics(y_true, y_pred)
-        elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
+        if self._labels_are_strings(y_pred):
+            y_pred = self.preprocess_y[0].transform(y_pred)
+        if self._labels_are_strings(y_true):
+            y_true = self.preprocess_y[0].transform(y_true)
+        if self.task.upper() == "MULTICLASS_CLASSIFICATION":
             return SklearnModel._get_classification_metrics(
                 y_true, y_pred, binary=False
             )
