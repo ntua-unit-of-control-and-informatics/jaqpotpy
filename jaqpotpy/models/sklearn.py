@@ -312,8 +312,6 @@ class SklearnModel(Model):
         X = self.dataset.__get_X__()
         y = self.dataset.__get_Y__()
         y = y.to_numpy()
-        if len(self.dataset.y_cols) == 1:
-            y = y.ravel()
 
         if self.doa:
             if self.preprocess_x:
@@ -348,7 +346,8 @@ class SklearnModel(Model):
                 )
             else:
                 self.extra_config.preprocessors = []
-                y = self.dataset.__get_Y__()
+                if len(self.dataset.y_cols) == 1 and self._labels_are_strings(y):
+                    y = y.ravel()
                 for preprocessor in self.preprocess_y:
                     y = preprocessor.fit_transform(y)
                     self._add_class_to_extraconfig(preprocessor, "preprocessor")
@@ -411,8 +410,10 @@ class SklearnModel(Model):
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
+                    if not isinstance(func, LabelEncoder):
+                        sklearn_prediction = sklearn_prediction.reshape(-1, 1)
                     sklearn_prediction = func.inverse_transform(
-                        sklearn_prediction.reshape(-1, 1)
+                        sklearn_prediction
                     ).flatten()
                 else:
                     sklearn_prediction = func.inverse_transform(sklearn_prediction)
@@ -568,8 +569,12 @@ class SklearnModel(Model):
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
             if self.preprocess_y[0] is not None:
                 for preprocessor in self.preprocess_y:
+                    if isinstance(preprocessor, LabelEncoder):
+                        y_train = y_train.to_numpy().flatten()
                     y_train = preprocessor.fit_transform(y_train)
-            trained_model = self.pipeline.fit(X_train, y_train.to_numpy().ravel())
+            else:
+                y_train = y_train.to_numpy()
+            trained_model = self.pipeline.fit(X_train, y_train.ravel())
             y_pred = self._predict_with_X(X_test, trained_model).reshape(-1, 1)
             metrics_result = self._get_metrics(
                 y_test.to_numpy().ravel(), y_pred.ravel()
