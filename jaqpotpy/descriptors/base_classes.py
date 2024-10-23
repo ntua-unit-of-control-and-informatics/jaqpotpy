@@ -49,7 +49,7 @@ class AbstractFeaturizer(object):
             except:
                 if config.verbose is True:
                     logger.warning(
-                        "Failed to featurize datapoint %d. Appending empty array"
+                        "Failed to featurize datapoint %d. Appending array with nan"
                     )
                 features.append(np.array([]))
 
@@ -186,6 +186,7 @@ class MolecularFeaturizer(AbstractFeaturizer):
             from rdkit.Chem import rdmolfiles
             from rdkit.Chem import rdmolops
             from rdkit.Chem.rdchem import Mol
+            from math import isnan
         except ModuleNotFoundError:
             raise ImportError("This class requires RDKit to be installed.")
 
@@ -221,12 +222,17 @@ class MolecularFeaturizer(AbstractFeaturizer):
                     mol = Chem.MolToSmiles(mol)
                 if config.verbose is True:
                     logger.warning(
-                        "Failed to featurize datapoint %d, %s. Appending empty array",
+                        "Failed to featurize datapoint %d, %s. Appending array with nan values",
                         i,
                         mol,
                     )
                     logger.warning("Exception message: {}".format(e))
                 features.append(np.array([]))
+
+        max_descriptor_len = max([len(f) for f in features])
+        for i, feature in enumerate(features):
+            if len(feature) == 0:
+                features[i] = np.full(max_descriptor_len, np.nan)
         return np.asarray(features)
 
     def featurize_dataframe(
