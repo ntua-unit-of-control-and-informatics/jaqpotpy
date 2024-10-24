@@ -34,7 +34,7 @@ setup(
         "mendeleev==0.16.2",
         "pymatgen==2024.5.1",
         "skl2onnx==1.17.0",
-        "onnx==1.16.1",
+        "onnx==1.17.0",
         "onnxruntime==1.19.2",
         "httpx==0.27.0",
         "attrs==23.2.0",
