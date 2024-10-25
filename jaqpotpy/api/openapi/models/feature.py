@@ -39,7 +39,7 @@ class Feature(BaseModel):
     feature_type: FeatureType = Field(alias="featureType")
     feature_dependency: Optional[StrictStr] = Field(default=None, alias="featureDependency")
     visible: Optional[StrictBool] = None
-    possible_values: Optional[List[FeaturePossibleValue]] = Field(default=None, alias="possibleValues")
+    possible_values: Optional[Annotated[List[FeaturePossibleValue], Field(max_length=1000)]] = Field(default=None, alias="possibleValues")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
     __properties: ClassVar[List[str]] = ["id", "key", "name", "units", "description", "featureType", "featureDependency", "visible", "possibleValues", "createdAt", "updatedAt"]

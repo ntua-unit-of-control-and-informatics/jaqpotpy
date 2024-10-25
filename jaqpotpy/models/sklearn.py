@@ -159,6 +159,7 @@ class SklearnModel(Model):
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
         self.dependentFeatures = None
+        self.selected_features = self.dataset.active_features
         self.extra_config = ModelExtraConfig()
         self.test_scores = {}
         self.train_scores = {}

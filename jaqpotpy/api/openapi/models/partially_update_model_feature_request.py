@@ -34,7 +34,7 @@ class PartiallyUpdateModelFeatureRequest(BaseModel):
     units: Optional[StrictStr] = Field(default=None, description="The units that this feature is using")
     description: Optional[Annotated[str, Field(strict=True, max_length=2000)]] = None
     feature_type: FeatureType = Field(alias="featureType")
-    possible_values: Optional[List[FeaturePossibleValue]] = Field(default=None, alias="possibleValues")
+    possible_values: Optional[Annotated[List[FeaturePossibleValue], Field(max_length=1000)]] = Field(default=None, alias="possibleValues")
     __properties: ClassVar[List[str]] = ["name", "units", "description", "featureType", "possibleValues"]
 
     model_config = ConfigDict(

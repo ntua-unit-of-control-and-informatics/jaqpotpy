@@ -16,6 +16,7 @@
 
 # import models into model package
 from jaqpotpy.api.openapi.models.api_key import ApiKey
+from jaqpotpy.api.openapi.models.binary_classification_scores import BinaryClassificationScores
 from jaqpotpy.api.openapi.models.bounding_box_doa import BoundingBoxDoa
 from jaqpotpy.api.openapi.models.city_block_doa import CityBlockDoa
 from jaqpotpy.api.openapi.models.create_api_key201_response import CreateApiKey201Response
@@ -41,10 +42,12 @@ from jaqpotpy.api.openapi.models.mahalanobis_doa import MahalanobisDoa
 from jaqpotpy.api.openapi.models.mean_var_doa import MeanVarDoa
 from jaqpotpy.api.openapi.models.model import Model
 from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
+from jaqpotpy.api.openapi.models.model_scores import ModelScores
 from jaqpotpy.api.openapi.models.model_summary import ModelSummary
 from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
+from jaqpotpy.api.openapi.models.multiclass_classification_scores import MulticlassClassificationScores
 from jaqpotpy.api.openapi.models.organization import Organization
 from jaqpotpy.api.openapi.models.organization_invitation import OrganizationInvitation
 from jaqpotpy.api.openapi.models.organization_summary import OrganizationSummary
@@ -54,6 +57,8 @@ from jaqpotpy.api.openapi.models.organization_visibility import OrganizationVisi
 from jaqpotpy.api.openapi.models.partial_update_organization_request import PartialUpdateOrganizationRequest
 from jaqpotpy.api.openapi.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
 from jaqpotpy.api.openapi.models.partially_update_model_request import PartiallyUpdateModelRequest
+from jaqpotpy.api.openapi.models.regression_scores import RegressionScores
+from jaqpotpy.api.openapi.models.scores import Scores
 from jaqpotpy.api.openapi.models.transformer import Transformer
 from jaqpotpy.api.openapi.models.update_api_key200_response import UpdateApiKey200Response
 from jaqpotpy.api.openapi.models.update_api_key_request import UpdateApiKeyRequest
