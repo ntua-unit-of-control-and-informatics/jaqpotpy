@@ -126,6 +126,10 @@ class Jaqpot:
                     feature_type=feature_i["featureType"],
                     possible_values=feature_i["possible_values"]
                     if "possible_values" in feature_i
+                    and (
+                        feature_i["key"] in model.selected_features
+                        or feature_i["key"] == "SMILES"
+                    )
                     else None,
                 )
                 for feature_i in model.independentFeatures
@@ -137,6 +141,7 @@ class Jaqpot:
             description=description,
             extra_config=model.extra_config,
         )
+        print(body_model.independent_features)
         response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
             model_url = response.headers.get("Location")
