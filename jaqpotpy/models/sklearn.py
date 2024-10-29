@@ -360,7 +360,9 @@ class SklearnModel(Model):
                     self._add_class_to_extraconfig(preprocessor, "preprocessor")
         if len(self.dataset.y_cols) == 1 and y.ndim == 2:
             y = y.ravel()
-        self.trained_model = self.pipeline.fit(X, y)
+        if self.preprocess_x:
+            X_transformed = self.preprocess_pipeline.transform(X)
+        self.trained_model = self.pipeline.fit(X_transformed, y)
 
         y_pred = self.predict(self.dataset)
         if y_pred.ndim > 1 and y_pred.shape[1] > 1:
@@ -433,10 +435,10 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
-
-        sklearn_probs = self.trained_model.predict_proba(
-            dataset.X[self.dataset.active_features]
-        )
+        X_mat = dataset.X[self.dataset.active_features]
+        if self.preprocess_x:
+            X_mat = self.preprocess_pipeline.transform(X_mat)
+        sklearn_probs = self.trained_model.predict_proba(X_mat)
 
         sklearn_probs_list = [
             max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))
@@ -481,20 +483,22 @@ class SklearnModel(Model):
                 "predict_onnx_proba is available only for classification tasks"
             )
         sess = InferenceSession(self.onnx_model.SerializeToString())
+        if self.preprocess_x:
+            X = self.preprocess_pipeline.transform(dataset.X)
+        else:
+            X = dataset.X.values
         if len(self.initial_types) == 1:
             input_dtype = (
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
                 else "string"
             )
-            input_data = {
-                sess.get_inputs()[0].name: dataset.X.values.astype(input_dtype)
-            }
+            input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
         else:
             input_data = {
-                sess.get_inputs()[i].name: dataset.X[
-                    self.initial_types[i][0]
-                ].values.reshape(-1, 1)
+                sess.get_inputs()[i].name: X[self.initial_types[i][0]].values.reshape(
+                    -1, 1
+                )
                 for i in range(len(self.initial_types))
             }
         onnx_probs = sess.run(None, input_data)
