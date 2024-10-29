@@ -141,7 +141,6 @@ class Jaqpot:
             description=description,
             extra_config=model.extra_config,
         )
-        print(body_model.independent_features)
         response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
             model_url = response.headers.get("Location")
