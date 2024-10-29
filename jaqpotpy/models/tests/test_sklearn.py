@@ -530,7 +530,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task="regression",
             featurizer=featurizer,
         )
 

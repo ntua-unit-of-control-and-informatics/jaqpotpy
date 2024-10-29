@@ -139,13 +139,17 @@ class SklearnModel(Model):
         self.featurizer = dataset.featurizer
         self.random_seed = random_seed
         self.model = model
+        self.preprocess_pipeline = None
         self.pipeline = None
         self.trained_model = None
         self.doa = doa if isinstance(doa, list) else [doa] if doa else None
         self.preprocess_x = (
-            preprocess_x if isinstance(preprocess_x, list) else [preprocess_x]
+            (preprocess_x if isinstance(preprocess_x, list) else [preprocess_x])
+            if preprocess_x
+            else None
         )
-        SklearnModel.check_preprocessor(self.preprocess_x, feat_type="X")
+        if self.preprocess_x is not None:
+            SklearnModel.check_preprocessor(self.preprocess_x, feat_type="X")
         self.preprocess_y = (
             preprocess_y if isinstance(preprocess_y, list) else [preprocess_y]
         )
@@ -313,11 +317,17 @@ class SklearnModel(Model):
         y = self.dataset.__get_Y__()
         y = y.to_numpy()
 
+        if self.preprocess_x is not None:
+            self.preprocess_pipeline = pipeline.Pipeline(steps=[])
+            for preprocessor in self.preprocess_x:
+                self.preprocess_pipeline.steps.append(
+                    (preprocessor.__class__.__name__, preprocessor)
+                )
+            self.preprocess_pipeline.fit(X)
+
         if self.doa:
             if self.preprocess_x:
-                x_doa = X
-                for func in self.preprocess_x:
-                    x_doa = func.fit_transform(x_doa)
+                x_doa = self.preprocess_pipeline.transform(X)
             else:
                 x_doa = X
             for i, doa_method in enumerate(self.doa):
@@ -330,9 +340,6 @@ class SklearnModel(Model):
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
-        if self.preprocess_x[0] is not None:
-            for preprocessor in self.preprocess_x:
-                self.pipeline.steps.append((str(preprocessor), preprocessor))
         self.pipeline.steps.append(("model", self.model))
 
         # Apply preprocessing of response vector y
@@ -402,6 +409,8 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         X_mat = dataset.X[self.dataset.active_features]
+        if self.preprocess_x:
+            X_mat = self.preprocess_pipeline.transform(X_mat)
         sklearn_prediction = self._predict_with_X(X_mat, self.trained_model)
         return sklearn_prediction
 
@@ -438,20 +447,20 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
+        if self.preprocess_x:
+            X = self.preprocess_pipeline.transform(dataset.X)
+        else:
+            X = dataset.X.values
         if len(self.initial_types) == 1:
             input_dtype = (
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
                 else "string"
             )
-            input_data = {
-                sess.get_inputs()[0].name: dataset.X.values.astype(input_dtype)
-            }
+            input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
         else:
             input_data = {
-                sess.get_inputs()[i].name: dataset.X[
-                    self.initial_types[i][0]
-                ].values.reshape(-1, 1)
+                sess.get_inputs()[i].name: X[self.initial_types[i][0]].reshape(-1, 1)
                 for i in range(len(self.initial_types))
             }
         onnx_prediction = sess.run(None, input_data)
