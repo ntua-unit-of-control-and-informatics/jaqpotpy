@@ -18,6 +18,13 @@ from skl2onnx.common.data_types import (
 )
 import jaqpotpy
 from jaqpotpy.api.openapi.models.doa_data import DoaData
+from jaqpotpy.api.openapi.models import (
+    ModelScores,
+    Scores,
+    RegressionScores,
+    MulticlassClassificationScores,
+    BinaryClassificationScores,
+)
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
@@ -165,6 +172,7 @@ class SklearnModel(Model):
         self.average_cross_val_scores = {}
         self.cross_val_scores = {}
         self.randomization_test_results = {}
+        self.scores = ModelScores()
 
     def _dtypes_to_jaqpotypes(self):
         for feature in self.independentFeatures + self.dependentFeatures:
@@ -367,6 +375,7 @@ class SklearnModel(Model):
             self.train_scores = self._get_metrics(y, y_pred)
             print("Goodness-of-fit metrics on training set:")
             print(self.train_scores)
+        self._create_jaqpot_scores(self.train_scores, score_type="train")
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -500,6 +509,58 @@ class SklearnModel(Model):
             model=self, name=name, description=description, visibility=visibility
         )
 
+    def _create_jaqpot_scores(self, scores, score_type="train"):
+        if self.task.upper() == "REGRESSION":
+            jaqpotScores = Scores(
+                regression=RegressionScores(
+                    r2=scores["r2"],
+                    mae=scores["mae"],
+                    rmse=scores["rmse"],
+                    rSquaredDiffRZero=scores["rSquaredDiffRZero"],
+                    rSquaredDiffRZeroHat=scores["rSquaredDiffRZeroHat"],
+                    absDiffRZeroHat=scores["absDiffRZeroHat"],
+                    k=scores["k"],
+                    kHat=scores["khat"],
+                )
+            )
+        elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
+            jaqpotScores = Scores(
+                multiclass_classification=MulticlassClassificationScores(
+                    accuracy=scores["accuracy"],
+                    balanced_accuracy=scores["balancedAccuracy"],
+                    precision=scores["precision"],
+                    recall=scores["recall"],
+                    jaccard=scores["jaccard"],
+                    f1_score=scores["f1Score"],
+                    matthews_corr_coef=scores["matthewsCorrCoef"],
+                    confusion_matrix=scores["confusionMatrix"],
+                )
+            )
+        elif self.task.upper() == "BINARY_CLASSIFICATION":
+            jaqpotScores = Scores(
+                binary_classification=BinaryClassificationScores(
+                    accuracy=scores["accuracy"],
+                    balanced_accuracy=scores["balancedAccuracy"],
+                    precision=scores["precision"],
+                    recall=scores["recall"],
+                    jaccard=scores["jaccard"],
+                    f1_score=scores["f1Score"],
+                    matthews_corr_coef=scores["matthewsCorrCoef"],
+                    confusion_matrix=scores["confusionMatrix"],
+                )
+            )
+
+        if score_type == "train":
+            self.scores.train = jaqpotScores
+        elif score_type == "test":
+            self.scores.train = jaqpotScores
+        elif score_type == "cross_validation":
+            self.scores.train = jaqpotScores
+        else:
+            TypeError(
+                "The sscore_type should be either 'train', 'test' or 'cross_validation'."
+            )
+
     @staticmethod
     def check_preprocessor(preprocessor_list: List, feat_type: str):
         # Get all valid preprocessing classes from sklearn.preprocessing
@@ -548,6 +609,10 @@ class SklearnModel(Model):
             self.average_cross_val_scores = self._single_cross_validation(
                 dataset=dataset, y=dataset.y, n_splits=n_splits, n_output=0
             )
+        self._create_jaqpot_scores(
+            self.average_cross_val_scores, score_type="cross_validation"
+        )
+
         return self.average_cross_val_scores
 
     def _single_cross_validation(
@@ -613,7 +678,7 @@ class SklearnModel(Model):
                 self.test_scores = self._evaluate_with_model(
                     y_true.reshape(-1, 1), dataset.X, self.trained_model, output=0
                 )
-
+        self._create_jaqpot_scores(self.test_scores, score_type="test")
         return self.test_scores
 
     def _evaluate_with_model(self, y_true, X_mat, model, output=1):
