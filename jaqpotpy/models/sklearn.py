@@ -527,7 +527,7 @@ class SklearnModel(Model):
         )
 
     def _create_jaqpot_scores(self, fit_scores, score_type="train", n_output=1):
-        for output in range(n_output - 1):
+        for output in range(n_output):
             y_name = self.dataset.y_cols[output]
             if (n_output - 1) == 0:
                 scores = fit_scores
