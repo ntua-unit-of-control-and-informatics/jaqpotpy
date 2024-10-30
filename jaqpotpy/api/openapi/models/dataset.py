@@ -21,6 +21,7 @@ import json
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional
+from typing_extensions import Annotated
 from jaqpotpy.api.openapi.models.dataset_type import DatasetType
 from typing import Optional, Set
 from typing_extensions import Self
@@ -32,7 +33,7 @@ class Dataset(BaseModel):
     id: Optional[StrictInt] = None
     type: DatasetType
     entry_type: StrictStr = Field(alias="entryType")
-    input: List[Any]
+    input: Annotated[List[Any], Field(max_length=100)]
     result: Optional[List[Any]] = None
     status: Optional[StrictStr] = None
     failure_reason: Optional[StrictStr] = Field(default=None, alias="failureReason")

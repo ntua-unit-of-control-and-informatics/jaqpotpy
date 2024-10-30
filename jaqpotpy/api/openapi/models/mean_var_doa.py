@@ -18,8 +18,9 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictFloat, StrictInt
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,7 +28,7 @@ class MeanVarDoa(BaseModel):
     """
     MeanVarDoa
     """ # noqa: E501
-    bounds: Optional[List[List[Union[StrictFloat, StrictInt]]]] = None
+    bounds: Optional[List[Annotated[List[Union[Annotated[float, Field(strict=True)], Annotated[int, Field(strict=True)]]], Field(max_length=1000)]]] = None
     __properties: ClassVar[List[str]] = ["bounds"]
 
     model_config = ConfigDict(

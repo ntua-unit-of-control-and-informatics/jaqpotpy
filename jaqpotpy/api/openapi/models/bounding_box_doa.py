@@ -20,6 +20,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,7 +28,7 @@ class BoundingBoxDoa(BaseModel):
     """
     BoundingBoxDoa
     """ # noqa: E501
-    bounding_box: Optional[List[List[Union[StrictFloat, StrictInt]]]] = Field(default=None, alias="boundingBox")
+    bounding_box: Optional[Annotated[List[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]], Field(max_length=1000)]] = Field(default=None, alias="boundingBox")
     __properties: ClassVar[List[str]] = ["boundingBox"]
 
     model_config = ConfigDict(
