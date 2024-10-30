@@ -17,7 +17,7 @@ from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa import Leverage
 from jaqpotpy import Jaqpot
 
-path = "jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS.csv"
+path = "../jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS.csv"
 df = pd.read_csv(path)
 
 # df = df.drop(columns=["SMILES"])
@@ -53,7 +53,7 @@ molecularModel_t1 = SklearnModel(
     preprocess_y=[LabelEncoder()],
 )
 molecularModel_t1.fit()
-pred_path = "/Users/vassilis/Desktop/test_ohe_smiles.csv"
+pred_path = "../jaqpotpy/test_data/test_data_smiles_categorical_prediction_dataset.csv"
 df = pd.read_csv(pred_path)
 prediction_dataset = JaqpotpyDataset(
     df=df,
@@ -74,21 +74,21 @@ print("ONNX Predictions:", onnx_predictions)
 # print("ONNX Probabilities:", onnx_probs)
 
 # Upload locally
-# jaqpot = Jaqpot(
-#     base_url="http://localhost.jaqpot.org",
-#     app_url="http://localhost.jaqpot.org:3000",
-#     login_url="http://localhost.jaqpot.org:8070",
-#     api_url="http://localhost.jaqpot.org:8080",
-#     keycloak_realm="jaqpot-local",
-#     keycloak_client_id="jaqpot-local-test",
-# )
+jaqpot = Jaqpot(
+    base_url="http://localhost.jaqpot.org",
+    app_url="http://localhost.jaqpot.org:3000",
+    login_url="http://localhost.jaqpot.org:8070",
+    api_url="http://localhost.jaqpot.org:8080",
+    keycloak_realm="jaqpot-local",
+    keycloak_client_id="jaqpot-local-test",
+)
 
 
 # # jaqpot = Jaqpot()
-# jaqpot.login()
-# molecularModel_t1.deploy_on_jaqpot(
-#     jaqpot=jaqpot,
-#     name="Demo: Classification with String Labels",
-#     description="Test",
-#     visibility="PRIVATE",
-# )
+jaqpot.login()
+molecularModel_t1.deploy_on_jaqpot(
+    jaqpot=jaqpot,
+    name="Demo: Classification with String Labels",
+    description="Test",
+    visibility="PRIVATE",
+)
