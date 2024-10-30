@@ -133,6 +133,7 @@ class Jaqpot:
             visibility=ModelVisibility(visibility),
             task=ModelTask(model.task.upper()),
             raw_model=raw_model,
+            selected_features=model.selected_features,
             description=description,
             extra_config=model.extra_config,
             scores=model.scores,
