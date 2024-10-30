@@ -553,12 +553,12 @@ class SklearnModel(Model):
         if score_type == "train":
             self.scores.train = jaqpotScores
         elif score_type == "test":
-            self.scores.train = jaqpotScores
+            self.scores.test = jaqpotScores
         elif score_type == "cross_validation":
-            self.scores.train = jaqpotScores
+            self.scores.cross_validation = jaqpotScores
         else:
             TypeError(
-                "The sscore_type should be either 'train', 'test' or 'cross_validation'."
+                "The score_type should be either 'train', 'test' or 'cross_validation'."
             )
 
     @staticmethod
