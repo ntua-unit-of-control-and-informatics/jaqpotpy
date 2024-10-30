@@ -1,0 +1,45 @@
+name: OpenAPI Generation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/openapi-script
+
+jobs:
+  generate-openapi:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the current repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Clone the jaqpot-api repository to get openapi.yaml
+      - name: Clone jaqpot-api repository
+        run: |
+          git clone https://github.com/ntua-unit-of-control-and-informatics/jaqpot-api.git ../jaqpot-api
+          cd ../jaqpot-api
+          git checkout main
+          cd -
+
+      # Run the OpenAPI Generation script
+      - name: Run OpenAPI Generation Script
+        run: |
+          chmod +x ./etc/openapi-generate.sh
+          ./etc/openapi-generate.sh
+
+      # Configure Git to commit changes
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Commit and push changes to the main branch
+      - name: Commit and push changes
+        run: |
+          git add .
+          git commit -m "Auto-update OpenAPI client"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
