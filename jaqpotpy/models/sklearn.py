@@ -159,7 +159,9 @@ class SklearnModel(Model):
         self.libraries = None
         self.jaqpotpy_version = jaqpotpy.__version__
         self.task = self.dataset.task
+        self.initial_types_preprocessing = None
         self.initial_types = None
+        self.onnx_preprocessor = None
         self.onnx_model = None
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
@@ -244,9 +246,9 @@ class SklearnModel(Model):
         else:
             return None
 
-    def _create_onnx(self, onnx_options: Optional[Dict] = None):
-        name = self.model.__class__.__name__ + "_ONNX"
-        self.initial_types = []
+    def _create_onnx_preprocessor(self, onnx_options: Optional[Dict] = None):
+        name = self.preprocess_pipeline.__class__.__name__ + "_ONNX"
+        self.initial_types_preprocessing = []
         dtype_array = self.dataset.X.dtypes.values
         dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
         all_numerical = all(
@@ -267,13 +269,37 @@ class SklearnModel(Model):
             ]
             for dtype in dtype_str_array
         )
+        if all_numerical:
+            self.initial_types_preprocessing = [
+                (
+                    "input",
+                    self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
+                )
+            ]
+        else:
+            for i, feature in enumerate(self.dataset.X.columns):
+                self.initial_types_preprocessing.append(
+                    (
+                        self.dataset.X.columns[i],
+                        self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
+                    )
+                )
+        self.onnx_preprocessor = convert_sklearn(
+            self.preprocess_pipeline,
+            initial_types=self.initial_types_preprocessing,
+            name=name,
+            options=onnx_options,
+        )
+
+    def _create_onnx_model(self, onnx_options: Optional[Dict] = None):
+        name = self.model.__class__.__name__ + "_ONNX"
+        self.initial_types = []
         self.initial_types = [
             (
                 "input",
                 self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
             )
         ]
-
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=self.initial_types,
@@ -316,6 +342,7 @@ class SklearnModel(Model):
                     (preprocessor.__class__.__name__, preprocessor)
                 )
             self.preprocess_pipeline.fit(X)
+            self._create_onnx_preprocessor(onnx_options=onnx_options)
 
         if self.doa:
             if self.preprocess_x:
@@ -400,7 +427,7 @@ class SklearnModel(Model):
             for feature in self.dataset.y_cols
         )
         self._dtypes_to_jaqpotypes()
-        self._create_onnx(onnx_options=onnx_options)
+        self._create_onnx_model(onnx_options=onnx_options)
 
     def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
