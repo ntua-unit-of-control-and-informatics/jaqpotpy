@@ -38,6 +38,7 @@ jobs:
       # Commit and push changes to the main branch
       - name: Commit and push changes
         run: |
+          git checkout main  
           git add .
           git commit -m "Auto-update OpenAPI client"
           git push origin main
