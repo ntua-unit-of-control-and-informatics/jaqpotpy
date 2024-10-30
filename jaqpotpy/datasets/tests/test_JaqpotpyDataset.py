@@ -357,10 +357,10 @@ class TestDatasets(unittest.TestCase):
         feature_selector = skfs.VarianceThreshold(threshold=0.1)
         dataset.select_features(feature_selector)
         self.assertEqual(dataset.X.shape[1], 69, "DataFrame should have 4038 columns")
-        self.assertIn("X1", dataset.active_features, "X1 should be selected")
+        self.assertIn("X1", dataset.selected_features, "X1 should be selected")
         self.assertNotIn(
             "f1",
-            dataset.active_features,
+            dataset.selected_features,
             "f1 should not be selected due to low variance",
         )
 
