@@ -165,6 +165,12 @@ class SklearnModel(Model):
         self.average_cross_val_scores = {}
         self.cross_val_scores = {}
         self.randomization_test_results = {}
+        # In the case the attribute does not exist initialize to None
+        # This is to be compatible for older models without feat selection
+        try:
+            self.selected_features = self.dataset.selected_features
+        except AttributeError:
+            self.selected_features = None
 
     def _dtypes_to_jaqpotypes(self):
         for feature in self.independentFeatures + self.dependentFeatures:
@@ -380,9 +386,12 @@ class SklearnModel(Model):
         else:
             self.independentFeatures = list()
         if self.dataset.x_cols:
-            intesection_of_features = list(
-                set(self.dataset.x_cols).intersection(set(self.dataset.active_features))
-            )
+            if self.selected_features is not None:
+                intesection_of_features = list(
+                    set(self.dataset.x_cols).intersection(set(self.selected_features))
+                )
+            else:
+                intesection_of_features = list(set(self.dataset.x_cols))
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
                 for feature in intesection_of_features
@@ -401,7 +410,10 @@ class SklearnModel(Model):
     def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        X_mat = dataset.X[self.dataset.active_features]
+        if self.selected_features is not None:
+            X_mat = dataset.X[self.selected_features]
+        else:
+            X_mat = dataset.X
         sklearn_prediction = self._predict_with_X(X_mat, self.trained_model)
         return sklearn_prediction
 
@@ -425,9 +437,12 @@ class SklearnModel(Model):
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
 
-        sklearn_probs = self.trained_model.predict_proba(
-            dataset.X[self.dataset.active_features]
-        )
+        if self.selected_features is not None:
+            sklearn_probs = self.trained_model.predict_proba(
+                dataset.X[self.selected_features]
+            )
+        else:
+            sklearn_probs = self.trained_model.predict_proba(dataset.X)
 
         sklearn_probs_list = [
             max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))
@@ -560,7 +575,10 @@ class SklearnModel(Model):
                 "You need to first run SklearnModel.fit() and train a model"
             )
 
-        X_mat = dataset.X[self.dataset.active_features]
+        if self.selected_features is not None:
+            X_mat = dataset.X[self.selected_features]
+        else:
+            X_mat = dataset.X
         sum_metrics = None
 
         fold = 1
