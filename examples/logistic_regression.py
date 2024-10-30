@@ -9,7 +9,7 @@ from jaqpotpy.models import SklearnModel
 data = {
     "X1": [0.5, 1, 1.5, 3, 2, 1],
     "X2": [1.5, 1, 0.5, 0.5, 2, 2.5],
-    "RESULT": [0, 0, 1, 1, 1, 1]
+    "RESULT": [0, 0, 1, 1, 1, 1],
 }
 
 df = pd.DataFrame(data)
@@ -17,17 +17,12 @@ df = pd.DataFrame(data)
 y_cols = ["RESULT"]
 x_cols = ["X1", "X2"]
 dataset = JaqpotpyDataset(
-    df=df,
-    y_cols=y_cols,
-    x_cols=x_cols,
-    task="BINARY_CLASSIFICATION"
+    df=df, y_cols=y_cols, x_cols=x_cols, task="BINARY_CLASSIFICATION"
 )
 
 lr_model = LogisticRegression()
 
-model = SklearnModel(
-    dataset=dataset, doa=None, model=lr_model
-)
+model = SklearnModel(dataset=dataset, doa=None, model=lr_model)
 model.fit()
 
 # Upload locally
