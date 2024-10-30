@@ -35,3 +35,4 @@ jobs:
           ./etc/openapi-generate.sh
 
       - uses: stefanzweifel/git-auto-commit-action@v5
+
