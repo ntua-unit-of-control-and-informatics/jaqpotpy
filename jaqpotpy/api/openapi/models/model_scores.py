@@ -19,17 +19,19 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Any, ClassVar, Dict, List, Optional, Union
-from typing_extensions import Annotated
+from typing import Any, ClassVar, Dict, List, Optional
+from jaqpotpy.api.openapi.models.scores import Scores
 from typing import Optional, Set
 from typing_extensions import Self
 
-class MeanVarDoa(BaseModel):
+class ModelScores(BaseModel):
     """
-    MeanVarDoa
+    ModelScores
     """ # noqa: E501
-    bounds: Optional[List[Annotated[List[Union[Annotated[float, Field(strict=True)], Annotated[int, Field(strict=True)]]], Field(max_length=1000)]]] = None
-    __properties: ClassVar[List[str]] = ["bounds"]
+    train: Optional[Scores] = None
+    test: Optional[Scores] = None
+    cross_validation: Optional[Scores] = Field(default=None, alias="crossValidation")
+    __properties: ClassVar[List[str]] = ["train", "test", "crossValidation"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +51,7 @@ class MeanVarDoa(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of MeanVarDoa from a JSON string"""
+        """Create an instance of ModelScores from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -70,11 +72,20 @@ class MeanVarDoa(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of train
+        if self.train:
+            _dict['train'] = self.train.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of test
+        if self.test:
+            _dict['test'] = self.test.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of cross_validation
+        if self.cross_validation:
+            _dict['crossValidation'] = self.cross_validation.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of MeanVarDoa from a dict"""
+        """Create an instance of ModelScores from a dict"""
         if obj is None:
             return None
 
@@ -82,7 +93,9 @@ class MeanVarDoa(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "bounds": obj.get("bounds")
+            "train": Scores.from_dict(obj["train"]) if obj.get("train") is not None else None,
+            "test": Scores.from_dict(obj["test"]) if obj.get("test") is not None else None,
+            "crossValidation": Scores.from_dict(obj["crossValidation"]) if obj.get("crossValidation") is not None else None
         })
         return _obj
 

@@ -20,6 +20,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List, Optional
+from typing_extensions import Annotated
 from jaqpotpy.api.openapi.models.transformer import Transformer
 from typing import Optional, Set
 from typing_extensions import Self
@@ -29,8 +30,8 @@ class ModelExtraConfig(BaseModel):
     A JSON object containing extra configuration for the model
     """ # noqa: E501
     torch_config: Optional[Dict[str, Any]] = Field(default=None, alias="torchConfig")
-    preprocessors: Optional[List[Transformer]] = None
-    featurizers: Optional[List[Transformer]] = None
+    preprocessors: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
+    featurizers: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
     __properties: ClassVar[List[str]] = ["torchConfig", "preprocessors", "featurizers"]
 
     model_config = ConfigDict(

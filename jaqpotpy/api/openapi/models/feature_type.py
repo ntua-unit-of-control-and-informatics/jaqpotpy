@@ -33,6 +33,8 @@ class FeatureType(str, Enum):
     SMILES = 'SMILES'
     STRING = 'STRING'
     TEXT = 'TEXT'
+    FLOAT_ARRAY = 'FLOAT_ARRAY'
+    STRING_ARRAY = 'STRING_ARRAY'
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
