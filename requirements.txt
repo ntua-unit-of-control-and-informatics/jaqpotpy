@@ -29,4 +29,4 @@ torch-sparse==0.6.18
 ###
 onnxmltools==1.12.0
 xgboost==2.1.1
-
+pre-commit==4.0.1
