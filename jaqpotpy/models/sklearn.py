@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 import numpy as np
+import pandas as pd
 from onnxruntime import InferenceSession
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import (
@@ -266,21 +267,12 @@ class SklearnModel(Model):
             ]
             for dtype in dtype_str_array
         )
-        if all_numerical:
-            self.initial_types = [
-                (
-                    "input",
-                    self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
-                )
-            ]
-        else:
-            for i, feature in enumerate(self.dataset.X.columns):
-                self.initial_types.append(
-                    (
-                        self.dataset.X.columns[i],
-                        self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
-                    )
-                )
+        self.initial_types = [
+            (
+                "input",
+                self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
+            )
+        ]
 
         self.onnx_model = convert_sklearn(
             self.trained_model,
@@ -362,6 +354,9 @@ class SklearnModel(Model):
             y = y.ravel()
         if self.preprocess_x:
             X_transformed = self.preprocess_pipeline.transform(X)
+            X_transformed = pd.DataFrame(X_transformed)
+        else:
+            X_transformed = X
         self.trained_model = self.pipeline.fit(X_transformed, y)
 
         y_pred = self.predict(self.dataset)
@@ -411,13 +406,16 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         X_mat = dataset.X[self.dataset.active_features]
-        if self.preprocess_x:
-            X_mat = self.preprocess_pipeline.transform(X_mat)
         sklearn_prediction = self._predict_with_X(X_mat, self.trained_model)
         return sklearn_prediction
 
     def _predict_with_X(self, X, model):
-        sklearn_prediction = model.predict(X)
+        if self.preprocess_x:
+            X_transformed = self.preprocess_pipeline.transform(X)
+            X_transformed = pd.DataFrame(X_transformed)
+        else:
+            X_transformed = X
+        sklearn_prediction = model.predict(X_transformed)
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
@@ -574,6 +572,9 @@ class SklearnModel(Model):
             )
 
         X_mat = dataset.X[self.dataset.active_features]
+        # if self.preprocess_x:
+        #     X_transformed = self.preprocess_pipeline.transform(X_mat)
+        #     X_transformed = pd.DataFrame(X_transformed)
         sum_metrics = None
 
         fold = 1
@@ -587,7 +588,12 @@ class SklearnModel(Model):
                     y_train = preprocessor.fit_transform(y_train)
             else:
                 y_train = y_train.to_numpy()
-            trained_model = self.pipeline.fit(X_train, y_train.ravel())
+            if self.preprocess_x:
+                X_train_transformed = self.preprocess_pipeline.transform(X_train)
+                X_train_transformed = pd.DataFrame(X_train_transformed)
+            else:
+                X_train_transformed = X_train
+            trained_model = self.pipeline.fit(X_train_transformed, y_train.ravel())
             y_pred = self._predict_with_X(X_test, trained_model).reshape(-1, 1)
             metrics_result = self._get_metrics(
                 y_test.to_numpy().ravel(), y_pred.ravel()
@@ -650,8 +656,15 @@ class SklearnModel(Model):
                             y_train_shuffled = preprocessor.fit_transform(
                                 y_train_shuffled
                             )
+                    if self.preprocess_x:
+                        X_transformed = self.preprocess_pipeline.transform(
+                            train_dataset.X
+                        )
+                        X_transformed = pd.DataFrame(X_transformed)
+                    else:
+                        X_transformed = train_dataset.X
                     trained_model = self.pipeline.fit(
-                        train_dataset.X, y_train_shuffled.ravel()
+                        X_transformed, y_train_shuffled.ravel()
                     )
                     y_pred_train = self._predict_with_X(
                         train_dataset.X, trained_model
@@ -678,8 +691,13 @@ class SklearnModel(Model):
                 if self.preprocess_y[0] is not None:
                     for preprocessor in self.preprocess_y:
                         y_train_shuffled = preprocessor.fit_transform(y_train_shuffled)
+                if self.preprocess_x:
+                    X_transformed = self.preprocess_pipeline.transform(train_dataset.X)
+                    X_transformed = pd.DataFrame(X_transformed)
+                else:
+                    X_transformed = train_dataset.X
                 trained_model = self.pipeline.fit(
-                    train_dataset.X, y_train_shuffled.ravel()
+                    X_transformed, y_train_shuffled.ravel()
                 )
                 y_pred_train = self._predict_with_X(
                     train_dataset.X, trained_model

@@ -213,13 +213,13 @@ class TestModels(unittest.TestCase):
             onnx_probabilities,
             [
                 0.7837496399879456,
-                0.6600000858306885,
-                0.7427858114242554,
+                0.690000057220459,
+                0.7327857613563538,
                 0.6873330473899841,
                 0.8799994587898254,
             ],
             atol=1e-2,
-        ), f"Expected onnx_probabilities == [0.7837496399879456, 0.6600000858306885, 0.7427858114242554, 0.6873330473899841, 0.8799994587898254], got {onnx_probabilities}"
+        ), f"Expected onnx_probabilities == [0.7837496399879456, 0.690000057220459, 0.7327857613563538, 0.6873330473899841, 0.8799994587898254], got {onnx_probabilities}"
 
     def test_SklearnModel_classification_y_preprocessing(self):
         """Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for classification.
