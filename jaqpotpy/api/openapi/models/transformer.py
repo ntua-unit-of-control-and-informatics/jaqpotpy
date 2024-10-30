@@ -18,8 +18,8 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr
-from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, StrictStr
+from typing import Any, ClassVar, Dict, List
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,10 +27,9 @@ class Transformer(BaseModel):
     """
     A preprocessor for the model
     """ # noqa: E501
-    id: Optional[StrictInt] = None
     name: StrictStr
     config: Dict[str, Any]
-    __properties: ClassVar[List[str]] = ["id", "name", "config"]
+    __properties: ClassVar[List[str]] = ["name", "config"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -83,7 +82,6 @@ class Transformer(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "id": obj.get("id"),
             "name": obj.get("name"),
             "config": obj.get("config")
         })
