@@ -26,6 +26,8 @@ from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from typing import Optional, Set
 from typing_extensions import Self
 
+
+
 class PartiallyUpdateModelRequest(BaseModel):
     """
     PartiallyUpdateModelRequest
