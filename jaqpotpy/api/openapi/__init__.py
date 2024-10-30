@@ -81,6 +81,9 @@ from jaqpotpy.api.openapi.models.organization_visibility import OrganizationVisi
 from jaqpotpy.api.openapi.models.partial_update_organization_request import PartialUpdateOrganizationRequest
 from jaqpotpy.api.openapi.models.partially_update_model_feature_request import PartiallyUpdateModelFeatureRequest
 from jaqpotpy.api.openapi.models.partially_update_model_request import PartiallyUpdateModelRequest
+from jaqpotpy.api.openapi.models.prediction_model import PredictionModel
+from jaqpotpy.api.openapi.models.prediction_request import PredictionRequest
+from jaqpotpy.api.openapi.models.prediction_response import PredictionResponse
 from jaqpotpy.api.openapi.models.regression_scores import RegressionScores
 from jaqpotpy.api.openapi.models.scores import Scores
 from jaqpotpy.api.openapi.models.transformer import Transformer
