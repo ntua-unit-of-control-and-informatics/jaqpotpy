@@ -31,7 +31,6 @@ from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.api.openapi.models.organization import Organization
-from jaqpotpy.api.openapi.models.transformer import Transformer
 from jaqpotpy.api.openapi.models.user import User
 from typing import Optional, Set
 from typing_extensions import Self
@@ -52,9 +51,6 @@ class Model(BaseModel):
     shared_with_organizations: Optional[List[Organization]] = Field(default=None, alias="sharedWithOrganizations")
     visibility: ModelVisibility
     task: ModelTask
-    torch_config: Optional[Dict[str, Any]] = Field(default=None, alias="torchConfig")
-    preprocessors: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
-    featurizers: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
     raw_model: Union[StrictBytes, StrictStr] = Field(description="A base64 representation of the raw model.", alias="rawModel")
     creator: Optional[User] = None
     can_edit: Optional[StrictBool] = Field(default=None, description="If the current user can edit the model", alias="canEdit")
@@ -66,7 +62,7 @@ class Model(BaseModel):
     extra_config: Optional[ModelExtraConfig] = Field(default=None, alias="extraConfig")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "torchConfig", "preprocessors", "featurizers", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "extraConfig", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "extraConfig", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -142,20 +138,6 @@ class Model(BaseModel):
                 if _item_shared_with_organizations:
                     _items.append(_item_shared_with_organizations.to_dict())
             _dict['sharedWithOrganizations'] = _items
-        # override the default output from pydantic by calling `to_dict()` of each item in preprocessors (list)
-        _items = []
-        if self.preprocessors:
-            for _item_preprocessors in self.preprocessors:
-                if _item_preprocessors:
-                    _items.append(_item_preprocessors.to_dict())
-            _dict['preprocessors'] = _items
-        # override the default output from pydantic by calling `to_dict()` of each item in featurizers (list)
-        _items = []
-        if self.featurizers:
-            for _item_featurizers in self.featurizers:
-                if _item_featurizers:
-                    _items.append(_item_featurizers.to_dict())
-            _dict['featurizers'] = _items
         # override the default output from pydantic by calling `to_dict()` of creator
         if self.creator:
             _dict['creator'] = self.creator.to_dict()
@@ -189,9 +171,6 @@ class Model(BaseModel):
             "sharedWithOrganizations": [Organization.from_dict(_item) for _item in obj["sharedWithOrganizations"]] if obj.get("sharedWithOrganizations") is not None else None,
             "visibility": obj.get("visibility"),
             "task": obj.get("task"),
-            "torchConfig": obj.get("torchConfig"),
-            "preprocessors": [Transformer.from_dict(_item) for _item in obj["preprocessors"]] if obj.get("preprocessors") is not None else None,
-            "featurizers": [Transformer.from_dict(_item) for _item in obj["featurizers"]] if obj.get("featurizers") is not None else None,
             "rawModel": obj.get("rawModel"),
             "creator": User.from_dict(obj["creator"]) if obj.get("creator") is not None else None,
             "canEdit": obj.get("canEdit"),
