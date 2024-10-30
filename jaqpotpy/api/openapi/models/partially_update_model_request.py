@@ -29,6 +29,8 @@ from typing_extensions import Self
 
 
 
+
+
 class PartiallyUpdateModelRequest(BaseModel):
     """
     PartiallyUpdateModelRequest
