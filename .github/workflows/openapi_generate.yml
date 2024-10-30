@@ -1,0 +1,36 @@
+name: OpenAPI Generation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-openapi:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
+
+    steps:
+      # Check out the current repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Clone the jaqpot-api repository to get openapi.yaml
+      - name: Clone jaqpot-api repository
+        run: |
+          git clone https://github.com/ntua-unit-of-control-and-informatics/jaqpot-api.git ../jaqpot-api
+          cd ../jaqpot-api
+          git checkout main
+          cd -
+
+      # Run the OpenAPI Generation script
+      - name: Run OpenAPI Generation Script
+        run: |
+          chmod +x ./etc/openapi-generate.sh
+          ./etc/openapi-generate.sh
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update openapi files"

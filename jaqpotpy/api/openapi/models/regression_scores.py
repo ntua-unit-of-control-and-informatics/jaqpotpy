@@ -18,18 +18,24 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
-class MeanVarDoa(BaseModel):
+class RegressionScores(BaseModel):
     """
-    MeanVarDoa
+    RegressionScores
     """ # noqa: E501
-    bounds: Optional[List[Annotated[List[Union[Annotated[float, Field(strict=True)], Annotated[int, Field(strict=True)]]], Field(max_length=1000)]]] = None
-    __properties: ClassVar[List[str]] = ["bounds"]
+    r2: Optional[Union[StrictFloat, StrictInt]] = None
+    mae: Optional[Union[StrictFloat, StrictInt]] = None
+    rmse: Optional[Union[StrictFloat, StrictInt]] = None
+    r_squared_diff_r_zero: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="rSquaredDiffRZero")
+    r_squared_diff_r_zero_hat: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="rSquaredDiffRZeroHat")
+    abs_diff_r_zero_hat: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="absDiffRZeroHat")
+    k: Optional[Union[StrictFloat, StrictInt]] = None
+    k_hat: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="kHat")
+    __properties: ClassVar[List[str]] = ["r2", "mae", "rmse", "rSquaredDiffRZero", "rSquaredDiffRZeroHat", "absDiffRZeroHat", "k", "kHat"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +55,7 @@ class MeanVarDoa(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of MeanVarDoa from a JSON string"""
+        """Create an instance of RegressionScores from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -74,7 +80,7 @@ class MeanVarDoa(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of MeanVarDoa from a dict"""
+        """Create an instance of RegressionScores from a dict"""
         if obj is None:
             return None
 
@@ -82,7 +88,14 @@ class MeanVarDoa(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "bounds": obj.get("bounds")
+            "r2": obj.get("r2"),
+            "mae": obj.get("mae"),
+            "rmse": obj.get("rmse"),
+            "rSquaredDiffRZero": obj.get("rSquaredDiffRZero"),
+            "rSquaredDiffRZeroHat": obj.get("rSquaredDiffRZeroHat"),
+            "absDiffRZeroHat": obj.get("absDiffRZeroHat"),
+            "k": obj.get("k"),
+            "kHat": obj.get("kHat")
         })
         return _obj
 

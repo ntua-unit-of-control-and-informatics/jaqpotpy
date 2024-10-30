@@ -19,17 +19,21 @@ import re  # noqa: F401
 import json
 
 from pydantic import BaseModel, ConfigDict, Field
-from typing import Any, ClassVar, Dict, List, Optional, Union
-from typing_extensions import Annotated
+from typing import Any, ClassVar, Dict, List, Optional
+from jaqpotpy.api.openapi.models.binary_classification_scores import BinaryClassificationScores
+from jaqpotpy.api.openapi.models.multiclass_classification_scores import MulticlassClassificationScores
+from jaqpotpy.api.openapi.models.regression_scores import RegressionScores
 from typing import Optional, Set
 from typing_extensions import Self
 
-class MeanVarDoa(BaseModel):
+class Scores(BaseModel):
     """
-    MeanVarDoa
+    Scores
     """ # noqa: E501
-    bounds: Optional[List[Annotated[List[Union[Annotated[float, Field(strict=True)], Annotated[int, Field(strict=True)]]], Field(max_length=1000)]]] = None
-    __properties: ClassVar[List[str]] = ["bounds"]
+    regression: Optional[RegressionScores] = None
+    binary_classification: Optional[BinaryClassificationScores] = Field(default=None, alias="binaryClassification")
+    multiclass_classification: Optional[MulticlassClassificationScores] = Field(default=None, alias="multiclassClassification")
+    __properties: ClassVar[List[str]] = ["regression", "binaryClassification", "multiclassClassification"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +53,7 @@ class MeanVarDoa(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of MeanVarDoa from a JSON string"""
+        """Create an instance of Scores from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -70,11 +74,20 @@ class MeanVarDoa(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of regression
+        if self.regression:
+            _dict['regression'] = self.regression.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of binary_classification
+        if self.binary_classification:
+            _dict['binaryClassification'] = self.binary_classification.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of multiclass_classification
+        if self.multiclass_classification:
+            _dict['multiclassClassification'] = self.multiclass_classification.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of MeanVarDoa from a dict"""
+        """Create an instance of Scores from a dict"""
         if obj is None:
             return None
 
@@ -82,7 +95,9 @@ class MeanVarDoa(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "bounds": obj.get("bounds")
+            "regression": RegressionScores.from_dict(obj["regression"]) if obj.get("regression") is not None else None,
+            "binaryClassification": BinaryClassificationScores.from_dict(obj["binaryClassification"]) if obj.get("binaryClassification") is not None else None,
+            "multiclassClassification": MulticlassClassificationScores.from_dict(obj["multiclassClassification"]) if obj.get("multiclassClassification") is not None else None
         })
         return _obj
 

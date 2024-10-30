@@ -18,18 +18,25 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
-class MeanVarDoa(BaseModel):
+class MulticlassClassificationScores(BaseModel):
     """
-    MeanVarDoa
+    MulticlassClassificationScores
     """ # noqa: E501
-    bounds: Optional[List[Annotated[List[Union[Annotated[float, Field(strict=True)], Annotated[int, Field(strict=True)]]], Field(max_length=1000)]]] = None
-    __properties: ClassVar[List[str]] = ["bounds"]
+    accuracy: Optional[Union[StrictFloat, StrictInt]] = None
+    balanced_accuracy: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="balancedAccuracy")
+    precision: Optional[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]] = None
+    recall: Optional[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]] = None
+    f1_score: Optional[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]] = Field(default=None, alias="f1Score")
+    jaccard: Optional[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]] = None
+    matthews_corr_coef: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="matthewsCorrCoef")
+    confusion_matrix: Optional[Annotated[List[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]], Field(max_length=1000)]] = Field(default=None, alias="confusionMatrix")
+    __properties: ClassVar[List[str]] = ["accuracy", "balancedAccuracy", "precision", "recall", "f1Score", "jaccard", "matthewsCorrCoef", "confusionMatrix"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +56,7 @@ class MeanVarDoa(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of MeanVarDoa from a JSON string"""
+        """Create an instance of MulticlassClassificationScores from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -74,7 +81,7 @@ class MeanVarDoa(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of MeanVarDoa from a dict"""
+        """Create an instance of MulticlassClassificationScores from a dict"""
         if obj is None:
             return None
 
@@ -82,7 +89,14 @@ class MeanVarDoa(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "bounds": obj.get("bounds")
+            "accuracy": obj.get("accuracy"),
+            "balancedAccuracy": obj.get("balancedAccuracy"),
+            "precision": obj.get("precision"),
+            "recall": obj.get("recall"),
+            "f1Score": obj.get("f1Score"),
+            "jaccard": obj.get("jaccard"),
+            "matthewsCorrCoef": obj.get("matthewsCorrCoef"),
+            "confusionMatrix": obj.get("confusionMatrix")
         })
         return _obj
 

@@ -26,6 +26,7 @@ from jaqpotpy.api.openapi.models.doa import Doa
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.library import Library
 from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
+from jaqpotpy.api.openapi.models.model_scores import ModelScores
 from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
@@ -43,10 +44,10 @@ class Model(BaseModel):
     description: Optional[Annotated[str, Field(min_length=3, strict=True, max_length=50000)]] = None
     type: ModelType
     jaqpotpy_version: StrictStr = Field(alias="jaqpotpyVersion")
-    doas: Optional[List[Doa]] = None
-    libraries: List[Library]
-    dependent_features: List[Feature] = Field(alias="dependentFeatures")
-    independent_features: List[Feature] = Field(alias="independentFeatures")
+    doas: Optional[Annotated[List[Doa], Field(max_length=50)]] = None
+    libraries: Annotated[List[Library], Field(max_length=1000)]
+    dependent_features: Annotated[List[Feature], Field(max_length=1000)] = Field(alias="dependentFeatures")
+    independent_features: Annotated[List[Feature], Field(max_length=1000)] = Field(alias="independentFeatures")
     shared_with_organizations: Optional[List[Organization]] = Field(default=None, alias="sharedWithOrganizations")
     visibility: ModelVisibility
     task: ModelTask
@@ -54,12 +55,14 @@ class Model(BaseModel):
     creator: Optional[User] = None
     can_edit: Optional[StrictBool] = Field(default=None, description="If the current user can edit the model", alias="canEdit")
     is_admin: Optional[StrictBool] = Field(default=None, alias="isAdmin")
+    selected_features: Optional[Annotated[List[StrictStr], Field(max_length=1000)]] = Field(default=None, alias="selectedFeatures")
     tags: Optional[Annotated[str, Field(strict=True, max_length=1000)]] = None
     legacy_prediction_service: Optional[StrictStr] = Field(default=None, alias="legacyPredictionService")
+    scores: Optional[ModelScores] = None
     extra_config: Optional[ModelExtraConfig] = Field(default=None, alias="extraConfig")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "rawModel", "creator", "canEdit", "isAdmin", "tags", "legacyPredictionService", "extraConfig", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "extraConfig", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -138,6 +141,9 @@ class Model(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of creator
         if self.creator:
             _dict['creator'] = self.creator.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of scores
+        if self.scores:
+            _dict['scores'] = self.scores.to_dict()
         # override the default output from pydantic by calling `to_dict()` of extra_config
         if self.extra_config:
             _dict['extraConfig'] = self.extra_config.to_dict()
@@ -169,8 +175,10 @@ class Model(BaseModel):
             "creator": User.from_dict(obj["creator"]) if obj.get("creator") is not None else None,
             "canEdit": obj.get("canEdit"),
             "isAdmin": obj.get("isAdmin"),
+            "selectedFeatures": obj.get("selectedFeatures"),
             "tags": obj.get("tags"),
             "legacyPredictionService": obj.get("legacyPredictionService"),
+            "scores": ModelScores.from_dict(obj["scores"]) if obj.get("scores") is not None else None,
             "extraConfig": ModelExtraConfig.from_dict(obj["extraConfig"]) if obj.get("extraConfig") is not None else None,
             "createdAt": obj.get("createdAt"),
             "updatedAt": obj.get("updatedAt")
