@@ -28,9 +28,9 @@ class ModelScores(BaseModel):
     """
     ModelScores
     """ # noqa: E501
-    train: Optional[Scores] = None
-    test: Optional[Scores] = None
-    cross_validation: Optional[Scores] = Field(default=None, alias="crossValidation")
+    train: Optional[List[Scores]] = None
+    test: Optional[List[Scores]] = None
+    cross_validation: Optional[List[Scores]] = Field(default=None, alias="crossValidation")
     __properties: ClassVar[List[str]] = ["train", "test", "crossValidation"]
 
     model_config = ConfigDict(
@@ -72,15 +72,27 @@ class ModelScores(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of train
+        # override the default output from pydantic by calling `to_dict()` of each item in train (list)
+        _items = []
         if self.train:
-            _dict['train'] = self.train.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of test
+            for _item_train in self.train:
+                if _item_train:
+                    _items.append(_item_train.to_dict())
+            _dict['train'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in test (list)
+        _items = []
         if self.test:
-            _dict['test'] = self.test.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of cross_validation
+            for _item_test in self.test:
+                if _item_test:
+                    _items.append(_item_test.to_dict())
+            _dict['test'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in cross_validation (list)
+        _items = []
         if self.cross_validation:
-            _dict['crossValidation'] = self.cross_validation.to_dict()
+            for _item_cross_validation in self.cross_validation:
+                if _item_cross_validation:
+                    _items.append(_item_cross_validation.to_dict())
+            _dict['crossValidation'] = _items
         return _dict
 
     @classmethod
@@ -93,9 +105,9 @@ class ModelScores(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "train": Scores.from_dict(obj["train"]) if obj.get("train") is not None else None,
-            "test": Scores.from_dict(obj["test"]) if obj.get("test") is not None else None,
-            "crossValidation": Scores.from_dict(obj["crossValidation"]) if obj.get("crossValidation") is not None else None
+            "train": [Scores.from_dict(_item) for _item in obj["train"]] if obj.get("train") is not None else None,
+            "test": [Scores.from_dict(_item) for _item in obj["test"]] if obj.get("test") is not None else None,
+            "crossValidation": [Scores.from_dict(_item) for _item in obj["crossValidation"]] if obj.get("crossValidation") is not None else None
         })
         return _obj
 
