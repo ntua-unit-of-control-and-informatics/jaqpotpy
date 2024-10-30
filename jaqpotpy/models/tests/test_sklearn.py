@@ -1077,32 +1077,32 @@ class TestModels(unittest.TestCase):
         jaqpot_model.cross_validate(dataset, n_splits=2)
 
         assert np.allclose(
-            jaqpot_model.train_scores["output_0"]["r2"], 0.8698, atol=1e-02
-        ), f"Expected train R^2 to be 0.8698 got { jaqpot_model.train_scores['output_0']['r2']}"
+            jaqpot_model.train_scores[dataset.y_cols[0]]["r2"], 0.8698, atol=1e-02
+        ), f"Expected train R^2 to be 0.8698 got { jaqpot_model.train_scores[dataset.y_cols[0]]['r2']}"
 
         assert np.allclose(
-            jaqpot_model.train_scores["output_1"]["r2"], 0.8230, atol=1e-02
-        ), f"Expected train R^2 to be  0.8230, got { jaqpot_model.train_scores['output_1']['r2']}"
+            jaqpot_model.train_scores[dataset.y_cols[1]]["r2"], 0.8230, atol=1e-02
+        ), f"Expected train R^2 to be  0.8230, got { jaqpot_model.train_scores[dataset.y_cols[1]]['r2']}"
 
         assert np.allclose(
-            jaqpot_model.test_scores["output_0"]["r2"], 0.8698, atol=1e-02
-        ), f"Expected test R^2 to be 0.8698, got { jaqpot_model.test_scores['output_0']['r2']}"
+            jaqpot_model.test_scores[dataset.y_cols[0]]["r2"], 0.8698, atol=1e-02
+        ), f"Expected test R^2 to be 0.8698, got { jaqpot_model.test_scores[dataset.y_cols[0]]['r2']}"
 
         assert np.allclose(
-            jaqpot_model.test_scores["output_1"]["r2"], 0.8230, atol=1e-02
-        ), f"Expected test R^2 to be  0.8230, got { jaqpot_model.test_scores['output_1']['r2']}"
+            jaqpot_model.test_scores[dataset.y_cols[1]]["r2"], 0.8230, atol=1e-02
+        ), f"Expected test R^2 to be  0.8230, got { jaqpot_model.test_scores[dataset.y_cols[1]]['r2']}"
 
         assert np.allclose(
-            jaqpot_model.average_cross_val_scores["output_0"]["r2"],
+            jaqpot_model.average_cross_val_scores[dataset.y_cols[0]]["r2"],
             0.04279,
             atol=1e-02,
-        ), f"Expected average cross validation R^2 be  0.04279, got { jaqpot_model.average_cross_val_scores['output_0']['r2']}"
+        ), f"Expected average cross validation R^2 be  0.04279, got { jaqpot_model.average_cross_val_scores[dataset.y_cols[0]]['r2']}"
 
         assert np.allclose(
-            jaqpot_model.average_cross_val_scores["output_1"]["r2"],
+            jaqpot_model.average_cross_val_scores[dataset.y_cols[1]]["r2"],
             -0.13792,
             atol=1e-02,
-        ), f"Expected average cross validation R^2 to be -0.13792, got { jaqpot_model.average_cross_val_scores['output_1']['r2']}"
+        ), f"Expected average cross validation R^2 to be -0.13792, got { jaqpot_model.average_cross_val_scores[dataset.y_cols[1]]['r2']}"
 
     def test_randomization_test(self):
         """Test randomization test."""
@@ -1207,13 +1207,13 @@ class TestModels(unittest.TestCase):
             evaluation_scores["confusionMatrix"], np.array([[2, 0], [2, 1]])
         ), f'Expected evaluation_scores["confusionMatrix"] == [[2, 0],[2, 1]], got evaluation_scores["confusionMatrix"] {evaluation_scores["confusionMatrix"]}'
         assert np.array_equal(
-            cross_val_scores["output_0"]["fold_1"]["confusionMatrix"],
+            cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"],
             np.array([[10, 9], [8, 7]]),
-        ), f'Expected cross_val_scores["output_0"]["fold_1"]["confusionMatrix"] == [[10,  9],[ 8,  7]], got cross_val_scores["output_0"]["fold_1"]["confusionMatrix"] {cross_val_scores["output_0"]["fold_1"]["confusionMatrix"]}'
+        ), f'Expected cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"] == [[10,  9],[ 8,  7]], got cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"] {cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"]}'
         assert np.array_equal(
-            cross_val_scores["output_0"]["fold_3"]["confusionMatrix"],
+            cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"],
             np.array([[12, 5], [12, 4]]),
-            f'Expected cross_val_scores["output_0"]["fold_3"]["confusionMatrix"] == [[12,  5],[12,  4]], got cross_val_scores["output_0"]["fold_3"]["confusionMatrix"] {cross_val_scores["output_0"]["fold_3"]["confusionMatrix"]}',
+            f'Expected cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"] == [[12,  5],[12,  4]], got cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"] {cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"]}',
         )
 
 

@@ -39,7 +39,7 @@ class SmilesGraphDataset(Dataset):
         """Precomputes the featurization of the dataset before being accessed by __getitem__"""
         if self.y:
             self.precomputed_features = [
-                self.featurizer(sm, y) for sm, y, in zip(self.smiles, self.y)
+                self.featurizer(sm, y) for sm, y in zip(self.smiles, self.y)
             ]
         else:
             self.precomputed_features = [self.featurizer(sm) for sm in self.smiles]
