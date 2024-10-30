@@ -248,14 +248,14 @@ class JaqpotpyDataset(BaseDataset):
                 )
             transformed_X = FeatureSelector.fit_transform(self.X)
             selected_columns_mask = FeatureSelector.get_support()
-            self.active_features = self.X.columns[selected_columns_mask]
-            self.X = pd.DataFrame(data=transformed_X, columns=self.active_features)
+            self.selected_features = self.X.columns[selected_columns_mask]
+            self.X = pd.DataFrame(data=transformed_X, columns=self.selected_features)
         elif SelectionList is not None:
             if not all(item in self.X.columns for item in SelectionList):
                 raise ValueError("Provided features not in dataset features")
             else:
                 self.X = self.X[SelectionList]
-                self.active_features = SelectionList
+                self.selected_features = SelectionList
 
     def copy(self):
         """Create a copy of the dataset, including a deep copy of the underlying DataFrame

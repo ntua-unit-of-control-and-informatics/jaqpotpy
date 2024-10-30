@@ -126,10 +126,6 @@ class Jaqpot:
                     feature_type=feature_i["featureType"],
                     possible_values=feature_i["possible_values"]
                     if "possible_values" in feature_i
-                    and (
-                        feature_i["key"] in model.selected_features
-                        or feature_i["key"] == "SMILES"
-                    )
                     else None,
                 )
                 for feature_i in model.independentFeatures
