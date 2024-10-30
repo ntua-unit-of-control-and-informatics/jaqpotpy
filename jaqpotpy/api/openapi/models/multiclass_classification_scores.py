@@ -17,7 +17,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing_extensions import Annotated
 from typing import Optional, Set
@@ -29,6 +29,7 @@ class MulticlassClassificationScores(BaseModel):
     MulticlassClassificationScores
     """  # noqa: E501
 
+    y_name: StrictStr = Field(alias="yName")
     accuracy: Optional[Union[StrictFloat, StrictInt]] = None
     balanced_accuracy: Optional[Union[StrictFloat, StrictInt]] = Field(
         default=None, alias="balancedAccuracy"
@@ -51,12 +52,20 @@ class MulticlassClassificationScores(BaseModel):
     confusion_matrix: Optional[
         Annotated[
             List[
-                Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]
+                Annotated[
+                    List[
+                        Annotated[
+                            List[Union[StrictFloat, StrictInt]], Field(max_length=2)
+                        ]
+                    ],
+                    Field(max_length=2),
+                ]
             ],
-            Field(max_length=1000),
+            Field(max_length=100),
         ]
     ] = Field(default=None, alias="confusionMatrix")
     __properties: ClassVar[List[str]] = [
+        "yName",
         "accuracy",
         "balancedAccuracy",
         "precision",
@@ -117,6 +126,7 @@ class MulticlassClassificationScores(BaseModel):
 
         _obj = cls.model_validate(
             {
+                "yName": obj.get("yName"),
                 "accuracy": obj.get("accuracy"),
                 "balancedAccuracy": obj.get("balancedAccuracy"),
                 "precision": obj.get("precision"),

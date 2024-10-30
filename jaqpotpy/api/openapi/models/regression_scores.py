@@ -17,7 +17,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing import Optional, Set
 from typing_extensions import Self
@@ -28,6 +28,7 @@ class RegressionScores(BaseModel):
     RegressionScores
     """  # noqa: E501
 
+    y_name: StrictStr = Field(alias="yName")
     r2: Optional[Union[StrictFloat, StrictInt]] = None
     mae: Optional[Union[StrictFloat, StrictInt]] = None
     rmse: Optional[Union[StrictFloat, StrictInt]] = None
@@ -43,6 +44,7 @@ class RegressionScores(BaseModel):
     k: Optional[Union[StrictFloat, StrictInt]] = None
     k_hat: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="kHat")
     __properties: ClassVar[List[str]] = [
+        "yName",
         "r2",
         "mae",
         "rmse",
@@ -103,6 +105,7 @@ class RegressionScores(BaseModel):
 
         _obj = cls.model_validate(
             {
+                "yName": obj.get("yName"),
                 "r2": obj.get("r2"),
                 "mae": obj.get("mae"),
                 "rmse": obj.get("rmse"),

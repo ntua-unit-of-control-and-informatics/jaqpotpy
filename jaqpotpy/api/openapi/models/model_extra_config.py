@@ -31,8 +31,8 @@ class ModelExtraConfig(BaseModel):
     """  # noqa: E501
 
     torch_config: Optional[Dict[str, Any]] = Field(default=None, alias="torchConfig")
-    preprocessors: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
-    featurizers: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
+    preprocessors: Optional[Annotated[List[Transformer], Field(max_length=20)]] = None
+    featurizers: Optional[Annotated[List[Transformer], Field(max_length=20)]] = None
     __properties: ClassVar[List[str]] = ["torchConfig", "preprocessors", "featurizers"]
 
     model_config = ConfigDict(
