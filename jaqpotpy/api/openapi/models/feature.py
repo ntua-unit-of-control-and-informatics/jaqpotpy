@@ -34,7 +34,8 @@ class Feature(BaseModel):
     id: Optional[StrictInt] = None
     key: Annotated[str, Field(strict=True)] = Field(description="A key that must start with a letter, followed by any combination of letters, digits, hyphens, or underscores. For example, 'abc123', 'abc-test', or 'Abc_test'. It cannot start with a digit.")
     name: Annotated[str, Field(strict=True, max_length=255)] = Field(description="A name for the feature that will appear on top of the form field")
-    units: Optional[Annotated[str, Field(strict=True, max_length=255)]] = Field(default=None, description="A name for the feature that will appear on top of the form field")
+    units: Optional[Annotated[str, Field(strict=True, max_length=255)]] = Field(default=None, description="The units for the feature")
+    range: Optional[Annotated[str, Field(strict=True, max_length=255)]] = Field(default=None, description="The range for the feature")
     description: Optional[Annotated[str, Field(strict=True, max_length=2000)]] = None
     feature_type: FeatureType = Field(alias="featureType")
     feature_dependency: Optional[StrictStr] = Field(default=None, alias="featureDependency")
@@ -42,7 +43,7 @@ class Feature(BaseModel):
     possible_values: Optional[Annotated[List[FeaturePossibleValue], Field(max_length=1000)]] = Field(default=None, alias="possibleValues")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "key", "name", "units", "description", "featureType", "featureDependency", "visible", "possibleValues", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "key", "name", "units", "range", "description", "featureType", "featureDependency", "visible", "possibleValues", "createdAt", "updatedAt"]
 
     @field_validator('key')
     def key_validate_regular_expression(cls, value):
@@ -123,6 +124,7 @@ class Feature(BaseModel):
             "key": obj.get("key"),
             "name": obj.get("name"),
             "units": obj.get("units"),
+            "range": obj.get("range"),
             "description": obj.get("description"),
             "featureType": obj.get("featureType"),
             "featureDependency": obj.get("featureDependency"),
