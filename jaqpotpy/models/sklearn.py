@@ -19,6 +19,13 @@ from skl2onnx.common.data_types import (
 )
 import jaqpotpy
 from jaqpotpy.api.openapi.models.doa_data import DoaData
+from jaqpotpy.api.openapi.models import (
+    ModelScores,
+    Scores,
+    RegressionScores,
+    MulticlassClassificationScores,
+    BinaryClassificationScores,
+)
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
@@ -172,6 +179,13 @@ class SklearnModel(Model):
         self.average_cross_val_scores = {}
         self.cross_val_scores = {}
         self.randomization_test_results = {}
+        # In the case the attribute does not exist initialize to None
+        # This is to be compatible for older models without feat selection
+        try:
+            self.selected_features = self.dataset.selected_features
+        except AttributeError:
+            self.selected_features = None
+        self.scores = ModelScores()
 
     def _dtypes_to_jaqpotypes(self):
         for feature in self.independentFeatures + self.dependentFeatures:
@@ -389,15 +403,18 @@ class SklearnModel(Model):
         y_pred = self.predict(self.dataset)
         if y_pred.ndim > 1 and y_pred.shape[1] > 1:
             for output in range(y_pred.shape[1]):
-                self.train_scores["output_" + str(output)] = self._get_metrics(
+                self.train_scores[self.dataset.y_cols[output]] = self._get_metrics(
                     y[:, output], y_pred[:, output]
                 )
                 print(f"Goodness-of-fit metrics of output {output} on training set:")
-                print(self.train_scores["output_" + str(output)])
+                print(self.train_scores[self.dataset.y_cols[output]])
         else:
             self.train_scores = self._get_metrics(y, y_pred)
             print("Goodness-of-fit metrics on training set:")
             print(self.train_scores)
+        self._create_jaqpot_scores(
+            self.train_scores, score_type="train", n_output=self.dataset.y.shape[1]
+        )
 
         if self.dataset.smiles_cols:
             self.independentFeatures = list(
@@ -411,9 +428,12 @@ class SklearnModel(Model):
         else:
             self.independentFeatures = list()
         if self.dataset.x_cols:
-            intesection_of_features = list(
-                set(self.dataset.x_cols).intersection(set(self.dataset.active_features))
-            )
+            if self.selected_features is not None:
+                intesection_of_features = list(
+                    set(self.dataset.x_cols).intersection(set(self.selected_features))
+                )
+            else:
+                intesection_of_features = list(set(self.dataset.x_cols))
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
                 for feature in intesection_of_features
@@ -432,7 +452,10 @@ class SklearnModel(Model):
     def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        X_mat = dataset.X[self.dataset.active_features]
+        if self.selected_features is not None:
+            X_mat = dataset.X[self.selected_features]
+        else:
+            X_mat = dataset.X
         sklearn_prediction = self._predict_with_X(X_mat, self.trained_model)
         return sklearn_prediction
 
@@ -460,10 +483,16 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
-        X_mat = dataset.X[self.dataset.active_features]
+        X_mat = dataset.X[self.selected_features]
         if self.preprocess_x:
             X_mat = self.preprocess_pipeline.transform(X_mat)
-        sklearn_probs = self.trained_model.predict_proba(X_mat)
+
+        if self.selected_features is not None:
+            sklearn_probs = self.trained_model.predict_proba(
+                dataset.X[self.selected_features]
+            )
+        else:
+            sklearn_probs = self.trained_model.predict_proba(dataset.X)
 
         sklearn_probs_list = [
             max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))
@@ -538,6 +567,77 @@ class SklearnModel(Model):
             model=self, name=name, description=description, visibility=visibility
         )
 
+    def _create_jaqpot_scores(self, fit_scores, score_type="train", n_output=1):
+        for output in range(n_output):
+            y_name = self.dataset.y_cols[output]
+            if (n_output - 1) == 0:
+                scores = fit_scores
+            else:
+                scores = fit_scores[y_name]
+
+            if self.task.upper() == "REGRESSION":
+                jaqpotScores = Scores(
+                    regression=RegressionScores(
+                        y_name=y_name,
+                        r2=scores["r2"],
+                        mae=scores["mae"],
+                        rmse=scores["rmse"],
+                        rSquaredDiffRZero=scores["rSquaredDiffRZero"],
+                        rSquaredDiffRZeroHat=scores["rSquaredDiffRZeroHat"],
+                        absDiffRZeroHat=scores["absDiffRZeroHat"],
+                        k=scores["k"],
+                        kHat=scores["khat"],
+                    )
+                )
+            elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
+                jaqpotScores = Scores(
+                    multiclass_classification=MulticlassClassificationScores(
+                        y_name=y_name,
+                        accuracy=scores["accuracy"],
+                        balanced_accuracy=scores["balancedAccuracy"],
+                        precision=scores["precision"],
+                        recall=scores["recall"],
+                        jaccard=scores["jaccard"],
+                        f1_score=scores["f1Score"],
+                        matthews_corr_coef=scores["matthewsCorrCoef"],
+                        confusion_matrix=scores["confusionMatrix"],
+                    )
+                )
+            elif self.task.upper() == "BINARY_CLASSIFICATION":
+                jaqpotScores = Scores(
+                    binary_classification=BinaryClassificationScores(
+                        y_name=y_name,
+                        accuracy=scores["accuracy"],
+                        balanced_accuracy=scores["balancedAccuracy"],
+                        precision=scores["precision"],
+                        recall=scores["recall"],
+                        jaccard=scores["jaccard"],
+                        f1_score=scores["f1Score"],
+                        matthews_corr_coef=scores["matthewsCorrCoef"],
+                        confusion_matrix=scores["confusionMatrix"],
+                    )
+                )
+
+            if score_type == "train":
+                if not hasattr(self.scores, "train") or self.scores.train is None:
+                    self.scores.train = []
+                self.scores.train.append(jaqpotScores)
+            elif score_type == "test":
+                if not hasattr(self.scores, "test") or self.scores.test is None:
+                    self.scores.test = []
+                self.scores.test.append(jaqpotScores)
+            elif score_type == "cross_validation":
+                if (
+                    not hasattr(self.scores, "cross_validation")
+                    or self.scores.cross_validation is None
+                ):
+                    self.scores.cross_validation = []
+                self.scores.cross_validation.append(jaqpotScores)
+            else:
+                raise TypeError(
+                    "The score_type should be either 'train', 'test' or 'cross_validation'."
+                )
+
     @staticmethod
     def check_preprocessor(preprocessor_list: List, feat_type: str):
         # Get all valid preprocessing classes from sklearn.preprocessing
@@ -574,22 +674,28 @@ class SklearnModel(Model):
         if dataset.y.ndim > 1 and dataset.y.shape[1] > 1:
             for output in range(dataset.y.shape[1]):
                 y_target = dataset.y.iloc[:, output]
-                self.average_cross_val_scores["output_" + str(output)] = (
+                self.average_cross_val_scores[self.dataset.y_cols[output]] = (
                     self._single_cross_validation(
                         dataset=dataset,
                         y=y_target,
                         n_splits=n_splits,
-                        n_output=output,
+                        n_output=(output + 1),
                     )
                 )
         else:
             self.average_cross_val_scores = self._single_cross_validation(
-                dataset=dataset, y=dataset.y, n_splits=n_splits, n_output=0
+                dataset=dataset, y=dataset.y, n_splits=n_splits, n_output=1
             )
+        self._create_jaqpot_scores(
+            self.average_cross_val_scores,
+            score_type="cross_validation",
+            n_output=dataset.y.shape[1],
+        )
+
         return self.average_cross_val_scores
 
     def _single_cross_validation(
-        self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=0
+        self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=1
     ):
         kf = KFold(n_splits=n_splits, shuffle=True, random_state=self.random_seed)
 
@@ -598,7 +704,10 @@ class SklearnModel(Model):
                 "You need to first run SklearnModel.fit() and train a model"
             )
 
-        X_mat = dataset.X[self.dataset.active_features]
+        if self.selected_features is not None:
+            X_mat = dataset.X[self.selected_features]
+        else:
+            X_mat = dataset.X
         # if self.preprocess_x:
         #     X_transformed = self.preprocess_pipeline.transform(X_mat)
         #     X_transformed = pd.DataFrame(X_transformed)
@@ -625,10 +734,10 @@ class SklearnModel(Model):
             metrics_result = self._get_metrics(
                 y_test.to_numpy().ravel(), y_pred.ravel()
             )
-            self.cross_val_scores.setdefault("output_" + str(n_output), {})
-            self.cross_val_scores["output_" + str(n_output)]["fold_" + str(fold)] = (
-                metrics_result
-            )
+            self.cross_val_scores.setdefault(self.dataset.y_cols[n_output - 1], {})
+            self.cross_val_scores[self.dataset.y_cols[n_output - 1]][
+                "fold_" + str(fold)
+            ] = metrics_result
             fold += 1
 
             if sum_metrics is None:
@@ -647,8 +756,10 @@ class SklearnModel(Model):
         y_true = dataset.__get_Y__().to_numpy()
         if y_true.ndim > 1 and y_true.shape[1] > 1:
             for output in range(y_true.shape[1]):
-                self.test_scores["output_" + str(output)] = self._evaluate_with_model(
-                    y_true, dataset.X, self.trained_model, output=output
+                self.test_scores[self.dataset.y_cols[output]] = (
+                    self._evaluate_with_model(
+                        y_true, dataset.X, self.trained_model, output=output
+                    )
                 )
         else:
             if y_true.ndim > 1:
@@ -659,7 +770,9 @@ class SklearnModel(Model):
                 self.test_scores = self._evaluate_with_model(
                     y_true.reshape(-1, 1), dataset.X, self.trained_model, output=0
                 )
-
+        self._create_jaqpot_scores(
+            self.test_scores, score_type="test", n_output=dataset.y.shape[1]
+        )
         return self.test_scores
 
     def _evaluate_with_model(self, y_true, X_mat, model, output=1):
@@ -710,7 +823,7 @@ class SklearnModel(Model):
                     )
 
                     self.randomization_test_results["iteration_" + str(iteration)][
-                        "output_" + str(output)
+                        self.dataset.y_cols[output]
                     ] = {"Train": train_metrics_result, "Test": test_metrics_result}
 
             else:
