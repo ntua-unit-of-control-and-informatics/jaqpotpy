@@ -133,8 +133,10 @@ class Jaqpot:
             visibility=ModelVisibility(visibility),
             task=ModelTask(model.task.upper()),
             raw_model=raw_model,
+            selected_features=model.selected_features,
             description=description,
             extra_config=model.extra_config,
+            scores=model.scores,
         )
         response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
