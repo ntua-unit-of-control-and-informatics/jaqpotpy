@@ -159,7 +159,7 @@ class SklearnModel(Model):
         self.libraries = None
         self.jaqpotpy_version = jaqpotpy.__version__
         self.task = self.dataset.task
-        self.initial_types_preprocessing = None
+        self.initial_types_preprocessor = None
         self.initial_types = None
         self.onnx_preprocessor = None
         self.onnx_model = None
@@ -248,7 +248,7 @@ class SklearnModel(Model):
 
     def _create_onnx_preprocessor(self, onnx_options: Optional[Dict] = None):
         name = self.preprocess_pipeline.__class__.__name__ + "_ONNX"
-        self.initial_types_preprocessing = []
+        self.initial_types_preprocessor = []
         dtype_array = self.dataset.X.dtypes.values
         dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
         all_numerical = all(
@@ -270,7 +270,7 @@ class SklearnModel(Model):
             for dtype in dtype_str_array
         )
         if all_numerical:
-            self.initial_types_preprocessing = [
+            self.initial_types_preprocessor = [
                 (
                     "input",
                     self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
@@ -278,7 +278,7 @@ class SklearnModel(Model):
             ]
         else:
             for i, feature in enumerate(self.dataset.X.columns):
-                self.initial_types_preprocessing.append(
+                self.initial_types_preprocessor.append(
                     (
                         self.dataset.X.columns[i],
                         self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
@@ -286,7 +286,7 @@ class SklearnModel(Model):
                 )
         self.onnx_preprocessor = convert_sklearn(
             self.preprocess_pipeline,
-            initial_types=self.initial_types_preprocessing,
+            initial_types=self.initial_types_preprocessor,
             name=name,
             options=onnx_options,
         )
@@ -478,18 +478,12 @@ class SklearnModel(Model):
             X = self.preprocess_pipeline.transform(dataset.X)
         else:
             X = dataset.X.values
-        if len(self.initial_types) == 1:
-            input_dtype = (
-                "float32"
-                if isinstance(self.initial_types[0][1], FloatTensorType)
-                else "string"
-            )
-            input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
-        else:
-            input_data = {
-                sess.get_inputs()[i].name: X[self.initial_types[i][0]].reshape(-1, 1)
-                for i in range(len(self.initial_types))
-            }
+        input_dtype = (
+            "float32"
+            if isinstance(self.initial_types[0][1], FloatTensorType)
+            else "string"
+        )
+        input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
         onnx_prediction = sess.run(None, input_data)
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
