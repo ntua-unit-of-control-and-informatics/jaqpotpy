@@ -48,6 +48,11 @@ class PredictionModel(BaseModel):
     raw_model: StrictStr = Field(
         description="Raw model data in serialized format", alias="rawModel"
     )
+    raw_preprocessor: Optional[StrictStr] = Field(
+        default=None,
+        description="Raw preprocessor data in serialized format",
+        alias="rawPreprocessor",
+    )
     doas: Optional[List[Doa]] = Field(
         default=None, description="List of Domain of Applicability (DoA) configurations"
     )
@@ -91,6 +96,7 @@ class PredictionModel(BaseModel):
         "independentFeatures",
         "type",
         "rawModel",
+        "rawPreprocessor",
         "doas",
         "selectedFeatures",
         "task",
@@ -231,6 +237,7 @@ class PredictionModel(BaseModel):
                 else None,
                 "type": obj.get("type"),
                 "rawModel": obj.get("rawModel"),
+                "rawPreprocessor": obj.get("rawPreprocessor"),
                 "doas": [Doa.from_dict(_item) for _item in obj["doas"]]
                 if obj.get("doas") is not None
                 else None,

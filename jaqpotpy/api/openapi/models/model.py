@@ -72,6 +72,11 @@ class Model(BaseModel):
     torch_config: Optional[Dict[str, Any]] = Field(default=None, alias="torchConfig")
     preprocessors: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
     featurizers: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
+    raw_preprocessor: Optional[Union[StrictBytes, StrictStr]] = Field(
+        default=None,
+        description="A base64 representation of the raw preprocessor.",
+        alias="rawPreprocessor",
+    )
     raw_model: Union[StrictBytes, StrictStr] = Field(
         description="A base64 representation of the raw model.", alias="rawModel"
     )
@@ -117,6 +122,7 @@ class Model(BaseModel):
         "torchConfig",
         "preprocessors",
         "featurizers",
+        "rawPreprocessor",
         "rawModel",
         "creator",
         "canEdit",
@@ -278,6 +284,7 @@ class Model(BaseModel):
                 ]
                 if obj.get("featurizers") is not None
                 else None,
+                "rawPreprocessor": obj.get("rawPreprocessor"),
                 "rawModel": obj.get("rawModel"),
                 "creator": User.from_dict(obj["creator"])
                 if obj.get("creator") is not None
