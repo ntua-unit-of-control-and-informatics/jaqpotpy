@@ -483,16 +483,14 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
-        X_mat = dataset.X[self.selected_features]
+        if self.selected_features is not None:
+            X_mat = dataset.X[self.selected_features]
+        else:
+            X_mat = dataset.X
         if self.preprocess_x:
             X_mat = self.preprocess_pipeline.transform(X_mat)
 
-        if self.selected_features is not None:
-            sklearn_probs = self.trained_model.predict_proba(
-                dataset.X[self.selected_features]
-            )
-        else:
-            sklearn_probs = self.trained_model.predict_proba(dataset.X)
+        sklearn_probs = self.trained_model.predict_proba(X_mat)
 
         sklearn_probs_list = [
             max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))
