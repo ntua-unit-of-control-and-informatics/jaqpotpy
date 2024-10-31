@@ -105,6 +105,9 @@ class Jaqpot:
         """
         model_api = ModelApi(self.http_client)
         raw_model = model_to_b64encoding(model.onnx_model.SerializeToString())
+        raw_preprocessor = model_to_b64encoding(
+            model.onnx_preprocessor.SerializeToString()
+        )
         body_model = Model(
             name=name,
             type=model.type,
@@ -132,6 +135,7 @@ class Jaqpot:
             ],
             visibility=ModelVisibility(visibility),
             task=ModelTask(model.task.upper()),
+            raw_preprocessor=raw_preprocessor,
             raw_model=raw_model,
             selected_features=model.selected_features,
             description=description,
