@@ -49,7 +49,9 @@ y = testModel.cross_validate(dataset, n_splits=2)
 z = testModel.randomization_test(train_dataset=dataset, test_dataset=prediction_dataset)
 
 # Classification example
-path_multi_class = "./jaqpotpy/test_data/test_data_smiles_multi_classification.csv"
+path_multi_class = (
+    "./jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS.csv"
+)
 
 multi_classification_df = pd.read_csv(path_multi_class)
 
