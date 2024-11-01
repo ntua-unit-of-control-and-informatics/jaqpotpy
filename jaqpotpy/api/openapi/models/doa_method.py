@@ -19,19 +19,24 @@ from enum import Enum
 from typing_extensions import Self
 
 
-class ErrorCode(str, Enum):
+class DoaMethod(str, Enum):
     """
-    ErrorCode
+    DoaMethod
     """
 
     """
     allowed enum values
     """
-    ENUM_1001 = '1001'
+    LEVERAGE = 'LEVERAGE'
+    BOUNDING_BOX = 'BOUNDING_BOX'
+    KERNEL_BASED = 'KERNEL_BASED'
+    MEAN_VAR = 'MEAN_VAR'
+    MAHALANOBIS = 'MAHALANOBIS'
+    CITY_BLOCK = 'CITY_BLOCK'
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of ErrorCode from a JSON string"""
+        """Create an instance of DoaMethod from a JSON string"""
         return cls(json.loads(json_str))
 
 

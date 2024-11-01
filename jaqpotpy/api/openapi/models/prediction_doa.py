@@ -19,21 +19,22 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
+from jaqpotpy.api.openapi.models.doa_method import DoaMethod
 from typing import Optional, Set
 from typing_extensions import Self
 
-class Library(BaseModel):
+class PredictionDoa(BaseModel):
     """
-    Library
+    PredictionDoa
     """ # noqa: E501
     id: Optional[StrictInt] = None
-    name: StrictStr
-    version: StrictStr
+    method: DoaMethod
+    data: Dict[str, Any] = Field(description="The doa calculated data")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "name", "version", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "method", "data", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -53,7 +54,7 @@ class Library(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of Library from a JSON string"""
+        """Create an instance of PredictionDoa from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -78,7 +79,7 @@ class Library(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of Library from a dict"""
+        """Create an instance of PredictionDoa from a dict"""
         if obj is None:
             return None
 
@@ -87,8 +88,8 @@ class Library(BaseModel):
 
         _obj = cls.model_validate({
             "id": obj.get("id"),
-            "name": obj.get("name"),
-            "version": obj.get("version"),
+            "method": obj.get("method"),
+            "data": obj.get("data"),
             "createdAt": obj.get("createdAt"),
             "updatedAt": obj.get("updatedAt")
         })

@@ -8,6 +8,5 @@ from jaqpotpy.api.openapi.api.feature_api import FeatureApi
 from jaqpotpy.api.openapi.api.lead_api import LeadApi
 from jaqpotpy.api.openapi.api.model_api import ModelApi
 from jaqpotpy.api.openapi.api.organization_api import OrganizationApi
-from jaqpotpy.api.openapi.api.organization_invitation_api import (
-    OrganizationInvitationApi,
-)
+from jaqpotpy.api.openapi.api.organization_invitation_api import OrganizationInvitationApi
+

@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 from typing import Any, ClassVar, Dict, List
 from typing import Optional, Set
 from typing_extensions import Self
@@ -27,7 +27,7 @@ class PredictionResponse(BaseModel):
     """
     PredictionResponse
     """ # noqa: E501
-    predictions: List[Any] = Field(description="List of predictions")
+    predictions: List[Any]
     __properties: ClassVar[List[str]] = ["predictions"]
 
     model_config = ConfigDict(
