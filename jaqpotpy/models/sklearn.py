@@ -311,7 +311,9 @@ class SklearnModel(Model):
         self.initial_types = [
             (
                 "input",
-                self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
+                self._map_onnx_dtype(
+                    "float32", self.trained_model.named_steps["model"].n_features_in_
+                ),
             )
         ]
         self.onnx_model = convert_sklearn(
@@ -398,6 +400,7 @@ class SklearnModel(Model):
             X_transformed = pd.DataFrame(X_transformed)
         else:
             X_transformed = X
+
         self.trained_model = self.pipeline.fit(X_transformed, y)
 
         y_pred = self.predict(self.dataset)
@@ -429,11 +432,15 @@ class SklearnModel(Model):
             self.independentFeatures = list()
         if self.dataset.x_cols:
             if self.selected_features is not None:
-                intesection_of_features = list(
-                    set(self.dataset.x_cols).intersection(set(self.selected_features))
-                )
+                intesection_of_features = [
+                    feature
+                    for feature in self.dataset.x_cols
+                    if feature in self.selected_features
+                ]
             else:
-                intesection_of_features = list(set(self.dataset.x_cols))
+                intesection_of_features = intesection_of_features = [
+                    feature for feature in self.dataset.x_cols
+                ]
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
                 for feature in intesection_of_features
