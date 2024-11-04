@@ -13,10 +13,7 @@ import torch.nn.functional as F
 
 class BinaryGraphModelTrainer(TorchModelTrainer):
     """
-    Trainer class for Binary Classification using Graph Neural Networks for SMILES and external features.
-
-    Attributes:
-        decision_threshold (float): Decision threshold for binary classification.
+    Trainer class for binary classification using Graph Neural Networks (GNNs) designed for SMILES.
     """
 
     def __init__(
@@ -32,35 +29,18 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         log_filepath=None,
     ):
         """
-        The BinaryGraphModelTrainer constructor.
+        Initializes BinaryGraphModelTrainer for training binary classification GNNs.
 
         Args:
             model (torch.nn.Module): The torch model to be trained.
             n_epochs (int): Number of training epochs.
-            optimizer (torch.optim.Optimizer): The optimizer used for training the model.
-            loss_fn (torch.nn.Module): The loss function used for training.
-            scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
-            device (str, optional): The device on which to train the model. Default is 'cpu'.
-            use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
-            log_enabled (bool, optional): Whether logging is enabled. Default is True.
+            optimizer (torch.optim.Optimizer): Optimizer for model training.
+            loss_fn (torch.nn.Module): Loss function for binary classification.
+            scheduler (torch.optim.lr_scheduler.LRScheduler, optional): Learning rate scheduler. Default is None.
+            device (str, optional): Device for model training, e.g., 'cpu' or 'cuda'. Default is 'cpu'.
+            use_tqdm (bool, optional): If True, uses tqdm for progress display. Default is True.
+            log_enabled (bool, optional): If True, enables logging. Default is True.
             log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
-            decision_threshold (float, optional): Decision threshold for binary classification. Default is 0.5.
-
-        Example:
-        ```
-        >>> import torch
-        >>> from jaqpotpy.jaqpotpy_torch.models import GraphAttentionNetwork
-        >>> from jaqpotpy.jaqpotpy_torch.trainers import BinaryGraphModelTrainer
-        >>>
-        >>> model = GraphAttentionNetwork(input_dim=10,
-        ...                               hidden_dims=[32, 32]
-        ...                               edge_dim=5,
-        ...                               output_dim=1)
-        >>> optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
-        >>> loss_fn = torch.nn.BCEWithLogitsLoss()
-        >>>
-        >>> trainer = BinaryGraphModelTrainer(model, n_epochs=50, optimizer=optimizer, loss_fn=loss_fn)
-        ```
         """
         super().__init__(
             model=model,
@@ -76,13 +56,13 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
 
     def get_model_kwargs(self, data):
         """
-        Fetch the model's keyword arguments.
+        Returns model's keyword arguments.
 
         Args:
-            data (torch_geometric.data.Data): Data object returned as returned by the Dataloader
+            data (torch_geometric.data.Data): Data object returned from the DataLoader.
 
         Returns:
-            dict: The required model kwargs. Set of keywords: {'*x*', '*edge_index*', '*batch*', '*edge_attr*'}. Note that '*edge_attr*' is only present if the model supports edge features.
+            dict: Model keyword arguments for graph data. Keys include 'x', 'edge_index', 'batch', and optionally 'edge_attr' if the model uses edge features.
         """
 
         kwargs = {}
@@ -98,11 +78,12 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
 
     def train(self, train_loader, val_loader=None):
         """
-        Train the model.
+        Trains the model for the specified number of epochs.
 
         Args:
-            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
-            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional): DataLoader for the validation dataset.
+            train_loader (torch_geometric.loader.DataLoader): DataLoader for training data.
+            val_loader (torch_geometric.loader.DataLoader, optional): DataLoader for validation data.
+
         Returns:
             None
         """
@@ -129,12 +110,13 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
 
     def _train_one_epoch(self, train_loader):
         """
-        This helper method handles the training loop for a single epoch, updating the model parameters and computing the running loss.
+        Trains the model for a single epoch.
 
         Args:
-            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
+            train_loader (torch_geometric.loader.DataLoader): DataLoader for training data.
+
         Returns:
-            float: The average loss of the current epoch.
+            float: Average loss of the current epoch.
         """
         running_loss = 0
         total_samples = 0
@@ -180,15 +162,15 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
 
     def evaluate(self, val_loader):
         """
-        Evaluate the model's performance on the validation set.
+        Evaluates the model on the validation set.
 
         Args:
-            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for validation data.
+
         Returns:
-            float: Average loss over the validation dataset.
-            dict: Dictionary containing evaluation metrics. The keys represent the metric names and the values are floats.
-            numpy.ndarray: Confusion matrix as a numpy array of shape (2, 2) representing true negative (TN), false positive (FP),
-                           false negative (FN), and true positive (TP) counts respectively. The elements are arranged as [[TN, FP], [FN, TP]].
+            float: Average loss on the validation dataset.
+            dict: Dictionary of evaluation metrics (e.g., accuracy, precision).
+            numpy.ndarray: Confusion matrix of shape (2, 2) representing TN, FP, FN, and TP counts.
         """
 
         running_loss = 0
@@ -235,12 +217,13 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
 
     def predict(self, val_loader):
         """
-        Provide predictions on the validation set.
+        Returns binary predictions for the validation set.
 
         Args:
-            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for validation data.
+
         Returns:
-            list: List of predictions.
+            list: List of binary predictions.
         """
         all_preds = []
         self.model.eval()
@@ -264,12 +247,13 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
 
     def predict_proba(self, val_loader):
         """
-        Provide the probabilities of the predictions on the validation set.
+        Returns prediction probabilities for the validation set.
 
         Args:
-            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
+            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for validation data.
+
         Returns:
-            list: List of predictions' probabilities.
+            list: List of prediction probabilities.
         """
         all_probs = []
         self.model.eval()
@@ -291,6 +275,17 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         return all_probs
 
     def _log_metrics(self, loss, metrics_dict, mode="train"):
+        """
+        Logs model metrics.
+
+        Args:
+            loss (float): Loss value.
+            metrics_dict (dict): Dictionary of metric names and values.
+            mode (str): "train" or "val" to indicate the logging mode.
+
+        Returns:
+            None
+        """
         if mode == "train":
             epoch_logs = " Train: "
         elif mode == "val":
@@ -309,6 +304,16 @@ class BinaryGraphModelTrainer(TorchModelTrainer):
         self.logger.info(epoch_logs)
 
     def _compute_metrics(self, y_true, y_pred):
+        """
+        Computes evaluation metrics.
+
+        Args:
+            y_true (list): True labels.
+            y_pred (list): Predicted labels.
+
+        Returns:
+            dict: Dictionary of computed metrics.
+        """
         accuracy = metrics.accuracy_score(y_true, y_pred)
         balanced_accuracy = metrics.balanced_accuracy_score(y_true, y_pred)
         precision = metrics.precision_score(y_true, y_pred, zero_division=0)

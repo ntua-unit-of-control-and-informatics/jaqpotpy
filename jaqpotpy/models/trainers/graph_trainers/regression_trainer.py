@@ -12,14 +12,9 @@ import torch.nn.functional as F
 
 
 class RegressionGraphModelTrainer(TorchModelTrainer):
-    """Trainer class for Regression using Graph Neural Networks for SMILES and external features."""
-
-    MODEL_TYPE = "regression-graph-model"
-    """'regression-graph-model'"""
-
-    @classmethod
-    def get_model_type(cls):
-        return cls.MODEL_TYPE
+    """
+    Trainer class for Regression using Graph Neural Networks for SMILES
+    """
 
     def __init__(
         self,
@@ -32,8 +27,8 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         use_tqdm=True,
         log_enabled=True,
         log_filepath=None,
-        normalization_mean=0.5,
-        normalization_std=1.0,
+        # normalization_mean=0.5,
+        # normalization_std=1.0,
     ):
         """The RegressionGraphModelTrainer constructor.
 
@@ -43,31 +38,11 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             n_epochs (int): Number of training epochs.
             optimizer (torch.optim.Optimizer): The optimizer used for training the model.
             loss_fn (torch.nn.Module): The loss function used for training.
-            scheduler (torch.optim.lr_scheduler.LRScheduler): The scheduler used for adjusting the learning rate during training. Default is None.
+            scheduler (torch.optim.lr_scheduler.LRScheduler, optional): The scheduler used for adjusting the learning rate during training. Default is None.
             device (str, optional): The device on which to train the model. Default is 'cpu'.
             use_tqdm (bool, optional): Whether to use tqdm for progress bars. Default is True.
             log_enabled (bool, optional): Whether logging is enabled. Default is True.
             log_filepath (str or None, optional): Path to the log file. If None, logging is not saved to a file. Default is None.
-            normalization_mean (float, optional): Mean used to normalize the true values of the regression variables before model training. Default is 0.
-            normalization_std' (float, optinal): Standard deviation used to normalize the true values of the regression variables before model training. Default is 1.
-
-        Example:
-        -------
-        ```
-        >>> import torch
-        >>> from jaqpotpy.jaqpotpy_torch.models import GraphAttentionNetwork
-        >>> from jaqpotpy.jaqpotpy_torch.trainers import RegressionGraphModelTrainer
-        >>>
-        >>> model = GraphAttentionNetwork(input_dim=10,
-        ...                               hidden_dims=[32, 32]
-        ...                               edge_dim=5,
-        ...                               output_dim=num_classes)
-        >>> optimizer = torch.optim.Adam(model.parameters(), lr=0.0005)
-        >>> loss_fn = torch.nn.MSELoss()
-        >>>
-        >>> trainer = MulticlassGraphModelTrainer(model, n_epochs=50, optimizer=optimizer, loss_fn=loss_fn)
-        ```
-
         """
         super().__init__(
             model=model,
@@ -86,12 +61,12 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
 
         Args:
         ----
-            data (torch_geometric.data.Data): Data object returned as returned by the Dataloader
+            data (torch_geometric.data.Data): Data object returned from the DataLoader.
 
         Returns:
         -------
-            dict: The required model kwargs. Set of keywords: {'*x*', '*edge_index*', '*batch*', '*edge_attr*'}. Note that '*edge_attr*' is only present if the model supports edge features.
-
+            dict: The required model keyword arguments. Contains keys: {'x', 'edge_index', 'batch', 'edge_attr'}.
+                  Note that 'edge_attr' is only present if the model supports edge features.
         """
         kwargs = {}
 
@@ -112,12 +87,11 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]):
                 DataLoader for the training dataset.
             val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader], optional):
-                DataLoader for the validation dataset.
+                DataLoader for the validation dataset. Default is None.
 
         Returns:
         -------
             None
-
         """
         for i in range(self.n_epochs):
             self.current_epoch += 1
@@ -141,18 +115,15 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
             self.scheduler.step()
 
     def _train_one_epoch(self, train_loader):
-        """This helper method handles the training loop for a single epoch, updating the model parameters and
-        computing the running loss.
+        """Handles the training loop for a single epoch, updating the model parameters and computing the running loss.
 
         Args:
         ----
-            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the
-                training dataset.
+            train_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the training dataset.
 
         Returns:
         -------
             float: The average loss of the current epoch.
-
         """
         running_loss = 0
         total_samples = 0
@@ -207,7 +178,6 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         -------
             float: Average loss over the validation dataset.
             dict: Dictionary containing evaluation metrics. The keys represent the metric names and the values are floats.
-
         """
         running_loss = 0
         total_samples = 0
@@ -256,7 +226,6 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         Returns:
         -------
             list: List of predictions.
-
         """
         all_preds = []
         self.model.eval()
@@ -273,11 +242,23 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
 
                 all_preds.extend(outputs.tolist())
 
-        all_preds = self._denormalize(torch.tensor(all_preds)).tolist()
+        # all_preds = self._denormalize(torch.tensor(all_preds)).tolist()
 
         return all_preds
 
     def _log_metrics(self, loss, metrics_dict, mode="train"):
+        """Log metrics for the current epoch.
+
+        Args:
+        ----
+            loss (float): The loss value for the current epoch.
+            metrics_dict (dict): Dictionary of metrics to log.
+            mode (str, optional): Indicates whether the metrics are for training or validation. Default is "train".
+
+        Returns:
+        -------
+            None
+        """
         if mode == "train":
             epoch_logs = " Train: "
         elif mode == "val":
@@ -296,6 +277,17 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         self.logger.info(epoch_logs)
 
     def _compute_metrics(self, y_true, y_pred):
+        """Compute evaluation metrics based on the true and predicted values.
+
+        Args:
+        ----
+            y_true (list): List of true values.
+            y_pred (list): List of predicted values.
+
+        Returns:
+        -------
+            dict: A dictionary containing the computed metrics such as explained variance, R^2, MSE, RMSE, and MAE.
+        """
         explained_variance = metrics.explained_variance_score(y_true, y_pred)
         r2 = metrics.r2_score(y_true, y_pred)
         mse = metrics.mean_squared_error(y_true, y_pred)
@@ -317,27 +309,3 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
 
     # def _denormalize(self, x):
     #     return x.mul_(self.normalization_std).add_(self.normalization_mean)
-
-    def pyg_to_onnx(self, featurizer):
-        if self.model.training:
-            self.model.eval()
-            self.model = self.model.cpu()
-
-        dummy_smile = "CCC"
-        dummy_input = featurizer.featurize(dummy_smile)
-        x = dummy_input.x
-        edge_index = dummy_input.edge_index
-        batch = torch.zeros(x.shape[0], dtype=torch.int64)
-        buffer = io.BytesIO()
-        torch.onnx.export(
-            self.model,
-            args=(x, edge_index, batch),
-            f=buffer,
-            input_names=["x", "edge_index", "batch"],
-            dynamic_axes={"x": {0: "nodes"}, "edge_index": {1: "edges"}, "batch": [0]},
-        )
-        onnx_model_bytes = buffer.getvalue()
-        buffer.close()
-        model_scripted_base64 = base64.b64encode(onnx_model_bytes).decode("utf-8")
-
-        return model_scripted_base64
