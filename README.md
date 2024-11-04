@@ -8,7 +8,7 @@ The jaqpotpy library enables you to upload and deploy machine learning models to
 
 ### Prerequisites
 
-- Python 3.x
+- Python 3.10
 - An account on **https://app.jaqpot.org**
 
 ### Installation
@@ -43,54 +43,48 @@ Follow these steps to train and deploy your model on Jaqpot:
 _Note: Ensure you use a pandas DataFrame for training your model._
 
 ```python
-from jaqpotpy import Jaqpot
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+import numpy as np
+from sklearn.ensemble import RandomForestRegressor
+from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.models import SklearnModel
+from jaqpotpy import Jaqpot
 
-# Initialize Jaqpot
+np.random.seed(42)
+X1 = np.random.rand(100)
+X2 = np.random.rand(100)
+ACTIVITY = 2 * X1 + 3 * X2 + np.random.randn(100) * 0.1
+df = pd.DataFrame({"X1": X1, "X2": X2, "ACTIVITY": ACTIVITY})
+y_cols = ["ACTIVITY"]
+x_cols = ["X1", "X2"]
+
+# Step 1: Create a Jaqpotpy dataset
+dataset = JaqpotpyDataset(df=df, y_cols=y_cols, x_cols=x_cols, task="regression")
+
+# Step 2: Build a model
+rf = RandomForestRegressor(random_state=42)
+myModel = SklearnModel(dataset=dataset, model=rf)
+myModel.fit()
+
+# Step 3: Upload the model on Jaqpot
 jaqpot = Jaqpot()
+jaqpot.login()
+myModel.deploy_on_jaqpot(
+    jaqpot=jaqpot,
+    name="Demo: Regression",
+    description="This is a description",
+    visibility="PRIVATE",
+)
 
-# Load your data
-df = pd.read_csv('/path/to/gdp.csv')
-
-# Train your model
-lm = LinearRegression()
-y = df['GDP']
-X = df[['LFG', 'EQP', 'NEQ', 'GAP']]
-model = lm.fit(X=X, y=y)
-
-# Deploy the model on Jaqpot
-jaqpot.deploy_sklearn(model, X, y, title="GDP Model", description="Predicting GDP based on various factors")
 ```
 
 The function will provide you with the model ID that you can use to manage your model through the user interface and API.
 
 Result:
 ```text
-- INFO - Model with ID: <model_id> created. Visit the application to proceed.
+<DATE> - INFO - Model has been successfully uploaded. The url of the model is https://app.jaqpot.org/dashboard/models/<ModelID>
 ```
 
 #### Managing Your Models
 
 You can further manage your models through the Jaqpot user interface at https://app.jaqpot.org. This platform allows you to view detailed documentation, share models with your contacts, and make predictions.
-
-### Releasing to PyPI
-Releasing the latest version of jaqpotpy to PyPI is automated via GitHub Actions. When you create a new release on GitHub, the workflow is triggered to publish the latest version to the PyPI registry.
-
-#### How to Release
-1. Follow Semantic Versioning: Use the format 1.XX.YY where XX is the minor version and YY is the patch version.
-
-2. Create a New Release:
-
-- Navigate to the repository’s Releases section.
-- Click on Draft a new release.
-
-3. Generate Release Notes:
-
-Use GitHub’s feature to automatically generate release notes or customize them as needed.
-
-4. Publish the Release:
-
-Once published, the GitHub Action will automatically upload the latest files to the PyPI registry.
-
-After the release is completed, the new version of jaqpotpy will be available on PyPI and ready for users to install.
