@@ -5,13 +5,15 @@ from typing import Any, Optional
 
 class SmilesGraphDataset(Dataset):
     """
-    A PyTorch Dataset class for handling SMILES strings as graphs.
-    This class overrides `__getitem__` and `__len__` (check source code for methods' docstrings).
+    A PyTorch Dataset class for handling SMILES strings as graph data suitable for training
+    graph neural networks. The class transforms SMILES strings into graph representations using
+    a specified featurizer and optionally supports target values for supervised learning tasks.
+
     Attributes:
-    smiles (list): A list of SMILES strings.
-    y (list, optional): A list of target values.
-    featurizer (SmilesGraphFeaturizer): The object to transform SMILES strings into graph representations.
-    precomputed_features (list, optional): A list of precomputed features. If precompute_featurization() is not called, this attribute remains None.
+        smiles (list): A list of SMILES strings to be converted into graph data.
+        y (list, optional): A list of target values associated with each SMILES string.
+        featurizer (SmilesGraphFeaturizer): A featurizer to transform SMILES into graph representations.
+        precomputed_features (list, optional): Precomputed graph features; remains None until `precompute_featurization` is called.
     """
 
     def __init__(
@@ -20,7 +22,15 @@ class SmilesGraphDataset(Dataset):
         y: Optional[list] = None,
         featurizer: Optional[SmilesGraphFeaturizer] = None,
     ):
-        """The SmilesGraphDataset constructor."""
+        """
+        Initializes the SmilesGraphDataset with SMILES strings, target values, and an optional featurizer.
+
+        Args:
+            smiles (list): List of SMILES strings to be transformed into graphs.
+            y (list, optional): List of target values for supervised learning tasks.
+            featurizer (SmilesGraphFeaturizer, optional): A featurizer for converting SMILES into graphs;
+                                                         if not provided, a default featurizer is used.
+        """
         super().__init__()
         self.smiles = smiles
         self.y = y
@@ -36,7 +46,16 @@ class SmilesGraphDataset(Dataset):
         self.precomputed_features = None
 
     def precompute_featurization(self):
-        """Precomputes the featurization of the dataset before being accessed by __getitem__"""
+        """
+        Precomputes the featurized graph representations of the SMILES strings in the dataset.
+
+        This method prepares the graph data in advance, which can improve efficiency when
+        accessing individual data samples. Each SMILES string is transformed into a graph
+        representation (and paired with its target value if available).
+
+        Sets:
+            self.precomputed_features (list): A list of graph features precomputed for each SMILES.
+        """
         if self.y:
             self.precomputed_features = [
                 self.featurizer(sm, y) for sm, y in zip(self.smiles, self.y)
@@ -45,25 +64,37 @@ class SmilesGraphDataset(Dataset):
             self.precomputed_features = [self.featurizer(sm) for sm in self.smiles]
 
     def get_num_node_features(self):
-        """Returns the number of node features."""
+        """
+        Returns the number of node features (atom-level features) in each graph representation.
+
+        Returns:
+            int: The number of features associated with each node (atom).
+        """
         return len(self.get_atom_feature_labels())
 
     def get_num_edge_features(self):
-        """Returns the number of edge features."""
+        """
+        Returns the number of edge features (bond-level features) in each graph representation.
+
+        Returns:
+            int: The number of features associated with each edge (bond).
+        """
         return len(self.get_bond_feature_labels())
 
     def __getitem__(self, idx):
         """
-        Retrieves the featurized graph Data object and target value for a given index.
+        Retrieves a featurized graph representation and target value (if available) for a specific index.
+
         Args:
-            idx (int): Index of the data to retrieve.
+            idx (int): Index of the sample to retrieve.
+
         Returns:
-            torch_geometric.data.Data: A torch_geometric.data.Data object for this single sample containing:
+            torch_geometric.data.Data: A graph data object containing:
                 - x (torch.Tensor): Node feature matrix with shape [num_nodes, num_node_features].
                 - edge_index (LongTensor): Graph connectivity in COO format with shape [2, num_edges].
                 - edge_attr (torch.Tensor, optional): Edge feature matrix with shape [num_edges, num_edge_features].
-                - y (float): Graph-level ground-truth label.
-                - smiles (str): The SMILES string corresponding to the particular sample.
+                - y (float, optional): Target value associated with the graph, if provided.
+                - smiles (str): The SMILES string for the specific sample.
         """
         if self.precomputed_features:
             return self.precomputed_features[idx]
@@ -73,11 +104,18 @@ class SmilesGraphDataset(Dataset):
 
     def __len__(self):
         """
-        __len__ functionality is important for the DataLoader to determine batching,
-        shuffling and iterating over the dataset.
+        Returns the total number of SMILES strings in the dataset, necessary for data loading operations.
+
+        Returns:
+            int: The length of the dataset (number of SMILES strings).
         """
         return len(self.smiles)
 
     def __repr__(self) -> str:
-        """Official string representation of the Dataset Object"""
+        """
+        Returns a formal string representation of the SmilesGraphDataset object, indicating its class name.
+
+        Returns:
+            str: Class name as the representation of the dataset object.
+        """
         return self.__class__.__name__
