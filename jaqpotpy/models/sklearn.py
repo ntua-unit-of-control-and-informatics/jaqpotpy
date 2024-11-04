@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import KFold
 import numpy as np
+import pandas as pd
 from onnxruntime import InferenceSession
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import (
@@ -146,13 +147,18 @@ class SklearnModel(Model):
         self.featurizer = dataset.featurizer
         self.random_seed = random_seed
         self.model = model
+        self.preprocess_pipeline = None
         self.pipeline = None
         self.trained_model = None
         self.doa = doa if isinstance(doa, list) else [doa] if doa else None
+        self.doa_data = None
         self.preprocess_x = (
-            preprocess_x if isinstance(preprocess_x, list) else [preprocess_x]
+            (preprocess_x if isinstance(preprocess_x, list) else [preprocess_x])
+            if preprocess_x
+            else None
         )
-        SklearnModel.check_preprocessor(self.preprocess_x, feat_type="X")
+        if self.preprocess_x is not None:
+            SklearnModel.check_preprocessor(self.preprocess_x, feat_type="X")
         self.preprocess_y = (
             preprocess_y if isinstance(preprocess_y, list) else [preprocess_y]
         )
@@ -161,7 +167,9 @@ class SklearnModel(Model):
         self.libraries = None
         self.jaqpotpy_version = jaqpotpy.__version__
         self.task = self.dataset.task
+        self.initial_types_preprocessor = None
         self.initial_types = None
+        self.onnx_preprocessor = None
         self.onnx_model = None
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
@@ -253,9 +261,9 @@ class SklearnModel(Model):
         else:
             return None
 
-    def _create_onnx(self, onnx_options: Optional[Dict] = None):
-        name = self.model.__class__.__name__ + "_ONNX"
-        self.initial_types = []
+    def _create_onnx_preprocessor(self, onnx_options: Optional[Dict] = None):
+        name = self.preprocess_pipeline.__class__.__name__ + "_ONNX"
+        self.initial_types_preprocessor = []
         dtype_array = self.dataset.X.dtypes.values
         dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
         all_numerical = all(
@@ -277,7 +285,7 @@ class SklearnModel(Model):
             for dtype in dtype_str_array
         )
         if all_numerical:
-            self.initial_types = [
+            self.initial_types_preprocessor = [
                 (
                     "input",
                     self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
@@ -285,13 +293,30 @@ class SklearnModel(Model):
             ]
         else:
             for i, feature in enumerate(self.dataset.X.columns):
-                self.initial_types.append(
+                self.initial_types_preprocessor.append(
                     (
                         self.dataset.X.columns[i],
                         self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
                     )
                 )
+        self.onnx_preprocessor = convert_sklearn(
+            self.preprocess_pipeline,
+            initial_types=self.initial_types_preprocessor,
+            name=name,
+            options=onnx_options,
+        )
 
+    def _create_onnx_model(self, onnx_options: Optional[Dict] = None):
+        name = self.model.__class__.__name__ + "_ONNX"
+        self.initial_types = []
+        self.initial_types = [
+            (
+                "input",
+                self._map_onnx_dtype(
+                    "float32", self.trained_model.named_steps["model"].n_features_in_
+                ),
+            )
+        ]
         self.onnx_model = convert_sklearn(
             self.trained_model,
             initial_types=self.initial_types,
@@ -327,26 +352,32 @@ class SklearnModel(Model):
         y = self.dataset.__get_Y__()
         y = y.to_numpy()
 
+        if self.preprocess_x is not None:
+            self.preprocess_pipeline = pipeline.Pipeline(steps=[])
+            for preprocessor in self.preprocess_x:
+                self.preprocess_pipeline.steps.append(
+                    (preprocessor.__class__.__name__, preprocessor)
+                )
+            self.preprocess_pipeline.fit(X)
+            self._create_onnx_preprocessor(onnx_options=onnx_options)
+
         if self.doa:
+            self.doa_data = []
             if self.preprocess_x:
-                x_doa = X
-                for func in self.preprocess_x:
-                    x_doa = func.fit_transform(x_doa)
+                x_doa = self.preprocess_pipeline.transform(X)
             else:
                 x_doa = X
             for i, doa_method in enumerate(self.doa):
                 doa_method.fit(X=x_doa)
+                self.doa[i] = doa_method
                 doa_instance = Doa(
                     method=doa_method.__name__,
                     data=DoaData(doa_method.doa_attributes),
                 )
-                self.doa[i] = doa_instance
+                self.doa_data.append(doa_instance)
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
-        if self.preprocess_x[0] is not None:
-            for preprocessor in self.preprocess_x:
-                self.pipeline.steps.append((str(preprocessor), preprocessor))
         self.pipeline.steps.append(("model", self.model))
 
         # Apply preprocessing of response vector y
@@ -367,7 +398,13 @@ class SklearnModel(Model):
                     self._add_class_to_extraconfig(preprocessor, "preprocessor")
         if len(self.dataset.y_cols) == 1 and y.ndim == 2:
             y = y.ravel()
-        self.trained_model = self.pipeline.fit(X, y)
+        if self.preprocess_x:
+            X_transformed = self.preprocess_pipeline.transform(X)
+            X_transformed = pd.DataFrame(X_transformed)
+        else:
+            X_transformed = X
+
+        self.trained_model = self.pipeline.fit(X_transformed, y)
 
         y_pred = self.predict(self.dataset)
         if y_pred.ndim > 1 and y_pred.shape[1] > 1:
@@ -398,11 +435,15 @@ class SklearnModel(Model):
             self.independentFeatures = list()
         if self.dataset.x_cols:
             if self.selected_features is not None:
-                intesection_of_features = list(
-                    set(self.dataset.x_cols).intersection(set(self.selected_features))
-                )
+                intesection_of_features = [
+                    feature
+                    for feature in self.dataset.x_cols
+                    if feature in self.selected_features
+                ]
             else:
-                intesection_of_features = list(set(self.dataset.x_cols))
+                intesection_of_features = intesection_of_features = [
+                    feature for feature in self.dataset.x_cols
+                ]
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
                 for feature in intesection_of_features
@@ -416,7 +457,7 @@ class SklearnModel(Model):
             for feature in self.dataset.y_cols
         )
         self._dtypes_to_jaqpotypes()
-        self._create_onnx(onnx_options=onnx_options)
+        self._create_onnx_model(onnx_options=onnx_options)
 
     def predict(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
@@ -429,7 +470,12 @@ class SklearnModel(Model):
         return sklearn_prediction
 
     def _predict_with_X(self, X, model):
-        sklearn_prediction = model.predict(X)
+        if self.preprocess_x:
+            X_transformed = self.preprocess_pipeline.transform(X)
+            X_transformed = pd.DataFrame(X_transformed)
+        else:
+            X_transformed = X
+        sklearn_prediction = model.predict(X_transformed)
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
                 if len(self.dataset.y_cols) == 1:
@@ -447,13 +493,14 @@ class SklearnModel(Model):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
-
         if self.selected_features is not None:
-            sklearn_probs = self.trained_model.predict_proba(
-                dataset.X[self.selected_features]
-            )
+            X_mat = dataset.X[self.selected_features]
         else:
-            sklearn_probs = self.trained_model.predict_proba(dataset.X)
+            X_mat = dataset.X
+        if self.preprocess_x:
+            X_mat = self.preprocess_pipeline.transform(X_mat)
+
+        sklearn_probs = self.trained_model.predict_proba(X_mat)
 
         sklearn_probs_list = [
             max(sklearn_probs[instance]) for instance in range(len(sklearn_probs))
@@ -464,22 +511,16 @@ class SklearnModel(Model):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
-        if len(self.initial_types) == 1:
-            input_dtype = (
-                "float32"
-                if isinstance(self.initial_types[0][1], FloatTensorType)
-                else "string"
-            )
-            input_data = {
-                sess.get_inputs()[0].name: dataset.X.values.astype(input_dtype)
-            }
+        if self.preprocess_x:
+            X = self.preprocess_pipeline.transform(dataset.X)
         else:
-            input_data = {
-                sess.get_inputs()[i].name: dataset.X[
-                    self.initial_types[i][0]
-                ].values.reshape(-1, 1)
-                for i in range(len(self.initial_types))
-            }
+            X = dataset.X.values
+        input_dtype = (
+            "float32"
+            if isinstance(self.initial_types[0][1], FloatTensorType)
+            else "string"
+        )
+        input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
         onnx_prediction = sess.run(None, input_data)
         if self.preprocess_y[0] is not None:
             for func in self.preprocess_y[::-1]:
@@ -498,20 +539,22 @@ class SklearnModel(Model):
                 "predict_onnx_proba is available only for classification tasks"
             )
         sess = InferenceSession(self.onnx_model.SerializeToString())
+        if self.preprocess_x:
+            X = self.preprocess_pipeline.transform(dataset.X)
+        else:
+            X = dataset.X.values
         if len(self.initial_types) == 1:
             input_dtype = (
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
                 else "string"
             )
-            input_data = {
-                sess.get_inputs()[0].name: dataset.X.values.astype(input_dtype)
-            }
+            input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
         else:
             input_data = {
-                sess.get_inputs()[i].name: dataset.X[
-                    self.initial_types[i][0]
-                ].values.reshape(-1, 1)
+                sess.get_inputs()[i].name: X[self.initial_types[i][0]].values.reshape(
+                    -1, 1
+                )
                 for i in range(len(self.initial_types))
             }
         onnx_probs = sess.run(None, input_data)
@@ -682,7 +725,12 @@ class SklearnModel(Model):
                     y_train = preprocessor.fit_transform(y_train)
             else:
                 y_train = y_train.to_numpy()
-            trained_model = self.pipeline.fit(X_train, y_train.ravel())
+            if self.preprocess_x:
+                X_train_transformed = self.preprocess_pipeline.transform(X_train)
+                X_train_transformed = pd.DataFrame(X_train_transformed)
+            else:
+                X_train_transformed = X_train
+            trained_model = self.pipeline.fit(X_train_transformed, y_train.ravel())
             y_pred = self._predict_with_X(X_test, trained_model).reshape(-1, 1)
             metrics_result = self._get_metrics(
                 y_test.to_numpy().ravel(), y_pred.ravel()
@@ -749,8 +797,15 @@ class SklearnModel(Model):
                             y_train_shuffled = preprocessor.fit_transform(
                                 y_train_shuffled
                             )
+                    if self.preprocess_x:
+                        X_transformed = self.preprocess_pipeline.transform(
+                            train_dataset.X
+                        )
+                        X_transformed = pd.DataFrame(X_transformed)
+                    else:
+                        X_transformed = train_dataset.X
                     trained_model = self.pipeline.fit(
-                        train_dataset.X, y_train_shuffled.ravel()
+                        X_transformed, y_train_shuffled.ravel()
                     )
                     y_pred_train = self._predict_with_X(
                         train_dataset.X, trained_model
@@ -777,8 +832,13 @@ class SklearnModel(Model):
                 if self.preprocess_y[0] is not None:
                     for preprocessor in self.preprocess_y:
                         y_train_shuffled = preprocessor.fit_transform(y_train_shuffled)
+                if self.preprocess_x:
+                    X_transformed = self.preprocess_pipeline.transform(train_dataset.X)
+                    X_transformed = pd.DataFrame(X_transformed)
+                else:
+                    X_transformed = train_dataset.X
                 trained_model = self.pipeline.fit(
-                    train_dataset.X, y_train_shuffled.ravel()
+                    X_transformed, y_train_shuffled.ravel()
                 )
                 y_pred_train = self._predict_with_X(
                     train_dataset.X, trained_model
