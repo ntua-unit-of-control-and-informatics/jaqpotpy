@@ -151,6 +151,7 @@ class SklearnModel(Model):
         self.pipeline = None
         self.trained_model = None
         self.doa = doa if isinstance(doa, list) else [doa] if doa else None
+        self.doa_data = None
         self.preprocess_x = (
             (preprocess_x if isinstance(preprocess_x, list) else [preprocess_x])
             if preprocess_x
@@ -361,17 +362,19 @@ class SklearnModel(Model):
             self._create_onnx_preprocessor(onnx_options=onnx_options)
 
         if self.doa:
+            self.doa_data = []
             if self.preprocess_x:
                 x_doa = self.preprocess_pipeline.transform(X)
             else:
                 x_doa = X
             for i, doa_method in enumerate(self.doa):
                 doa_method.fit(X=x_doa)
+                self.doa[i] = doa_method
                 doa_instance = Doa(
                     method=doa_method.__name__,
                     data=DoaData(doa_method.doa_attributes),
                 )
-                self.doa[i] = doa_instance
+                self.doa_data.append(doa_instance)
 
         #  Build preprocessing pipeline that ends up with the model
         self.pipeline = pipeline.Pipeline(steps=[])
