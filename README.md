@@ -77,9 +77,9 @@ myModel.deploy_on_jaqpot(
 
 ```
 
-The function will provide you with the model ID that you can use to manage your model through the user interface and API.
+Once your model is successfully deployed on the Jaqpot platform, the function will provide you with the model ID that you can use to manage your model through the user interface and API.
 
-Result:
+Console Output:
 ```text
 <DATE> - INFO - Model has been successfully uploaded. The url of the model is https://app.jaqpot.org/dashboard/models/<ModelID>
 ```
