@@ -567,11 +567,17 @@ class SklearnModel(Model):
     def predict_doa(self, dataset: JaqpotpyDataset):
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
+
         X = dataset.X
         if self.preprocess_x:
             X = self.preprocess_pipeline.transform(X)
         else:
             X = dataset.X.values
+        doa_results = {}
+        for doa_method in self.doa:
+            doa_results[doa_method.__name__] = doa_method.predict(X)
+
+        return doa_results
 
     def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
         jaqpot.deploy_sklearn_model(
