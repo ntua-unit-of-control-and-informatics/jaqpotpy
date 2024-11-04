@@ -53,6 +53,7 @@ path_multi_class = "./jaqpotpy/test_data/test_data_smiles_classification.csv"
 
 multi_classification_df = pd.read_csv(path_multi_class)
 
+
 featurizer = TopologicalFingerprint()
 dataset_multi_class = JaqpotpyDataset(
     df=multi_classification_df,
