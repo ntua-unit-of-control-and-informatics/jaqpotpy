@@ -564,6 +564,15 @@ class SklearnModel(Model):
         ]
         return onnx_probs_list
 
+    def predict_doa(self, dataset: JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotpyDataset):
+            raise TypeError("Expected dataset to be of type JaqpotpyDataset")
+        X = dataset.X
+        if self.preprocess_x:
+            X = self.preprocess_pipeline.transform(X)
+        else:
+            X = dataset.X.values
+
     def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
         jaqpot.deploy_sklearn_model(
             model=self, name=name, description=description, visibility=visibility
