@@ -9,26 +9,6 @@ from jaqpotpy.datasets.dataset_base import BaseDataset
 
 
 class JaqpotpyDataset(BaseDataset):
-    """A dataset class that can also support molecular descriptors. This class is
-    designed to handle datasets that include molecular structures represented by
-    SMILES strings and use molecular featurizers to generate features from these
-    structures. The class can also support ordinary datasets.
-
-    Attributes
-    ----------
-        df:
-        path:
-        y_cols:
-        x_cols:
-        smiles_col : The column containing SMILES strings.
-        x_cols : The SMILES strings extracted from the DataFrame.
-
-        featurizer: The featurizer used to generate molecular features. It can be one of the supported
-                    featurizers or a list of supported featurizers
-        task : All feature columns after featurization.
-
-    """
-
     def __init__(
         self,
         df: pd.DataFrame = None,
@@ -39,6 +19,18 @@ class JaqpotpyDataset(BaseDataset):
         featurizer: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
         task: str = None,
     ) -> None:
+        """
+        Initialize the JaqpotpyDataset.
+
+        Args:
+            df (pd.DataFrame): The DataFrame containing the dataset.
+            path (Optional[str]): The path to the dataset file.
+            y_cols (Iterable[str]): The columns representing the target variables.
+            x_cols (Optional[Iterable[str]]): The columns representing the features.
+            smiles_cols (Optional[Iterable[str]]): The columns containing SMILES strings.
+            featurizer (Optional[List[MolecularFeaturizer] or MolecularFeaturizer]): The featurizer(s) to use.
+            task (str): The task type (e.g., regression, classification).
+        """
         if not (
             isinstance(smiles_cols, str)
             or (
@@ -112,14 +104,35 @@ class JaqpotpyDataset(BaseDataset):
 
     @property
     def featurizer_name(self) -> Iterable[Any]:
+        """
+        Get the names of the featurizers.
+
+        Returns:
+            Iterable[Any]: The names of the featurizers.
+        """
         return [featurizer.__name__ for featurizer in self.featurizer]
 
     @featurizer_name.setter
     def featurizer_name(self, value):
+        """
+        Set the names of the featurizers.
+
+        Args:
+            value: The new names for the featurizers.
+        """
         self._featurizer_name = value
 
     def _validate_column_names(self, cols, col_type):
-        """Validate if the columns specified in cols are present in the DataFrame."""
+        """
+        Validate if the columns specified in cols are present in the DataFrame.
+
+        Args:
+            cols: The columns to validate.
+            col_type: The type of columns (e.g., 'smiles_cols', 'x_cols', 'y_cols').
+
+        Raises:
+            ValueError: If any columns are missing from the DataFrame.
+        """
         if len(cols) == 0:
             return
 
@@ -131,6 +144,9 @@ class JaqpotpyDataset(BaseDataset):
             )
 
     def _validate_column_space(self):
+        """
+        Validate and replace spaces in column names with underscores.
+        """
         for ix, col in enumerate(self.x_cols):
             if " " in col:
                 new_col = col.replace(" ", "_")
@@ -141,6 +157,17 @@ class JaqpotpyDataset(BaseDataset):
                 )
 
     def _validate_column_overlap(self, smiles_cols, x_cols, y_cols):
+        """
+        Validate that there is no overlap between smiles_cols, x_cols, and y_cols.
+
+        Args:
+            smiles_cols: The SMILES columns.
+            x_cols: The feature columns.
+            y_cols: The target columns.
+
+        Raises:
+            ValueError: If there is any overlap between the columns.
+        """
         smiles_set = set(smiles_cols) if smiles_cols else set()
         x_set = set(x_cols) if x_cols else set()
         y_set = set(y_cols) if y_cols else set()
@@ -161,6 +188,9 @@ class JaqpotpyDataset(BaseDataset):
             raise ValueError(f"Overlap found between x_cols and y_cols: {overlap_x_y}")
 
     def create(self):
+        """
+        Create the dataset by featurizing the SMILES columns and combining with other features.
+        """
         self.df = self.df.reset_index(drop=True)
 
         if len(self.smiles_cols) == 1:
@@ -224,6 +254,18 @@ class JaqpotpyDataset(BaseDataset):
         self.active_features = self.X.columns.tolist()
 
     def select_features(self, FeatureSelector=None, SelectionList=None):
+        """
+        Select features using a feature selector or a selection list.
+
+        Args:
+            FeatureSelector: An instance of a feature selector from sklearn.feature_selection.
+            SelectionList: A list of selected features.
+
+        Raises:
+            ValueError: If both or neither of FeatureSelector and SelectionList are provided.
+            ValueError: If FeatureSelector is not a valid sklearn feature selector.
+            ValueError: If any features in SelectionList are not in the dataset.
+        """
         if (FeatureSelector is None and SelectionList is None) or (
             FeatureSelector is not None and SelectionList is not None
         ):
@@ -258,8 +300,12 @@ class JaqpotpyDataset(BaseDataset):
                 self.selected_features = SelectionList
 
     def copy(self):
-        """Create a copy of the dataset, including a deep copy of the underlying DataFrame
+        """
+        Create a copy of the dataset, including a deep copy of the underlying DataFrame
         and all relevant attributes.
+
+        Returns:
+            JaqpotpyDataset: A copy of the dataset.
         """
         copied_instance = JaqpotpyDataset(
             df=self.init_df,
@@ -273,25 +319,68 @@ class JaqpotpyDataset(BaseDataset):
         return copied_instance
 
     def __get_X__(self):
+        """
+        Get a copy of the feature matrix X.
+
+        Returns:
+            pd.DataFrame: A copy of the feature matrix X.
+        """
         return self.X.copy()
 
     def __get_Y__(self):
+        """
+        Get a copy of the target matrix Y.
+
+        Returns:
+            pd.DataFrame: A copy of the target matrix Y.
+        """
         return self.y.copy()
 
     def __get__(self, instance, owner):
+        """
+        Get the dataset instance.
+
+        Args:
+            instance: The instance of the dataset.
+            owner: The owner of the dataset.
+
+        Returns:
+            The dataset instance.
+        """
         if instance is None:
             return self
         return instance.__dict__[self.df]
 
     def __getitem__(self, idx):
+        """
+        Get the features and target values for a given index.
+
+        Args:
+            idx: The index to retrieve.
+
+        Returns:
+            tuple: The features and target values for the given index.
+        """
         selected_x = self.df[self.X].iloc[idx].values
         selected_y = self.df[self.y].iloc[idx].to_numpy()
         return selected_x, selected_y
 
     def __len__(self):
+        """
+        Get the number of samples in the dataset.
+
+        Returns:
+            int: The number of samples in the dataset.
+        """
         return self.df.shape[0]
 
     def __repr__(self) -> str:
+        """
+        Get the string representation of the dataset.
+
+        Returns:
+            str: The string representation of the dataset.
+        """
         return (
             f"{self.__class__.__name__}"
             f"(smiles={True if self.smiles_cols is not None else False}, "
