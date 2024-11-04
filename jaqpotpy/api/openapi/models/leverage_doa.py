@@ -19,7 +19,6 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -30,14 +29,9 @@ class LeverageDoa(BaseModel):
     """  # noqa: E501
 
     h_star: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="hStar")
-    doa_matrix: Optional[
-        Annotated[
-            List[
-                Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]
-            ],
-            Field(max_length=1000),
-        ]
-    ] = Field(default=None, alias="doaMatrix")
+    doa_matrix: Optional[List[List[Union[StrictFloat, StrictInt]]]] = Field(
+        default=None, alias="doaMatrix"
+    )
     __properties: ClassVar[List[str]] = ["hStar", "doaMatrix"]
 
     model_config = ConfigDict(

@@ -29,6 +29,7 @@ class BinaryClassificationScores(BaseModel):
     BinaryClassificationScores
     """  # noqa: E501
 
+    labels: Optional[List[StrictStr]] = None
     y_name: StrictStr = Field(alias="yName")
     accuracy: Optional[Union[StrictFloat, StrictInt]] = None
     balanced_accuracy: Optional[Union[StrictFloat, StrictInt]] = Field(
@@ -58,6 +59,7 @@ class BinaryClassificationScores(BaseModel):
         ]
     ] = Field(default=None, alias="confusionMatrix")
     __properties: ClassVar[List[str]] = [
+        "labels",
         "yName",
         "accuracy",
         "balancedAccuracy",
@@ -119,6 +121,7 @@ class BinaryClassificationScores(BaseModel):
 
         _obj = cls.model_validate(
             {
+                "labels": obj.get("labels"),
                 "yName": obj.get("yName"),
                 "accuracy": obj.get("accuracy"),
                 "balancedAccuracy": obj.get("balancedAccuracy"),

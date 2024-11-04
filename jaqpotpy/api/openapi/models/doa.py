@@ -18,9 +18,10 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
 from jaqpotpy.api.openapi.models.doa_data import DoaData
+from jaqpotpy.api.openapi.models.doa_method import DoaMethod
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -31,7 +32,7 @@ class Doa(BaseModel):
     """  # noqa: E501
 
     id: Optional[StrictInt] = None
-    method: StrictStr
+    method: DoaMethod
     data: DoaData
     created_at: Optional[datetime] = Field(
         default=None,
@@ -50,24 +51,6 @@ class Doa(BaseModel):
         "createdAt",
         "updatedAt",
     ]
-
-    @field_validator("method")
-    def method_validate_enum(cls, value):
-        """Validates the enum"""
-        if value not in set(
-            [
-                "LEVERAGE",
-                "BOUNDING_BOX",
-                "KERNEL_BASED",
-                "MEAN_VAR",
-                "MAHALANOBIS",
-                "CITY_BLOCK",
-            ]
-        ):
-            raise ValueError(
-                "must be one of enum values ('LEVERAGE', 'BOUNDING_BOX', 'KERNEL_BASED', 'MEAN_VAR', 'MAHALANOBIS', 'CITY_BLOCK')"
-            )
-        return value
 
     model_config = ConfigDict(
         populate_by_name=True,

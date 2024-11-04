@@ -17,27 +17,39 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
-from jaqpotpy.api.openapi.models.dataset import Dataset
-from jaqpotpy.api.openapi.models.prediction_model import PredictionModel
+from jaqpotpy.api.openapi.models.doa_method import DoaMethod
 from typing import Optional, Set
 from typing_extensions import Self
 
 
-class PredictionRequest(BaseModel):
+class PredictionDoa(BaseModel):
     """
-    PredictionRequest
+    PredictionDoa
     """  # noqa: E501
 
-    model: PredictionModel
-    dataset: Dataset
-    extra_config: Optional[Dict[str, Any]] = Field(
+    id: Optional[StrictInt] = None
+    method: DoaMethod
+    data: Dict[str, Any] = Field(description="The doa calculated data")
+    created_at: Optional[datetime] = Field(
         default=None,
-        description="Optional configuration for additional settings.",
-        alias="extraConfig",
+        description="The date and time when the feature was created.",
+        alias="createdAt",
     )
-    __properties: ClassVar[List[str]] = ["model", "dataset", "extraConfig"]
+    updated_at: Optional[datetime] = Field(
+        default=None,
+        description="The date and time when the feature was last updated.",
+        alias="updatedAt",
+    )
+    __properties: ClassVar[List[str]] = [
+        "id",
+        "method",
+        "data",
+        "createdAt",
+        "updatedAt",
+    ]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -56,7 +68,7 @@ class PredictionRequest(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of PredictionRequest from a JSON string"""
+        """Create an instance of PredictionDoa from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -76,17 +88,11 @@ class PredictionRequest(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of model
-        if self.model:
-            _dict["model"] = self.model.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of dataset
-        if self.dataset:
-            _dict["dataset"] = self.dataset.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of PredictionRequest from a dict"""
+        """Create an instance of PredictionDoa from a dict"""
         if obj is None:
             return None
 
@@ -95,13 +101,11 @@ class PredictionRequest(BaseModel):
 
         _obj = cls.model_validate(
             {
-                "model": PredictionModel.from_dict(obj["model"])
-                if obj.get("model") is not None
-                else None,
-                "dataset": Dataset.from_dict(obj["dataset"])
-                if obj.get("dataset") is not None
-                else None,
-                "extraConfig": obj.get("extraConfig"),
+                "id": obj.get("id"),
+                "method": obj.get("method"),
+                "data": obj.get("data"),
+                "createdAt": obj.get("createdAt"),
+                "updatedAt": obj.get("updatedAt"),
             }
         )
         return _obj
