@@ -712,9 +712,6 @@ class SklearnModel(Model):
             X_mat = dataset.X[self.selected_features]
         else:
             X_mat = dataset.X
-        # if self.preprocess_x:
-        #     X_transformed = self.preprocess_pipeline.transform(X_mat)
-        #     X_transformed = pd.DataFrame(X_transformed)
         sum_metrics = None
 
         fold = 1
