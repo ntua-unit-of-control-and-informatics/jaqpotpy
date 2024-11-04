@@ -28,8 +28,20 @@ class Jaqpot:
 
     Parameters
     ----------
-    base_url : The url on which Jaqpot services are deployed
-
+    base_url : str, optional
+        The url on which Jaqpot services are deployed.
+    app_url : str, optional
+        The url for the Jaqpot application.
+    login_url : str, optional
+        The url for the Jaqpot login.
+    api_url : str, optional
+        The url for the Jaqpot API.
+    keycloak_realm : str, optional
+        The Keycloak realm name.
+    keycloak_client_id : str, optional
+        The Keycloak client ID.
+    create_logs : bool, optional
+        Whether to create logs.
     """
 
     def __init__(
@@ -59,6 +71,12 @@ class Jaqpot:
         self.http_client = None
 
     def login(self):
+        """
+        Log in to Jaqpot using Keycloak.
+
+        This method opens a browser window for the user to log in via Keycloak,
+        then exchanges the authorization code for an access token.
+        """
         # Configure Keycloak client
         keycloak_openid = KeycloakOpenID(
             server_url=self.login_url,
@@ -95,13 +113,23 @@ class Jaqpot:
         )
 
     def deploy_sklearn_model(self, model, name, description, visibility):
-        """ "
-        Deploy sklearn models on Jaqpot.
-        :param model:
-        :param name:
-        :param description:
-        :param visibility:
-        :return:
+        """
+        Deploy an sklearn model on Jaqpot.
+
+        Parameters
+        ----------
+        model : object
+            The sklearn model to be deployed.
+        name : str
+            The name of the model.
+        description : str
+            A description of the model.
+        visibility : str
+            The visibility of the model (e.g., 'public', 'private').
+
+        Returns
+        -------
+        None
         """
         model_api = ModelApi(self.http_client)
         raw_model = model_to_b64encoding(model.onnx_model.SerializeToString())
@@ -168,6 +196,30 @@ class Jaqpot:
         visibility,
         task,
     ):
+        """
+        Deploy a PyTorch model on Jaqpot.
+
+        Parameters
+        ----------
+        onnx_model : object
+            The ONNX model to be deployed.
+        featurizer : object
+            The featurizer used for preprocessing.
+        name : str
+            The name of the model.
+        description : str
+            A description of the model.
+        target_name : str
+            The name of the target feature.
+        visibility : str
+            The visibility of the model (e.g., 'public', 'private').
+        task : str
+            The task type (e.g., 'binary_classification', 'regression').
+
+        Returns
+        -------
+        None
+        """
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
             feature_type = FeatureType.INTEGER
