@@ -40,7 +40,6 @@ Follow these steps to train and deploy your model on Jaqpot:
 	2. Deploy the trained model using the deploy_on_jaqpot function.
 
 #### Example Code
-_Note: Ensure you use a pandas DataFrame for training your model._
 
 ```python
 import pandas as pd
