@@ -161,7 +161,6 @@ class Jaqpot:
     def deploy_torch_model(
         self,
         onnx_model,
-        type,
         featurizer,
         name,
         description,
@@ -188,13 +187,9 @@ class Jaqpot:
         featurizer_config = featurizer_dict
         torch_config_json = {"featurizerConfig": featurizer_config}
         torch_config = torch_config_json
-        if type == "TORCHSCRIPT":
-            type = ModelType.TORCHSCRIPT
-        elif type == "TORCH_ONNX":
-            type = ModelType.TORCH_ONNX
         body_model = Model(
             name=name,
-            type=type,
+            type=ModelType.TORCH_ONNX,
             jaqpotpy_version=jaqpotpy.__version__,
             libraries=get_installed_libraries(),
             dependent_features=[

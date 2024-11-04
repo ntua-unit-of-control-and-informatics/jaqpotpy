@@ -18,6 +18,16 @@ import io
 
 
 def pyg_to_onnx(torch_model, featurizer):
+    """
+    Converts a PyTorch geometric model to ONNX format and returns a base64-encoded string of the model.
+
+    Args:
+        torch_model (nn.Module): The trained PyTorch model to be converted.
+        featurizer (SmilesGraphFeaturizer): A featurizer for transforming SMILES strings into graph data.
+
+    Returns:
+        str: A base64-encoded ONNX model string.
+    """
     if torch_model.training:
         torch_model.eval()
     torch_model = torch_model.cpu()
@@ -42,21 +52,36 @@ def pyg_to_onnx(torch_model, featurizer):
     return model_scripted_base64
 
 
-def pyg_to_torchscript(torch_model):
-    if torch_model.training:
-        torch_model.eval()
-    torch_model = torch_model.cpu()
-    script_model = torch.jit.script(torch_model)
-    model_buffer = io.BytesIO()
-    torch.jit.save(script_model, model_buffer)
-    model_buffer.seek(0)
-    script_base64 = base64.b64encode(model_buffer.getvalue()).decode("utf-8")
+# def pyg_to_torchscript(torch_model):
+#     if torch_model.training:
+#         torch_model.eval()
+#     torch_model = torch_model.cpu()
+#     script_model = torch.jit.script(torch_model)
+#     model_buffer = io.BytesIO()
+#     torch.jit.save(script_model, model_buffer)
+#     model_buffer.seek(0)
+#     script_base64 = base64.b64encode(model_buffer.getvalue()).decode("utf-8")
 
-    return script_base64
+#     return script_base64
 
 
 class BaseGraphNetwork(nn.Module):
-    """Base class for Graph Networks to avoid code duplication"""
+    """
+    Base class for constructing various types of graph neural networks with flexible layer configurations.
+
+    Attributes:
+        input_dim (int): Dimension of input features for each node.
+        hidden_layers (int): Number of hidden layers.
+        hidden_dim (int): Dimension of each hidden layer.
+        output_dim (int): Dimension of the output layer.
+        activation (nn.Module): Activation function.
+        dropout_proba (float): Dropout probability for regularization.
+        batch_norm (bool): Whether to use batch normalization.
+        seed (int): Random seed for reproducibility.
+        pooling (str): Pooling method to use ('mean', 'add', or 'max').
+        edge_dim (Optional[int]): Dimension of edge features.
+        heads (Optional[int]): Number of attention heads (for certain layers).
+    """
 
     def __init__(
         self,
@@ -92,10 +117,25 @@ class BaseGraphNetwork(nn.Module):
         self.graph_layers = nn.ModuleList()
 
     def add_layer(self, conv_layer: nn.Module):
-        """Helper function to add a convolution layer."""
+        """
+        Helper function to add a convolution layer to the graph layers list.
+
+        Args:
+            conv_layer (nn.Module): Convolution layer to add.
+        """
         self.graph_layers.append(conv_layer)
 
     def pooling_layer(self, x: Tensor, batch: Optional[Tensor]) -> Tensor:
+        """
+        Applies the specified pooling method.
+
+        Args:
+            x (Tensor): Node embeddings.
+            batch (Optional[Tensor]): Batch index tensor.
+
+        Returns:
+            Tensor: Pooled graph-level embeddings.
+        """
         if self.pooling == "mean":
             return global_mean_pool(x, batch)
         elif self.pooling == "add":
@@ -112,6 +152,18 @@ class BaseGraphNetwork(nn.Module):
         batch: Optional[Tensor],
         edge_attr: Optional[Tensor] = None,
     ) -> Tensor:
+        """
+        Forward pass through the network.
+
+        Args:
+            x (Tensor): Node features.
+            edge_index (Tensor): Graph edges.
+            batch (Optional[Tensor]): Batch indices for each node.
+            edge_attr (Optional[Tensor]): Edge features (if applicable).
+
+        Returns:
+            Tensor: Output node/graph embeddings.
+        """
         if self.edge_dim is not None:
             for graph_layer in self.graph_layers:
                 x = graph_layer(x, edge_index, edge_attr)
@@ -134,6 +186,10 @@ class BaseGraphNetwork(nn.Module):
             return x
 
     def _validate_inputs(self):
+        """
+        Validates the input parameters for the network.
+        Raises appropriate errors if the types do not match.
+        """
         if not isinstance(self.input_dim, int):
             raise TypeError("input_dim must be of type int")
         if not isinstance(self.hidden_layers, int):
@@ -151,7 +207,12 @@ class BaseGraphNetwork(nn.Module):
 
 
 class GraphSageNetwork(BaseGraphNetwork):
-    """Graph Sage Model"""
+    """
+    GraphSAGENetwork model.
+
+    Attributes:
+        Inherits attributes from BaseGraphNetwork.
+    """
 
     def __init__(
         self,
@@ -165,6 +226,9 @@ class GraphSageNetwork(BaseGraphNetwork):
         seed=42,
         pooling: str = "mean",
     ):
+        """
+        Initializes the GraphSageNetwork with SAGEConv-specific layers.
+        """
         super(GraphSageNetwork, self).__init__(
             input_dim,
             hidden_layers,
@@ -191,7 +255,12 @@ class GraphSageNetwork(BaseGraphNetwork):
 
 
 class GraphConvolutionNetwork(BaseGraphNetwork):
-    """Graph Convolution Model"""
+    """
+    Graph Convolutional Network (GCN) model.
+
+    Attributes:
+        Inherits attributes from BaseGraphNetwork.
+    """
 
     def __init__(
         self,
@@ -205,6 +274,9 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
         seed=42,
         pooling: str = "mean",
     ):
+        """
+        Initializes the GraphConvolutionNetwork with GCNConv-specific layers.
+        """
         super(GraphConvolutionNetwork, self).__init__(
             input_dim,
             hidden_layers,
@@ -231,7 +303,12 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
 
 
 class GraphAttentionNetwork(BaseGraphNetwork):
-    """Graph Attention Model"""
+    """
+    Graph Attention Network (GAT) model.
+
+    Attributes:
+        Inherits attributes from BaseGraphNetwork.
+    """
 
     def __init__(
         self,
@@ -247,6 +324,9 @@ class GraphAttentionNetwork(BaseGraphNetwork):
         edge_dim: Optional[int] = None,
         heads: int = 1,
     ):
+        """
+        Initializes the GraphAttentionNetwork with GATConv-specific layers.
+        """
         super(GraphAttentionNetwork, self).__init__(
             input_dim,
             hidden_layers,
@@ -277,7 +357,12 @@ class GraphAttentionNetwork(BaseGraphNetwork):
 
 
 class GraphTransformerNetwork(BaseGraphNetwork):
-    """Graph Transformer Model"""
+    """
+    Graph Transformer Network model.
+
+    Attributes:
+        Inherits attributes from BaseGraphNetwork.
+    """
 
     def __init__(
         self,
@@ -293,6 +378,9 @@ class GraphTransformerNetwork(BaseGraphNetwork):
         edge_dim: Optional[int] = None,
         heads: int = 1,
     ):
+        """
+        Initializes the GraphTransformerNetwork with TransformerConv-specific layers.
+        """
         super(GraphTransformerNetwork, self).__init__(
             input_dim,
             hidden_layers,
