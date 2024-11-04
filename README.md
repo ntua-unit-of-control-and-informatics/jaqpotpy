@@ -72,7 +72,7 @@ myModel.deploy_on_jaqpot(
     jaqpot=jaqpot,
     name="Demo: Regression",
     description="This is a description",
-    visibility="PRIVATE",
+    visibility="PRIVATE"
 )
 
 ```
