@@ -20,7 +20,17 @@ from sklearn.preprocessing import StandardScaler
 
 
 class XGBoostModel(SklearnModel):
-    # overrides the parent method from the sklearnmodel for the xgboost model here
+    """
+    XGBoostModel class for handling XGBoost models within the Jaqpotpy framework.
+
+    Attributes:
+        dataset (JaqpotpyDataset): The dataset used for training the model.
+        model (Any): The XGBoost model instance.
+        doa (Optional[DOA or list]): Domain of Applicability (DOA) methods.
+        preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessing steps for input features.
+        preprocess_y (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessing steps for target features.
+    """
+
     def __init__(
         self,
         dataset: JaqpotpyDataset,
@@ -29,6 +39,16 @@ class XGBoostModel(SklearnModel):
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
         preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
     ):
+        """
+        Initializes the XGBoostModel with the given dataset, model, and optional preprocessing steps.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset used for training the model.
+            model (Any): The XGBoost model instance.
+            doa (Optional[DOA or list]): Domain of Applicability (DOA) methods.
+            preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessing steps for input features.
+            preprocess_y (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessing steps for target features.
+        """
         self.dataset = dataset
         self.featurizer = dataset.featurizer
         self.model = model
@@ -56,6 +76,12 @@ class XGBoostModel(SklearnModel):
         self.extra_config = ModelExtraConfig()
 
     def _create_onnx(self, onnx_options: Optional[Dict] = None):
+        """
+        Creates an ONNX representation of the trained model.
+
+        Args:
+            onnx_options (Optional[Dict]): Additional options for ONNX conversion.
+        """
         name = self.model.__class__.__name__ + "_ONNX"
         self.initial_types = []
         dtype_array = self.dataset.X.dtypes.values
@@ -111,6 +137,9 @@ class XGBoostModel(SklearnModel):
         self.onnx_opset = self.onnx_model.opset_import[0].version
 
     def _convert_regressor(self):
+        """
+        Registers the XGBRegressor model for ONNX conversion.
+        """
         update_registered_converter(
             model=XGBRegressor,
             alias="XGBRegressor",
@@ -119,6 +148,9 @@ class XGBoostModel(SklearnModel):
         )
 
     def _convert_classifier(self):
+        """
+        Registers the XGBClassifier model for ONNX conversion.
+        """
         update_registered_converter(
             model=XGBClassifier,
             alias="XGBClassifier",
