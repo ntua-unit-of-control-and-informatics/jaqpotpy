@@ -594,6 +594,7 @@ class SklearnModel(Model):
             elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
                 jaqpotScores = Scores(
                     multiclass_classification=MulticlassClassificationScores(
+                        labels=[str(x) for x in self.trained_model.classes_],
                         y_name=y_name,
                         accuracy=scores["accuracy"],
                         balanced_accuracy=scores["balancedAccuracy"],
@@ -608,6 +609,7 @@ class SklearnModel(Model):
             elif self.task.upper() == "BINARY_CLASSIFICATION":
                 jaqpotScores = Scores(
                     binary_classification=BinaryClassificationScores(
+                        labels=[str(x) for x in self.trained_model.classes_],
                         y_name=y_name,
                         accuracy=scores["accuracy"],
                         balanced_accuracy=scores["balancedAccuracy"],

@@ -57,6 +57,7 @@ from jaqpotpy.api.openapi.models.dataset_csv import DatasetCSV
 from jaqpotpy.api.openapi.models.dataset_type import DatasetType
 from jaqpotpy.api.openapi.models.doa import Doa
 from jaqpotpy.api.openapi.models.doa_data import DoaData
+from jaqpotpy.api.openapi.models.doa_method import DoaMethod
 from jaqpotpy.api.openapi.models.error_code import ErrorCode
 from jaqpotpy.api.openapi.models.error_response import ErrorResponse
 from jaqpotpy.api.openapi.models.feature import Feature
@@ -100,6 +101,7 @@ from jaqpotpy.api.openapi.models.partially_update_model_feature_request import (
 from jaqpotpy.api.openapi.models.partially_update_model_request import (
     PartiallyUpdateModelRequest,
 )
+from jaqpotpy.api.openapi.models.prediction_doa import PredictionDoa
 from jaqpotpy.api.openapi.models.prediction_model import PredictionModel
 from jaqpotpy.api.openapi.models.prediction_request import PredictionRequest
 from jaqpotpy.api.openapi.models.prediction_response import PredictionResponse

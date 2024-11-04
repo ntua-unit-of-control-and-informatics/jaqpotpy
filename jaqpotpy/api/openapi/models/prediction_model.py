@@ -19,10 +19,10 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from jaqpotpy.api.openapi.models.doa import Doa
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
+from jaqpotpy.api.openapi.models.prediction_doa import PredictionDoa
 from jaqpotpy.api.openapi.models.transformer import Transformer
 from typing import Optional, Set
 from typing_extensions import Self
@@ -53,7 +53,7 @@ class PredictionModel(BaseModel):
         description="Raw preprocessor data in serialized format",
         alias="rawPreprocessor",
     )
-    doas: Optional[List[Doa]] = Field(
+    doas: Optional[List[PredictionDoa]] = Field(
         default=None, description="List of Domain of Applicability (DoA) configurations"
     )
     selected_features: Optional[List[StrictStr]] = Field(
@@ -238,7 +238,7 @@ class PredictionModel(BaseModel):
                 "type": obj.get("type"),
                 "rawModel": obj.get("rawModel"),
                 "rawPreprocessor": obj.get("rawPreprocessor"),
-                "doas": [Doa.from_dict(_item) for _item in obj["doas"]]
+                "doas": [PredictionDoa.from_dict(_item) for _item in obj["doas"]]
                 if obj.get("doas") is not None
                 else None,
                 "selectedFeatures": obj.get("selectedFeatures"),
