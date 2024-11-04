@@ -44,8 +44,6 @@ setup(
         "python-dotenv==1.0.1",
         "torch==2.3.0",
         "torch-geometric==2.5.0",
-        "torchvision==0.18.0",
-        "torch-sparse==0.6.18",
         "onnxmltools==1.12.0",
         "xgboost==2.1.1",
         "pre-commit==4.0.1",
