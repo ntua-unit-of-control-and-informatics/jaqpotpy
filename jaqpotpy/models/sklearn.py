@@ -603,6 +603,7 @@ class SklearnModel(Model):
             elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
                 jaqpotScores = Scores(
                     multiclass_classification=MulticlassClassificationScores(
+                        labels=[str(x) for x in self.trained_model.classes_],
                         y_name=y_name,
                         accuracy=scores["accuracy"],
                         balanced_accuracy=scores["balancedAccuracy"],
@@ -617,6 +618,7 @@ class SklearnModel(Model):
             elif self.task.upper() == "BINARY_CLASSIFICATION":
                 jaqpotScores = Scores(
                     binary_classification=BinaryClassificationScores(
+                        labels=[str(x) for x in self.trained_model.classes_],
                         y_name=y_name,
                         accuracy=scores["accuracy"],
                         balanced_accuracy=scores["balancedAccuracy"],
@@ -719,9 +721,6 @@ class SklearnModel(Model):
             X_mat = dataset.X[self.selected_features]
         else:
             X_mat = dataset.X
-        # if self.preprocess_x:
-        #     X_transformed = self.preprocess_pipeline.transform(X_mat)
-        #     X_transformed = pd.DataFrame(X_transformed)
         sum_metrics = None
 
         fold = 1

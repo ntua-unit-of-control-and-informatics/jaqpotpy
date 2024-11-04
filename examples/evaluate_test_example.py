@@ -48,8 +48,35 @@ x = testModel.evaluate(prediction_dataset)
 y = testModel.cross_validate(dataset, n_splits=2)
 z = testModel.randomization_test(train_dataset=dataset, test_dataset=prediction_dataset)
 
-# Classification example
-path_multi_class = "./jaqpotpy/test_data/test_data_smiles_multi_classification.csv"
+# Classification example without labels
+path_multi_class = "./jaqpotpy/test_data/test_data_smiles_classification.csv"
+
+multi_classification_df = pd.read_csv(path_multi_class)
+
+
+featurizer = TopologicalFingerprint()
+dataset_multi_class = JaqpotpyDataset(
+    df=multi_classification_df,
+    y_cols=["ACTIVITY"],
+    smiles_cols=["SMILES"],
+    x_cols=["X1", "X2"],
+    task="multiclass_classification",
+    featurizer=featurizer,
+)
+model = RandomForestClassifier(random_state=42)
+pre = StandardScaler()
+jaqpot_model = SklearnModel(
+    dataset=dataset_multi_class, doa=None, model=model, preprocess_x=pre
+)
+jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
+jaqpot_model.evaluate(dataset_multi_class)
+jaqpot_model.cross_validate(dataset_multi_class, n_splits=2)
+
+
+# Classification example with labels
+path_multi_class = (
+    "./jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS.csv"
+)
 
 multi_classification_df = pd.read_csv(path_multi_class)
 
