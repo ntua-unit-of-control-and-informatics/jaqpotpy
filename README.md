@@ -19,19 +19,6 @@ Install jaqpotpy using pip:
 pip install jaqpotpy
 ```
 
-### Logging In
-
-To use jaqpotpy, you need to log in to the Jaqpot platform. You can log in using the login() method
-
-#### Login with Username and Password
-
-```python
-from jaqpotpy import Jaqpot
-
-jaqpot = Jaqpot()
-jaqpot.login()
-```
-
 ### Model Training and Deployment
 
 Follow these steps to train and deploy your model on Jaqpot:
@@ -45,10 +32,11 @@ Follow these steps to train and deploy your model on Jaqpot:
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
+from jaqpotpy import Jaqpot
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
-from jaqpotpy import Jaqpot
 
+# Creating a Simulated Dataset for Model Training
 np.random.seed(42)
 X1 = np.random.rand(100)
 X2 = np.random.rand(100)
@@ -66,8 +54,8 @@ myModel = SklearnModel(dataset=dataset, model=rf)
 myModel.fit()
 
 # Step 3: Upload the model on Jaqpot
-jaqpot = Jaqpot()
-jaqpot.login()
+jaqpot = Jaqpot() 
+jaqpot.login() #log in to Jaqppt
 myModel.deploy_on_jaqpot(
     jaqpot=jaqpot,
     name="Demo: Regression",
