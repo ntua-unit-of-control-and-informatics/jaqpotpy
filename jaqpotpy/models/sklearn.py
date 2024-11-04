@@ -45,93 +45,13 @@ class SklearnModel(Model):
     """
     A class to represent a Scikit-learn model within the Jaqpot framework.
 
-    Attributes
-    ----------
-    dataset : JaqpotpyDataset
-        The dataset used for training the model.
-    model : Any
-        The Scikit-learn model to be trained.
-    doa : Optional[Union[DOA, list]], optional
-        Domain of Applicability methods, by default None.
-    preprocess_x : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
-        Preprocessors for the input features, by default None.
-    preprocess_y : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
-        Preprocessors for the target variable, by default None.
-    random_seed : Optional[int], optional
-        Random seed for reproducibility, by default 1311.
-    pipeline : sklearn.pipeline.Pipeline
-        The pipeline that includes preprocessing steps and the model.
-    trained_model : Any
-        The trained Scikit-learn model.
-    transformers_y : dict
-        Dictionary to store transformers for the target variable.
-    libraries : list
-        List of installed libraries.
-    jaqpotpy_version : str
-        Version of the Jaqpotpy library.
-    task : str
-        The task type (e.g., regression, classification).
-    initial_types : list
-        Initial types for ONNX conversion.
-    onnx_model : onnx.ModelProto
-        The ONNX model.
-    type : ModelType
-        The type of the model.
-    independentFeatures : list
-        List of independent features.
-    dependentFeatures : list
-        List of dependent features.
-    extra_config : ModelExtraConfig
-        Extra configuration for the model.
-    test_scores : dict
-        Dictionary to store test scores.
-    train_scores : dict
-        Dictionary to store training scores.
-    average_cross_val_scores : dict
-        Dictionary to store average cross-validation scores.
-    cross_val_scores : dict
-        Dictionary to store cross-validation scores.
-    randomization_test_results : dict
-        Dictionary to store randomization test results.
-
-    Methods
-    -------
-    _dtypes_to_jaqpotypes():
-        Converts data types to Jaqpot feature types.
-    _extract_attributes(trained_class, trained_class_type):
-        Extracts attributes from a trained class.
-    _add_class_to_extraconfig(added_class, added_class_type):
-        Adds a class to the extra configuration.
-    _map_onnx_dtype(dtype, shape=1):
-        Maps data types to ONNX tensor types.
-    _create_onnx(onnx_options=None):
-        Creates an ONNX model.
-    fit(onnx_options=None):
-        Fits the model to the dataset.
-    predict(dataset):
-        Predicts using the trained model.
-    predict_proba(dataset):
-        Predicts probabilities using the trained model.
-    predict_onnx(dataset):
-        Predicts using the ONNX model.
-    predict_proba_onnx(dataset):
-        Predicts probabilities using the ONNX model.
-    deploy_on_jaqpot(jaqpot, name, description, visibility):
-        Deploys the model on the Jaqpot platform.
-    check_preprocessor(preprocessor_list, feat_type):
-        Checks if the preprocessors are valid.
-    cross_validate(dataset, n_splits=5):
-        Performs cross-validation on the dataset.
-    evaluate(dataset):
-        Evaluates the model on a given dataset.
-    randomization_test(train_dataset, test_dataset, n_iters=10):
-        Performs a randomization test.
-    _get_metrics(y_true, y_pred):
-        Computes evaluation metrics.
-    _get_classification_metrics(y_true, y_pred, binary=True):
-        Computes classification metrics.
-    _get_regression_metrics(y_true, y_pred):
-        Computes regression metrics.
+    Attributes:
+        dataset (JaqpotpyDataset): The dataset used for training the model.
+        model (Any): The Scikit-learn model.
+        doa (Optional[Union[DOA, list]]): Domain of Applicability methods.
+        preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for features.
+        preprocess_y (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for target variable.
+        random_seed (Optional[int]): Random seed for reproducibility.
     """
 
     def __init__(
@@ -143,6 +63,17 @@ class SklearnModel(Model):
         preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
         random_seed: Optional[int] = 1311,
     ):
+        """
+        Initialize the SklearnModel.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset used for training the model.
+            model (Any): The Scikit-learn model.
+            doa (Optional[Union[DOA, list]]): Domain of Applicability methods.
+            preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for features.
+            preprocess_y (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for target variable.
+            random_seed (Optional[int]): Random seed for reproducibility.
+        """
         self.dataset = dataset
         self.featurizer = dataset.featurizer
         self.random_seed = random_seed
@@ -189,6 +120,9 @@ class SklearnModel(Model):
         self.scores = ModelScores()
 
     def _dtypes_to_jaqpotypes(self):
+        """
+        Convert dataset feature types to Jaqpot feature types.
+        """
         for feature in self.independentFeatures + self.dependentFeatures:
             if feature["featureType"] in ["SMILES"]:
                 feature["featureType"] = FeatureType.SMILES
@@ -205,6 +139,16 @@ class SklearnModel(Model):
                 )
 
     def _extract_attributes(self, trained_class, trained_class_type):
+        """
+        Extract attributes from a trained class.
+
+        Args:
+            trained_class: The trained class instance.
+            trained_class_type (str): The type of the trained class.
+
+        Returns:
+            dict: A dictionary of attributes.
+        """
         if trained_class_type == "doa":
             attributes = trained_class._doa_attributes
         elif trained_class_type == "featurizer":
@@ -225,6 +169,13 @@ class SklearnModel(Model):
         }
 
     def _add_class_to_extraconfig(self, added_class, added_class_type):
+        """
+        Add a class to the extra configuration.
+
+        Args:
+            added_class: The class to be added.
+            added_class_type (str): The type of the class.
+        """
         configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
@@ -242,6 +193,16 @@ class SklearnModel(Model):
             )
 
     def _map_onnx_dtype(self, dtype, shape=1):
+        """
+        Map a data type to an ONNX data type.
+
+        Args:
+            dtype (str): The data type.
+            shape (int): The shape of the tensor.
+
+        Returns:
+            ONNX data type.
+        """
         if dtype == "int64":
             return Int64TensorType(shape=[None, shape])
         elif dtype == "int32":
@@ -262,6 +223,12 @@ class SklearnModel(Model):
             return None
 
     def _create_onnx_preprocessor(self, onnx_options: Optional[Dict] = None):
+        """
+        Create an ONNX preprocessor.
+
+        Args:
+            onnx_options (Optional[Dict]): Options for ONNX conversion.
+        """
         name = self.preprocess_pipeline.__class__.__name__ + "_ONNX"
         self.initial_types_preprocessor = []
         dtype_array = self.dataset.X.dtypes.values
@@ -307,6 +274,12 @@ class SklearnModel(Model):
         )
 
     def _create_onnx_model(self, onnx_options: Optional[Dict] = None):
+        """
+        Create an ONNX model.
+
+        Args:
+            onnx_options (Optional[Dict]): Options for ONNX conversion.
+        """
         name = self.model.__class__.__name__ + "_ONNX"
         self.initial_types = []
         self.initial_types = [
@@ -325,6 +298,15 @@ class SklearnModel(Model):
         )
 
     def _labels_are_strings(self, y):
+        """
+        Check if labels are strings.
+
+        Args:
+            y: The labels.
+
+        Returns:
+            bool: True if labels are strings, False otherwise.
+        """
         return (
             (
                 self.task.upper()
@@ -335,6 +317,12 @@ class SklearnModel(Model):
         )
 
     def fit(self, onnx_options: Optional[Dict] = None):
+        """
+        Fit the model to the dataset.
+
+        Args:
+            onnx_options (Optional[Dict]): Options for ONNX conversion.
+        """
         self.libraries = get_installed_libraries()
         if isinstance(self.featurizer, (MolecularFeaturizer, list)):
             if not isinstance(self.featurizer, list):
@@ -460,6 +448,15 @@ class SklearnModel(Model):
         self._create_onnx_model(onnx_options=onnx_options)
 
     def predict(self, dataset: JaqpotpyDataset):
+        """
+        Predict using the trained model.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset for prediction.
+
+        Returns:
+            Predictions.
+        """
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.selected_features is not None:
@@ -470,6 +467,16 @@ class SklearnModel(Model):
         return sklearn_prediction
 
     def _predict_with_X(self, X, model):
+        """
+        Predict using the given model and features.
+
+        Args:
+            X: The features.
+            model: The model.
+
+        Returns:
+            Predictions.
+        """
         if self.preprocess_x:
             X_transformed = self.preprocess_pipeline.transform(X)
             X_transformed = pd.DataFrame(X_transformed)
@@ -489,6 +496,15 @@ class SklearnModel(Model):
         return sklearn_prediction
 
     def predict_proba(self, dataset: JaqpotpyDataset):
+        """
+        Predict probabilities using the trained model.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset for prediction.
+
+        Returns:
+            List of probabilities.
+        """
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
@@ -508,6 +524,15 @@ class SklearnModel(Model):
         return sklearn_probs_list
 
     def predict_onnx(self, dataset: JaqpotpyDataset):
+        """
+        Predict using the ONNX model.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset for prediction.
+
+        Returns:
+            ONNX predictions.
+        """
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
@@ -532,6 +557,15 @@ class SklearnModel(Model):
         return onnx_prediction[0]
 
     def predict_proba_onnx(self, dataset: JaqpotpyDataset):
+        """
+        Predict probabilities using the ONNX model.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset for prediction.
+
+        Returns:
+            List of ONNX probabilities.
+        """
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
@@ -565,6 +599,15 @@ class SklearnModel(Model):
         return onnx_probs_list
 
     def predict_doa(self, dataset: JaqpotpyDataset):
+        """
+        Predict the Domain of Applicability (DOA).
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset for prediction.
+
+        Returns:
+            DOA results.
+        """
         if not isinstance(dataset, JaqpotpyDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
 
@@ -580,11 +623,28 @@ class SklearnModel(Model):
         return doa_results
 
     def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
+        """
+        Deploy the model on Jaqpot.
+
+        Args:
+            jaqpot: The Jaqpot instance.
+            name (str): The name of the model.
+            description (str): The description of the model.
+            visibility: The visibility of the model.
+        """
         jaqpot.deploy_sklearn_model(
             model=self, name=name, description=description, visibility=visibility
         )
 
     def _create_jaqpot_scores(self, fit_scores, score_type="train", n_output=1):
+        """
+        Create Jaqpot scores.
+
+        Args:
+            fit_scores: The fit scores.
+            score_type (str): The type of scores ('train', 'test', 'cross_validation').
+            n_output (int): The number of outputs.
+        """
         for output in range(n_output):
             y_name = self.dataset.y_cols[output]
             if (n_output - 1) == 0:
@@ -659,6 +719,16 @@ class SklearnModel(Model):
 
     @staticmethod
     def check_preprocessor(preprocessor_list: List, feat_type: str):
+        """
+        Check if the preprocessors are valid.
+
+        Args:
+            preprocessor_list (List): The list of preprocessors.
+            feat_type (str): The type of features ('X' or 'y').
+
+        Raises:
+            ValueError: If a preprocessor is not valid.
+        """
         # Get all valid preprocessing classes from sklearn.preprocessing
         valid_preprocessing_classes_1 = [
             getattr(preprocessing, name)
@@ -690,6 +760,16 @@ class SklearnModel(Model):
                     )
 
     def cross_validate(self, dataset: JaqpotpyDataset, n_splits=5):
+        """
+        Perform cross-validation.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset for cross-validation.
+            n_splits (int): The number of splits.
+
+        Returns:
+            Cross-validation scores.
+        """
         if dataset.y.ndim > 1 and dataset.y.shape[1] > 1:
             for output in range(dataset.y.shape[1]):
                 y_target = dataset.y.iloc[:, output]
@@ -716,6 +796,18 @@ class SklearnModel(Model):
     def _single_cross_validation(
         self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=1
     ):
+        """
+        Perform a single cross-validation.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset for cross-validation.
+            y: The target variable.
+            n_splits (int): The number of splits.
+            n_output (int): The number of outputs.
+
+        Returns:
+            Average metrics.
+        """
         kf = KFold(n_splits=n_splits, shuffle=True, random_state=self.random_seed)
 
         if not self.trained_model:
@@ -767,6 +859,15 @@ class SklearnModel(Model):
         return avg_metrics
 
     def evaluate(self, dataset: JaqpotpyDataset):
+        """
+        Evaluate the model on a dataset.
+
+        Args:
+            dataset (JaqpotpyDataset): The dataset for evaluation.
+
+        Returns:
+            Evaluation scores.
+        """
         if not dataset.y_cols:
             raise ValueError("y_cols must be provided to obtain y_true")
         y_true = dataset.__get_Y__().to_numpy()
@@ -792,6 +893,18 @@ class SklearnModel(Model):
         return self.test_scores
 
     def _evaluate_with_model(self, y_true, X_mat, model, output=1):
+        """
+        Evaluate the model with given true values and features.
+
+        Args:
+            y_true: The true values.
+            X_mat: The features.
+            model: The model.
+            output (int): The output index.
+
+        Returns:
+            Evaluation metrics.
+        """
         if y_true.ndim == 1:
             y_true = y_true.reshape(-1, 1)
         y_pred = self._predict_with_X(X_mat, model)
@@ -802,6 +915,17 @@ class SklearnModel(Model):
     def randomization_test(
         self, train_dataset: JaqpotpyDataset, test_dataset: JaqpotpyDataset, n_iters=10
     ):
+        """
+        Perform a randomization test.
+
+        Args:
+            train_dataset (JaqpotpyDataset): The training dataset.
+            test_dataset (JaqpotpyDataset): The testing dataset.
+            n_iters (int): The number of iterations.
+
+        Returns:
+            Randomization test results.
+        """
         for iteration in range(n_iters):
             np.random.seed(iteration)
             if train_dataset.y.ndim > 1 and train_dataset.y.shape[1] > 1:
@@ -875,6 +999,16 @@ class SklearnModel(Model):
         return self.randomization_test_results
 
     def _get_metrics(self, y_true, y_pred):
+        """
+        Get metrics based on the task type.
+
+        Args:
+            y_true: The true values.
+            y_pred: The predicted values.
+
+        Returns:
+            Metrics.
+        """
         if self.task.upper() == "REGRESSION":
             return SklearnModel._get_regression_metrics(y_true, y_pred)
         if self._labels_are_strings(y_pred):
@@ -890,6 +1024,17 @@ class SklearnModel(Model):
 
     @staticmethod
     def _get_classification_metrics(y_true, y_pred, binary=True):
+        """
+        Get classification metrics.
+
+        Args:
+            y_true: The true values.
+            y_pred: The predicted values.
+            binary (bool): Whether the classification is binary.
+
+        Returns:
+            Classification metrics.
+        """
         if binary:
             conf_mat = metrics.confusion_matrix(y_true=y_true, y_pred=y_pred)
         else:
@@ -917,6 +1062,16 @@ class SklearnModel(Model):
 
     @staticmethod
     def _get_regression_metrics(y_true, y_pred):
+        """
+        Get regression metrics.
+
+        Args:
+            y_true: The true values.
+            y_pred: The predicted values.
+
+        Returns:
+            Regression metrics.
+        """
         if isinstance(y_pred, list):
             y_pred = np.array(y_pred)
         if isinstance(y_true, list):
