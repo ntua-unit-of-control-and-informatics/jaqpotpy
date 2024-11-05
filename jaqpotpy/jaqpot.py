@@ -33,14 +33,14 @@ class Jaqpot:
     """
 
     def __init__(
-        self,
-        base_url=None,
-        app_url=None,
-        login_url=None,
-        api_url=None,
-        keycloak_realm=None,
-        keycloak_client_id=None,
-        create_logs=False,
+            self,
+            base_url=None,
+            app_url=None,
+            login_url=None,
+            api_url=None,
+            keycloak_realm=None,
+            keycloak_client_id=None,
+            create_logs=False,
     ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
@@ -159,14 +159,14 @@ class Jaqpot:
             self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_torch_model(
-        self,
-        onnx_model,
-        featurizer,
-        name,
-        description,
-        target_name,
-        visibility,
-        task,
+            self,
+            onnx_model,
+            featurizer,
+            name,
+            description,
+            target_name,
+            visibility,
+            task,
     ):
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
@@ -198,7 +198,7 @@ class Jaqpot:
             independent_features=[
                 Feature(key="SMILES", name="SMILES", feature_type=FeatureType.SMILES)
             ],
-            extra_config=ModelExtraConfig(torch_config=torch_config),
+            torch_config=torch_config,
             task=model_task,
             visibility=ModelVisibility(visibility),
             raw_model=onnx_model,
