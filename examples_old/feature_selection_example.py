@@ -25,7 +25,7 @@ print(dataset.X.shape)
 FeatureSelector = VarianceThreshold(threshold=0.8)
 dataset.select_features(FeatureSelector)
 print(dataset.X.shape)
-print(dataset.active_features)
+print(dataset.selected_features)
 
 # Example 2: Select features using sklearn.feature_selection
 df = pd.read_csv(path).iloc[0:5, :]
@@ -42,6 +42,6 @@ dataset = JaqpotpyDataset(
     featurizer=featurizer,
 )
 print(dataset.X.shape)
-dataset.select_features(SelectionList=["X1"])
+dataset.select_features(SelectColumns=["X1"])
 print(dataset.X.shape)
-print(dataset.active_features)
+print(dataset.selected_features)
