@@ -23,4 +23,3 @@ This command will create the Markdown files in the `_build` folder.
 ## Folder Structure
 
 - **_build**: Contains the generated Markdown files.
-
