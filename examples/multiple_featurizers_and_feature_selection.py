@@ -3,6 +3,8 @@ from sklearn.datasets import make_regression
 from jaqpotpy.datasets import JaqpotpyDataset
 from sklearn.linear_model import LinearRegression
 from jaqpotpy.models.sklearn import SklearnModel
+from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MordredDescriptors
+
 
 # Step 1: Generate a small regression dataset
 # This creates a dataset with 100 samples, each having 4 features and some noise.
