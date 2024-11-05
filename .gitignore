@@ -117,3 +117,4 @@ share/
 man/
 ./man/
 .DS_Store
+pydoc_docs
