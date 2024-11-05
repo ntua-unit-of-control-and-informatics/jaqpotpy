@@ -1,6 +1,3 @@
-"""Author: Ioannis Pitoskas (jpitoskas@gmail.com)"""
-
-
 def get_installed_packages() -> dict:
     """Retrieves a dictionary of installed packages and their versions using pip.freeze.
 
