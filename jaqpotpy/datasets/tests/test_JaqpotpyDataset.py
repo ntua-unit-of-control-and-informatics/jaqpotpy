@@ -375,7 +375,7 @@ class TestDatasets(unittest.TestCase):
             featurizer=self.featurizer,
         )
         selection_list = ["X1", "X2"]
-        dataset.select_features(SelectionList=selection_list)
+        dataset.select_features(SelectColumns=selection_list)
         self.assertEqual(dataset.X.shape[1], 2, "DataFrame should have 2 columns")
         self.assertEqual(
             list(dataset.X.columns),
@@ -385,10 +385,10 @@ class TestDatasets(unittest.TestCase):
         selection_list = ["X1", "X3"]
 
         with self.assertRaises(ValueError):
-            dataset.select_features(SelectionList=selection_list)
+            dataset.select_features(SelectColumns=selection_list)
 
     def test_select_features_with_both_arguments(self):
-        # Test that passing both FeatureSelector and SelectionList raises an error
+        # Test that passing both FeatureSelector and SelectColumns raises an error
         dataset = JaqpotpyDataset(
             path=self.path,
             y_cols=self.y_cols,
@@ -400,11 +400,11 @@ class TestDatasets(unittest.TestCase):
         with self.assertRaises(ValueError):
             dataset.select_features(
                 FeatureSelector=skfs.VarianceThreshold(threshold=0.01),
-                SelectionList=["X1", "X2"],
+                SelectColumns=["X1", "X2"],
             )
 
     def test_select_features_with_neither_argument(self):
-        # Test that passing neither FeatureSelector nor SelectionList raises an error
+        # Test that passing neither FeatureSelector nor SelectColumns raises an error
         dataset = JaqpotpyDataset(
             path=self.path,
             y_cols=self.y_cols,
