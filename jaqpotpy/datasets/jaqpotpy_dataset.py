@@ -249,7 +249,10 @@ class JaqpotpyDataset(BaseDataset):
             X_filtered = self.X
             X_excluded = pd.DataFrame([])
 
-        if len(X_filtered.select_dtypes(include="object").columns) > 0:
+        if (
+            len(X_filtered.select_dtypes(include="object").columns) > 0
+            and SelectColumns is None
+        ):
             raise TypeError(
                 "Some of the columns contain character variables. Please provide all character columns in the 'ExcludeColumns' argument as a list."
             )
