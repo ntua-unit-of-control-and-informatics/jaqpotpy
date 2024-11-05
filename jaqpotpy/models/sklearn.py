@@ -416,7 +416,9 @@ class SklearnModel(Model):
                 print(f"Goodness-of-fit metrics of output {output} on training set:")
                 print(self.train_scores[self.dataset.y_cols[output]])
         else:
-            self.train_scores = self._get_metrics(y, y_pred)
+            self.train_scores = self._get_metrics(
+                self.dataset.__get_Y__().to_numpy(), y_pred
+            )
             print("Goodness-of-fit metrics on training set:")
             print(self.train_scores)
         self._create_jaqpot_scores(
@@ -922,6 +924,11 @@ class SklearnModel(Model):
             y_pred = np.array(y_pred)
         if isinstance(y_true, list):
             y_true = np.array(y_true)
+
+        if y_true.ndim == 2:
+            y_true = y_true.ravel()
+        if y_pred.ndim == 2:
+            y_pred = y_pred.ravel()
 
         mae = metrics.mean_absolute_error(y_true=y_true, y_pred=y_pred)
         r2 = metrics.r2_score(y_true=y_true, y_pred=y_pred)
