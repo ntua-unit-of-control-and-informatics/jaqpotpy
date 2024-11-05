@@ -444,9 +444,7 @@ class SklearnModel(Model):
                     if feature in self.selected_features
                 ]
             else:
-                intesection_of_features = intesection_of_features = [
-                    feature for feature in self.dataset.x_cols
-                ]
+                intesection_of_features = self.dataset.x_cols
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
                 for feature in intesection_of_features
