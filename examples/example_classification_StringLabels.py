@@ -14,7 +14,6 @@ from jaqpotpy.descriptors.molecular import (
 )
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
-from jaqpotpy.doa import Leverage
 from jaqpotpy import Jaqpot
 
 path = "jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS_new.csv"
@@ -72,7 +71,6 @@ molecularModel_t1.cross_validate(dataset, n_splits=3)
 cross_val_scores = molecularModel_t1.cross_val_scores
 print(cross_val_scores["output_0"]["fold_1"]["confusionMatrix"])
 print(cross_val_scores["output_0"]["fold_3"]["confusionMatrix"])
-
 
 # skl_predictions = molecularModel_t1.predict(prediction_dataset)
 # # skl_probabilities = molecularModel_t1.predict_proba(prediction_dataset)

@@ -11,7 +11,6 @@ from jaqpotpy.api.openapi.api.model_api import ModelApi
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.feature_type import FeatureType
 from jaqpotpy.api.openapi.models.model import Model
-from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
 from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
@@ -33,14 +32,14 @@ class Jaqpot:
     """
 
     def __init__(
-            self,
-            base_url=None,
-            app_url=None,
-            login_url=None,
-            api_url=None,
-            keycloak_realm=None,
-            keycloak_client_id=None,
-            create_logs=False,
+        self,
+        base_url=None,
+        app_url=None,
+        login_url=None,
+        api_url=None,
+        keycloak_realm=None,
+        keycloak_client_id=None,
+        create_logs=False,
     ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
@@ -114,7 +113,7 @@ class Jaqpot:
             name=name,
             type=model.type,
             jaqpotpy_version=model.jaqpotpy_version,
-            doas=model.doa,
+            doas=model.doa_data,
             libraries=model.libraries,
             dependent_features=[
                 Feature(
@@ -141,7 +140,8 @@ class Jaqpot:
             raw_model=raw_model,
             selected_features=model.selected_features,
             description=description,
-            extra_config=model.extra_config,
+            featurizers=model.featurizers,
+            preprocessors=model.preprocessors,
             scores=model.scores,
         )
         response = model_api.create_model_with_http_info(model=body_model)
@@ -159,14 +159,14 @@ class Jaqpot:
             self.log.error("Error code: " + str(response.status_code.value))
 
     def deploy_torch_model(
-            self,
-            onnx_model,
-            featurizer,
-            name,
-            description,
-            target_name,
-            visibility,
-            task,
+        self,
+        onnx_model,
+        featurizer,
+        name,
+        description,
+        target_name,
+        visibility,
+        task,
     ):
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION

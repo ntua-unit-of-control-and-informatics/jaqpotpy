@@ -1,4 +1,5 @@
 import pandas as pd
+from jaqpotpy.doa import Leverage, MeanVar, BoundingBox
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
@@ -29,10 +30,11 @@ pre = Preprocess()
 # pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
 
 model = RandomForestRegressor(random_state=42)
-doa_method = Leverage()
-molecularModel_t1 = SklearnModel(
-    dataset=dataset, doa=None, model=model, preprocessor=None, cv=None
-)
+doa_methods = []
+doa_methods.append(Leverage())
+doa_methods.append(MeanVar())
+doa_methods.append(BoundingBox())
+molecularModel_t1 = SklearnModel(dataset=dataset, doa=doa_methods, model=model)
 
 molecularModel_t1.fit()
 # # # print(molecularModel_t1.transformers_y)

@@ -18,7 +18,6 @@ from skl2onnx.common.data_types import (
     StringTensorType,
 )
 import jaqpotpy
-from jaqpotpy.api.openapi.models.doa_data import DoaData
 from jaqpotpy.api.openapi.models import (
     ModelScores,
     Scores,
@@ -33,7 +32,6 @@ from jaqpotpy.api.openapi.models import (
     FeatureType,
     FeaturePossibleValue,
     ModelType,
-    ModelExtraConfig,
     Transformer,
     Doa,
 )
@@ -102,8 +100,8 @@ class SklearnModel(Model):
         Converts data types to Jaqpot feature types.
     _extract_attributes(trained_class, trained_class_type):
         Extracts attributes from a trained class.
-    _add_class_to_extraconfig(added_class, added_class_type):
-        Adds a class to the extra configuration.
+    _add_transformer(added_class, added_class_type):
+        Adds a class to the transformers list.
     _map_onnx_dtype(dtype, shape=1):
         Maps data types to ONNX tensor types.
     _create_onnx(onnx_options=None):
@@ -137,13 +135,13 @@ class SklearnModel(Model):
     """
 
     def __init__(
-            self,
-            dataset: JaqpotpyDataset,
-            model: Any,
-            doa: Optional[Union[DOA, list]] = None,
-            preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
-            preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
-            random_seed: Optional[int] = 1311,
+        self,
+        dataset: JaqpotpyDataset,
+        model: Any,
+        doa: Optional[Union[DOA, list]] = None,
+        preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
+        preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
+        random_seed: Optional[int] = 1311,
     ):
         self.dataset = dataset
         self.featurizer = dataset.featurizer
@@ -231,7 +229,7 @@ class SklearnModel(Model):
         configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
-                added_class, added_class_type
+            added_class, added_class_type
         ).items():
             configurations[attr_name] = attr_value
 
@@ -329,12 +327,12 @@ class SklearnModel(Model):
 
     def _labels_are_strings(self, y):
         return (
-                (
-                        self.task.upper()
-                        in ["BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"]
-                )
-                and y.dtype in ["object", "string"]
-                and isinstance(self.preprocess_y[0], LabelEncoder)
+            (
+                self.task.upper()
+                in ["BINARY_CLASSIFICATION", "MULTICLASS_CLASSIFICATION"]
+            )
+            and y.dtype in ["object", "string"]
+            and isinstance(self.preprocess_y[0], LabelEncoder)
         )
 
     def fit(self, onnx_options: Optional[Dict] = None):
@@ -375,7 +373,7 @@ class SklearnModel(Model):
                 self.doa[i] = doa_method
                 doa_instance = Doa(
                     method=doa_method.__name__,
-                    data=DoaData(doa_method.doa_attributes),
+                    data=doa_method.doa_attributes,
                 )
                 self.doa_data.append(doa_instance)
 
@@ -386,8 +384,8 @@ class SklearnModel(Model):
         # Apply preprocessing of response vector y
         if self.preprocess_y[0] is not None:
             if (
-                    self.task == "BINARY_CLASSIFICATION"
-                    or self.task == "MULTICLASS_CLASSIFICATION"
+                self.task == "BINARY_CLASSIFICATION"
+                or self.task == "MULTICLASS_CLASSIFICATION"
             ) and not isinstance(self.preprocess_y[0], LabelEncoder):
                 raise ValueError(
                     "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
@@ -650,8 +648,8 @@ class SklearnModel(Model):
                 self.scores.test.append(jaqpotScores)
             elif score_type == "cross_validation":
                 if (
-                        not hasattr(self.scores, "cross_validation")
-                        or self.scores.cross_validation is None
+                    not hasattr(self.scores, "cross_validation")
+                    or self.scores.cross_validation is None
                 ):
                     self.scores.cross_validation = []
                 self.scores.cross_validation.append(jaqpotScores)
@@ -674,14 +672,14 @@ class SklearnModel(Model):
             if isinstance(getattr(compose, name), type)
         ]
         valid_preprocessing_classes = (
-                valid_preprocessing_classes_1 + valid_preprocessing_classes_2
+            valid_preprocessing_classes_1 + valid_preprocessing_classes_2
         )
 
         for preprocessor in preprocessor_list:
             # Check if preprocessor is an instance of one of these classes
             if (
-                    not isinstance(preprocessor, tuple(valid_preprocessing_classes))
-                    and preprocessor is not None
+                not isinstance(preprocessor, tuple(valid_preprocessing_classes))
+                and preprocessor is not None
             ):
                 if feat_type == "X":
                     raise ValueError(
@@ -717,7 +715,7 @@ class SklearnModel(Model):
         return self.average_cross_val_scores
 
     def _single_cross_validation(
-            self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=1
+        self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=1
     ):
         kf = KFold(n_splits=n_splits, shuffle=True, random_state=self.random_seed)
 
@@ -756,7 +754,7 @@ class SklearnModel(Model):
             self.cross_val_scores.setdefault(self.dataset.y_cols[n_output - 1], {})
             self.cross_val_scores[self.dataset.y_cols[n_output - 1]][
                 "fold_" + str(fold)
-                ] = metrics_result
+            ] = metrics_result
             fold += 1
 
             if sum_metrics is None:
@@ -803,7 +801,7 @@ class SklearnModel(Model):
         return self._get_metrics(y_true[:, output], y_pred[:, output])
 
     def randomization_test(
-            self, train_dataset: JaqpotpyDataset, test_dataset: JaqpotpyDataset, n_iters=10
+        self, train_dataset: JaqpotpyDataset, test_dataset: JaqpotpyDataset, n_iters=10
     ):
         for iteration in range(n_iters):
             np.random.seed(iteration)
@@ -934,7 +932,7 @@ class SklearnModel(Model):
         cor_den_1 = ((y_true - y_true.mean()) ** 2).sum()
         cor_den_2 = ((y_pred - y_pred.mean()) ** 2).sum()
         cor_coeff = (cor_num_1 * cor_num_2).sum() / np.sqrt(cor_den_1 * cor_den_2)
-        cor_coeff_2 = cor_coeff ** 2
+        cor_coeff_2 = cor_coeff**2
 
         # Calculate k and k_hat
         k = ((y_true * y_pred).sum()) / ((y_pred) ** 2).sum()
