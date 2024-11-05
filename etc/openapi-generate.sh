@@ -18,8 +18,13 @@ cd $JAQPOT_API_PATH
 git pull
 cd -
 
-# Replace all DateTime occurrences with string in the openapi.yaml
-sed -i.bak 's/DateTime/string/g' $JAQPOT_API_PATH/src/main/resources/openapi.yaml && rm $JAQPOT_API_PATH/src/main/resources/openapi.yaml.bak
+# Remove all pattern validations to avoid throwing errors when a pattern is not satisfied
+# legacy models do not satisfy most patterns
+# TODO skip validation on pydantic responses when this https://github.com/OpenAPITools/openapi-generator/issues/19357 is implemented
+sed -i.bak 's/pattern: "[^"]*"//g' $JAQPOT_API_PATH/src/main/resources/openapi.yaml && rm $JAQPOT_API_PATH/src/main/resources/openapi.yaml.bak
+# Remove empty lines that might be left after pattern removal
+sed -i.bak '/^[[:space:]]*$/d' $JAQPOT_API_PATH/src/main/resources/openapi.yaml && rm $JAQPOT_API_PATH/src/main/resources/openapi.yaml.bak
+
 
 # Generate the OpenAPI client in a temporary directory
 openapi-generator-cli generate \

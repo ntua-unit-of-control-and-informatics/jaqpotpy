@@ -20,8 +20,8 @@ from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.models import Model
 from jaqpotpy.utils.url_utils import add_subdomain
 
-API_KEY = os.getenv("JAQPOT_API_KEY")
-API_SECRET = os.getenv("JAQPOT_API_SECRET")
+JAQPOT_API_KEY = os.getenv("JAQPOT_API_KEY")
+JAQPOT_API_SECRET = os.getenv("JAQPOT_API_SECRET")
 QSARTOOLBOX_CALCULATOR_MODEL_ID = 6
 QSARTOOLBOX_MODEL_MODEL_ID = 1837
 QSAR_PROFILER_MODEL_ID = 1842
@@ -29,10 +29,10 @@ QSAR_PROFILER_MODEL_ID = 1842
 
 class JaqpotApiClient:
     def __init__(
-        self,
-        base_url=None,
-        api_url=None,
-        create_logs=False,
+            self,
+            base_url=None,
+            api_url=None,
+            create_logs=False,
     ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
@@ -45,7 +45,7 @@ class JaqpotApiClient:
         self.api_url = api_url or add_subdomain(self.base_url, "api")
         self.http_client = (
             JaqpotApiHttpClientBuilder(host=self.api_url)
-            .build_with_api_keys(API_KEY, API_SECRET)
+            .build_with_api_keys(JAQPOT_API_KEY, JAQPOT_API_SECRET)
             .build()
         )
 
@@ -247,7 +247,7 @@ class JaqpotApiClient:
         try:
             polling2.poll(
                 lambda: self.get_dataset_by_id(dataset_id).status
-                in ["SUCCESS", "FAILURE"],
+                        in ["SUCCESS", "FAILURE"],
                 step=3,
                 timeout=60,
             )
