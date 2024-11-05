@@ -8,6 +8,7 @@ from jaqpotpy.cfg import config
 
 logger = logging.getLogger(__name__)
 _print_threshold = 1000
+verbose = False
 
 
 class AbstractFeaturizer(object):
@@ -37,7 +38,7 @@ class AbstractFeaturizer(object):
         """
         datapoints = list(datapoints)
         features = []
-        if config.verbose is False:
+        if verbose is False:
             disable_tq = True
         else:
             disable_tq = False
@@ -47,7 +48,7 @@ class AbstractFeaturizer(object):
             try:
                 features.append(self._featurize(point, **kwargs))
             except:
-                if config.verbose is True:
+                if verbose is True:
                     logger.warning(
                         "Failed to featurize datapoint %d. Appending array with nan"
                     )
@@ -198,7 +199,7 @@ class MolecularFeaturizer(AbstractFeaturizer):
             datapoints = list(datapoints)
 
         features: list = []
-        if config.verbose is False:
+        if verbose is False:
             disable_tq = True
         else:
             disable_tq = False
@@ -220,7 +221,7 @@ class MolecularFeaturizer(AbstractFeaturizer):
             except Exception as e:
                 if isinstance(mol, Chem.rdchem.Mol):
                     mol = Chem.MolToSmiles(mol)
-                if config.verbose is True:
+                if verbose is True:
                     logger.warning(
                         "Failed to featurize datapoint %d, %s. Appending array with nan values",
                         i,
