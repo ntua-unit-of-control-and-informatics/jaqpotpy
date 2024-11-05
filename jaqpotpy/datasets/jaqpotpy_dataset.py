@@ -106,7 +106,6 @@ class JaqpotpyDataset(BaseDataset):
         self._featurizer_name = []
         self.smiles = None
         self.x_colnames = None
-        self.active_features = None
         self._X_old = None
         self.create()
 
@@ -221,14 +220,38 @@ class JaqpotpyDataset(BaseDataset):
         self.df = pd.concat([self.X, self.y], axis=1)
         self.X.columns = self.X.columns.astype(str)
         self.df.columns = self.df.columns.astype(str)
-        self.active_features = self.X.columns.tolist()
 
-    def select_features(self, FeatureSelector=None, SelectionList=None):
-        if (FeatureSelector is None and SelectionList is None) or (
-            FeatureSelector is not None and SelectionList is not None
+    def select_features(
+        self, FeatureSelector=None, SelectColumns=None, ExcludeColumns=None
+    ):
+        if (FeatureSelector is None and SelectColumns is None) or (
+            FeatureSelector is not None and SelectColumns is not None
         ):
             raise ValueError(
-                "Either FeatureSelector or SelectionList must be provided, but not both."
+                "Either FeatureSelector or SelectColumns must be provided, but not both."
+            )
+
+        if ExcludeColumns:
+            if not isinstance(ExcludeColumns, list):
+                raise TypeError("ExcludeColumns should be a list")
+            elif not all(item in self.X.columns for item in ExcludeColumns):
+                raise ValueError(
+                    "Not all column names provided in ExcludeColumns are in the dataframe"
+                )
+            else:
+                X_filtered = self.X[
+                    [col for col in self.X.columns if col not in ExcludeColumns]
+                ]
+                X_excluded = self.X[
+                    [col for col in self.X.columns if col in ExcludeColumns]
+                ]
+        else:
+            X_filtered = self.X
+            X_excluded = pd.DataFrame([])
+
+        if len(X_filtered.select_dtypes(include="object").columns) > 0:
+            raise TypeError(
+                "Some of the columns contain character variables. Please provide all character columns in the 'ExcludeColumns' argument as a list."
             )
 
         self._X_old = self.X
@@ -246,16 +269,23 @@ class JaqpotpyDataset(BaseDataset):
                 raise ValueError(
                     f"FeatureSelector must be an instance of a valid class from sklearn.feature_selection, but got {type(FeatureSelector)}."
                 )
-            transformed_X = FeatureSelector.fit_transform(self.X)
+            transformed_X = FeatureSelector.fit_transform(X_filtered)
             selected_columns_mask = FeatureSelector.get_support()
-            self.selected_features = self.X.columns[selected_columns_mask]
-            self.X = pd.DataFrame(data=transformed_X, columns=self.selected_features)
-        elif SelectionList is not None:
-            if not all(item in self.X.columns for item in SelectionList):
+            self.selected_features = X_filtered.columns[selected_columns_mask]
+            self.X = pd.concat(
+                [
+                    pd.DataFrame(data=transformed_X, columns=self.selected_features),
+                    X_excluded,
+                ],
+                axis=1,
+            )
+
+        elif SelectColumns is not None:
+            if not all(item in self.X.columns for item in SelectColumns):
                 raise ValueError("Provided features not in dataset features")
             else:
-                self.X = self.X[SelectionList]
-                self.selected_features = SelectionList
+                self.X = self.X[SelectColumns]
+                self.selected_features = SelectColumns
 
     def copy(self):
         """Create a copy of the dataset, including a deep copy of the underlying DataFrame
