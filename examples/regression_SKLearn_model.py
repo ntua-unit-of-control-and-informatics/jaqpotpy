@@ -29,3 +29,27 @@ jaqpot_model = SklearnModel(dataset=dataset, model=LinearRegression())
 # Step 5: Fit the model to the dataset
 # This trains the Linear Regression model using the provided dataset.
 jaqpot_model.fit()
+
+# Step 6: Generate a small prediction dataset
+# Create a new dataset with 5 samples, each having 4 features.
+X_test, _ = make_regression(n_samples=5, n_features=4, noise=0.2, random_state=42)
+
+# Step 7: Create a DataFrame with the features
+# Store the features in columns "X1", "X2", "X3", "X4".
+df_test = pd.DataFrame(X_test, columns=["X1", "X2", "X3", "X4"])
+
+# Step 8: Initialize a JaqpotpyDataset for prediction
+# Specify the feature columns and set y_cols to None since we are predicting.
+test_dataset = JaqpotpyDataset(
+    df=df_test,
+    x_cols=["X1", "X2", "X3", "X4"],
+    y_cols=None,
+    task="regression",
+)
+
+# Step 9: Use the trained model to make predictions on the new dataset
+# Predict the target values for the new dataset using the trained jaqpot_model model.
+predictions = jaqpot_model.predict(test_dataset)
+
+# Print the predictions
+print(predictions)

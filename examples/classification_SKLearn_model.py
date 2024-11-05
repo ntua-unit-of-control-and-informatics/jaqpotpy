@@ -9,7 +9,7 @@ from jaqpotpy.models.sklearn import SklearnModel
 X, y = make_classification(n_samples=100, n_features=4, random_state=42)
 
 # Step 2: Create a DataFrame with the features and target
-# We store the features in columns "X1", "X2", "X3", "X4" and the target in column "y".
+# Store the features in columns "X1", "X2", "X3", "X4" and the target in column "y".
 df = pd.DataFrame(X, columns=["X1", "X2", "X3", "X4"])
 df["y"] = y
 
@@ -23,9 +23,33 @@ dataset = JaqpotpyDataset(
 )
 
 # Step 4: Wrap the scikit-learn model with Jaqpotpy's SklearnModel
-# Here, we use Logistic Regression as the classification model.
+# Use Logistic Regression as the classification model.
 jaqpot_model = SklearnModel(dataset=dataset, model=LogisticRegression())
 
 # Step 5: Fit the model to the dataset
-# This trains the Logistic Regression model using the provided dataset.
+# Train the Logistic Regression model using the provided dataset.
 jaqpot_model.fit()
+
+# Step 6: Generate a small prediction dataset
+# Create a new dataset with 5 samples, each having 4 features.
+X_test, _ = make_classification(n_samples=5, n_features=4, random_state=42)
+
+# Step 7: Create a DataFrame with the features
+# Store the features in columns "X1", "X2", "X3", "X4".
+df_test = pd.DataFrame(X_test, columns=["X1", "X2", "X3", "X4"])
+
+# Step 8: Initialize a JaqpotpyDataset for prediction
+# Specify the feature columns and set y_cols to None since we are predicting.
+test_dataset = JaqpotpyDataset(
+    df=df_test,
+    x_cols=["X1", "X2", "X3", "X4"],
+    y_cols=None,
+    task="binary_classification",
+)
+
+# Step 9: Use the trained model to make predictions on the new dataset
+# Predict the target values for the new dataset using the trained jaqpot_model model.
+predictions = jaqpot_model.predict(test_dataset)
+
+# Print the predictions
+print(predictions)
