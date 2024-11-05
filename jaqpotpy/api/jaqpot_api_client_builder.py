@@ -9,9 +9,11 @@ class JaqpotApiHttpClientBuilder:
         self.http_client.set_access_token(access_token)
         return self
 
-    def build_with_api_keys(self, client_key, client_secret):
-        self.http_client.set_default_header("X-Api-Key", client_key)
-        self.http_client.set_default_header("X-Api-Secret", client_secret)
+    def build_with_api_keys(self, api_key, api_secret):
+        if api_key is None or api_secret is None:
+            raise ValueError('api_key and api_secret must be set')
+        self.http_client.set_default_header("X-Api-Key", api_key)
+        self.http_client.set_default_header("X-Api-Secret", api_secret)
         return self
 
     def build(self):
