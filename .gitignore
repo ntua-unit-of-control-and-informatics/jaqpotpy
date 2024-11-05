@@ -117,4 +117,8 @@ share/
 man/
 ./man/
 .DS_Store
-pydoc_docs
+
+# Sphinx
+jaqpotpy/sphinx_docs/_build
+jaqpotpy/sphinx_docs/_static
+jaqpotpy/sphinx_docs/_templates
