@@ -7,72 +7,52 @@ from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.descriptors import RDKitDescriptors
 
 # Create sample data
-data = {
-    "smiles": [  # List of SMILES strings representing molecular structures
-        "CC",
-        "CCO",
-        "CCC",
-        "CCCl",
-        "CCBr",
-        "COC",
-        "CCOCC",
-        "CCCO",
-        "CCCC",
-        "CCCCCC",
-    ],
-    "cat_col": [  # Categorical feature column with two levels, "high" and "low"
-        "high",
-        "high",
-        "high",
-        "high",
-        "high",
-        "low",
-        "low",
-        "low",
-        "low",
-        "low",
-    ],
-    "temperature": np.random.randint(20, 37, size=10),  # Random temperature values
-    "activity": [
-        80,
-        81,
-        81,
-        84,
-        83.5,
-        83,
-        89,
-        90,
-        91,
-        97,
-    ],  # Target variable 'activity'
-}
+data = pd.DataFrame(
+    {
+        "smiles": [  # List of SMILES strings representing molecular structures
+            "CC",
+            "CCO",
+            "CCC",
+            "CCCl",
+            "CCBr",
+            "COC",
+            "CCOCC",
+            "CCCO",
+            "CCCC",
+            "CCCCCC",
+        ],
+        "temperature": np.random.randint(20, 37, size=10),
+        "activity": [
+            80,
+            81,
+            81,
+            84,
+            83.5,
+            83,
+            89,
+            90,
+            91,
+            97,
+        ],
+    }
+)
 
-# Create DataFrame from data
-df = pd.DataFrame(data)
-
-# Initialize a molecular featurizer to generate molecular descriptors from SMILES
 featurizer = RDKitDescriptors()
 
 # Prepare the dataset for training with Jaqpotpy
 train_dataset = JaqpotpyDataset(
-    df=df,
+    df=data,
     x_cols=[
-        "cat_col",
         "temperature",
-    ],  # Feature columns including categorical and temperature
-    y_cols=["activity"],  # Target variable column
-    smiles_cols=["smiles"],  # Column containing SMILES strings for featurization
-    task="regression",  # Task type is regression
-    featurizer=featurizer,  # Featurizer to apply to the 'smiles' column
+    ],
+    y_cols=["activity"],
+    smiles_cols=["smiles"],
+    task="regression",
+    featurizer=featurizer,
 )
 
-# Initialize the machine learning model
 model = RandomForestRegressor(random_state=42)
-
-# Wrap the model and dataset in a SklearnModel object
 jaqpot_model = SklearnModel(dataset=train_dataset, model=model)
-
-# Train the model on the dataset
 jaqpot_model.fit()
 
 # Perform cross-validation on the training data to estimate model performance
@@ -82,22 +62,22 @@ jaqpot_model.fit()
 jaqpot_model.cross_validate(train_dataset, n_splits=10)
 
 # Define test data for external evaluation
-X_test = {
-    "smiles": ["CCCOC", "CO"],  # New SMILES strings for prediction
-    "cat_col": ["low", "low"],  # Categorical feature values for test data
-    "temperature": [27.0, 22.0],  # Temperature values for test data
-    "activity": [
-        89.0,
-        86.0,
-    ],  # Target activity values for reference (not used for prediction)
-}
+X_test = pd.DataFrame(
+    {
+        "smiles": ["CCCOC", "CO"],  # New SMILES strings for prediction
+        "cat_col": ["low", "low"],  # Categorical feature values for test data
+        "temperature": [27.0, 22.0],  # Temperature values for test data
+        "activity": [
+            89.0,
+            86.0,
+        ],  # Target activity values for reference (not used for prediction)
+    }
+)
 
-# Create DataFrame for test data
-df_test = pd.DataFrame(X_test)
 
 # Prepare the test dataset with Jaqpotpy
 test_dataset = JaqpotpyDataset(
-    df=df_test,
+    df=X_test,
     smiles_cols="smiles",
     x_cols=["cat_col", "temperature"],
     y_cols=["activity"],
@@ -110,8 +90,18 @@ test_dataset = JaqpotpyDataset(
 # providing metrics that reflect its predictive ability outside of training data.
 jaqpot_model.evaluate(test_dataset)
 
-# Generate predictions for the test data
 predictions = jaqpot_model.predict(test_dataset)
-
-# Print predictions to view model output on test data
 print(predictions)
+
+# Conducts a randomization test to assess the model's robustness against randomization of target labels.
+# This test involves shuffling the target labels in the training dataset multiple times (specified by n_iters).
+# For each iteration, the model is retrained with the randomized targets, then evaluated on the original test set.
+# This approach helps determine if the model's predictions are truly capturing relationships in the data
+# (i.e., significantly better than a model trained on random labels) or if the performance is mainly due to chance.
+
+jaqpot_model.randomization_test(
+    train_dataset=train_dataset,  # The original dataset with known input features and target values for training
+    test_dataset=test_dataset,  # The dataset on which the model's performance is evaluated
+    n_iters=10,  # Number of randomization iterations: for each iteration, the target labels in `train_dataset`
+    # are randomized, the model retrains, and its performance on the `test_dataset` is measured
+)
