@@ -100,8 +100,7 @@ print(predictions)
 # (i.e., significantly better than a model trained on random labels) or if the performance is mainly due to chance.
 
 jaqpot_model.randomization_test(
-    train_dataset=train_dataset,  # The original dataset with known input features and target values for training
-    test_dataset=test_dataset,  # The dataset on which the model's performance is evaluated
-    n_iters=10,  # Number of randomization iterations: for each iteration, the target labels in `train_dataset`
-    # are randomized, the model retrains, and its performance on the `test_dataset` is measured
+    train_dataset=train_dataset,
+    test_dataset=test_dataset,
+    n_iters=10,
 )
