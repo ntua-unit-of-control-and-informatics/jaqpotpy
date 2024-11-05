@@ -4,7 +4,7 @@ import logging
 from typing import Any, List, Iterable
 import pandas as pd
 from tqdm import tqdm
-from jaqpotpy.cfg import config
+
 
 logger = logging.getLogger(__name__)
 _print_threshold = 1000
