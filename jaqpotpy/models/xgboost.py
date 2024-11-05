@@ -6,7 +6,6 @@ import jaqpotpy
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.api.openapi.models import (
     ModelType,
-    ModelExtraConfig,
 )
 from jaqpotpy.doa import DOA
 from skl2onnx.common.shape_calculator import (
@@ -53,7 +52,6 @@ class XGBoostModel(SklearnModel):
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
         self.dependentFeatures = None
-        self.extra_config = ModelExtraConfig()
 
     def _create_onnx(self, onnx_options: Optional[Dict] = None):
         name = self.model.__class__.__name__ + "_ONNX"

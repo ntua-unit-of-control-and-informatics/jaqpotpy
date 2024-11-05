@@ -6,7 +6,7 @@ from jaqpotpy.api.jaqpot_api_client import JaqpotApiClient  # noqa: E402
 jaqpot = JaqpotApiClient()
 
 # Get a model by id
-model = jaqpot.get_model_by_id(model_id=1691)  # 1812)
+model = jaqpot.get_model_by_id(model_id=1860)  # 1812)
 print(model)
 #
 # # Get model summary
@@ -18,9 +18,9 @@ print(model)
 # print(shared_models)
 #
 # # # Take a synchronous prediction with a model
-# input_data = [{"SMILES": "CC", "X1": 1, "X2": 2}]
-# prediction = jaqpot.predict_sync(model_id=1852, dataset=input_data)
-# print(prediction)
+input_data = [{"SMILES": "CC", "X1": 1, "X2": 2, "Cat_col": "CAT_1"}]
+prediction = jaqpot.predict_sync(model_id=1853, dataset=input_data)
+print(prediction)
 #
 # # Take an asynchronous prediction with a model
 # input_data = [{"SMILES": "CC", "X1": 1, "X2": 2}]

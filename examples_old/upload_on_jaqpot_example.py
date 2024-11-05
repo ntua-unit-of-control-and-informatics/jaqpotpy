@@ -1,15 +1,14 @@
 import pandas as pd
+from jaqpotpy.doa import Leverage, MeanVar, BoundingBox
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MordredDescriptors
 from jaqpotpy.datasets import JaqpotpyDataset
 from jaqpotpy.models import SklearnModel
-from jaqpotpy.doa import Leverage
-from jaqpotpy.models.preprocessing import Preprocess
 from jaqpotpy import Jaqpot
 
-path = "./jaqpotpy/test_data/test_data_smiles_regression.csv"
+path = "../jaqpotpy/test_data/test_data_smiles_regression.csv"
 
 df = pd.read_csv(path).iloc[0:100, :]
 smiles_cols = ["SMILES"]
@@ -24,15 +23,15 @@ dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
-pre = Preprocess()
 # pre.register_preprocess_class("Standard Scaler", StandardScaler())
 # pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
 
 model = RandomForestRegressor(random_state=42)
-doa_method = Leverage()
-molecularModel_t1 = SklearnModel(
-    dataset=dataset, doa=None, model=model, preprocessor=None, cv=None
-)
+doa_methods = []
+doa_methods.append(Leverage())
+doa_methods.append(MeanVar())
+doa_methods.append(BoundingBox())
+molecularModel_t1 = SklearnModel(dataset=dataset, doa=doa_methods, model=model)
 
 molecularModel_t1.fit()
 # # # print(molecularModel_t1.transformers_y)
@@ -76,17 +75,17 @@ prediction_dataset = JaqpotpyDataset(
 # print(df_predictions)
 
 
-# # # # Upload locally
-# # jaqpot = Jaqpot(
-# #     base_url="http://localhost.jaqpot.org",
-# #     app_url="http://localhost.jaqpot.org:3000",
-# #     login_url="http://localhost.jaqpot.org:8070",
-# #     api_url="http://localhost.jaqpot.org:8080",
-# #     keycloak_realm="jaqpot-local",
-# #     keycloak_client_id="jaqpot-local-test",
-# # )
+# Upload locally
+jaqpot = Jaqpot(
+    base_url="http://localhost.jaqpot.org",
+    app_url="http://localhost.jaqpot.org:3000",
+    login_url="http://localhost.jaqpot.org:8070",
+    api_url="http://localhost.jaqpot.org:8080",
+    keycloak_realm="jaqpot-local",
+    keycloak_client_id="jaqpot-local-test",
+)
 
-jaqpot = Jaqpot()
+# jaqpot = Jaqpot()
 jaqpot.login()
 molecularModel_t1.deploy_on_jaqpot(
     jaqpot=jaqpot,
