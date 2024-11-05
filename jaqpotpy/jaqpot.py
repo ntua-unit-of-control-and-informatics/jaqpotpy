@@ -11,7 +11,6 @@ from jaqpotpy.api.openapi.api.model_api import ModelApi
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.feature_type import FeatureType
 from jaqpotpy.api.openapi.models.model import Model
-from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
 from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
@@ -114,7 +113,7 @@ class Jaqpot:
             name=name,
             type=model.type,
             jaqpotpy_version=model.jaqpotpy_version,
-            doas=model.doa,
+            doas=model.doa_data,
             libraries=model.libraries,
             dependent_features=[
                 Feature(
@@ -141,7 +140,8 @@ class Jaqpot:
             raw_model=raw_model,
             selected_features=model.selected_features,
             description=description,
-            extra_config=model.extra_config,
+            featurizers=model.featurizers,
+            preprocessors=model.preprocessors,
             scores=model.scores,
         )
         response = model_api.create_model_with_http_info(model=body_model)
@@ -198,7 +198,7 @@ class Jaqpot:
             independent_features=[
                 Feature(key="SMILES", name="SMILES", feature_type=FeatureType.SMILES)
             ],
-            extra_config=ModelExtraConfig(torch_config=torch_config),
+            torch_config=torch_config,
             task=model_task,
             visibility=ModelVisibility(visibility),
             raw_model=onnx_model,

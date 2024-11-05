@@ -9,7 +9,9 @@ from jaqpotpy.models import SklearnModel
 from jaqpotpy.doa import Leverage, BoundingBox, MeanVar
 from jaqpotpy import Jaqpot
 
-path = "jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS_new.csv"
+path = (
+    "../jaqpotpy/test_data/test_data_smiles_CATEGORICAL_classification_LABELS_new.csv"
+)
 
 df = pd.read_csv(path).iloc[0:100, :]
 smiles_cols = ["SMILES"]
@@ -42,7 +44,7 @@ molecularModel_t1 = SklearnModel(
 )
 
 molecularModel_t1.fit()
-pred_path = "./jaqpotpy/test_data/test_data_smiles_categorical_prediction_dataset.csv"
+pred_path = "../jaqpotpy/test_data/test_data_smiles_categorical_prediction_dataset.csv"
 test_dataset = pd.read_csv(pred_path)
 
 prediction_dataset = JaqpotpyDataset(
@@ -69,20 +71,20 @@ evaluation_metrics = molecularModel_t1.evaluate(dataset=prediction_dataset)
 # print("ONNX Probabilities:", onnx_probs)
 
 # Upload locally
-# jaqpot = Jaqpot(
-#     base_url="http://localhost.jaqpot.org",
-#     app_url="http://localhost.jaqpot.org:3000",
-#     login_url="http://localhost.jaqpot.org:8070",
-#     api_url="http://localhost.jaqpot.org:8080",
-#     keycloak_realm="jaqpot-local",
-#     keycloak_client_id="jaqpot-local-test",
-# )
+jaqpot = Jaqpot(
+    base_url="http://localhost.jaqpot.org",
+    app_url="http://localhost.jaqpot.org:3000",
+    login_url="http://localhost.jaqpot.org:8070",
+    api_url="http://localhost.jaqpot.org:8080",
+    keycloak_realm="jaqpot-local",
+    keycloak_client_id="jaqpot-local-test",
+)
 
 # jaqpot = Jaqpot()
-# jaqpot.login()
-# molecularModel_t1.deploy_on_jaqpot(
-#     jaqpot=jaqpot,
-#     name="Demo: Regression topological and minmax scaler on y",
-#     description="Test",
-#     visibility="PRIVATE",
-# )
+jaqpot.login()
+molecularModel_t1.deploy_on_jaqpot(
+    jaqpot=jaqpot,
+    name="Demo: Regression topological and minmax scaler on y",
+    description="Test",
+    visibility="PRIVATE",
+)

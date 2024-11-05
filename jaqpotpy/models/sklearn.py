@@ -18,7 +18,6 @@ from skl2onnx.common.data_types import (
     StringTensorType,
 )
 import jaqpotpy
-from jaqpotpy.api.openapi.models.doa_data import DoaData
 from jaqpotpy.api.openapi.models import (
     ModelScores,
     Scores,
@@ -33,7 +32,6 @@ from jaqpotpy.api.openapi.models import (
     FeatureType,
     FeaturePossibleValue,
     ModelType,
-    ModelExtraConfig,
     Transformer,
     Doa,
 )
@@ -81,8 +79,10 @@ class SklearnModel(Model):
         List of independent features.
     dependentFeatures : list
         List of dependent features.
-    extra_config : ModelExtraConfig
-        Extra configuration for the model.
+    featurizers :list
+        List of featurizers for the model.
+    preprocessors :list
+        List of preprocessors for the model.
     test_scores : dict
         Dictionary to store test scores.
     train_scores : dict
@@ -100,8 +100,8 @@ class SklearnModel(Model):
         Converts data types to Jaqpot feature types.
     _extract_attributes(trained_class, trained_class_type):
         Extracts attributes from a trained class.
-    _add_class_to_extraconfig(added_class, added_class_type):
-        Adds a class to the extra configuration.
+    _add_transformer(added_class, added_class_type):
+        Adds a class to the transformers list.
     _map_onnx_dtype(dtype, shape=1):
         Maps data types to ONNX tensor types.
     _create_onnx(onnx_options=None):
@@ -174,7 +174,8 @@ class SklearnModel(Model):
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
         self.dependentFeatures = None
-        self.extra_config = ModelExtraConfig()
+        self.featurizers = []
+        self.preprocessors = []
         self.test_scores = {}
         self.train_scores = {}
         self.average_cross_val_scores = {}
@@ -224,7 +225,7 @@ class SklearnModel(Model):
             for k, v in attributes.items()
         }
 
-    def _add_class_to_extraconfig(self, added_class, added_class_type):
+    def _add_transformer(self, added_class, added_class_type):
         configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
@@ -233,11 +234,11 @@ class SklearnModel(Model):
             configurations[attr_name] = attr_value
 
         if added_class_type == "preprocessor":
-            self.extra_config.preprocessors.append(
+            self.preprocessors.append(
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
         elif added_class_type == "featurizer":
-            self.extra_config.featurizers.append(
+            self.featurizers.append(
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
 
@@ -339,9 +340,9 @@ class SklearnModel(Model):
         if isinstance(self.featurizer, (MolecularFeaturizer, list)):
             if not isinstance(self.featurizer, list):
                 self.featurizer = [self.featurizer]
-            self.extra_config.featurizers = []
+            self.featurizers = []
             for featurizer_i in self.featurizer:
-                self._add_class_to_extraconfig(featurizer_i, "featurizer")
+                self._add_transformer(featurizer_i, "featurizer")
 
         if self.dataset.y is None:
             raise TypeError(
@@ -372,7 +373,7 @@ class SklearnModel(Model):
                 self.doa[i] = doa_method
                 doa_instance = Doa(
                     method=doa_method.__name__,
-                    data=DoaData(doa_method.doa_attributes),
+                    data=doa_method.doa_attributes,
                 )
                 self.doa_data.append(doa_instance)
 
@@ -390,12 +391,12 @@ class SklearnModel(Model):
                     "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
                 )
             else:
-                self.extra_config.preprocessors = []
+                self.preprocessors = []
                 if len(self.dataset.y_cols) == 1 and self._labels_are_strings(y):
                     y = y.ravel()  # this transformation is exclusively for LabelEncoder which is the only allowed preprocessor for y in classification tasks
                 for preprocessor in self.preprocess_y:
                     y = preprocessor.fit_transform(y)
-                    self._add_class_to_extraconfig(preprocessor, "preprocessor")
+                    self._add_transformer(preprocessor, "preprocessor")
         if len(self.dataset.y_cols) == 1 and y.ndim == 2:
             y = y.ravel()
         if self.preprocess_x:

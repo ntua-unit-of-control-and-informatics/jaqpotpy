@@ -141,7 +141,7 @@ class Leverage(DOA):
 
     def get_attributes(self):
         Leverage_data = LeverageDoa(h_star=self.h_star, doa_matrix=self.doa_matrix)
-        return Leverage_data
+        return Leverage_data.to_dict()
 
 
 class MeanVar(DOA):
@@ -197,7 +197,7 @@ class MeanVar(DOA):
         return doaAll
 
     def get_attributes(self):
-        return MeanVarDoa(bounds=self.bounds)
+        return MeanVarDoa(bounds=self.bounds).to_dict()
 
 
 class BoundingBox(DOA):
@@ -242,4 +242,4 @@ class BoundingBox(DOA):
         return doaAll
 
     def get_attributes(self):
-        return BoundingBoxDoa(bounding_box=self.bounding_box)
+        return BoundingBoxDoa(bounding_box=self.bounding_box).to_dict()
