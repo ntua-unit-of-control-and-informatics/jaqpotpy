@@ -14,7 +14,7 @@ from jaqpotpy.doa import (
 )  # Domain of Applicability (DOA) methods
 
 # Define the path to the dataset
-path = "examples/example_datasets/cytotoxicity_data.csv"
+path = "examples/example_datasets/cytotoxicity_data.csv"  # this needs update
 
 # Load dataset and preprocess column names
 df = pd.read_csv(path)
