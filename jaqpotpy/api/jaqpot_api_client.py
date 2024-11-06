@@ -20,8 +20,6 @@ from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.models import Model
 from jaqpotpy.utils.url_utils import add_subdomain
 
-JAQPOT_API_KEY = os.getenv("JAQPOT_API_KEY")
-JAQPOT_API_SECRET = os.getenv("JAQPOT_API_SECRET")
 QSARTOOLBOX_CALCULATOR_MODEL_ID = 6
 QSARTOOLBOX_MODEL_MODEL_ID = 1837
 QSAR_PROFILER_MODEL_ID = 1842
@@ -43,9 +41,11 @@ class JaqpotApiClient:
         else:
             self.base_url = "https://jaqpot.org"
         self.api_url = api_url or add_subdomain(self.base_url, "api")
+        jaqpot_api_key = os.getenv("JAQPOT_API_KEY")
+        jaqpot_api_secret = os.getenv("JAQPOT_API_SECRET")
         self.http_client = (
             JaqpotApiHttpClientBuilder(host=self.api_url)
-            .build_with_api_keys(JAQPOT_API_KEY, JAQPOT_API_SECRET)
+            .build_with_api_keys(jaqpot_api_key, jaqpot_api_secret)
             .build()
         )
 
