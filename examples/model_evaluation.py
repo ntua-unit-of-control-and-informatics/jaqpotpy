@@ -53,6 +53,8 @@ train_dataset = JaqpotpyDataset(
 
 model = RandomForestRegressor(random_state=42)
 jaqpot_model = SklearnModel(dataset=train_dataset, model=model)
+# Set random seed to have reproducibility of results
+jaqpot_model.random_seed = 1231
 jaqpot_model.fit()
 
 # Perform cross-validation on the training data to estimate model performance
