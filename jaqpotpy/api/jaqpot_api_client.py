@@ -29,10 +29,10 @@ QSAR_PROFILER_MODEL_ID = 1842
 
 class JaqpotApiClient:
     def __init__(
-            self,
-            base_url=None,
-            api_url=None,
-            create_logs=False,
+        self,
+        base_url=None,
+        api_url=None,
+        create_logs=False,
     ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
@@ -247,7 +247,7 @@ class JaqpotApiClient:
         try:
             polling2.poll(
                 lambda: self.get_dataset_by_id(dataset_id).status
-                        in ["SUCCESS", "FAILURE"],
+                in ["SUCCESS", "FAILURE"],
                 step=3,
                 timeout=60,
             )
