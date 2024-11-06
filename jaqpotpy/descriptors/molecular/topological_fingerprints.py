@@ -3,8 +3,6 @@
 from typing import Dict
 import pandas as pd
 import numpy as np
-
-from jaqpotpy.utils.types import RDKitMol
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 
 
