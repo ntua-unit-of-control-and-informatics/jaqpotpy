@@ -18,7 +18,7 @@ from jaqpotpy.exceptions.exceptions import (
 )
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.models import Model
-from jaqpotpy.utils.url_utils import add_subdomain
+from jaqpotpy.helpers.url_utils import add_subdomain
 
 JAQPOT_API_KEY = os.getenv("JAQPOT_API_KEY")
 JAQPOT_API_SECRET = os.getenv("JAQPOT_API_SECRET")
