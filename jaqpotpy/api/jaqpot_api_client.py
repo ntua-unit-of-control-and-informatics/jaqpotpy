@@ -249,7 +249,7 @@ class JaqpotApiClient:
                 lambda: self.get_dataset_by_id(dataset_id).status
                 in ["SUCCESS", "FAILURE"],
                 step=3,
-                timeout=60,
+                timeout=10 * 60,
             )
         except polling2.TimeoutException:
             raise JaqpotPredictionTimeoutException(
