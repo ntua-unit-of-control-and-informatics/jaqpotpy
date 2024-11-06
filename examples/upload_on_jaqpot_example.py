@@ -27,10 +27,7 @@ dataset = JaqpotpyDataset(
 # pre.register_preprocess_class_y("minmax_y", MinMaxScaler())
 
 model = RandomForestRegressor(random_state=42)
-doa_methods = []
-doa_methods.append(Leverage())
-doa_methods.append(MeanVar())
-doa_methods.append(BoundingBox())
+doa_methods = [Leverage(), MeanVar(), BoundingBox()]
 molecularModel_t1 = SklearnModel(dataset=dataset, doa=doa_methods, model=model)
 
 molecularModel_t1.fit()
