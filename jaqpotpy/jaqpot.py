@@ -182,11 +182,7 @@ class Jaqpot:
         model_api = ModelApi(self.http_client)
         # Change Base URL when not in local testing
         # baseurl: "http://localhost.jaqpot.org:8080/"
-        featurizer_dict = featurizer.get_dict()
-
-        featurizer_config = featurizer_dict
-        torch_config_json = {"featurizerConfig": featurizer_config}
-        torch_config = torch_config_json
+        torch_config = featurizer.get_dict()
         body_model = Model(
             name=name,
             type=ModelType.TORCH_ONNX,
