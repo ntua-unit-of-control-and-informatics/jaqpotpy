@@ -416,7 +416,9 @@ class SklearnModel(Model):
                 print(f"Goodness-of-fit metrics of output {output} on training set:")
                 print(self.train_scores[self.dataset.y_cols[output]])
         else:
-            self.train_scores = self._get_metrics(y, y_pred)
+            self.train_scores = self._get_metrics(
+                self.dataset.__get_Y__().to_numpy(), y_pred
+            )
             print("Goodness-of-fit metrics on training set:")
             print(self.train_scores)
         self._create_jaqpot_scores(
@@ -442,9 +444,7 @@ class SklearnModel(Model):
                     if feature in self.selected_features
                 ]
             else:
-                intesection_of_features = intesection_of_features = [
-                    feature for feature in self.dataset.x_cols
-                ]
+                intesection_of_features = self.dataset.x_cols
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
                 for feature in intesection_of_features
@@ -585,7 +585,9 @@ class SklearnModel(Model):
             model=self, name=name, description=description, visibility=visibility
         )
 
-    def _create_jaqpot_scores(self, fit_scores, score_type="train", n_output=1):
+    def _create_jaqpot_scores(
+        self, fit_scores, score_type="train", n_output=1, folds=1
+    ):
         for output in range(n_output):
             y_name = self.dataset.y_cols[output]
             if (n_output - 1) == 0:
@@ -596,21 +598,18 @@ class SklearnModel(Model):
             if self.task.upper() == "REGRESSION":
                 jaqpotScores = Scores(
                     regression=RegressionScores(
+                        folds=folds,
                         y_name=y_name,
                         r2=scores["r2"],
                         mae=scores["mae"],
                         rmse=scores["rmse"],
-                        rSquaredDiffRZero=scores["rSquaredDiffRZero"],
-                        rSquaredDiffRZeroHat=scores["rSquaredDiffRZeroHat"],
-                        absDiffRZeroHat=scores["absDiffRZeroHat"],
-                        k=scores["k"],
-                        kHat=scores["khat"],
                     )
                 )
             elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
                 jaqpotScores = Scores(
                     multiclass_classification=MulticlassClassificationScores(
                         labels=[str(x) for x in self.trained_model.classes_],
+                        folds=folds,
                         y_name=y_name,
                         accuracy=scores["accuracy"],
                         balanced_accuracy=scores["balancedAccuracy"],
@@ -626,6 +625,7 @@ class SklearnModel(Model):
                 jaqpotScores = Scores(
                     binary_classification=BinaryClassificationScores(
                         labels=[str(x) for x in self.trained_model.classes_],
+                        folds=folds,
                         y_name=y_name,
                         accuracy=scores["accuracy"],
                         balanced_accuracy=scores["balancedAccuracy"],
@@ -710,6 +710,7 @@ class SklearnModel(Model):
             self.average_cross_val_scores,
             score_type="cross_validation",
             n_output=dataset.y.shape[1],
+            folds=n_splits,
         )
 
         return self.average_cross_val_scores
@@ -923,45 +924,19 @@ class SklearnModel(Model):
         if isinstance(y_true, list):
             y_true = np.array(y_true)
 
+        if y_true.ndim == 2:
+            y_true = y_true.ravel()
+        if y_pred.ndim == 2:
+            y_pred = y_pred.ravel()
+
         mae = metrics.mean_absolute_error(y_true=y_true, y_pred=y_pred)
         r2 = metrics.r2_score(y_true=y_true, y_pred=y_pred)
         rmse = metrics.root_mean_squared_error(y_true=y_true, y_pred=y_pred)
-        # Corellation coefficient squared R2
-        cor_num_1 = y_true - y_true.mean()
-        cor_num_2 = y_pred - y_pred.mean()
-        cor_den_1 = ((y_true - y_true.mean()) ** 2).sum()
-        cor_den_2 = ((y_pred - y_pred.mean()) ** 2).sum()
-        cor_coeff = (cor_num_1 * cor_num_2).sum() / np.sqrt(cor_den_1 * cor_den_2)
-        cor_coeff_2 = cor_coeff**2
-
-        # Calculate k and k_hat
-        k = ((y_true * y_pred).sum()) / ((y_pred) ** 2).sum()
-        k_hat = ((y_true * y_pred).sum()) / ((y_true) ** 2).sum()
-
-        # Calculate R0^2 , R'0^2
-        # Calc y_r0, y_hat_r0 # CHECK
-        y_r0 = k * y_pred
-        y_hat_r0 = k_hat * y_true
-
-        # Calculate R0^2 # CHECK
-        R0_2_num = ((y_pred - y_r0) ** 2).sum()
-        R0_2_den = ((y_pred - y_pred.mean()) ** 2).sum()
-        R0_2 = 1 - R0_2_num / R0_2_den
-
-        # Calculate R'0^2 # CHECK
-        R0_2_hat_num = ((y_true - y_hat_r0) ** 2).sum()
-        R0_2_hat_den = ((y_true - y_true.mean()) ** 2).sum()
-        R0_2_hat = 1 - R0_2_hat_num / R0_2_hat_den
 
         eval_metrics = {
             "r2": r2,
             "mae": mae,
             "rmse": rmse,
-            "rSquaredDiffRZero": (cor_coeff_2 - R0_2) / cor_coeff_2,
-            "rSquaredDiffRZeroHat": (cor_coeff_2 - R0_2_hat) / cor_coeff_2,
-            "absDiffRZeroHat": abs(R0_2 - R0_2_hat),
-            "k": k,
-            "khat": k_hat,
         }
 
         return eval_metrics

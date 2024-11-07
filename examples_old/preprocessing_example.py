@@ -34,7 +34,7 @@ dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,
 )
-dataset.select_features(SelectionList=["X1"])
+dataset.select_features(SelectColumns=["X1"])
 
 
 model = RandomForestRegressor(random_state=42)

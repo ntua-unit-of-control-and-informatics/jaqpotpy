@@ -18,7 +18,7 @@ from jaqpotpy.exceptions.exceptions import (
 )
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.models import Model
-from jaqpotpy.utils.url_utils import add_subdomain
+from jaqpotpy.helpers.url_utils import add_subdomain
 
 QSARTOOLBOX_CALCULATOR_MODEL_ID = 6
 QSARTOOLBOX_MODEL_MODEL_ID = 1837
@@ -249,7 +249,7 @@ class JaqpotApiClient:
                 lambda: self.get_dataset_by_id(dataset_id).status
                 in ["SUCCESS", "FAILURE"],
                 step=3,
-                timeout=60,
+                timeout=10 * 60,
             )
         except polling2.TimeoutException:
             raise JaqpotPredictionTimeoutException(
