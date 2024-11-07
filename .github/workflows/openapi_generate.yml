@@ -30,6 +30,7 @@ jobs:
         run: |
           chmod +x ./etc/openapi-generate.sh
           ./etc/openapi-generate.sh
+          ruff format -- --fix
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
