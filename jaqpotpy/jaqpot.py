@@ -15,7 +15,7 @@ from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
-from jaqpotpy.utils.url_utils import add_subdomain
+from jaqpotpy.utils import add_subdomain
 
 ENCODING = "utf-8"
 
