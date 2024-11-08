@@ -284,8 +284,8 @@ class JaqpotpyDataset(BaseDataset):
         return instance.__dict__[self.df]
 
     def __getitem__(self, idx):
-        selected_x = self.df[self.X].iloc[idx].values
-        selected_y = self.df[self.y].iloc[idx].to_numpy()
+        selected_x = self.X.copy().iloc[idx]
+        selected_y = self.y.copy().to_numpy()
         return selected_x, selected_y
 
     def __len__(self):
