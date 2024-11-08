@@ -18,7 +18,7 @@ from jaqpotpy.exceptions.exceptions import (
 )
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.models import Model
-from jaqpotpy.utils import add_subdomain
+from jaqpotpy.helpers.url_utils import add_subdomain
 
 QSARTOOLBOX_CALCULATOR_MODEL_ID = 6
 QSARTOOLBOX_MODEL_MODEL_ID = 1837
