@@ -350,8 +350,7 @@ class SklearnModel(Model):
             )
         # Get X and y from dataset
         X = self.dataset.__get_X__()
-        y = self.dataset.__get_Y__()
-        y = y.to_numpy()
+        y = self.dataset.__get_Y__().to_numpy()
 
         if self.preprocess_x is not None:
             self.preprocess_pipeline = pipeline.Pipeline(steps=[])
