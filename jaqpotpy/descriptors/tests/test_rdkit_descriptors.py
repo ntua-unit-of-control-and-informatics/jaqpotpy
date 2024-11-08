@@ -18,7 +18,7 @@ class TestRDKitDescriptors(unittest.TestCase):
         self.mol = Chem.MolFromSmiles(smiles)
         self.featurizer = RDKitDescriptors()
         self.all_desc = Descriptors.descList
-        self.first_desc = Descriptors.MaxAbsEStateIndex(self.mol)
+        self.first_desc = 10.6119
 
     # @unittest.skip("This test needs refactoring")
     def test_rdkit_descriptors(self):
