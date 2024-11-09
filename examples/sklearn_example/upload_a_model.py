@@ -29,7 +29,7 @@ jaqpot_model = SklearnModel(dataset=dataset, model=LogisticRegression())
 # Train the Logistic Regression model using the provided dataset.
 jaqpot_model.fit()
 
-# Upload mdodel on Jaqpot
+# Upload model on Jaqpot
 # First import Jaqpot class from jaqpotpy
 from jaqpotpy import Jaqpot  # noqa: E402
 
