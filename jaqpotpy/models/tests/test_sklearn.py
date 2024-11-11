@@ -1198,22 +1198,22 @@ class TestModels(unittest.TestCase):
         cross_val_scores = jaqpot_model.cross_val_scores
 
         assert np.array_equal(
-            train_scores["confusionMatrix"], np.array([[55, 0], [0, 45]])
-        ), f'Expected train_scores["confusionMatrix"] == [[55, 0],[0, 45]], got train_scores["confusionMatrix"] {train_scores["confusionMatrix"]}'
+            train_scores["confusionMatrix"][1], np.array([[55, 0], [0, 45]])
+        ), f'Expected train_scores["confusionMatrix"][1] == [[55, 0],[0, 45]], got train_scores["confusionMatrix"][1] {train_scores["confusionMatrix"][1]}'
         assert np.array_equal(
             evaluation_scores["accuracy"], 0.6
         ), f'Expected evaluation_scores["accuracy"] == 0.6, got evaluation_scores["accuracy"] {evaluation_scores["accuracy"]}'
         assert np.array_equal(
-            evaluation_scores["confusionMatrix"], np.array([[2, 0], [2, 1]])
-        ), f'Expected evaluation_scores["confusionMatrix"] == [[2, 0],[2, 1]], got evaluation_scores["confusionMatrix"] {evaluation_scores["confusionMatrix"]}'
+            evaluation_scores["confusionMatrix"][1], np.array([[2, 0], [2, 1]])
+        ), f'Expected evaluation_scores["confusionMatrix"][1] == [[2, 0],[2, 1]], got evaluation_scores["confusionMatrix"][1] {evaluation_scores["confusionMatrix"][1]}'
         assert np.array_equal(
-            cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"],
+            cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"][1],
             np.array([[10, 9], [8, 7]]),
-        ), f'Expected cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"] == [[10,  9],[ 8,  7]], got cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"] {cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"]}'
+        ), f'Expected cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"][1] == [[10,  9],[ 8,  7]], got cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"][1] {cross_val_scores[dataset.y_cols[0]]["fold_1"]["confusionMatrix"][1]}'
         assert np.array_equal(
-            cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"],
+            cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"][1],
             np.array([[12, 5], [12, 4]]),
-            f'Expected cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"] == [[12,  5],[12,  4]], got cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"] {cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"]}',
+            f'Expected cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"][1] == [[12,  5],[12,  4]], got cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"][1] {cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"][1]}',
         )
 
 
