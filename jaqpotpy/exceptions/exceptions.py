@@ -1,7 +1,7 @@
 class JaqpotApiException(Exception):
     """Base exception class for Jaqpot API-related errors."""
 
-    def __init__(self, message, status_code):
+    def __init__(self, message, status_code=None):
         super().__init__(f"Error {status_code}: {message}")
         self.message = message
         self.status_code = status_code

@@ -11,12 +11,11 @@ from jaqpotpy.api.openapi.api.model_api import ModelApi
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.feature_type import FeatureType
 from jaqpotpy.api.openapi.models.model import Model
-from jaqpotpy.api.openapi.models.model_extra_config import ModelExtraConfig
 from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
-from jaqpotpy.utils.url_utils import add_subdomain
+from jaqpotpy.helpers.url_utils import add_subdomain
 
 ENCODING = "utf-8"
 
@@ -142,7 +141,7 @@ class Jaqpot:
             name=name,
             type=model.type,
             jaqpotpy_version=model.jaqpotpy_version,
-            doas=model.doa,
+            doas=model.doa_data,
             libraries=model.libraries,
             dependent_features=[
                 Feature(
@@ -169,7 +168,8 @@ class Jaqpot:
             raw_model=raw_model,
             selected_features=model.selected_features,
             description=description,
-            extra_config=model.extra_config,
+            featurizers=model.featurizers,
+            preprocessors=model.preprocessors,
             scores=model.scores,
         )
         response = model_api.create_model_with_http_info(model=body_model)
@@ -234,11 +234,7 @@ class Jaqpot:
         model_api = ModelApi(self.http_client)
         # Change Base URL when not in local testing
         # baseurl: "http://localhost.jaqpot.org:8080/"
-        featurizer_dict = featurizer.get_dict()
-
-        featurizer_config = featurizer_dict
-        torch_config_json = {"featurizerConfig": featurizer_config}
-        torch_config = torch_config_json
+        torch_config = featurizer.get_dict()
         body_model = Model(
             name=name,
             type=ModelType.TORCH_ONNX,
@@ -250,7 +246,7 @@ class Jaqpot:
             independent_features=[
                 Feature(key="SMILES", name="SMILES", feature_type=FeatureType.SMILES)
             ],
-            extra_config=ModelExtraConfig(torch_config=torch_config),
+            torch_config=torch_config,
             task=model_task,
             visibility=ModelVisibility(visibility),
             raw_model=onnx_model,
@@ -258,9 +254,12 @@ class Jaqpot:
         )
         response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
+            model_url = response.headers.get("Location")
+            model_id = model_url.split("/")[-1]
+
             self.log.info(
-                "Graph Pytorch Model has been successfully uploaded. The url of the model is "
-                + response.headers.get("Location")
+                "Model has been successfully uploaded. The url of the model is %s",
+                self.app_url + "/dashboard/models/" + model_id,
             )
         else:
             self.log.error("Error code: " + str(response.status_code.value))

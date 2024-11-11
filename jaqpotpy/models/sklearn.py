@@ -18,7 +18,6 @@ from skl2onnx.common.data_types import (
     StringTensorType,
 )
 import jaqpotpy
-from jaqpotpy.api.openapi.models.doa_data import DoaData
 from jaqpotpy.api.openapi.models import (
     ModelScores,
     Scores,
@@ -33,7 +32,6 @@ from jaqpotpy.api.openapi.models import (
     FeatureType,
     FeaturePossibleValue,
     ModelType,
-    ModelExtraConfig,
     Transformer,
     Doa,
 )
@@ -45,13 +43,95 @@ class SklearnModel(Model):
     """
     A class to represent a Scikit-learn model within the Jaqpot framework.
 
-    Attributes:
-        dataset (JaqpotpyDataset): The dataset used for training the model.
-        model (Any): The Scikit-learn model.
-        doa (Optional[Union[DOA, list]]): Domain of Applicability methods.
-        preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for features.
-        preprocess_y (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for target variable.
-        random_seed (Optional[int]): Random seed for reproducibility.
+    Attributes
+    ----------
+    dataset : JaqpotpyDataset
+        The dataset used for training the model.
+    model : Any
+        The Scikit-learn model to be trained.
+    doa : Optional[Union[DOA, list]], optional
+        Domain of Applicability methods, by default None.
+    preprocess_x : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
+        Preprocessors for the input features, by default None.
+    preprocess_y : Optional[Union[BaseEstimator, List[BaseEstimator]]], optional
+        Preprocessors for the target variable, by default None.
+    random_seed : Optional[int], optional
+        Random seed for reproducibility, by default 1311.
+    pipeline : sklearn.pipeline.Pipeline
+        The pipeline that includes preprocessing steps and the model.
+    trained_model : Any
+        The trained Scikit-learn model.
+    transformers_y : dict
+        Dictionary to store transformers for the target variable.
+    libraries : list
+        List of installed libraries.
+    jaqpotpy_version : str
+        Version of the Jaqpotpy library.
+    task : str
+        The task type (e.g., regression, classification).
+    initial_types : list
+        Initial types for ONNX conversion.
+    onnx_model : onnx.ModelProto
+        The ONNX model.
+    type : ModelType
+        The type of the model.
+    independentFeatures : list
+        List of independent features.
+    dependentFeatures : list
+        List of dependent features.
+    featurizers :list
+        List of featurizers for the model.
+    preprocessors :list
+        List of preprocessors for the model.
+    test_scores : dict
+        Dictionary to store test scores.
+    train_scores : dict
+        Dictionary to store training scores.
+    average_cross_val_scores : dict
+        Dictionary to store average cross-validation scores.
+    cross_val_scores : dict
+        Dictionary to store cross-validation scores.
+    randomization_test_results : dict
+        Dictionary to store randomization test results.
+
+    Methods
+    -------
+    _dtypes_to_jaqpotypes():
+        Converts data types to Jaqpot feature types.
+    _extract_attributes(trained_class, trained_class_type):
+        Extracts attributes from a trained class.
+    _add_transformer(added_class, added_class_type):
+        Adds a class to the transformers list.
+    _map_onnx_dtype(dtype, shape=1):
+        Maps data types to ONNX tensor types.
+    _create_onnx(onnx_options=None):
+        Creates an ONNX model.
+    fit(onnx_options=None):
+        Fits the model to the dataset.
+    predict(dataset):
+        Predicts using the trained model.
+    predict_proba(dataset):
+        Predicts probabilities using the trained model.
+    predict_onnx(dataset):
+        Predicts using the ONNX model.
+    predict_proba_onnx(dataset):
+        Predicts probabilities using the ONNX model.
+    deploy_on_jaqpot(jaqpot, name, description, visibility):
+        Deploys the model on the Jaqpot platform.
+    check_preprocessor(preprocessor_list, feat_type):
+        Checks if the preprocessors are valid.
+    cross_validate(dataset, n_splits=5):
+        Performs cross-validation on the dataset.
+    evaluate(dataset):
+        Evaluates the model on a given dataset.
+    randomization_test(train_dataset, test_dataset, n_iters=10):
+        Performs a randomization test.
+    _get_metrics(y_true, y_pred):
+        Computes evaluation metrics.
+    _get_classification_metrics(y_true, y_pred, binary=True):
+        Computes classification metrics.
+    _get_regression_metrics(y_true, y_pred):
+        Computes regression metrics.
     """
 
     def __init__(
@@ -105,7 +185,8 @@ class SklearnModel(Model):
         self.type = ModelType("SKLEARN")
         self.independentFeatures = None
         self.dependentFeatures = None
-        self.extra_config = ModelExtraConfig()
+        self.featurizers = []
+        self.preprocessors = []
         self.test_scores = {}
         self.train_scores = {}
         self.average_cross_val_scores = {}
@@ -168,14 +249,7 @@ class SklearnModel(Model):
             for k, v in attributes.items()
         }
 
-    def _add_class_to_extraconfig(self, added_class, added_class_type):
-        """
-        Add a class to the extra configuration.
-
-        Args:
-            added_class: The class to be added.
-            added_class_type (str): The type of the class.
-        """
+    def _add_transformer(self, added_class, added_class_type):
         configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
@@ -184,11 +258,11 @@ class SklearnModel(Model):
             configurations[attr_name] = attr_value
 
         if added_class_type == "preprocessor":
-            self.extra_config.preprocessors.append(
+            self.preprocessors.append(
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
         elif added_class_type == "featurizer":
-            self.extra_config.featurizers.append(
+            self.featurizers.append(
                 Transformer(name=added_class.__class__.__name__, config=configurations)
             )
 
@@ -327,9 +401,9 @@ class SklearnModel(Model):
         if isinstance(self.featurizer, (MolecularFeaturizer, list)):
             if not isinstance(self.featurizer, list):
                 self.featurizer = [self.featurizer]
-            self.extra_config.featurizers = []
+            self.featurizers = []
             for featurizer_i in self.featurizer:
-                self._add_class_to_extraconfig(featurizer_i, "featurizer")
+                self._add_transformer(featurizer_i, "featurizer")
 
         if self.dataset.y is None:
             raise TypeError(
@@ -337,8 +411,7 @@ class SklearnModel(Model):
             )
         # Get X and y from dataset
         X = self.dataset.__get_X__()
-        y = self.dataset.__get_Y__()
-        y = y.to_numpy()
+        y = self.dataset.__get_Y__().to_numpy()
 
         if self.preprocess_x is not None:
             self.preprocess_pipeline = pipeline.Pipeline(steps=[])
@@ -360,7 +433,7 @@ class SklearnModel(Model):
                 self.doa[i] = doa_method
                 doa_instance = Doa(
                     method=doa_method.__name__,
-                    data=DoaData(doa_method.doa_attributes),
+                    data=doa_method.doa_attributes,
                 )
                 self.doa_data.append(doa_instance)
 
@@ -378,12 +451,12 @@ class SklearnModel(Model):
                     "Target labels cannot be preprocessed for classification tasks. Remove any assigned preprocessing for y."
                 )
             else:
-                self.extra_config.preprocessors = []
+                self.preprocessors = []
                 if len(self.dataset.y_cols) == 1 and self._labels_are_strings(y):
                     y = y.ravel()  # this transformation is exclusively for LabelEncoder which is the only allowed preprocessor for y in classification tasks
                 for preprocessor in self.preprocess_y:
                     y = preprocessor.fit_transform(y)
-                    self._add_class_to_extraconfig(preprocessor, "preprocessor")
+                    self._add_transformer(preprocessor, "preprocessor")
         if len(self.dataset.y_cols) == 1 and y.ndim == 2:
             y = y.ravel()
         if self.preprocess_x:
@@ -403,7 +476,9 @@ class SklearnModel(Model):
                 print(f"Goodness-of-fit metrics of output {output} on training set:")
                 print(self.train_scores[self.dataset.y_cols[output]])
         else:
-            self.train_scores = self._get_metrics(y, y_pred)
+            self.train_scores = self._get_metrics(
+                self.dataset.__get_Y__().to_numpy(), y_pred
+            )
             print("Goodness-of-fit metrics on training set:")
             print(self.train_scores)
         self._create_jaqpot_scores(
@@ -429,9 +504,7 @@ class SklearnModel(Model):
                     if feature in self.selected_features
                 ]
             else:
-                intesection_of_features = intesection_of_features = [
-                    feature for feature in self.dataset.x_cols
-                ]
+                intesection_of_features = self.dataset.x_cols
             self.independentFeatures += list(
                 {"key": feature, "name": feature, "featureType": X[feature].dtype}
                 for feature in intesection_of_features
@@ -636,15 +709,9 @@ class SklearnModel(Model):
             model=self, name=name, description=description, visibility=visibility
         )
 
-    def _create_jaqpot_scores(self, fit_scores, score_type="train", n_output=1):
-        """
-        Create Jaqpot scores.
-
-        Args:
-            fit_scores: The fit scores.
-            score_type (str): The type of scores ('train', 'test', 'cross_validation').
-            n_output (int): The number of outputs.
-        """
+    def _create_jaqpot_scores(
+        self, fit_scores, score_type="train", n_output=1, folds=1
+    ):
         for output in range(n_output):
             y_name = self.dataset.y_cols[output]
             if (n_output - 1) == 0:
@@ -655,21 +722,18 @@ class SklearnModel(Model):
             if self.task.upper() == "REGRESSION":
                 jaqpotScores = Scores(
                     regression=RegressionScores(
+                        folds=folds,
                         y_name=y_name,
                         r2=scores["r2"],
                         mae=scores["mae"],
                         rmse=scores["rmse"],
-                        rSquaredDiffRZero=scores["rSquaredDiffRZero"],
-                        rSquaredDiffRZeroHat=scores["rSquaredDiffRZeroHat"],
-                        absDiffRZeroHat=scores["absDiffRZeroHat"],
-                        k=scores["k"],
-                        kHat=scores["khat"],
                     )
                 )
             elif self.task.upper() == "MULTICLASS_CLASSIFICATION":
                 jaqpotScores = Scores(
                     multiclass_classification=MulticlassClassificationScores(
                         labels=[str(x) for x in self.trained_model.classes_],
+                        folds=folds,
                         y_name=y_name,
                         accuracy=scores["accuracy"],
                         balanced_accuracy=scores["balancedAccuracy"],
@@ -685,6 +749,7 @@ class SklearnModel(Model):
                 jaqpotScores = Scores(
                     binary_classification=BinaryClassificationScores(
                         labels=[str(x) for x in self.trained_model.classes_],
+                        folds=folds,
                         y_name=y_name,
                         accuracy=scores["accuracy"],
                         balanced_accuracy=scores["balancedAccuracy"],
@@ -789,6 +854,7 @@ class SklearnModel(Model):
             self.average_cross_val_scores,
             score_type="cross_validation",
             n_output=dataset.y.shape[1],
+            folds=n_splits,
         )
 
         return self.average_cross_val_scores
@@ -1024,21 +1090,7 @@ class SklearnModel(Model):
 
     @staticmethod
     def _get_classification_metrics(y_true, y_pred, binary=True):
-        """
-        Get classification metrics.
-
-        Args:
-            y_true: The true values.
-            y_pred: The predicted values.
-            binary (bool): Whether the classification is binary.
-
-        Returns:
-            Classification metrics.
-        """
-        if binary:
-            conf_mat = metrics.confusion_matrix(y_true=y_true, y_pred=y_pred)
-        else:
-            conf_mat = metrics.multilabel_confusion_matrix(y_true=y_true, y_pred=y_pred)
+        conf_mat = metrics.multilabel_confusion_matrix(y_true=y_true, y_pred=y_pred)
 
         eval_metrics = {
             "accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
@@ -1077,45 +1129,19 @@ class SklearnModel(Model):
         if isinstance(y_true, list):
             y_true = np.array(y_true)
 
+        if y_true.ndim == 2:
+            y_true = y_true.ravel()
+        if y_pred.ndim == 2:
+            y_pred = y_pred.ravel()
+
         mae = metrics.mean_absolute_error(y_true=y_true, y_pred=y_pred)
         r2 = metrics.r2_score(y_true=y_true, y_pred=y_pred)
         rmse = metrics.root_mean_squared_error(y_true=y_true, y_pred=y_pred)
-        # Corellation coefficient squared R2
-        cor_num_1 = y_true - y_true.mean()
-        cor_num_2 = y_pred - y_pred.mean()
-        cor_den_1 = ((y_true - y_true.mean()) ** 2).sum()
-        cor_den_2 = ((y_pred - y_pred.mean()) ** 2).sum()
-        cor_coeff = (cor_num_1 * cor_num_2).sum() / np.sqrt(cor_den_1 * cor_den_2)
-        cor_coeff_2 = cor_coeff**2
-
-        # Calculate k and k_hat
-        k = ((y_true * y_pred).sum()) / ((y_pred) ** 2).sum()
-        k_hat = ((y_true * y_pred).sum()) / ((y_true) ** 2).sum()
-
-        # Calculate R0^2 , R'0^2
-        # Calc y_r0, y_hat_r0 # CHECK
-        y_r0 = k * y_pred
-        y_hat_r0 = k_hat * y_true
-
-        # Calculate R0^2 # CHECK
-        R0_2_num = ((y_pred - y_r0) ** 2).sum()
-        R0_2_den = ((y_pred - y_pred.mean()) ** 2).sum()
-        R0_2 = 1 - R0_2_num / R0_2_den
-
-        # Calculate R'0^2 # CHECK
-        R0_2_hat_num = ((y_true - y_hat_r0) ** 2).sum()
-        R0_2_hat_den = ((y_true - y_true.mean()) ** 2).sum()
-        R0_2_hat = 1 - R0_2_hat_num / R0_2_hat_den
 
         eval_metrics = {
             "r2": r2,
             "mae": mae,
             "rmse": rmse,
-            "rSquaredDiffRZero": (cor_coeff_2 - R0_2) / cor_coeff_2,
-            "rSquaredDiffRZeroHat": (cor_coeff_2 - R0_2_hat) / cor_coeff_2,
-            "absDiffRZeroHat": abs(R0_2 - R0_2_hat),
-            "k": k,
-            "khat": k_hat,
         }
 
         return eval_metrics
