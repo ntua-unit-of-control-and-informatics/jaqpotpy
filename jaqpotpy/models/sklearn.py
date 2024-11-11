@@ -57,6 +57,8 @@ class SklearnModel(Model):
         Preprocessors for the target variable, by default None.
     random_seed : Optional[int], optional
         Random seed for reproducibility, by default 1311.
+    preprocess_pipeline : sklearn.pipeline.Pipeline
+        The pipeline that includes preprocessing steps.
     pipeline : sklearn.pipeline.Pipeline
         The pipeline that includes preprocessing steps and the model.
     trained_model : Any
@@ -69,8 +71,12 @@ class SklearnModel(Model):
         Version of the Jaqpotpy library.
     task : str
         The task type (e.g., regression, classification).
+    initial_types_preprocessor : list
+        Initial types for ONNX conversion of the preprocessor.
     initial_types : list
-        Initial types for ONNX conversion.
+        Initial types for ONNX conversion of the model.
+    onnx_preprocessor : onnx.ModelProto
+        The ONNX preprocessor model.
     onnx_model : onnx.ModelProto
         The ONNX model.
     type : ModelType
@@ -79,9 +85,9 @@ class SklearnModel(Model):
         List of independent features.
     dependentFeatures : list
         List of dependent features.
-    featurizers :list
+    featurizers : list
         List of featurizers for the model.
-    preprocessors :list
+    preprocessors : list
         List of preprocessors for the model.
     test_scores : dict
         Dictionary to store test scores.
@@ -93,6 +99,10 @@ class SklearnModel(Model):
         Dictionary to store cross-validation scores.
     randomization_test_results : dict
         Dictionary to store randomization test results.
+    scores : ModelScores
+        Object to store model scores.
+    selected_features : list
+        List of selected features.
 
     Methods
     -------
@@ -104,8 +114,12 @@ class SklearnModel(Model):
         Adds a class to the transformers list.
     _map_onnx_dtype(dtype, shape=1):
         Maps data types to ONNX tensor types.
-    _create_onnx(onnx_options=None):
+    _create_onnx_preprocessor(onnx_options=None):
+        Creates an ONNX preprocessor model.
+    _create_onnx_model(onnx_options=None):
         Creates an ONNX model.
+    _labels_are_strings(y):
+        Checks if labels are strings.
     fit(onnx_options=None):
         Fits the model to the dataset.
     predict(dataset):
@@ -116,8 +130,12 @@ class SklearnModel(Model):
         Predicts using the ONNX model.
     predict_proba_onnx(dataset):
         Predicts probabilities using the ONNX model.
+    predict_doa(dataset):
+        Predicts the Domain of Applicability (DOA).
     deploy_on_jaqpot(jaqpot, name, description, visibility):
         Deploys the model on the Jaqpot platform.
+    _create_jaqpot_scores(fit_scores, score_type="train", n_output=1, folds=1):
+        Creates Jaqpot scores.
     check_preprocessor(preprocessor_list, feat_type):
         Checks if the preprocessors are valid.
     cross_validate(dataset, n_splits=5):
@@ -250,6 +268,13 @@ class SklearnModel(Model):
         }
 
     def _add_transformer(self, added_class, added_class_type):
+        """
+        Add a transformer to the model.
+
+        Args:
+            added_class: The class to be added.
+            added_class_type (str): The type of the class.
+        """
         configurations = {}
 
         for attr_name, attr_value in self._extract_attributes(
@@ -712,6 +737,15 @@ class SklearnModel(Model):
     def _create_jaqpot_scores(
         self, fit_scores, score_type="train", n_output=1, folds=1
     ):
+        """
+        Create Jaqpot scores.
+
+        Args:
+            fit_scores: The fit scores.
+            score_type (str): The type of scores ('train', 'test', 'cross_validation').
+            n_output (int): The number of outputs.
+            folds (int): The number of folds.
+        """
         for output in range(n_output):
             y_name = self.dataset.y_cols[output]
             if (n_output - 1) == 0:
@@ -1090,6 +1124,17 @@ class SklearnModel(Model):
 
     @staticmethod
     def _get_classification_metrics(y_true, y_pred, binary=True):
+        """
+        Get classification metrics.
+
+        Args:
+            y_true: The true values.
+            y_pred: The predicted values.
+            binary (bool): Whether the classification is binary.
+
+        Returns:
+            Classification metrics.
+        """
         conf_mat = metrics.multilabel_confusion_matrix(y_true=y_true, y_pred=y_pred)
 
         eval_metrics = {

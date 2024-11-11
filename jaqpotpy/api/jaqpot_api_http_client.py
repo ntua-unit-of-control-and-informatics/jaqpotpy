@@ -10,8 +10,10 @@ class JaqpotApiHttpClient(ApiClient):
         """
         Initialize the JaqpotApiHttpClient.
 
-        :param host: The base URL of the Jaqpot API. Defaults to "https://api.jaqpot.com".
-        :param access_token: The access token for authenticating with the Jaqpot API.
+        :param host: str, optional
+            The base URL of the Jaqpot API. Defaults to "https://api.jaqpot.com".
+        :param access_token: str, optional
+            The access token for authenticating with the Jaqpot API.
         """
         self.host = host or "https://api.jaqpot.com"
         configuration = Configuration(
@@ -23,6 +25,7 @@ class JaqpotApiHttpClient(ApiClient):
         """
         Set the access token for the API client.
 
-        :param access_token: The new access token.
+        :param access_token: str
+            The new access token.
         """
         self.configuration.access_token = access_token

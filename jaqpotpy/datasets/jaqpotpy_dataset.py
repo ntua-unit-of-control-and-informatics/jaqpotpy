@@ -259,12 +259,13 @@ class JaqpotpyDataset(BaseDataset):
 
         Args:
             FeatureSelector: An instance of a feature selector from sklearn.feature_selection.
-            SelectionList: A list of selected features.
+            SelectColumns: A list of selected features.
+            ExcludeColumns: A list of columns to exclude from feature selection.
 
         Raises:
-            ValueError: If both or neither of FeatureSelector and SelectionList are provided.
+            ValueError: If both or neither of FeatureSelector and SelectColumns are provided.
             ValueError: If FeatureSelector is not a valid sklearn feature selector.
-            ValueError: If any features in SelectionList are not in the dataset.
+            ValueError: If any features in SelectColumns are not in the dataset.
         """
         if (FeatureSelector is None and SelectColumns is None) or (
             FeatureSelector is not None and SelectColumns is not None
@@ -385,6 +386,15 @@ class JaqpotpyDataset(BaseDataset):
         return instance.__dict__[self.df]
 
     def __getitem__(self, idx):
+        """
+        Get the features and target values for a given index.
+
+        Args:
+            idx: The index of the sample to retrieve.
+
+        Returns:
+            tuple: A tuple containing the features and target values for the given index.
+        """
         selected_x = self.X.copy().iloc[idx]
         selected_y = self.y.copy().to_numpy()
         return selected_x, selected_y

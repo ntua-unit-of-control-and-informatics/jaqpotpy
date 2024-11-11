@@ -43,12 +43,7 @@ class JaqpotApiClient:
         The logger object for logging messages.
     """
 
-    def __init__(
-        self,
-        base_url=None,
-        api_url=None,
-        create_logs=False,
-    ):
+    def __init__(self, base_url=None, api_url=None, create_logs=False):
         """Initialize the JaqpotApiClient.
 
         Parameters
@@ -78,7 +73,7 @@ class JaqpotApiClient:
         )
 
     def get_model_by_id(self, model_id) -> Model:
-        """Get model from Jaqpot.
+        """Get a model from Jaqpot by its ID.
 
         Parameters
         ----------
@@ -105,7 +100,7 @@ class JaqpotApiClient:
         )
 
     def get_model_summary(self, model_id):
-        """Get model summary from Jaqpot.
+        """Get a summary of a model from Jaqpot by its ID.
 
         Parameters
         ----------
@@ -179,7 +174,7 @@ class JaqpotApiClient:
         )
 
     def get_dataset_by_id(self, dataset_id) -> Dataset:
-        """Get dataset from Jaqpot.
+        """Get a dataset from Jaqpot by its ID.
 
         Parameters
         ----------
@@ -206,7 +201,7 @@ class JaqpotApiClient:
         )
 
     def predict_sync(self, model_id, dataset):
-        """Predict with model on Jaqpot.
+        """Make a synchronous prediction with a model on Jaqpot.
 
         Parameters
         ----------
@@ -249,7 +244,7 @@ class JaqpotApiClient:
         )
 
     def predict_async(self, model_id, dataset):
-        """Asynchronously predict with model on Jaqpot.
+        """Make an asynchronous prediction with a model on Jaqpot.
 
         Parameters
         ----------
@@ -288,7 +283,7 @@ class JaqpotApiClient:
         )
 
     def predict_with_csv_sync(self, model_id, csv_path):
-        """Predict with model on Jaqpot using a CSV file.
+        """Make a synchronous prediction with a model on Jaqpot using a CSV file.
 
         Parameters
         ----------

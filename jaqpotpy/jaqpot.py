@@ -21,26 +21,27 @@ ENCODING = "utf-8"
 
 
 class Jaqpot:
-    """Deploys sklearn models on Jaqpot.
+    """Deploys sklearn and PyTorch models on Jaqpot.
 
-    Extended description of function.
+    This class provides methods to log in to Jaqpot using Keycloak and deploy
+    machine learning models (sklearn and PyTorch) on the Jaqpot platform.
 
     Parameters
     ----------
     base_url : str, optional
-        The url on which Jaqpot services are deployed.
+        The base URL on which Jaqpot services are deployed. Default is "https://jaqpot.org".
     app_url : str, optional
-        The url for the Jaqpot application.
+        The URL for the Jaqpot application. If not provided, it is derived from the base URL.
     login_url : str, optional
-        The url for the Jaqpot login.
+        The URL for the Jaqpot login. If not provided, it is derived from the base URL.
     api_url : str, optional
-        The url for the Jaqpot API.
+        The URL for the Jaqpot API. If not provided, it is derived from the base URL.
     keycloak_realm : str, optional
-        The Keycloak realm name.
+        The Keycloak realm name. Default is "jaqpot".
     keycloak_client_id : str, optional
-        The Keycloak client ID.
+        The Keycloak client ID. Default is "jaqpot-client".
     create_logs : bool, optional
-        Whether to create logs.
+        Whether to create logs. Default is False.
     """
 
     def __init__(
@@ -75,6 +76,10 @@ class Jaqpot:
 
         This method opens a browser window for the user to log in via Keycloak,
         then exchanges the authorization code for an access token.
+
+        Returns
+        -------
+        None
         """
         # Configure Keycloak client
         keycloak_openid = KeycloakOpenID(
@@ -118,7 +123,10 @@ class Jaqpot:
         Parameters
         ----------
         model : object
-            The sklearn model to be deployed.
+            The sklearn model to be deployed. The model should have attributes
+            like `onnx_model`, `onnx_preprocessor`, `type`, `jaqpotpy_version`,
+            `doa_data`, `libraries`, `dependentFeatures`, `independentFeatures`,
+            `selected_features`, `featurizers`, `preprocessors`, and `scores`.
         name : str
             The name of the model.
         description : str
@@ -204,7 +212,7 @@ class Jaqpot:
         onnx_model : object
             The ONNX model to be deployed.
         featurizer : object
-            The featurizer used for preprocessing.
+            The featurizer used for preprocessing. The featurizer should have a method `get_dict()`.
         name : str
             The name of the model.
         description : str
@@ -214,7 +222,7 @@ class Jaqpot:
         visibility : str
             The visibility of the model (e.g., 'public', 'private').
         task : str
-            The task type (e.g., 'binary_classification', 'regression').
+            The task type (e.g., 'binary_classification', 'regression', 'multiclass_classification').
 
         Returns
         -------

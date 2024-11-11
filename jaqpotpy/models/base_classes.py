@@ -193,15 +193,15 @@ class Model(object):
 
     def fit(self):
         """Fit the model to the data."""
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError("This method should be implemented by subclasses.")
 
     def predict(self, X):
         """Predict using the model.
 
         Args:
-            X: Input data for prediction.
+            X (Any): Input data for prediction.
 
         Returns:
-            Predictions for the input data.
+            Any: Predictions for the input data.
         """
-        raise NotImplementedError("Not implemented")
+        raise NotImplementedError("This method should be implemented by subclasses.")

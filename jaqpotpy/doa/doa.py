@@ -9,14 +9,17 @@ from jaqpotpy.api.openapi.models.mean_var_doa import MeanVarDoa
 
 
 class DOA(ABC):
-    """Abstract class for DOA methods.
+    """Abstract class for Domain of Applicability (DOA) methods.
+
     Attributes:
         _in_doa (list): List to store boolean values indicating if data points are within DOA.
         _data (Union[np.array, pd.DataFrame]): Input data used for DOA calculation.
+
     Properties:
         __name__ (str): Name of the DOA method.
         in_doa (list): Getter and setter for the in_doa attribute.
         data (Union[np.array, pd.DataFrame]): Getter and setter for the data attribute.
+
     Methods:
         fit(X: np.array): Abstract method to fit the model using the input data X.
         predict(data: Iterable[Any]) -> Iterable[Any]: Abstract method to predict if data points are within DOA.
@@ -78,8 +81,8 @@ class DOA(ABC):
 
 
 class Leverage(DOA):
-    """
-    Leverage class for Domain of Applicability (DOA) calculation using leverage method.
+    """Leverage class for Domain of Applicability (DOA) calculation using the leverage method.
+
     Attributes:
         _doa (list): List to store leverage values.
         _in_doa (list): List to store boolean values indicating if data points are within DOA.
@@ -87,10 +90,12 @@ class Leverage(DOA):
         _doa_matrix (np.array): Matrix used for leverage calculation.
         _h_star (float): Threshold value for leverage.
         doa_attributes (LeverageDoa): Attributes of the leverage DOA.
+
     Properties:
         __name__ (str): Name of the DOA method.
         doa_matrix (np.array): Getter and setter for the DOA matrix.
         h_star (float): Getter and setter for the leverage threshold.
+
     Methods:
         __init__(): Initializes the Leverage class.
         __getitem__(key): Returns the key.
@@ -196,14 +201,18 @@ class Leverage(DOA):
 
 class MeanVar(DOA):
     """Implements Mean and Variance domain of applicability.
+
     Initialized upon training data and holds the DOA mean and the variance of the data.
     Calculates the mean and variance for a new instance of data or array of data and decides if in AD.
+
     Attributes:
         _data (np.array): Input data used for DOA calculation.
         bounds (np.array): Array containing the mean, standard deviation, and variance for each feature.
         doa_attributes (MeanVarDoa): Attributes of the mean-variance DOA.
+
     Properties:
         __name__ (str): Name of the DOA method.
+
     Methods:
         __init__(): Initializes the MeanVar class.
         fit(X: np.array): Fits the model using the input data X.
@@ -276,14 +285,16 @@ class MeanVar(DOA):
 
 
 class BoundingBox(DOA):
-    """
-    BoundingBox class for Domain of Applicability (DOA) calculation using bounding box method.
+    """BoundingBox class for Domain of Applicability (DOA) calculation using the bounding box method.
+
     Attributes:
         _data (np.array): Input data used for DOA calculation.
         bounding_box (np.array): Array containing the min and max bounds for each feature.
         doa_attributes (BoundingBoxDoa): Attributes of the bounding box DOA.
+
     Properties:
         __name__ (str): Name of the DOA method.
+
     Methods:
         __init__(): Initializes the BoundingBox class.
         fit(X: np.array): Fits the model using the input data X.
