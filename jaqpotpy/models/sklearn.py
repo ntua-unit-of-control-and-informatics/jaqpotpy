@@ -891,10 +891,7 @@ class SklearnModel(Model):
 
     @staticmethod
     def _get_classification_metrics(y_true, y_pred, binary=True):
-        if binary:
-            conf_mat = metrics.confusion_matrix(y_true=y_true, y_pred=y_pred)
-        else:
-            conf_mat = metrics.multilabel_confusion_matrix(y_true=y_true, y_pred=y_pred)
+        conf_mat = metrics.multilabel_confusion_matrix(y_true=y_true, y_pred=y_pred)
 
         eval_metrics = {
             "accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
