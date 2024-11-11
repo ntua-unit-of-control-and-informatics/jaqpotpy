@@ -30,8 +30,8 @@ class OrganizationUser(BaseModel):
     """ # noqa: E501
     id: Optional[StrictInt] = None
     user_id: StrictStr = Field(alias="userId")
-    username: StrictStr
-    email: StrictStr
+    username: Optional[StrictStr] = None
+    email: Optional[StrictStr] = None
     association_type: OrganizationUserAssociationType = Field(alias="associationType")
     __properties: ClassVar[List[str]] = ["id", "userId", "username", "email", "associationType"]
 

@@ -38,7 +38,7 @@ class BinaryClassificationScores(BaseModel):
     f1_score: Optional[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]] = Field(default=None, alias="f1Score")
     jaccard: Optional[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]] = None
     matthews_corr_coef: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="matthewsCorrCoef")
-    confusion_matrix: Optional[Annotated[List[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=1000)]], Field(max_length=1000)]] = Field(default=None, alias="confusionMatrix")
+    confusion_matrix: Optional[Annotated[List[Annotated[List[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=2)]], Field(max_length=2)]], Field(max_length=100)]] = Field(default=None, alias="confusionMatrix")
     __properties: ClassVar[List[str]] = ["labels", "yName", "folds", "accuracy", "balancedAccuracy", "precision", "recall", "f1Score", "jaccard", "matthewsCorrCoef", "confusionMatrix"]
 
     model_config = ConfigDict(
