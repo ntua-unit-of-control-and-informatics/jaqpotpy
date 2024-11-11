@@ -202,9 +202,12 @@ class Jaqpot:
         )
         response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
+            model_url = response.headers.get("Location")
+            model_id = model_url.split("/")[-1]
+
             self.log.info(
-                "Graph Pytorch Model has been successfully uploaded. The url of the model is "
-                + response.headers.get("Location")
+                "Model has been successfully uploaded. The url of the model is %s",
+                self.app_url + "/dashboard/models/" + model_id,
             )
         else:
             self.log.error("Error code: " + str(response.status_code.value))
