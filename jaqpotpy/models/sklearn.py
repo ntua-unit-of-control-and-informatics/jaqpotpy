@@ -146,7 +146,7 @@ class SklearnModel(Model):
         Performs a randomization test.
     _get_metrics(y_true, y_pred):
         Computes evaluation metrics.
-    _get_classification_metrics(y_true, y_pred, binary=True):
+    _get_classification_metrics(y_true, y_pred):
         Computes classification metrics.
     _get_regression_metrics(y_true, y_pred):
         Computes regression metrics.
@@ -1116,27 +1116,22 @@ class SklearnModel(Model):
         if self._labels_are_strings(y_true):
             y_true = self.preprocess_y[0].transform(y_true)
         if self.task.upper() == "MULTICLASS_CLASSIFICATION":
-            return SklearnModel._get_classification_metrics(
-                y_true, y_pred, binary=False
-            )
+            return SklearnModel._get_classification_metrics(y_true, y_pred)
         else:
-            return SklearnModel._get_classification_metrics(y_true, y_pred, binary=True)
+            return SklearnModel._get_classification_metrics(y_true, y_pred)
 
     @staticmethod
-    def _get_classification_metrics(y_true, y_pred, binary=True):
+    def _get_classification_metrics(y_true, y_pred):
         """
         Get classification metrics.
 
         Args:
             y_true: The true values.
             y_pred: The predicted values.
-            binary (bool): Whether the classification is binary.
 
         Returns:
             Classification metrics.
         """
-        conf_mat = metrics.multilabel_confusion_matrix(y_true=y_true, y_pred=y_pred)
-
         eval_metrics = {
             "accuracy": metrics.accuracy_score(y_true=y_true, y_pred=y_pred),
             "balancedAccuracy": metrics.balanced_accuracy_score(
@@ -1153,7 +1148,7 @@ class SklearnModel(Model):
                 y_true=y_true, y_pred=y_pred, average=None
             ),
             "matthewsCorrCoef": metrics.matthews_corrcoef(y_true=y_true, y_pred=y_pred),
-            "confusionMatrix": conf_mat,
+            "confusionMatrix": metrics.confusion_matrix(y_true=y_true, y_pred=y_pred),
         }
         return eval_metrics
 
