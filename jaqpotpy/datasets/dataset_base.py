@@ -13,14 +13,20 @@ class BaseDataset(ABC):
 
     Attributes
     ----------
-        df (pd.DataFrame): The underlying DataFrame holding the dataset.
-        x_cols (Optional[Iterable[str]]): The columns to be used as features.
-        y_cols (Optional[Iterable[str]]): The columns to be used as labels.
-        _task (str): The task type, either 'regression' or 'classification'.
-        _dataset_name (str): The name of the dataset.
-        y (Iterable[str]): The labels of the dataset.
-        X (Iterable[str]): The features of the dataset.
-
+    df : pd.DataFrame
+        The underlying DataFrame holding the dataset.
+    x_cols : Optional[Iterable[str]]
+        The columns to be used as features.
+    y_cols : Optional[Iterable[str]]
+        The columns to be used as labels.
+    _task : str
+        The task type, either 'regression' or 'classification'.
+    _dataset_name : str
+        The name of the dataset.
+    y : Iterable[str]
+        The labels of the dataset.
+    X : Iterable[str]
+        The features of the dataset.
     """
 
     def __init__(
@@ -31,6 +37,29 @@ class BaseDataset(ABC):
         x_cols: Optional[Iterable[str]] = None,
         task: str = None,
     ) -> None:
+        """
+        Initializes the BaseDataset with either a DataFrame or a path to a CSV file.
+
+        Parameters
+        ----------
+        df : pd.DataFrame, optional
+            The DataFrame containing the dataset.
+        path : str, optional
+            The path to a CSV file containing the dataset.
+        y_cols : Iterable[str], optional
+            The columns to be used as labels.
+        x_cols : Iterable[str], optional
+            The columns to be used as features.
+        task : str, optional
+            The task type, either 'regression' or 'classification'.
+
+        Raises
+        ------
+        TypeError
+            If both df and path are provided or neither is provided.
+        ValueError
+            If the provided file is not a valid CSV file.
+        """
         if df is None and path is None:
             raise TypeError("Either a DataFrame or a path to a file must be provided.")
         elif (df is not None) and (path is not None):
@@ -105,10 +134,31 @@ class BaseDataset(ABC):
 
     @property
     def task(self):
+        """
+        Gets the task type.
+
+        Returns
+        -------
+        str
+            The task type.
+        """
         return self._task
 
     @task.setter
     def task(self, value):
+        """
+        Sets the task type.
+
+        Parameters
+        ----------
+        value : str
+            The task type, either 'REGRESSION', 'BINARY_CLASSIFICATION', or 'MULTICLASS_CLASSIFICATION'.
+
+        Raises
+        ------
+        ValueError
+            If the task type is not one of the allowed values.
+        """
         if value is None or value.upper() not in [
             "REGRESSION",
             "BINARY_CLASSIFICATION",
@@ -122,13 +172,35 @@ class BaseDataset(ABC):
 
     @property
     def dataset_name(self):
+        """
+        Gets the dataset name.
+
+        Returns
+        -------
+        str
+            The dataset name.
+        """
         return self._dataset_name
 
     @dataset_name.setter
     def dataset_name(self, value):
+        """
+        Sets the dataset name.
+
+        Parameters
+        ----------
+        value : str
+            The name of the dataset.
+        """
         self._dataset_name = value
 
     def save(self):
+        """
+        Saves the dataset to a file using pickle.
+
+        The dataset is saved with the name specified in _dataset_name attribute.
+        If _dataset_name is not set, it defaults to 'jaqpot_dataset.jdata'.
+        """
         if self._dataset_name:
             with open(self._dataset_name + ".jdata", "wb") as f:
                 pickle.dump(self, f)
@@ -138,42 +210,83 @@ class BaseDataset(ABC):
 
     @classmethod
     def load(cls, filename):
+        """
+        Loads a dataset from a file using pickle.
+
+        Parameters
+        ----------
+        filename : str
+            The path to the file from which to load the dataset.
+
+        Returns
+        -------
+        BaseDataset
+            The loaded dataset.
+        """
         with open(filename, "rb") as f:
             return pickle.load(f)
 
     @abstractmethod
     def create(self):
-        """Creates the dataset."""
+        """
+        Creates the dataset.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def __get_X__(self):
-        """Returns the design matrix X."""
+        """
+        Returns the design matrix X.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def __get_Y__(self):
-        """Returns the response Y."""
+        """
+        Returns the response Y.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def __repr__(self) -> str:
-        """Returns a string representation of the dataset."""
+        """
+        Returns a string representation of the dataset.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def __len__(self):
-        """Returns the number of samples in the dataset."""
+        """
+        Returns the number of samples in the dataset.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def __get__(self, instance, owner):
-        """Gets an attribute of the dataset."""
+        """
+        Gets an attribute of the dataset.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def __getitem__(self, idx):
-        """Gets a sample by index."""
+        """
+        Gets a sample by index.
+
+        This method must be implemented by subclasses.
+        """
         raise NotImplementedError
 
 

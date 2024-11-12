@@ -24,7 +24,17 @@ from jaqpotpy.models.sklearn import SklearnModel
 
 
 class XGBoostModel(SklearnModel):
-    # overrides the parent method from the sklearnmodel for the xgboost model here
+    """
+    XGBoostModel class for handling XGBoost models within the Jaqpotpy framework.
+
+    Attributes:
+        dataset (JaqpotpyDataset): The dataset used for training the model.
+        model (Any): The XGBoost model instance.
+        doa (Optional[DOA or list]): Domain of Applicability (DOA) methods.
+        preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessing steps for input features.
+        preprocess_y (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessing steps for target features.
+    """
+
     def __init__(
         self,
         dataset: JaqpotpyDataset,
