@@ -37,6 +37,7 @@ from jaqpotpy.api.openapi.models import (
 )
 from jaqpotpy.models.base_classes import Model
 from jaqpotpy.doa import DOA
+from sklearn.base import clone
 
 
 class SklearnModel(Model):
@@ -937,7 +938,8 @@ class SklearnModel(Model):
                 X_train_transformed = pd.DataFrame(X_train_transformed)
             else:
                 X_train_transformed = X_train
-            trained_model = self.pipeline.fit(X_train_transformed, y_train.ravel())
+            cloned_pipeline = clone(self.pipeline)
+            trained_model = cloned_pipeline.fit(X_train_transformed, y_train.ravel())
             y_pred = self._predict_with_X(X_test, trained_model).reshape(-1, 1)
             metrics_result = self._get_metrics(
                 y_test.to_numpy().ravel(), y_pred.ravel()
