@@ -160,7 +160,6 @@ class SklearnModel(Model):
         doa: Optional[Union[DOA, list]] = None,
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
         preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
-        random_seed: Optional[int] = 1311,
     ):
         """
         Initialize the SklearnModel.
@@ -171,11 +170,9 @@ class SklearnModel(Model):
             doa (Optional[Union[DOA, list]]): Domain of Applicability methods.
             preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for features.
             preprocess_y (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for target variable.
-            random_seed (Optional[int]): Random seed for reproducibility.
         """
         self.dataset = dataset
         self.featurizer = dataset.featurizer
-        self.random_seed = random_seed
         self.model = model
         self.preprocess_pipeline = None
         self.pipeline = None
@@ -859,7 +856,7 @@ class SklearnModel(Model):
                         f"Response preprocessing must be an instance of a valid class from sklearn.preprocessing, but got {type(preprocessor)}."
                     )
 
-    def cross_validate(self, dataset: JaqpotpyDataset, n_splits=5):
+    def cross_validate(self, dataset: JaqpotpyDataset, n_splits=5, random_seed=42):
         """
         Perform cross-validation.
 
@@ -879,11 +876,16 @@ class SklearnModel(Model):
                         y=y_target,
                         n_splits=n_splits,
                         n_output=(output + 1),
+                        random_seed=random_seed,
                     )
                 )
         else:
             self.average_cross_val_scores = self._single_cross_validation(
-                dataset=dataset, y=dataset.y, n_splits=n_splits, n_output=1
+                dataset=dataset,
+                y=dataset.y,
+                n_splits=n_splits,
+                n_output=1,
+                random_seed=random_seed,
             )
         self._create_jaqpot_scores(
             self.average_cross_val_scores,
@@ -895,7 +897,7 @@ class SklearnModel(Model):
         return self.average_cross_val_scores
 
     def _single_cross_validation(
-        self, dataset: JaqpotpyDataset, y, n_splits=5, n_output=1
+        self, dataset: JaqpotpyDataset, y, random_seed, n_splits=5, n_output=1
     ):
         """
         Perform a single cross-validation.
@@ -909,7 +911,7 @@ class SklearnModel(Model):
         Returns:
             Average metrics.
         """
-        kf = KFold(n_splits=n_splits, shuffle=True, random_state=self.random_seed)
+        kf = KFold(n_splits=n_splits, shuffle=True, random_state=random_seed)
 
         if not self.trained_model:
             raise ValueError(
