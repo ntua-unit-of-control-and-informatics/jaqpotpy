@@ -13,11 +13,14 @@ class DOA(ABC):
 
     Attributes:
         _in_doa (list): List to store boolean values indicating if data points are within DOA.
+
         _data (Union[np.array, pd.DataFrame]): Input data used for DOA calculation.
 
     Properties:
         __name__ (str): Name of the DOA method.
+
         in_doa (list): Getter and setter for the in_doa attribute.
+
         data (Union[np.array, pd.DataFrame]): Getter and setter for the data attribute.
 
     Methods:
