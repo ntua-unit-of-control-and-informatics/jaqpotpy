@@ -122,3 +122,4 @@ man/
 jaqpotpy/sphinx_docs/_build
 jaqpotpy/sphinx_docs/_static
 jaqpotpy/sphinx_docs/_templates
+jaqpotpy/sphinx_docs/files
