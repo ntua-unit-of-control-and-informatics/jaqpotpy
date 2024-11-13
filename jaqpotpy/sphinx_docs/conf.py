@@ -24,7 +24,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx.ext.todo",
-    "myst_parser",
+    "sphinx_markdown_builder",
 ]
 
 templates_path = ["_templates"]
