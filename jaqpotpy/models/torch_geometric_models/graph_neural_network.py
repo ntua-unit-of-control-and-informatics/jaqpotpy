@@ -52,17 +52,17 @@ def pyg_to_onnx(torch_model, featurizer):
     return model_scripted_base64
 
 
-# def pyg_to_torchscript(torch_model):
-#     if torch_model.training:
-#         torch_model.eval()
-#     torch_model = torch_model.cpu()
-#     script_model = torch.jit.script(torch_model)
-#     model_buffer = io.BytesIO()
-#     torch.jit.save(script_model, model_buffer)
-#     model_buffer.seek(0)
-#     script_base64 = base64.b64encode(model_buffer.getvalue()).decode("utf-8")
+def pyg_to_torchscript(torch_model):
+    if torch_model.training:
+        torch_model.eval()
+    torch_model = torch_model.cpu()
+    script_model = torch.jit.script(torch_model)
+    model_buffer = io.BytesIO()
+    torch.jit.save(script_model, model_buffer)
+    model_buffer.seek(0)
+    script_base64 = base64.b64encode(model_buffer.getvalue()).decode("utf-8")
 
-#     return script_base64
+    return script_base64
 
 
 class BaseGraphNetwork(nn.Module):

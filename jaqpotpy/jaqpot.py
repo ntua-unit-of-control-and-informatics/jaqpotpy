@@ -245,7 +245,7 @@ class Jaqpot:
         torch_config = featurizer.get_dict()
         body_model = Model(
             name=name,
-            type=ModelType.TORCH_ONNX,
+            type=ModelType.TORCHSCRIPT,
             jaqpotpy_version=jaqpotpy.__version__,
             libraries=get_installed_libraries(),
             dependent_features=[
