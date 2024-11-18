@@ -488,6 +488,7 @@ class SklearnModel(Model):
         else:
             X_transformed = X
 
+        self.unfit_pipeline = self.pipeline
         self.trained_model = self.pipeline.fit(X_transformed, y)
 
         y_pred = self.predict(self.dataset)
@@ -940,7 +941,7 @@ class SklearnModel(Model):
                 X_train_transformed = pd.DataFrame(X_train_transformed)
             else:
                 X_train_transformed = X_train
-            cloned_pipeline = clone(self.pipeline)
+            cloned_pipeline = clone(self.unfit_pipeline)
             trained_model = cloned_pipeline.fit(X_train_transformed, y_train.ravel())
             y_pred = self._predict_with_X(X_test, trained_model).reshape(-1, 1)
             metrics_result = self._get_metrics(
