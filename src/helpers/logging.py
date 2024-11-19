@@ -1,7 +1,6 @@
 import logging
 
-# import jaqpotpy.colorlog.colorlog as cl
-import jaqpotpy.colorlog.logging as cl
+import src.colorlog.logging as cl
 
 
 def init_logger(dunder_name, testing_mode, output_log_file) -> logging.Logger:
