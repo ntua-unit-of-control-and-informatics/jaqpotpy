@@ -5,7 +5,7 @@ from sklearn.base import BaseEstimator
 import numpy as np
 from skl2onnx import convert_sklearn, to_onnx, update_registered_converter
 from sklearn.calibration import LabelEncoder
-import jaqpotpy
+from src import __version__ as jaqpotpy_version
 from src.api.get_installed_libraries import get_installed_libraries
 from src.api.openapi.models.doa import Doa
 from src.datasets.jaqpotpy_dataset import JaqpotpyDataset
@@ -66,7 +66,7 @@ class XGBoostModel(SklearnModel):
         SklearnModel.check_preprocessor(self.preprocess_y, feat_type="y")
         self.transformers_y = {}
         self.libraries = None
-        self.jaqpotpy_version = jaqpotpy.__version__
+        self.jaqpotpy_version = jaqpotpy_version
         self.task = self.dataset.task
         self.initial_types_preprocessor = None
         self.initial_types = None

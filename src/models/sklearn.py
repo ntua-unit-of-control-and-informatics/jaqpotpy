@@ -17,7 +17,7 @@ from skl2onnx.common.data_types import (
     BooleanTensorType,
     StringTensorType,
 )
-import jaqpotpy
+from src import __version__ as jaqpotpy_version
 from src.api.openapi.models import (
     ModelScores,
     Scores,
@@ -192,7 +192,7 @@ class SklearnModel(Model):
         SklearnModel.check_preprocessor(self.preprocess_y, feat_type="y")
         self.transformers_y = {}
         self.libraries = None
-        self.jaqpotpy_version = jaqpotpy.__version__
+        self.jaqpotpy_version = jaqpotpy_version
         self.task = self.dataset.task
         self.initial_types_preprocessor = None
         self.initial_types = None
