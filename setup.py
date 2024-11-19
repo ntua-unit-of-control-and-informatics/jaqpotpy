@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="src",
+    name="jaqpotpy",
     version="{{VERSION_PLACEHOLDER}}",
     description="Client library for managing machine learning models on the Jaqpot platform",
     long_description=long_description,
