@@ -1,16 +1,16 @@
 import torch
 from torch_geometric.loader import DataLoader
 import pandas as pd
-from src import Jaqpot
-from src.descriptors.graph import SmilesGraphFeaturizer
-from src.datasets import SmilesGraphDataset
-from src.models.torch_geometric_models.graph_neural_network import (
+from jaqpotpy import Jaqpot
+from jaqpotpy.descriptors.graph import SmilesGraphFeaturizer
+from jaqpotpy.datasets import SmilesGraphDataset
+from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
     GraphSageNetwork,
     pyg_to_onnx,
 )
-from src.models.trainers.graph_trainers import RegressionGraphModelTrainer
+from jaqpotpy.models.trainers.graph_trainers import RegressionGraphModelTrainer
 
-df = pd.read_csv("./src/test_data/test_data_smiles_regression.csv")
+df = pd.read_csv("./jaqpotpy/test_data/test_data_smiles_regression.csv")
 
 # Prepare Smiles and endpoint lists
 # The endpoints can be either continuous or binary
@@ -55,6 +55,7 @@ test_dataset = SmilesGraphDataset(smiles=test_smiles, y=test_y, featurizer=featu
 train_dataset.precompute_featurization()
 val_dataset.precompute_featurization()
 test_dataset.precompute_featurization()
+
 
 # Create a GraphNeuralNetwork architecture (GraphSageNetwork as an example)
 # Obtain node_features from the featurizer

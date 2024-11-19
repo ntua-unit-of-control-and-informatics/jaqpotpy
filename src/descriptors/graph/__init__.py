@@ -1,1 +1,0 @@
-from src.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer

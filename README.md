@@ -2,9 +2,7 @@
 
 # Jaqpotpy
 
-The jaqpotpy library enables you to upload and deploy machine learning models to the Jaqpot platform. Once uploaded, you
-can manage, document, and share your models via the Jaqpot user interface at **https://app.jaqpot.org**. You can also
-make predictions online or programmatically using the [Jaqpot API](https://api.jaqpot.org).
+The jaqpotpy library enables you to upload and deploy machine learning models to the Jaqpot platform. Once uploaded, you can manage, document, and share your models via the Jaqpot user interface at **https://app.jaqpot.org**. You can also make predictions online or programmatically using the [Jaqpot API](https://api.jaqpot.org).
 
 ## Getting Started
 
@@ -34,9 +32,9 @@ Follow these steps to train and deploy your model on Jaqpot:
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-from src import Jaqpot
-from src.datasets import JaqpotpyDataset
-from src.models import SklearnModel
+from jaqpotpy import Jaqpot
+from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.models import SklearnModel
 
 # Creating a Simulated Dataset for Model Training
 np.random.seed(42)
@@ -56,8 +54,8 @@ myModel = SklearnModel(dataset=dataset, model=rf)
 myModel.fit()
 
 # Step 3: Upload the model on Jaqpot
-jaqpot = Jaqpot()
-jaqpot.login()  # log in to Jaqppt
+jaqpot = Jaqpot() 
+jaqpot.login() #log in to Jaqppt
 myModel.deploy_on_jaqpot(
     jaqpot=jaqpot,
     name="Demo: Regression",
@@ -67,16 +65,13 @@ myModel.deploy_on_jaqpot(
 
 ```
 
-Once your model is successfully deployed on the Jaqpot platform, the function will provide you with the model ID that
-you can use to manage your model through the user interface and API.
+Once your model is successfully deployed on the Jaqpot platform, the function will provide you with the model ID that you can use to manage your model through the user interface and API.
 
 Console Output:
-
 ```text
 <DATE> - INFO - Model has been successfully uploaded. The url of the model is https://app.jaqpot.org/dashboard/models/<ModelID>
 ```
 
 #### Managing Your Models
 
-You can further manage your models through the Jaqpot user interface at https://app.jaqpot.org. This platform allows you
-to view detailed documentation, share models with your contacts, and make predictions.
+You can further manage your models through the Jaqpot user interface at https://app.jaqpot.org. This platform allows you to view detailed documentation, share models with your contacts, and make predictions.

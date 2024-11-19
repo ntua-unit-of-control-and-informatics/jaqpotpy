@@ -1,0 +1,6 @@
+SMILES,X1,X2,Cat_col,ACTIVITY
+CCC,1,6,CAT_1,Toxic
+CO[C@@H]1[C@@H](OC(=O)c2ccc(C)[nH]2)[C@@H](O)[C@H](Oc2ccc3c(O)c(NC(=O)c4ccccc4)c(=O)oc3c2C)OC1(C)C,4,7,CAT_2,Non_toxic
+C,5,3,CAT_1,Toxic
+CC(=O)OC1=CC=CC=C1C(=O)O,3,8,CAT_2,Toxic
+CN1C=NC2=C1C(=O)N(C(=O)N2C)C,2,1,CAT_1,Non_toxic

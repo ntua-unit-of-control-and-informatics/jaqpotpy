@@ -4,7 +4,7 @@ set -e  # Exit immediately if a command exits with a non-zero status.
 
 JAQPOT_API_PATH=../jaqpot-api
 TEMP_DIR=$(mktemp -d)
-TARGET_DIR=./src/api/openapi
+TARGET_DIR=./jaqpotpy/api/openapi
 
 # Install openapi-generator-cli if not already installed
 if ! command -v openapi-generator-cli &> /dev/null
@@ -31,13 +31,13 @@ openapi-generator-cli generate \
     -i $JAQPOT_API_PATH/src/main/resources/openapi.yaml \
     -g python \
     -o $TEMP_DIR \
-    --additional-properties packageName=src.api.openapi
+    --additional-properties packageName=jaqpotpy.api.openapi
 
 # Ensure the target directory exists
 mkdir -p $TARGET_DIR
 
 # Move only the necessary files
-cp -r $TEMP_DIR/src/api/openapi/* $TARGET_DIR/
+cp -r $TEMP_DIR/jaqpotpy/api/openapi/* $TARGET_DIR/
 
 # Clean up
 rm -rf $TEMP_DIR
