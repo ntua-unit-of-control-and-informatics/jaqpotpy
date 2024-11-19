@@ -119,7 +119,7 @@ man/
 .DS_Store
 
 # Sphinx
-src/sphinx_docs/_build
-src/sphinx_docs/_static
-src/sphinx_docs/_templates
-src/sphinx_docs/files
+sphinx_docs/_build
+sphinx_docs/_static
+sphinx_docs/_templates
+sphinx_docs/files
