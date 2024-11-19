@@ -4,8 +4,8 @@ from typing import Iterable, Optional, Any, List
 import copy
 import pandas as pd
 import sklearn.feature_selection as skfs
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.datasets.dataset_base import BaseDataset
+from src.descriptors.base_classes import MolecularFeaturizer
+from src.datasets.dataset_base import BaseDataset
 
 
 class JaqpotpyDataset(BaseDataset):

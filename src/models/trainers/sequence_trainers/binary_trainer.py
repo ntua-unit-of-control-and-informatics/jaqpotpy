@@ -1,12 +1,12 @@
-from jaqpotpy.api.openapi.models.feature import Feature
-from jaqpotpy.api.openapi.models.feature_type import FeatureType
+from src.api.openapi.models.feature import Feature
+from src.api.openapi.models.feature_type import FeatureType
 from tqdm import tqdm
 import torch
 import io
 import base64
 from typing import Optional
 import inspect
-from jaqpotpy.models.trainers import TorchModelTrainer
+from src.models.trainers import TorchModelTrainer
 from sklearn import metrics
 import torch.nn.functional as F
 

@@ -2,8 +2,8 @@
 
 import unittest
 import numpy as np
-from jaqpotpy.descriptors.molecular import RDKitDescriptors
-from jaqpotpy.doa import Leverage, MeanVar, BoundingBox
+from src.descriptors.molecular import RDKitDescriptors
+from src.doa import Leverage, MeanVar, BoundingBox
 
 
 class TestDoa(unittest.TestCase):

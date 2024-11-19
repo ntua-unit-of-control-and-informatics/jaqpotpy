@@ -1,7 +1,9 @@
 """Test topological fingerprints."""
 
 import unittest
-from jaqpotpy.descriptors.molecular import TopologicalFingerprint, MACCSKeysFingerprint
+from src.descriptors.molecular import TopologicalFingerprint, MACCSKeysFingerprint
+
+
 # pylint: disable=no-member
 
 

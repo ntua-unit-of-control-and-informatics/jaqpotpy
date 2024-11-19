@@ -1,14 +1,14 @@
 import torch
 from torch_geometric.loader import DataLoader
 import pandas as pd
-from jaqpotpy import Jaqpot
-from jaqpotpy.descriptors.graph import SmilesGraphFeaturizer
-from jaqpotpy.datasets import SmilesGraphDataset
-from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
+from src import Jaqpot
+from src.descriptors.graph import SmilesGraphFeaturizer
+from src.datasets import SmilesGraphDataset
+from src.models.torch_geometric_models.graph_neural_network import (
     GraphSageNetwork,
     pyg_to_onnx,
 )
-from jaqpotpy.models.trainers.graph_trainers import RegressionGraphModelTrainer
+from src.models.trainers.graph_trainers import RegressionGraphModelTrainer
 
 df = pd.read_csv("./src/test_data/test_data_smiles_regression.csv")
 

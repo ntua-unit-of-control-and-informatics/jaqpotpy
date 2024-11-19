@@ -2,7 +2,7 @@ import unittest
 from rdkit import Chem
 import numpy as np
 import pandas as pd
-from jaqpotpy.descriptors.molecular import MACCSKeysFingerprint
+from src.descriptors.molecular import MACCSKeysFingerprint
 
 
 class TestMACCSKeysFingerprint(unittest.TestCase):

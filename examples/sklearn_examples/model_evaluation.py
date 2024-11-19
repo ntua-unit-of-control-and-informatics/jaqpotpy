@@ -2,9 +2,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-from jaqpotpy.models import SklearnModel
-from jaqpotpy.datasets import JaqpotpyDataset
-from jaqpotpy.descriptors import RDKitDescriptors
+from src.models import SklearnModel
+from src.datasets import JaqpotpyDataset
+from src.descriptors import RDKitDescriptors
 
 # Create sample data
 data = pd.DataFrame(
@@ -75,7 +75,6 @@ X_test = pd.DataFrame(
         ],  # Target activity values for reference (not used for prediction)
     }
 )
-
 
 # Prepare the test dataset with Jaqpotpy
 test_dataset = JaqpotpyDataset(

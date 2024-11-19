@@ -1,8 +1,8 @@
 import pandas as pd
 from sklearn.datasets import make_classification
-from jaqpotpy.datasets import JaqpotpyDataset
+from src.datasets import JaqpotpyDataset
 from sklearn.linear_model import LogisticRegression
-from jaqpotpy.models import SklearnModel
+from src.models import SklearnModel
 
 # Generate a small binary classification dataset
 X, y = make_classification(n_samples=100, n_features=4, random_state=42)
@@ -30,8 +30,8 @@ jaqpot_model = SklearnModel(dataset=dataset, model=LogisticRegression())
 jaqpot_model.fit()
 
 # Upload model on Jaqpot
-# First import Jaqpot class from jaqpotpy
-from jaqpotpy import Jaqpot  # noqa: E402
+# First import Jaqpot class from src
+from src import Jaqpot  # noqa: E402
 
 # Next, create an instance of Jaqpot
 jaqpot = Jaqpot()

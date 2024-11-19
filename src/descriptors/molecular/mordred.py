@@ -1,7 +1,7 @@
 from typing import Callable, List, Optional, Any
 import numpy as np
 import pandas as pd
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from src.descriptors.base_classes import MolecularFeaturizer
 
 
 # warnings.filterwarnings("ignore", category=DeprecationWarning)

@@ -4,13 +4,13 @@ import os
 import unittest
 import pandas as pd
 import sklearn.feature_selection as skfs
-from jaqpotpy.descriptors.molecular import (
+from src.descriptors.molecular import (
     MACCSKeysFingerprint,
     MordredDescriptors,
     RDKitDescriptors,
     TopologicalFingerprint,
 )
-from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from src.datasets.jaqpotpy_dataset import JaqpotpyDataset
 
 
 class TestDatasets(unittest.TestCase):

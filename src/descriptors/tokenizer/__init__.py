@@ -1,1 +1,1 @@
-from jaqpotpy.descriptors.tokenizer.smiles_tokenizer import SmilesVectorizer
+from src.descriptors.tokenizer.smiles_tokenizer import SmilesVectorizer

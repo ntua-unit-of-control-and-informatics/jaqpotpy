@@ -6,12 +6,12 @@ import numpy as np
 from skl2onnx import convert_sklearn, to_onnx, update_registered_converter
 from sklearn.calibration import LabelEncoder
 import jaqpotpy
-from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.models.doa import Doa
-from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
-from jaqpotpy.api.openapi.models import ModelScores, ModelType
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.doa import DOA
+from src.api.get_installed_libraries import get_installed_libraries
+from src.api.openapi.models.doa import Doa
+from src.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from src.api.openapi.models import ModelScores, ModelType
+from src.descriptors.base_classes import MolecularFeaturizer
+from src.doa import DOA
 from skl2onnx.common.shape_calculator import (
     calculate_linear_classifier_output_shapes,
     calculate_linear_regressor_output_shapes,
@@ -20,7 +20,7 @@ from xgboost import XGBClassifier, XGBRegressor
 from onnxmltools.convert.xgboost import (
     convert,
 )
-from jaqpotpy.models.sklearn import SklearnModel
+from src.models.sklearn import SklearnModel
 
 
 class XGBoostModel(SklearnModel):

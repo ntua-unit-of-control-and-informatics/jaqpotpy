@@ -2,7 +2,9 @@
 
 import unittest
 import numpy as np
-from jaqpotpy.descriptors.molecular import RDKitDescriptors
+from src.descriptors.molecular import RDKitDescriptors
+
+
 # pylint: disable=no-member
 
 

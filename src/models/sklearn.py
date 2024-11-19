@@ -18,25 +18,25 @@ from skl2onnx.common.data_types import (
     StringTensorType,
 )
 import jaqpotpy
-from jaqpotpy.api.openapi.models import (
+from src.api.openapi.models import (
     ModelScores,
     Scores,
     RegressionScores,
     MulticlassClassificationScores,
     BinaryClassificationScores,
 )
-from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.models import (
+from src.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from src.descriptors.base_classes import MolecularFeaturizer
+from src.api.get_installed_libraries import get_installed_libraries
+from src.api.openapi.models import (
     FeatureType,
     FeaturePossibleValue,
     ModelType,
     Transformer,
     Doa,
 )
-from jaqpotpy.models.base_classes import Model
-from jaqpotpy.doa import DOA
+from src.models.base_classes import Model
+from src.doa import DOA
 from sklearn.base import clone
 
 

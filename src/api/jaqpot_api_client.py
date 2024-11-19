@@ -1,9 +1,9 @@
 import polling2
 import os
 
-from jaqpotpy.api.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
-from jaqpotpy.api.model_to_b64encoding import file_to_b64encoding
-from jaqpotpy.api.openapi import (
+from src.api.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
+from src.api.model_to_b64encoding import file_to_b64encoding
+from src.api.openapi import (
     ModelApi,
     DatasetApi,
     Dataset,
@@ -11,14 +11,14 @@ from jaqpotpy.api.openapi import (
     DatasetCSV,
     Configuration,
 )
-from jaqpotpy.exceptions.exceptions import (
+from src.exceptions.exceptions import (
     JaqpotApiException,
     JaqpotPredictionTimeoutException,
     JaqpotPredictionFailureException,
 )
-from jaqpotpy.helpers.logging import init_logger
-from jaqpotpy.models import Model
-from jaqpotpy.helpers.url_utils import add_subdomain
+from src.helpers.logging import init_logger
+from src.models import Model
+from src.helpers.url_utils import add_subdomain
 
 QSARTOOLBOX_CALCULATOR_MODEL_ID = 6
 QSARTOOLBOX_MODEL_MODEL_ID = 1837

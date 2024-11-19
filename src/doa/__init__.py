@@ -1,1 +1,1 @@
-from jaqpotpy.doa.doa import DOA, Leverage, MeanVar, BoundingBox
+from src.doa.doa import DOA, Leverage, MeanVar, BoundingBox

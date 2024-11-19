@@ -5,7 +5,7 @@ from __future__ import absolute_import
 import logging
 import sys
 
-from jaqpotpy.colorlog.escape_codes import escape_codes, parse_colors
+from src.colorlog.escape_codes import escape_codes, parse_colors
 
 __all__ = (
     "escape_codes",

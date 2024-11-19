@@ -1,4 +1,4 @@
-from jaqpotpy.api.jaqpot_api_http_client import JaqpotApiHttpClient
+from src.api.jaqpot_api_http_client import JaqpotApiHttpClient
 
 
 class JaqpotApiHttpClientBuilder:

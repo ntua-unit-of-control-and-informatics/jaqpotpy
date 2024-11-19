@@ -1,1 +1,1 @@
-from jaqpotpy.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer
+from src.descriptors.graph.graph_featurizer import SmilesGraphFeaturizer

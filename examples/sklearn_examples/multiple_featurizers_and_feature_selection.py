@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_selection import VarianceThreshold
-from jaqpotpy.models import SklearnModel
-from jaqpotpy.datasets import JaqpotpyDataset
-from jaqpotpy.descriptors import RDKitDescriptors, MACCSKeysFingerprint
+from src.models import SklearnModel
+from src.datasets import JaqpotpyDataset
+from src.descriptors import RDKitDescriptors, MACCSKeysFingerprint
 
 data = pd.DataFrame(
     {

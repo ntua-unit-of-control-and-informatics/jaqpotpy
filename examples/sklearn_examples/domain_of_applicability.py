@@ -1,9 +1,9 @@
 import pandas as pd
 from sklearn.datasets import make_regression
-from jaqpotpy.datasets import JaqpotpyDataset
+from src.datasets import JaqpotpyDataset
 from sklearn.linear_model import LinearRegression
-from jaqpotpy.models.sklearn import SklearnModel
-from jaqpotpy.doa import Leverage, BoundingBox, MeanVar
+from src.models.sklearn import SklearnModel
+from src.doa import Leverage, BoundingBox, MeanVar
 
 # Generate a small regression dataset
 # This creates a dataset with 100 samples, each having 4 features and some noise.

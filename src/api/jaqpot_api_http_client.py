@@ -1,4 +1,4 @@
-from jaqpotpy.api.openapi import Configuration, ApiClient
+from src.api.openapi import Configuration, ApiClient
 
 
 class JaqpotApiHttpClient(ApiClient):

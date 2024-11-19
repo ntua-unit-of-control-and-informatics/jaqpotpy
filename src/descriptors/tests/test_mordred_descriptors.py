@@ -4,7 +4,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from mordred import Chi, ABCIndex
 
-from jaqpotpy.descriptors.molecular import MordredDescriptors
+from src.descriptors.molecular import MordredDescriptors
 
 
 class TestMordredDescriptors(unittest.TestCase):

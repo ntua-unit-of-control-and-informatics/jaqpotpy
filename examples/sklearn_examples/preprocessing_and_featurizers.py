@@ -3,9 +3,9 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
-from jaqpotpy.models import SklearnModel
-from jaqpotpy.datasets import JaqpotpyDataset
-from jaqpotpy.descriptors import RDKitDescriptors
+from src.models import SklearnModel
+from src.datasets import JaqpotpyDataset
+from src.descriptors import RDKitDescriptors
 
 # Define the dataset with SMILES strings, a categorical variable, temperature, and activity values
 data = pd.DataFrame(
@@ -79,7 +79,6 @@ jaqpot_model = SklearnModel(
 )
 jaqpot_model.fit()
 
-
 X_test = pd.DataFrame(
     {
         "smiles": ["CCCOC", "CO"],
@@ -98,7 +97,6 @@ test_dataset = JaqpotpyDataset(
     task="regression",
     featurizer=featurizer,  # Same featurizer for consistency with training
 )
-
 
 predictions = jaqpot_model.predict(test_dataset)
 print(predictions)

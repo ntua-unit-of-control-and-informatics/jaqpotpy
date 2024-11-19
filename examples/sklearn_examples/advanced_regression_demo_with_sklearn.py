@@ -4,10 +4,10 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
-from jaqpotpy.datasets import JaqpotpyDataset
-from jaqpotpy.models import SklearnModel
-from jaqpotpy import Jaqpot
-from jaqpotpy.doa import (
+from src.datasets import JaqpotpyDataset
+from src.models import SklearnModel
+from src import Jaqpot
+from src.doa import (
     MeanVar,
     BoundingBox,
     Leverage,
@@ -119,7 +119,6 @@ test_dataset = JaqpotpyDataset(
 
 # Evaluate model on the test dataset to assess performance
 jaqpotModel.evaluate(test_dataset)
-
 
 # Perform 10-fold cross-validation on the training dataset to validate model robustness
 jaqpotModel.cross_validate(train_dataset, n_splits=10)

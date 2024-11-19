@@ -14,9 +14,9 @@ from sklearn.preprocessing import (
     MinMaxScaler,
     LabelEncoder,
 )
-from jaqpotpy.descriptors.molecular import TopologicalFingerprint
-from jaqpotpy.datasets import JaqpotpyDataset
-from jaqpotpy.models import SklearnModel
+from src.descriptors.molecular import TopologicalFingerprint
+from src.datasets import JaqpotpyDataset
+from src.models import SklearnModel
 
 
 # Add the following tests:
@@ -1012,15 +1012,15 @@ class TestModels(unittest.TestCase):
 
         assert np.allclose(
             jaqpot_model.train_scores["r2"], 0.86953, atol=1e-02
-        ), f"Expected train R^2 to be 0.86953, got { jaqpot_model.train_scores['r2']}"
+        ), f"Expected train R^2 to be 0.86953, got {jaqpot_model.train_scores['r2']}"
 
         assert np.allclose(
             jaqpot_model.test_scores["r2"], 0.86953, atol=1e-02
-        ), f"Expected test R^2 to be 0.86953, got { jaqpot_model.test_scores['r2']}"
+        ), f"Expected test R^2 to be 0.86953, got {jaqpot_model.test_scores['r2']}"
 
         assert np.allclose(
             jaqpot_model.average_cross_val_scores["r2"], 0.042799, atol=1e-02
-        ), f"Expected average cross validation R^2 to be  0.042799, got { jaqpot_model.average_cross_val_scores['r2']}"
+        ), f"Expected average cross validation R^2 to be  0.042799, got {jaqpot_model.average_cross_val_scores['r2']}"
 
     def test_scores_classification(self):
         """Test goodness-of-fit scores in the case of classification."""
@@ -1045,15 +1045,15 @@ class TestModels(unittest.TestCase):
 
         assert np.allclose(
             jaqpot_model.train_scores["accuracy"], 1, atol=1e-02
-        ), f"Expected train Accuracy to be 1.0, got { jaqpot_model.train_scores['accuracy']}"
+        ), f"Expected train Accuracy to be 1.0, got {jaqpot_model.train_scores['accuracy']}"
 
         assert np.allclose(
             jaqpot_model.test_scores["accuracy"], 1, atol=1e-02
-        ), f"Expected test accuracy to be 1.0, got { jaqpot_model.test_scores['accuracy']}"
+        ), f"Expected test accuracy to be 1.0, got {jaqpot_model.test_scores['accuracy']}"
 
         assert np.allclose(
             jaqpot_model.average_cross_val_scores["accuracy"], 0.3035, atol=1e-02
-        ), f"Expected average cross validation accuracy to be 0.3035, got { jaqpot_model.average_cross_val_scores['accuracy']}"
+        ), f"Expected average cross validation accuracy to be 0.3035, got {jaqpot_model.average_cross_val_scores['accuracy']}"
 
     def test_scores_multi_output_regressions(self):
         """Test goodness-of-fit scores in the case of multi-output-regression."""
@@ -1078,31 +1078,31 @@ class TestModels(unittest.TestCase):
 
         assert np.allclose(
             jaqpot_model.train_scores[dataset.y_cols[0]]["r2"], 0.8698, atol=1e-02
-        ), f"Expected train R^2 to be 0.8698 got { jaqpot_model.train_scores[dataset.y_cols[0]]['r2']}"
+        ), f"Expected train R^2 to be 0.8698 got {jaqpot_model.train_scores[dataset.y_cols[0]]['r2']}"
 
         assert np.allclose(
             jaqpot_model.train_scores[dataset.y_cols[1]]["r2"], 0.8230, atol=1e-02
-        ), f"Expected train R^2 to be  0.8230, got { jaqpot_model.train_scores[dataset.y_cols[1]]['r2']}"
+        ), f"Expected train R^2 to be  0.8230, got {jaqpot_model.train_scores[dataset.y_cols[1]]['r2']}"
 
         assert np.allclose(
             jaqpot_model.test_scores[dataset.y_cols[0]]["r2"], 0.8698, atol=1e-02
-        ), f"Expected test R^2 to be 0.8698, got { jaqpot_model.test_scores[dataset.y_cols[0]]['r2']}"
+        ), f"Expected test R^2 to be 0.8698, got {jaqpot_model.test_scores[dataset.y_cols[0]]['r2']}"
 
         assert np.allclose(
             jaqpot_model.test_scores[dataset.y_cols[1]]["r2"], 0.8230, atol=1e-02
-        ), f"Expected test R^2 to be  0.8230, got { jaqpot_model.test_scores[dataset.y_cols[1]]['r2']}"
+        ), f"Expected test R^2 to be  0.8230, got {jaqpot_model.test_scores[dataset.y_cols[1]]['r2']}"
 
         assert np.allclose(
             jaqpot_model.average_cross_val_scores[dataset.y_cols[0]]["r2"],
             0.04279,
             atol=1e-02,
-        ), f"Expected average cross validation R^2 be  0.04279, got { jaqpot_model.average_cross_val_scores[dataset.y_cols[0]]['r2']}"
+        ), f"Expected average cross validation R^2 be  0.04279, got {jaqpot_model.average_cross_val_scores[dataset.y_cols[0]]['r2']}"
 
         assert np.allclose(
             jaqpot_model.average_cross_val_scores[dataset.y_cols[1]]["r2"],
             -0.13792,
             atol=1e-02,
-        ), f"Expected average cross validation R^2 to be -0.13792, got { jaqpot_model.average_cross_val_scores[dataset.y_cols[1]]['r2']}"
+        ), f"Expected average cross validation R^2 to be -0.13792, got {jaqpot_model.average_cross_val_scores[dataset.y_cols[1]]['r2']}"
 
     def test_randomization_test(self):
         """Test randomization test."""
@@ -1138,7 +1138,7 @@ class TestModels(unittest.TestCase):
             jaqpot_model.randomization_test_results["iteration_0"]["Train"]["r2"],
             0.80179,
             atol=1e-02,
-        ), f"Expected iteration 0 train R^2 to be 0.80179, got { jaqpot_model.randomization_test_results['iteration_0']['Train']['r2']}"
+        ), f"Expected iteration 0 train R^2 to be 0.80179, got {jaqpot_model.randomization_test_results['iteration_0']['Train']['r2']}"
 
         assert np.allclose(
             jaqpot_model.randomization_test_results["iteration_0"]["Test"]["r2"],
@@ -1150,7 +1150,7 @@ class TestModels(unittest.TestCase):
             jaqpot_model.randomization_test_results["iteration_1"]["Train"]["r2"],
             0.836109,
             atol=1e-02,
-        ), f"Expected iteration 1 train R^2 to be  0.836109, got { jaqpot_model.randomization_test_results['iteration_1']['Train']['r2']}"
+        ), f"Expected iteration 1 train R^2 to be  0.836109, got {jaqpot_model.randomization_test_results['iteration_1']['Train']['r2']}"
 
     def test_binary_categorical_classification_string_labels(self):
         """Test RandomForestClassifier on a molecular dataset with TopologicalFingerprint for binary classification with string labels."""

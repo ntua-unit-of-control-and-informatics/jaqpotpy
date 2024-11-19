@@ -1,6 +1,6 @@
-from jaqpotpy.descriptors.molecular.mordred import MordredDescriptors
-from jaqpotpy.descriptors.molecular.rdkit import RDKitDescriptors
-from jaqpotpy.descriptors.molecular.topological_fingerprints import (
+from src.descriptors.molecular.mordred import MordredDescriptors
+from src.descriptors.molecular.rdkit import RDKitDescriptors
+from src.descriptors.molecular.topological_fingerprints import (
     TopologicalFingerprint,
 )
-from jaqpotpy.descriptors.molecular.maccs_keys_fingerprints import MACCSKeysFingerprint
+from src.descriptors.molecular.maccs_keys_fingerprints import MACCSKeysFingerprint

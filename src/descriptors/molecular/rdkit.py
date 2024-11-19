@@ -3,7 +3,7 @@
 from typing import Any
 import pandas as pd
 import numpy as np
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from src.descriptors.base_classes import MolecularFeaturizer
 from rdkit.Chem import Descriptors
 
 

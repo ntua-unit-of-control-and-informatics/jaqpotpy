@@ -1,8 +1,8 @@
 import pandas as pd
 from sklearn.datasets import make_classification
-from jaqpotpy.datasets import JaqpotpyDataset
+from src.datasets import JaqpotpyDataset
 from sklearn.linear_model import LogisticRegression
-from jaqpotpy.models import SklearnModel
+from src.models import SklearnModel
 
 # Generate a small binary classification dataset
 # This creates a dataset with 100 samples, each having 4 features.

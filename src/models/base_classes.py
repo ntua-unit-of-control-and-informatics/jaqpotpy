@@ -1,5 +1,5 @@
-from jaqpotpy.doa import DOA
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from src.doa import DOA
+from src.descriptors.base_classes import MolecularFeaturizer
 from typing import Any, Iterable
 
 

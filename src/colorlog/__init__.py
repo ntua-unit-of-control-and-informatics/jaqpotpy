@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from jaqpotpy.colorlog.colorlog import (
+from src.colorlog.colorlog import (
     escape_codes,
     default_log_colors,
     ColoredFormatter,
@@ -8,7 +8,7 @@ from jaqpotpy.colorlog.colorlog import (
     TTYColoredFormatter,
 )
 
-from jaqpotpy.colorlog.logging import (
+from src.colorlog.logging import (
     basicConfig,
     root,
     getLogger,

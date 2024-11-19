@@ -2,7 +2,7 @@ import unittest
 from rdkit import Chem
 import torch
 from torch_geometric.data import Data
-from jaqpotpy.descriptors.graph import SmilesGraphFeaturizer
+from src.descriptors.graph import SmilesGraphFeaturizer
 
 
 class TestSmilesGraphFeaturizer(unittest.TestCase):

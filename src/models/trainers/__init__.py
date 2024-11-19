@@ -1,1 +1,1 @@
-from jaqpotpy.models.trainers.base_trainer import TorchModelTrainer
+from src.models.trainers.base_trainer import TorchModelTrainer

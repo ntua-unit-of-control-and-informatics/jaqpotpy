@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from rdkit.Chem.rdMolDescriptors import GetMACCSKeysFingerprint
 from rdkit.DataStructs.cDataStructs import ConvertToNumpyArray
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from src.descriptors.base_classes import MolecularFeaturizer
 
 
 class MACCSKeysFingerprint(MolecularFeaturizer):

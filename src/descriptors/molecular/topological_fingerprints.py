@@ -3,7 +3,7 @@
 from typing import Dict
 import pandas as pd
 import numpy as np
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from src.descriptors.base_classes import MolecularFeaturizer
 
 
 class TopologicalFingerprint(MolecularFeaturizer):

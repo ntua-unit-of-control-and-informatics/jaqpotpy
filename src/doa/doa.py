@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 from typing import Iterable, Any, Union
 
-from jaqpotpy.api.openapi.models.bounding_box_doa import BoundingBoxDoa
-from jaqpotpy.api.openapi.models.leverage_doa import LeverageDoa
-from jaqpotpy.api.openapi.models.mean_var_doa import MeanVarDoa
+from src.api.openapi.models.bounding_box_doa import BoundingBoxDoa
+from src.api.openapi.models.leverage_doa import LeverageDoa
+from src.api.openapi.models.mean_var_doa import MeanVarDoa
 
 
 class DOA(ABC):
