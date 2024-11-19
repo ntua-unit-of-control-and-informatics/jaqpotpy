@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="jaqpotpy",
+    name="src",
     version="{{VERSION_PLACEHOLDER}}",
     description="Client library for managing machine learning models on the Jaqpot platform",
     long_description=long_description,
@@ -18,7 +18,6 @@ setup(
     author_email="upci.ntua@gmail.com",
     license="MIT License",
     packages=find_packages(exclude=["*.tests"]),
-    package_data={"jaqpotpy": ["data/*.gz"]},
     install_requires=[
         "pandas==2.2.2",
         "pyjwt==2.8.0",

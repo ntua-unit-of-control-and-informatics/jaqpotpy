@@ -1,0 +1,6 @@
+SMILES,X1,X2
+CCC,1,6
+CO[C@@H]1[C@@H](O)[C@@H](O)[C@H](Oc2ccc3c(O)c(NC(=O)c4ccccc4)c(=O)oc3c2C)OC1(C)C,9,6
+C,5,3
+CCCc1cc(C(=O)Nc2c(O)c3ccc(O[C@@H]4OC(C)(C)[C@H](OC)[C@@H](O)[C@H]4O)c(C)c3oc2=O)ccc1O,8,8
+CN1C=NC2=C1C(=O)N(C(=O)N2C)C,2,1
