@@ -2,7 +2,7 @@ import webbrowser
 
 from keycloak import KeycloakOpenID
 
-from src import __version__ as jaqpotpy_version
+import src as jaqpotpy
 from src.api.get_installed_libraries import get_installed_libraries
 from src.api.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
 from src.api.jaqpot_api_http_client import JaqpotApiHttpClient
@@ -246,7 +246,7 @@ class Jaqpot:
         body_model = Model(
             name=name,
             type=ModelType.TORCH_ONNX,
-            jaqpotpy_version=jaqpotpy_version,
+            jaqpotpy_version=jaqpotpy.__version__,
             libraries=get_installed_libraries(),
             dependent_features=[
                 Feature(key=target_name, name=target_name, feature_type=feature_type)
