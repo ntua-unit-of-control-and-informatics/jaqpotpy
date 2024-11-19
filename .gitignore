@@ -119,7 +119,7 @@ man/
 .DS_Store
 
 # Sphinx
-jaqpotpy/sphinx_docs/_build
-jaqpotpy/sphinx_docs/_static
-jaqpotpy/sphinx_docs/_templates
-jaqpotpy/sphinx_docs/files
+sphinx_docs/_build
+sphinx_docs/_static
+sphinx_docs/_templates
+sphinx_docs/files

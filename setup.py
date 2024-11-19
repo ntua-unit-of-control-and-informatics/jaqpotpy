@@ -18,7 +18,6 @@ setup(
     author_email="upci.ntua@gmail.com",
     license="MIT License",
     packages=find_packages(exclude=["*.tests"]),
-    package_data={"jaqpotpy": ["data/*.gz"]},
     install_requires=[
         "pandas==2.2.2",
         "pyjwt==2.8.0",
