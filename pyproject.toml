@@ -7,7 +7,7 @@ name = "jaqpotpy"
 dynamic = ["version"]
 description = "Client library for managing machine learning models on the Jaqpot platform"
 readme = "README.md"
-license = "MIT License"
+license = "MIT"
 requires-python = ">=3.7"
 classifiers = [
     "License :: OSI Approved :: MIT License",
