@@ -7,22 +7,23 @@ from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 
 
 class TopologicalFingerprint(MolecularFeaturizer):
-    """Circular (Morgan) fingerprints.
+    """Topological (Morgan) fingerprints.
+
     Extended Connectivity Circular Fingerprints compute a bag-of-words style
     representation of a molecule by breaking it into local neighborhoods and
     hashing into a bit vector of the specified size. It is used specifically
-    for structure-activity modelling. See [1]_ for more details.
+    for structure-activity modeling. See [1]_ for more details.
 
-    References:
+    References
     ----------
     .. [1] Rogers, David, and Mathew Hahn. "Extended-connectivity fingerprints."
-     Journal of chemical information and modeling 50.5 (2010): 742-754.
+       Journal of chemical information and modeling 50.5 (2010): 742-754.
 
-    Note:
+    Note
     ----
     This class requires RDKit to be installed.
 
-    Examples:
+    Examples
     --------
     >>> import jaqpotpy as jt
     >>> from rdkit import Chem
@@ -30,8 +31,6 @@ class TopologicalFingerprint(MolecularFeaturizer):
     >>> # Example 1: (size = 2048, radius = 4)
     >>> featurizer = jt.descriptors.TopologicalFingerprint(size=2048, radius=4)
     >>> features = featurizer.featurize(smiles)
-
-
     """
 
     @property
@@ -46,19 +45,21 @@ class TopologicalFingerprint(MolecularFeaturizer):
         bonds: bool = True,
         features: bool = False,
     ):
-        """Parameters
+        """Initialize the TopologicalFingerprint.
+
+        Parameters
         ----------
-        radius: int, optional (default 2)
-        Fingerprint radius.
-        size: int, optional (default 2048)
-        Length of generated bit vector.
-        chiral: bool, optional (default False)
-        Whether to consider chirality in fingerprint generation.
-        bonds: bool, optional (default True)
-        Whether to consider bond order in fingerprint generation.
-        features: bool, optional (default False)
-        Whether to use feature information instead of atom information; see
-        RDKit docs for more info.
+        radius : int, optional (default=2)
+            Fingerprint radius.
+        size : int, optional (default=2048)
+            Length of generated bit vector.
+        chiral : bool, optional (default=False)
+            Whether to consider chirality in fingerprint generation.
+        bonds : bool, optional (default=True)
+            Whether to consider bond order in fingerprint generation.
+        features : bool, optional (default=False)
+            Whether to use feature information instead of atom information; see
+            RDKit docs for more info.
         """
         self.radius = radius
         self.size = size
@@ -70,9 +71,17 @@ class TopologicalFingerprint(MolecularFeaturizer):
     def _featurize(self, datapoint, convert_nan: bool = True, **kwargs) -> np.ndarray:
         """Calculate circular fingerprint.
 
-        Parameters:datapoint--> rdkit.Chem.rdchem.Mol
-        Returns:np.ndarray (A numpy array of circular fingerprint).
+        Parameters
+        ----------
+        datapoint : rdkit.Chem.rdchem.Mol
+            The molecule to featurize.
+        convert_nan : bool, optional (default=True)
+            Whether to convert NaN values.
 
+        Returns
+        -------
+        np.ndarray
+            A numpy array of the circular fingerprint.
         """
         try:
             from rdkit import Chem
@@ -116,6 +125,22 @@ class TopologicalFingerprint(MolecularFeaturizer):
     def featurize_dataframe(
         self, datapoints, convert_nan=False, log_every_n=1000, **kwargs
     ) -> pd.DataFrame:
+        """Featurize a list of molecules and return a DataFrame.
+
+        Parameters
+        ----------
+        datapoints : list
+            List of molecules to featurize.
+        convert_nan : bool, optional (default=False)
+            Whether to convert NaN values.
+        log_every_n : int, optional (default=1000)
+            Log progress every n molecules.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing the featurized molecules.
+        """
         features = self.featurize(
             datapoints, convert_nan=True, log_every_n=1000, **kwargs
         )

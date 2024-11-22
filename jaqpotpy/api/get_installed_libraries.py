@@ -3,6 +3,17 @@ from jaqpotpy.api.openapi.models.library import Library
 
 
 def get_installed_libraries():
+    """
+    Retrieve a list of installed Python libraries and their versions.
+
+    This function runs the `pip freeze` command to get a list of installed
+    Python packages and their versions. It then parses the output and
+    creates a list of Library objects.
+
+    Returns:
+        list: A list of Library objects, each containing the name and version
+              of an installed Python package.
+    """
     # Run the pip freeze command
     result = subprocess.run(["pip", "freeze"], stdout=subprocess.PIPE, text=True)
 

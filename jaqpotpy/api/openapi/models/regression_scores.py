@@ -32,12 +32,7 @@ class RegressionScores(BaseModel):
     r2: Optional[Union[StrictFloat, StrictInt]] = None
     mae: Optional[Union[StrictFloat, StrictInt]] = None
     rmse: Optional[Union[StrictFloat, StrictInt]] = None
-    r_squared_diff_r_zero: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="rSquaredDiffRZero")
-    r_squared_diff_r_zero_hat: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="rSquaredDiffRZeroHat")
-    abs_diff_r_zero_hat: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="absDiffRZeroHat")
-    k: Optional[Union[StrictFloat, StrictInt]] = None
-    k_hat: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="kHat")
-    __properties: ClassVar[List[str]] = ["yName", "folds", "r2", "mae", "rmse", "rSquaredDiffRZero", "rSquaredDiffRZeroHat", "absDiffRZeroHat", "k", "kHat"]
+    __properties: ClassVar[List[str]] = ["yName", "folds", "r2", "mae", "rmse"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -94,12 +89,7 @@ class RegressionScores(BaseModel):
             "folds": obj.get("folds"),
             "r2": obj.get("r2"),
             "mae": obj.get("mae"),
-            "rmse": obj.get("rmse"),
-            "rSquaredDiffRZero": obj.get("rSquaredDiffRZero"),
-            "rSquaredDiffRZeroHat": obj.get("rSquaredDiffRZeroHat"),
-            "absDiffRZeroHat": obj.get("absDiffRZeroHat"),
-            "k": obj.get("k"),
-            "kHat": obj.get("kHat")
+            "rmse": obj.get("rmse")
         })
         return _obj
 

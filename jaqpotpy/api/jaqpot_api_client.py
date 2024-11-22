@@ -26,12 +26,35 @@ QSAR_PROFILER_MODEL_ID = 1842
 
 
 class JaqpotApiClient:
-    def __init__(
-        self,
-        base_url=None,
-        api_url=None,
-        create_logs=False,
-    ):
+    """Client for interacting with the Jaqpot API.
+
+    This client provides methods to interact with various endpoints of the Jaqpot API,
+    including retrieving models and datasets, and making synchronous and asynchronous predictions.
+
+    Attributes
+    ----------
+    base_url : str
+        The base URL for the Jaqpot API.
+    api_url : str
+        The API URL for the Jaqpot API.
+    http_client : object
+        The HTTP client used to make requests to the Jaqpot API.
+    log : object
+        The logger object for logging messages.
+    """
+
+    def __init__(self, base_url=None, api_url=None, create_logs=False):
+        """Initialize the JaqpotApiClient.
+
+        Parameters
+        ----------
+        base_url : str, optional
+            The base URL for the Jaqpot API. Defaults to "https://jaqpot.org".
+        api_url : str, optional
+            The API URL for the Jaqpot API. If not provided, it is constructed using the base URL.
+        create_logs : bool, optional
+            Whether to create logs. Defaults to False.
+        """
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
         self.log = init_logger(
             __name__, testing_mode=False, output_log_file=create_logs
@@ -50,12 +73,22 @@ class JaqpotApiClient:
         )
 
     def get_model_by_id(self, model_id) -> Model:
-        """Get model from Jaqpot.
+        """Get a model from Jaqpot by its ID.
 
         Parameters
         ----------
-        model_id : model_id is the id of the model on Jaqpot
+        model_id : int
+            The ID of the model on Jaqpot.
 
+        Returns
+        -------
+        Model
+            The model object retrieved from Jaqpot.
+
+        Raises
+        ------
+        JaqpotApiException
+            If the request fails, an exception is raised with the error message and status code.
         """
         model_api = ModelApi(self.http_client)
         response = model_api.get_model_by_id_with_http_info(id=model_id)
@@ -67,12 +100,22 @@ class JaqpotApiClient:
         )
 
     def get_model_summary(self, model_id):
-        """Get model summary from Jaqpot.
+        """Get a summary of a model from Jaqpot by its ID.
 
         Parameters
         ----------
-        model_id : model_id is the id of the model on Jaqpot
+        model_id : int
+            The ID of the model on Jaqpot.
 
+        Returns
+        -------
+        dict
+            A dictionary containing the model summary.
+
+        Raises
+        ------
+        JaqpotApiException
+            If the request fails, an exception is raised with the error message and status code.
         """
         response = self.get_model_by_id(model_id)
         if response.status_code < 300:
@@ -100,11 +143,24 @@ class JaqpotApiClient:
 
         Parameters
         ----------
-        page : page number
-        size : number of models per page
-        sort : sort models by
-        organization_id : organization id
+        page : int, optional
+            Page number for pagination.
+        size : int, optional
+            Number of models per page.
+        sort : str, optional
+            Sort order for models.
+        organization_id : int, optional
+            Organization ID to filter models.
 
+        Returns
+        -------
+        list
+            A list of shared models.
+
+        Raises
+        ------
+        JaqpotApiException
+            If the request fails, an exception is raised with the error message and status code.
         """
         model_api = ModelApi(self.http_client)
         response = model_api.get_shared_models_with_http_info(
@@ -118,12 +174,22 @@ class JaqpotApiClient:
         )
 
     def get_dataset_by_id(self, dataset_id) -> Dataset:
-        """Get dataset from Jaqpot.
+        """Get a dataset from Jaqpot by its ID.
 
         Parameters
         ----------
-        dataset_id : dataset_id is the id of the dataset on Jaqpot
+        dataset_id : int
+            The ID of the dataset on Jaqpot.
 
+        Returns
+        -------
+        Dataset
+            The dataset object retrieved from Jaqpot.
+
+        Raises
+        ------
+        JaqpotApiException
+            If the request fails, an exception is raised with the error message and status code.
         """
         dataset_api = DatasetApi(self.http_client)
         response = dataset_api.get_dataset_by_id_with_http_info(id=dataset_id)
@@ -135,13 +201,26 @@ class JaqpotApiClient:
         )
 
     def predict_sync(self, model_id, dataset):
-        """Predict with model on Jaqpot.
+        """Make a synchronous prediction with a model on Jaqpot.
 
         Parameters
         ----------
-        model_id : model_id is the id of the model on Jaqpot
-        dataset : dataset to predict
+        model_id : int
+            The ID of the model on Jaqpot.
+        dataset : list or dict
+            The dataset to predict.
 
+        Returns
+        -------
+        dict
+            The prediction result.
+
+        Raises
+        ------
+        JaqpotApiException
+            If the request fails, an exception is raised with the error message and status code.
+        JaqpotPredictionFailureException
+            If the prediction fails, an exception is raised with the failure reason.
         """
         dataset = Dataset(
             type=DatasetType.PREDICTION,
@@ -165,21 +244,25 @@ class JaqpotApiClient:
         )
 
     def predict_async(self, model_id, dataset):
-        """
-        Asynchronously predicts using a specified model and dataset.
-        This method sends a prediction request to the server using the provided model ID and dataset.
-        It constructs a Dataset object with the type set to PREDICTION and entry_type set to "ARRAY".
-        The method then uses the ModelApi to send the prediction request.
-        Args:
-            model_id (str): The ID of the model to use for prediction.
-            dataset (list or dict): The input data for prediction.
-        Returns:
-            int: The ID of the dataset containing the prediction results.
-        Raises:
-            JaqpotApiException: If the prediction request fails, an exception is raised with the error message
-                    and status code from the response.
-        """
+        """Make an asynchronous prediction with a model on Jaqpot.
 
+        Parameters
+        ----------
+        model_id : int
+            The ID of the model on Jaqpot.
+        dataset : list or dict
+            The dataset to predict.
+
+        Returns
+        -------
+        int
+            The ID of the dataset containing the prediction results.
+
+        Raises
+        ------
+        JaqpotApiException
+            If the request fails, an exception is raised with the error message and status code.
+        """
         dataset = Dataset(
             type=DatasetType.PREDICTION,
             entry_type="ARRAY",
@@ -200,15 +283,27 @@ class JaqpotApiClient:
         )
 
     def predict_with_csv_sync(self, model_id, csv_path):
-        """Predict with model on Jaqpot.
+        """Make a synchronous prediction with a model on Jaqpot using a CSV file.
 
         Parameters
         ----------
-        :param model_id:
-        :param csv_path:
+        model_id : int
+            The ID of the model on Jaqpot.
+        csv_path : str
+            The path to the CSV file.
 
+        Returns
+        -------
+        dict
+            The prediction result.
+
+        Raises
+        ------
+        JaqpotApiException
+            If the request fails, an exception is raised with the error message and status code.
+        JaqpotPredictionFailureException
+            If the prediction fails, an exception is raised with the failure reason.
         """
-
         b64_dataset_csv = file_to_b64encoding(csv_path)
         dataset_csv = DatasetCSV(
             type=DatasetType.PREDICTION, input_file=b64_dataset_csv
@@ -229,19 +324,23 @@ class JaqpotApiClient:
         )
 
     def _get_dataset_with_polling(self, response):
-        """
-        Retrieves a dataset by polling until the dataset is ready or a timeout occurs.
-        This method extracts the dataset location from the response headers, retrieves the dataset ID,
-        and then polls the server to check the status of the dataset. If the status is either "SUCCESS"
-        or "FAILURE", the polling stops. If the polling times out, a JaqpotPredictionTimeoutException is raised.
-        Args:
-            response (requests.Response): The HTTP response object containing the dataset location in the headers.
-        Returns:
-            dict: The dataset retrieved from the server.
-        Raises:
-            JaqpotPredictionTimeoutException: If polling times out while waiting for the dataset to be ready.
-        """
+        """Retrieve a dataset by polling until it is ready or a timeout occurs.
 
+        Parameters
+        ----------
+        response : requests.Response
+            The HTTP response object containing the dataset location in the headers.
+
+        Returns
+        -------
+        dict
+            The dataset retrieved from the server.
+
+        Raises
+        ------
+        JaqpotPredictionTimeoutException
+            If polling times out while waiting for the dataset to be ready.
+        """
         dataset_location = response.headers["Location"]
         dataset_id = int(dataset_location.split("/")[-1])
         try:
@@ -259,43 +358,58 @@ class JaqpotApiClient:
         return dataset
 
     def qsartoolbox_calculator_predict_sync(self, smiles, calculator_guid):
-        """
-        Synchronously predicts using the QSAR Toolbox calculator.
-        Args:
-            smiles (str): The SMILES string representing the chemical structure.
-            calculator_guid (str): The unique identifier for the QSAR Toolbox calculator.
-        Returns:
-            dict: The prediction result from the QSAR Toolbox calculator.
-        """
+        """Synchronously predict using the QSAR Toolbox calculator.
 
+        Parameters
+        ----------
+        smiles : str
+            The SMILES string representing the chemical structure.
+        calculator_guid : str
+            The unique identifier for the QSAR Toolbox calculator.
+
+        Returns
+        -------
+        dict
+            The prediction result from the QSAR Toolbox calculator.
+        """
         dataset = [{"smiles": smiles, "calculatorGuid": calculator_guid}]
         prediction = self.predict_sync(QSARTOOLBOX_CALCULATOR_MODEL_ID, dataset)
         return prediction
 
     def qsartoolbox_qsar_model_predict_sync(self, smiles, qsar_guid):
-        """
-        Synchronously predicts QSAR model results using the QSAR Toolbox.
-        Args:
-            smiles (str): The SMILES string representing the chemical structure.
-            qsar_guid (str): The unique identifier for the QSAR model.
-        Returns:
-            dict: The prediction results from the QSAR model.
-        """
+        """Synchronously predict QSAR model results using the QSAR Toolbox.
 
+        Parameters
+        ----------
+        smiles : str
+            The SMILES string representing the chemical structure.
+        qsar_guid : str
+            The unique identifier for the QSAR model.
+
+        Returns
+        -------
+        dict
+            The prediction results from the QSAR model.
+        """
         dataset = [{"smiles": smiles, "qsarGuid": qsar_guid}]
         prediction = self.predict_sync(QSARTOOLBOX_MODEL_MODEL_ID, dataset)
         return prediction
 
     def qsartoolbox_profiler_predict_sync(self, smiles, profiler_guid):
-        """
-        Predicts the QSAR toolbox profiler synchronously.
-        Parameters:
-        smiles (str): The SMILES string representing the chemical structure.
-        profiler_guid (str): The unique identifier for the profiler.
-        Returns:
-        dict: The prediction result from the QSAR profiler model.
-        """
+        """Synchronously predict using the QSAR Toolbox profiler.
 
+        Parameters
+        ----------
+        smiles : str
+            The SMILES string representing the chemical structure.
+        profiler_guid : str
+            The unique identifier for the profiler.
+
+        Returns
+        -------
+        dict
+            The prediction result from the QSAR profiler model.
+        """
         dataset = [{"smiles": smiles, "profilerGuid": profiler_guid}]
         prediction = self.predict_sync(QSAR_PROFILER_MODEL_ID, dataset)
         return prediction

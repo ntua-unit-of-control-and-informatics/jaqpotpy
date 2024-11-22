@@ -1007,8 +1007,8 @@ class TestModels(unittest.TestCase):
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
         validation_dataset = dataset
 
+        jaqpot_model.cross_validate(dataset, n_splits=2, random_seed=1311)
         jaqpot_model.evaluate(validation_dataset)
-        jaqpot_model.cross_validate(dataset, n_splits=2)
 
         assert np.allclose(
             jaqpot_model.train_scores["r2"], 0.86953, atol=1e-02
@@ -1040,8 +1040,8 @@ class TestModels(unittest.TestCase):
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
 
+        jaqpot_model.cross_validate(dataset, n_splits=2, random_seed=1311)
         jaqpot_model.evaluate(dataset)
-        jaqpot_model.cross_validate(dataset, n_splits=2)
 
         assert np.allclose(
             jaqpot_model.train_scores["accuracy"], 1, atol=1e-02
@@ -1073,8 +1073,8 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=pre
         )
         jaqpot_model.fit()
+        jaqpot_model.cross_validate(dataset, n_splits=2, random_seed=1311)
         jaqpot_model.evaluate(dataset)
-        jaqpot_model.cross_validate(dataset, n_splits=2)
 
         assert np.allclose(
             jaqpot_model.train_scores[dataset.y_cols[0]]["r2"], 0.8698, atol=1e-02
@@ -1193,8 +1193,8 @@ class TestModels(unittest.TestCase):
         # skl_predictions = jaqpot_model.predict(validation_dataset)
         # onnx_predictions = jaqpot_model.predict_onnx(validation_dataset)
         train_scores = jaqpot_model.train_scores
+        jaqpot_model.cross_validate(dataset=dataset, n_splits=3, random_seed=1311)
         evaluation_scores = jaqpot_model.evaluate(dataset=validation_dataset)
-        jaqpot_model.cross_validate(dataset=dataset, n_splits=3)
         cross_val_scores = jaqpot_model.cross_val_scores
 
         assert np.array_equal(
