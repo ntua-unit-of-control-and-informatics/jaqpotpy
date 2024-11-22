@@ -18,18 +18,21 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
-from typing import Any, ClassVar, Dict, List
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
+from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
 
-class FeaturePossibleValue(BaseModel):
+class UserSettings(BaseModel):
     """
-    FeaturePossibleValue
+    UserSettings
     """ # noqa: E501
-    value: StrictStr
-    description: StrictStr
-    __properties: ClassVar[List[str]] = ["value", "description"]
+    id: Optional[StrictInt] = None
+    dark_mode: Optional[StrictBool] = Field(default=False, alias="darkMode")
+    collapse_sidebar: Optional[StrictBool] = Field(default=False, alias="collapseSidebar")
+    is_admin: Optional[StrictBool] = Field(default=None, alias="isAdmin")
+    is_upci: Optional[StrictBool] = Field(default=None, alias="isUpci")
+    __properties: ClassVar[List[str]] = ["id", "darkMode", "collapseSidebar", "isAdmin", "isUpci"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -49,7 +52,7 @@ class FeaturePossibleValue(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of FeaturePossibleValue from a JSON string"""
+        """Create an instance of UserSettings from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -61,8 +64,12 @@ class FeaturePossibleValue(BaseModel):
         * `None` is only added to the output dict for nullable fields that
           were set at model initialization. Other fields with value `None`
           are ignored.
+        * OpenAPI `readOnly` fields are excluded.
+        * OpenAPI `readOnly` fields are excluded.
         """
         excluded_fields: Set[str] = set([
+            "is_admin",
+            "is_upci",
         ])
 
         _dict = self.model_dump(
@@ -74,7 +81,7 @@ class FeaturePossibleValue(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of FeaturePossibleValue from a dict"""
+        """Create an instance of UserSettings from a dict"""
         if obj is None:
             return None
 
@@ -82,8 +89,11 @@ class FeaturePossibleValue(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "value": obj.get("value"),
-            "description": obj.get("description")
+            "id": obj.get("id"),
+            "darkMode": obj.get("darkMode") if obj.get("darkMode") is not None else False,
+            "collapseSidebar": obj.get("collapseSidebar") if obj.get("collapseSidebar") is not None else False,
+            "isAdmin": obj.get("isAdmin"),
+            "isUpci": obj.get("isUpci")
         })
         return _obj
 

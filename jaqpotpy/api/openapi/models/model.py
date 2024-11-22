@@ -19,7 +19,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictBytes, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing_extensions import Annotated
 from jaqpotpy.api.openapi.models.doa import Doa
@@ -30,6 +30,7 @@ from jaqpotpy.api.openapi.models.model_task import ModelTask
 from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.api.openapi.models.organization import Organization
+from jaqpotpy.api.openapi.models.r_pbpk_config import RPbpkConfig
 from jaqpotpy.api.openapi.models.transformer import Transformer
 from jaqpotpy.api.openapi.models.user import User
 from typing import Optional, Set
@@ -54,8 +55,8 @@ class Model(BaseModel):
     torch_config: Optional[Dict[str, Any]] = Field(default=None, alias="torchConfig")
     preprocessors: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
     featurizers: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
-    raw_preprocessor: Optional[Union[StrictBytes, StrictStr]] = Field(default=None, description="A base64 representation of the raw preprocessor.", alias="rawPreprocessor")
-    raw_model: Union[StrictBytes, StrictStr] = Field(description="A base64 representation of the raw model.", alias="rawModel")
+    raw_preprocessor: Optional[Union[Annotated[bytes, Field(strict=True, max_length=10000000)], Annotated[str, Field(strict=True, max_length=10000000)]]] = Field(default=None, description="A base64 representation of the raw preprocessor.", alias="rawPreprocessor")
+    raw_model: Union[Annotated[bytes, Field(strict=True, max_length=10000000)], Annotated[str, Field(strict=True, max_length=10000000)]] = Field(description="A base64 representation of the raw model.", alias="rawModel")
     creator: Optional[User] = None
     can_edit: Optional[StrictBool] = Field(default=None, description="If the current user can edit the model", alias="canEdit")
     is_admin: Optional[StrictBool] = Field(default=None, alias="isAdmin")
@@ -63,9 +64,10 @@ class Model(BaseModel):
     tags: Optional[Annotated[str, Field(strict=True, max_length=1000)]] = None
     legacy_prediction_service: Optional[StrictStr] = Field(default=None, alias="legacyPredictionService")
     scores: Optional[ModelScores] = None
+    r_pbpk_config: Optional[RPbpkConfig] = Field(default=None, alias="rPbpkConfig")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "torchConfig", "preprocessors", "featurizers", "rawPreprocessor", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "torchConfig", "preprocessors", "featurizers", "rawPreprocessor", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "rPbpkConfig", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -161,6 +163,9 @@ class Model(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of scores
         if self.scores:
             _dict['scores'] = self.scores.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of r_pbpk_config
+        if self.r_pbpk_config:
+            _dict['rPbpkConfig'] = self.r_pbpk_config.to_dict()
         return _dict
 
     @classmethod
@@ -197,6 +202,7 @@ class Model(BaseModel):
             "tags": obj.get("tags"),
             "legacyPredictionService": obj.get("legacyPredictionService"),
             "scores": ModelScores.from_dict(obj["scores"]) if obj.get("scores") is not None else None,
+            "rPbpkConfig": RPbpkConfig.from_dict(obj["rPbpkConfig"]) if obj.get("rPbpkConfig") is not None else None,
             "createdAt": obj.get("createdAt"),
             "updatedAt": obj.get("updatedAt")
         })
