@@ -19,8 +19,9 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field, StrictBytes, StrictInt, StrictStr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing_extensions import Annotated
 from jaqpotpy.api.openapi.models.dataset_type import DatasetType
 from typing import Optional, Set
 from typing_extensions import Self
@@ -31,7 +32,7 @@ class DatasetCSV(BaseModel):
     """ # noqa: E501
     id: Optional[StrictInt] = None
     type: DatasetType
-    input_file: Union[StrictBytes, StrictStr] = Field(description="A base64 representation in CSV format of the input values.", alias="inputFile")
+    input_file: Union[Annotated[bytes, Field(strict=True, max_length=10000000)], Annotated[str, Field(strict=True, max_length=10000000)]] = Field(description="A base64 representation in CSV format of the input values.", alias="inputFile")
     values: Optional[List[Any]] = None
     status: Optional[StrictStr] = None
     failure_reason: Optional[StrictStr] = Field(default=None, alias="failureReason")

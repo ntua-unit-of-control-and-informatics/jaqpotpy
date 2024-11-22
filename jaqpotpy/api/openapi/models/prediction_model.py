@@ -44,9 +44,10 @@ class PredictionModel(BaseModel):
     featurizers: Optional[List[Transformer]] = Field(default=None, description="List of featurizer configurations applied to the model")
     preprocessors: Optional[List[Transformer]] = Field(default=None, description="List of preprocessor configurations applied to the model")
     torch_config: Optional[Dict[str, Any]] = Field(default=None, description="Torch configuration settings, optional", alias="torchConfig")
+    r_pbpk_ode_solver: Optional[StrictStr] = Field(default=None, alias="rPbpkOdeSolver")
     legacy_additional_info: Optional[Dict[str, Any]] = Field(default=None, description="Legacy additional information settings, optional", alias="legacyAdditionalInfo")
     legacy_prediction_service: Optional[StrictStr] = Field(default=None, description="Legacy prediction service information, if available", alias="legacyPredictionService")
-    __properties: ClassVar[List[str]] = ["id", "dependentFeatures", "independentFeatures", "type", "rawModel", "rawPreprocessor", "doas", "selectedFeatures", "task", "featurizers", "preprocessors", "torchConfig", "legacyAdditionalInfo", "legacyPredictionService"]
+    __properties: ClassVar[List[str]] = ["id", "dependentFeatures", "independentFeatures", "type", "rawModel", "rawPreprocessor", "doas", "selectedFeatures", "task", "featurizers", "preprocessors", "torchConfig", "rPbpkOdeSolver", "legacyAdditionalInfo", "legacyPredictionService"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -166,6 +167,7 @@ class PredictionModel(BaseModel):
             "featurizers": [Transformer.from_dict(_item) for _item in obj["featurizers"]] if obj.get("featurizers") is not None else None,
             "preprocessors": [Transformer.from_dict(_item) for _item in obj["preprocessors"]] if obj.get("preprocessors") is not None else None,
             "torchConfig": obj.get("torchConfig"),
+            "rPbpkOdeSolver": obj.get("rPbpkOdeSolver"),
             "legacyAdditionalInfo": obj.get("legacyAdditionalInfo"),
             "legacyPredictionService": obj.get("legacyPredictionService")
         })

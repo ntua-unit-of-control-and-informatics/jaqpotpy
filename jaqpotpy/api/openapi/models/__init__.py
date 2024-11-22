@@ -60,9 +60,11 @@ from jaqpotpy.api.openapi.models.prediction_doa import PredictionDoa
 from jaqpotpy.api.openapi.models.prediction_model import PredictionModel
 from jaqpotpy.api.openapi.models.prediction_request import PredictionRequest
 from jaqpotpy.api.openapi.models.prediction_response import PredictionResponse
+from jaqpotpy.api.openapi.models.r_pbpk_config import RPbpkConfig
 from jaqpotpy.api.openapi.models.regression_scores import RegressionScores
 from jaqpotpy.api.openapi.models.scores import Scores
 from jaqpotpy.api.openapi.models.transformer import Transformer
 from jaqpotpy.api.openapi.models.update_api_key200_response import UpdateApiKey200Response
 from jaqpotpy.api.openapi.models.update_api_key_request import UpdateApiKeyRequest
 from jaqpotpy.api.openapi.models.user import User
+from jaqpotpy.api.openapi.models.user_settings import UserSettings
