@@ -1,22 +1,22 @@
 import torch.nn as nn
-from typing import List
 import torch
 import torch.nn.functional as F
 import base64
 import io
 
 
-def lstm_to_onnx(torch_model, dataset):
+def lstm_to_onnx(torch_model, featurizer):
     if torch_model.training:
         torch_model.eval()
     torch_model = torch_model.cpu()
+    dummy_smiles = ["CCC"]
+    dummy_input = featurizer.transform(dummy_smiles)
     buffer = io.BytesIO()
     torch.onnx.export(
         torch_model,
-        args=(dataset.X),
+        args=(dummy_input),
         f=buffer,
-        input_names=["batch", "sequence", "features"],
-        dynamic_axes={"batch": [0]},
+        input_names=["sequence"],
     )
     onnx_model_bytes = buffer.getvalue()
     buffer.close()
