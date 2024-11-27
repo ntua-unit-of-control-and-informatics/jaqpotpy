@@ -176,3 +176,35 @@ class SmilesVectorizer(object):
                 smile = smile.strip(self.startchar + self.endchar)
             smiles.append(smile)
         return smiles
+
+    def get_dict(self):
+        """
+        Returns a dictionary representation of the featurizer's settings and feature sets.
+
+        Returns:
+            dict: Featurizer configuration and feature sets.
+        """
+        config_dict = {
+            "charset": self.charset,
+            "pad": self.pad,
+            "maxlength": self.maxlength,
+            "startchar": self.startchar,
+            "endchar": self.endchar,
+            "unknownchar": self.unknownchar,
+        }
+        return config_dict
+
+    def load_dict(self, feat_dict):
+        """
+        Loads settings and feature sets from a dictionary.
+
+        Args:
+            feat_dict (dict): Dictionary containing featurizer settings and feature sets.
+        """
+        self.charset = feat_dict["charset"]
+        self.pad = feat_dict["pad"]
+        self.maxlength = feat_dict["maxlength"]
+        self.startchar = feat_dict["startchar"]
+        self.endchar = feat_dict["endchar"]
+        self.unknownchar = feat_dict["unknownchar"]
+        return self
