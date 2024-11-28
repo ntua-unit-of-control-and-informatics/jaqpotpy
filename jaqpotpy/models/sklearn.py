@@ -231,7 +231,7 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.CATEGORICAL
                 categories = self.dataset.df[feature["key"]].unique()
                 feature["possible_values"] = list(
-                    FeaturePossibleValue(key=category, value=category)
+                    FeaturePossibleValue(value=category, description=category)
                     for category in categories
                 )
 
