@@ -18,23 +18,22 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from jaqpotpy.api.openapi.models.organization_user_association_type import OrganizationUserAssociationType
 from typing import Optional, Set
 from typing_extensions import Self
 
-class OrganizationUser(BaseModel):
+class UserSettings(BaseModel):
     """
-    OrganizationUser
+    UserSettings
     """ # noqa: E501
     id: Optional[StrictInt] = None
-    user_id: StrictStr = Field(alias="userId")
-    username: Optional[StrictStr] = None
-    email: Optional[StrictStr] = None
+    dark_mode: Optional[StrictBool] = Field(default=False, alias="darkMode")
+    collapse_sidebar: Optional[StrictBool] = Field(default=False, alias="collapseSidebar")
     avatar_url: Optional[StrictStr] = Field(default=None, alias="avatarUrl")
-    association_type: OrganizationUserAssociationType = Field(alias="associationType")
-    __properties: ClassVar[List[str]] = ["id", "userId", "username", "email", "avatarUrl", "associationType"]
+    is_admin: Optional[StrictBool] = Field(default=None, alias="isAdmin")
+    is_upci_user: Optional[StrictBool] = Field(default=None, alias="isUpciUser")
+    __properties: ClassVar[List[str]] = ["id", "darkMode", "collapseSidebar", "avatarUrl", "isAdmin", "isUpciUser"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -54,7 +53,7 @@ class OrganizationUser(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of OrganizationUser from a JSON string"""
+        """Create an instance of UserSettings from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -66,8 +65,12 @@ class OrganizationUser(BaseModel):
         * `None` is only added to the output dict for nullable fields that
           were set at model initialization. Other fields with value `None`
           are ignored.
+        * OpenAPI `readOnly` fields are excluded.
+        * OpenAPI `readOnly` fields are excluded.
         """
         excluded_fields: Set[str] = set([
+            "is_admin",
+            "is_upci_user",
         ])
 
         _dict = self.model_dump(
@@ -79,7 +82,7 @@ class OrganizationUser(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of OrganizationUser from a dict"""
+        """Create an instance of UserSettings from a dict"""
         if obj is None:
             return None
 
@@ -88,11 +91,11 @@ class OrganizationUser(BaseModel):
 
         _obj = cls.model_validate({
             "id": obj.get("id"),
-            "userId": obj.get("userId"),
-            "username": obj.get("username"),
-            "email": obj.get("email"),
+            "darkMode": obj.get("darkMode") if obj.get("darkMode") is not None else False,
+            "collapseSidebar": obj.get("collapseSidebar") if obj.get("collapseSidebar") is not None else False,
             "avatarUrl": obj.get("avatarUrl"),
-            "associationType": obj.get("associationType")
+            "isAdmin": obj.get("isAdmin"),
+            "isUpciUser": obj.get("isUpciUser")
         })
         return _obj
 

@@ -27,9 +27,9 @@ class FeaturePossibleValue(BaseModel):
     """
     FeaturePossibleValue
     """ # noqa: E501
-    key: StrictStr
     value: StrictStr
-    __properties: ClassVar[List[str]] = ["key", "value"]
+    description: StrictStr
+    __properties: ClassVar[List[str]] = ["value", "description"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -82,8 +82,8 @@ class FeaturePossibleValue(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "key": obj.get("key"),
-            "value": obj.get("value")
+            "value": obj.get("value"),
+            "description": obj.get("description")
         })
         return _obj
 
