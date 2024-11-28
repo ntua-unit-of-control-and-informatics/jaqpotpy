@@ -72,7 +72,7 @@ class XGBoostModel(SklearnModel):
         self.initial_types = None
         self.onnx_preprocessor = None
         self.onnx_model = None
-        self.type = ModelType("SKLEARN")
+        self.type = ModelType.SKLEARN_ONNX
         self.independentFeatures = None
         self.dependentFeatures = None
         self.featurizers = []

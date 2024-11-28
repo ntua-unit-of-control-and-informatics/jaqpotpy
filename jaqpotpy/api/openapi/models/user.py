@@ -33,7 +33,9 @@ class User(BaseModel):
     last_name: Optional[StrictStr] = Field(default=None, alias="lastName")
     email: Optional[StrictStr] = None
     email_verified: Optional[StrictBool] = Field(default=None, alias="emailVerified")
-    __properties: ClassVar[List[str]] = ["id", "username", "firstName", "lastName", "email", "emailVerified"]
+    avatar_url: Optional[StrictStr] = Field(default=None, alias="avatarUrl")
+    can_edit: Optional[StrictBool] = Field(default=None, alias="canEdit")
+    __properties: ClassVar[List[str]] = ["id", "username", "firstName", "lastName", "email", "emailVerified", "avatarUrl", "canEdit"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -91,7 +93,9 @@ class User(BaseModel):
             "firstName": obj.get("firstName"),
             "lastName": obj.get("lastName"),
             "email": obj.get("email"),
-            "emailVerified": obj.get("emailVerified")
+            "emailVerified": obj.get("emailVerified"),
+            "avatarUrl": obj.get("avatarUrl"),
+            "canEdit": obj.get("canEdit")
         })
         return _obj
 

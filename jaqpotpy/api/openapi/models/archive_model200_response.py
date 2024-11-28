@@ -18,23 +18,19 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
-from jaqpotpy.api.openapi.models.organization_user_association_type import OrganizationUserAssociationType
 from typing import Optional, Set
 from typing_extensions import Self
 
-class OrganizationUser(BaseModel):
+class ArchiveModel200Response(BaseModel):
     """
-    OrganizationUser
+    ArchiveModel200Response
     """ # noqa: E501
     id: Optional[StrictInt] = None
-    user_id: StrictStr = Field(alias="userId")
-    username: Optional[StrictStr] = None
-    email: Optional[StrictStr] = None
-    avatar_url: Optional[StrictStr] = Field(default=None, alias="avatarUrl")
-    association_type: OrganizationUserAssociationType = Field(alias="associationType")
-    __properties: ClassVar[List[str]] = ["id", "userId", "username", "email", "avatarUrl", "associationType"]
+    archived_at: Optional[datetime] = Field(default=None, description="Timestamp when the model was archived", alias="archivedAt")
+    __properties: ClassVar[List[str]] = ["id", "archivedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -54,7 +50,7 @@ class OrganizationUser(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of OrganizationUser from a JSON string"""
+        """Create an instance of ArchiveModel200Response from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -79,7 +75,7 @@ class OrganizationUser(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of OrganizationUser from a dict"""
+        """Create an instance of ArchiveModel200Response from a dict"""
         if obj is None:
             return None
 
@@ -88,11 +84,7 @@ class OrganizationUser(BaseModel):
 
         _obj = cls.model_validate({
             "id": obj.get("id"),
-            "userId": obj.get("userId"),
-            "username": obj.get("username"),
-            "email": obj.get("email"),
-            "avatarUrl": obj.get("avatarUrl"),
-            "associationType": obj.get("associationType")
+            "archivedAt": obj.get("archivedAt")
         })
         return _obj
 
