@@ -1,11 +1,17 @@
 from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
-from typing import Iterable, Any, Union
+from typing import Union, Iterable, Any, Callable
+from scipy.stats import chi2
+from scipy.spatial.distance import pdist, squareform, cdist
+from sklearn.metrics.pairwise import rbf_kernel
 
 from jaqpotpy.api.openapi.models.bounding_box_doa import BoundingBoxDoa
 from jaqpotpy.api.openapi.models.leverage_doa import LeverageDoa
 from jaqpotpy.api.openapi.models.mean_var_doa import MeanVarDoa
+from jaqpotpy.api.openapi.models.mahalanobis_doa import MahalanobisDoa
+from jaqpotpy.api.openapi.models.kernel_based_doa import KernelBasedDoa
+from jaqpotpy.api.openapi.models.city_block_doa import CityBlockDoa
 
 
 class DOA(ABC):
@@ -79,16 +85,16 @@ class DOA(ABC):
         """
         if isinstance(data, pd.DataFrame):
             return data.to_numpy()
-        else:
+        elif isinstance(data, np.ndarray):
             return data
+        else:
+            raise ValueError("Input must be a NumPy array or Pandas DataFrame")
 
 
 class Leverage(DOA):
     """Leverage class for Domain of Applicability (DOA) calculation using the leverage method.
 
     Attributes:
-        _doa (list): List to store leverage values.
-        _in_doa (list): List to store boolean values indicating if data points are within DOA.
         _data (Union[np.array, pd.DataFrame]): Input data used for DOA calculation.
         _doa_matrix (np.array): Matrix used for leverage calculation.
         _h_star (float): Threshold value for leverage.
@@ -109,9 +115,6 @@ class Leverage(DOA):
         _validate_input(data: Union[np.array, pd.DataFrame]): Validates and converts input data to numpy array if necessary.
         get_attributes(): Returns the attributes of the leverage DOA.
     """
-
-    _doa = []
-    _in_doa = []
 
     @property
     def __name__(self):
@@ -341,23 +344,342 @@ class BoundingBox(DOA):
         """
         new_data = self._validate_input(new_data)
         doaAll = []
-        in_doa = True
         for nd in new_data:
+            out_of_doa_count = 0
             for index, feature in enumerate(nd):
                 bounds = self.bounding_box[index]
-                bounds_data = [bounds[0], bounds[1]]
-                if feature < bounds_data[0] or feature > bounds_data[1]:
-                    in_doa = False
-                    break
-            out_of_doa_count = sum(
-                1
-                for feature in nd
-                if feature < bounds_data[0] or feature > bounds_data[1]
-            )
+                if feature < bounds[0] or feature > bounds[1]:
+                    out_of_doa_count += 1
             out_of_doa_percentage = (out_of_doa_count / len(nd)) * 100
+            in_doa = True if out_of_doa_count == 0 else False
             doa = {"outOfDoaPercentage": out_of_doa_percentage, "inDoa": in_doa}
             doaAll.append(doa)
         return doaAll
 
     def get_attributes(self):
         return BoundingBoxDoa(bounding_box=self.bounding_box).to_dict()
+
+
+class Mahalanobis(DOA):
+    """Mahalanobis Distance Domain of Applicability (DOA) calculation class.
+
+    Attributes:
+        _data (Union[np.array, pd.DataFrame]): Input data used for DOA calculation.
+        _mean_vector (np.array): Mean vector of the training data.
+        _cov_matrix (np.array): Covariance matrix of the training data.
+        _inv_cov_matrix (np.array): Inverse of the covariance matrix.
+        _threshold (float): Threshold value for Mahalanobis distance.
+        doa_attributes (MahalanobisDoA): Attributes of the Mahalanobis DOA.
+
+    Methods:
+        __init__(): Initializes the Mahalanobis DOA class.
+        fit(X: Union[np.array, pd.DataFrame]): Fits the model using the input data.
+        predict(new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]: Predicts if new data points are within DOA.
+        calculate_distance(sample: np.array) -> float: Calculates Mahalanobis distance for a sample.
+        calculate_threshold(): Calculates the Mahalanobis distance threshold.
+    """
+
+    @property
+    def __name__(self):
+        """Name of the DOA method."""
+        return "MAHALANOBIS"
+
+    def __init__(self, chi2_quantile=0.95) -> None:
+        """Initializes the Mahalanobis DOA class."""
+        super().__init__()
+        if chi2_quantile < 0 or chi2_quantile > 1:
+            raise ValueError(
+                "The chi-squared quantile cannot be less than 0 or greater than 1."
+            )
+
+        self.chi2_quantile = chi2_quantile
+        self._data = None
+        self._mean_vector = None
+        self._cov_matrix = None
+        self._inv_cov_matrix = None
+        self._threshold = None
+        self.doa_attributes = None
+
+    def fit(self, X: Union[np.array, pd.DataFrame]):
+        """
+        Fits the model using the input data.
+
+        Args:
+            X (Union[np.array, pd.DataFrame]): Input training data.
+        """
+        self._data = self._validate_input(X)
+
+        self._mean_vector = np.mean(self._data, axis=0)
+        self._cov_matrix = np.cov(self._data, rowvar=False)
+        self._inv_cov_matrix = np.linalg.inv(self._cov_matrix)
+        self.calculate_threshold()
+        self.doa_attributes = self.get_attributes()
+
+    def calculate_distance(self, sample: np.array) -> float:
+        """
+        Calculates Mahalanobis distance for a sample.
+
+        Args:
+            sample (np.array): Input sample to calculate distance for.
+
+        Returns:
+            float: Mahalanobis distance of the sample.
+        """
+        diff = sample - self._mean_vector
+        mahalanobis_dist = np.sqrt(diff.dot(self._inv_cov_matrix).dot(diff))
+        return mahalanobis_dist
+
+    def calculate_threshold(self):
+        """
+        Calculates the Mahalanobis distance threshold using chi-square distribution.
+        Uses 99% confidence level by default.
+        """
+        self._threshold = np.sqrt(
+            chi2.ppf(self.chi2_quantile, df=(self._data.shape[1] - 1))
+        )
+
+    def predict(self, new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]:
+        """
+        Predicts if new data points are within DOA.
+
+        Args:
+            new_data (Union[np.array, pd.DataFrame]): New data points to be predicted.
+
+        Returns:
+            Iterable[Any]: List of dictionaries containing the Mahalanobis distance,
+            threshold, and a boolean indicating if the data point is within DOA.
+        """
+        new_data = self._validate_input(new_data)
+        doa_results = []
+
+        for nd in new_data:
+            distance = self.calculate_distance(nd)
+            in_ad = distance <= self._threshold
+
+            doa = {
+                "mahalanobisDistance": distance,
+                "threshold": self._threshold,
+                "inDoa": in_ad,
+            }
+            doa_results.append(doa)
+
+        return doa_results
+
+    def get_attributes(self):
+        """
+        Returns the attributes of the Mahalanobis DOA.
+
+        Returns:
+            MahalanobisDOAAttributes: Attributes of the Mahalanobis DOA.
+        """
+        mahalanobis_data = MahalanobisDoa(
+            mean_vector=self._mean_vector,
+            cov_matrix=self._cov_matrix,
+            threshold=self._threshold,
+        )
+        return mahalanobis_data.to_dict()
+
+
+class KernelBased(DOA):
+    """Enhanced Kernel-based Distance of Applicability (DOA) calculation class.
+
+    Supports multiple kernel types and more flexible threshold calculation.
+    """
+
+    @property
+    def __name__(self):
+        """Name of the DOA method."""
+        return "KERNEL_BASED"
+
+    def __init__(
+        self,
+        kernel_type="gaussian",
+        threshold_method="percentile",
+        threshold_percentile=5,
+        sigma=None,
+        gamma=None,
+    ):
+        """
+        Initialize the Kernel DOA with configurable parameters.
+
+        Args:
+            kernel_type (str): Type of kernel to use.
+                Must be 'gaussian', 'rbf', or 'laplacian'.
+            threshold_method (str): Method for threshold calculation.
+                Must be 'percentile' or 'mean_std'.
+            threshold_percentile (float): Percentile for threshold if using
+                percentile method.
+            sigma (float, optional): Kernel width parameter. Must be None or positive.
+
+            gamma (float, optional): rbf gamma
+
+        Raises:
+            ValueError: If parameters do not meet specified constraints.
+        """
+        valid_kernel_types = ["gaussian", "rbf", "laplacian"]
+        if kernel_type not in valid_kernel_types:
+            raise ValueError(
+                f"Invalid kernel type. Must be one of {valid_kernel_types}"
+            )
+        self._kernel_type = kernel_type
+
+        valid_threshold_methods = ["percentile", "mean_std"]
+        if threshold_method not in valid_threshold_methods:
+            raise ValueError(
+                f"Invalid threshold method. Must be one of {valid_threshold_methods}"
+            )
+        self._threshold_method = threshold_method
+
+        if not (0 < threshold_percentile < 100):
+            raise ValueError("Threshold percentile must be between 0 and 100")
+        self._threshold_percentile = threshold_percentile
+
+        if sigma is not None and sigma <= 0:
+            raise ValueError("Sigma must be None or a positive number")
+        self._sigma = sigma
+        self._gamma = gamma
+
+        self._data = None
+        self._kernel_distances = None
+        self._threshold = None
+        self.doa_attributes = None
+
+    def _select_kernel(self) -> Callable:
+        """
+        Select and return the appropriate kernel function.
+
+        Returns:
+            Callable: Kernel distance calculation function.
+        """
+        kernel_map = {
+            "gaussian": self._gaussian_kernel,
+            "rbf": self._rbf_kernel,
+            "laplacian": self._laplacian_kernel,
+        }
+        return kernel_map.get(self._kernel_type, self._gaussian_kernel)
+
+    def _gaussian_kernel(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+        """
+        Calculate Gaussian kernel distances using Euclidean distance.
+
+        Args:
+            X (np.ndarray): First set of points.
+            Y (np.ndarray): Second set of points.
+            sigma (float, optional): Kernel width parameter.
+
+        Returns:
+            np.ndarray: Gaussian kernel distance matrix.
+        """
+
+        dist_matrix = cdist(X, Y, metric="euclidean")
+        return np.exp(-(dist_matrix**2) / (2 * self._sigma**2))
+
+    def _rbf_kernel(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+        """
+        Radial Basis Function kernel calculation with custom gamma.
+
+        Args:
+            X (np.ndarray): First set of points.
+            Y (np.ndarray): Second set of points.
+            sigma (float, optional): Kernel width parameter.
+
+        Returns:
+            np.ndarray: RBF kernel matrix.
+        """
+        gamma = self._gamma if self._gamma is not None else 1 / (2 * self._sigma**2)
+        dist_matrix = cdist(X, Y, metric="euclidean")
+        return np.exp(-gamma * dist_matrix**2)
+
+    def _laplacian_kernel(self, X: np.ndarray, Y: np.ndarray) -> np.ndarray:
+        """
+        Laplacian kernel calculation using Manhattan distance.
+
+        Args:
+            X (np.ndarray): First set of points.
+            Y (np.ndarray): Second set of points.
+            sigma (float, optional): Kernel width parameter.
+
+        Returns:
+            np.ndarray: Laplacian kernel matrix.
+        """
+        dist_matrix = cdist(X, Y, metric="cityblock")
+        return np.exp(-dist_matrix / self._sigma)
+
+    def _calculate_threshold(self, kernel_distances: np.ndarray) -> float:
+        """
+        Calculate threshold based on selected method.
+
+        Args:
+            kernel_distances (np.ndarray): Kernel distance matrix.
+
+        Returns:
+            float: Calculated threshold value.
+        """
+        if self._threshold_method == "percentile":
+            return np.percentile(kernel_distances, self._threshold_percentile)
+        elif self._threshold_method == "mean_std":
+            return np.mean(kernel_distances) + 2 * np.std(kernel_distances)
+        else:
+            return np.mean(kernel_distances) * 3  # Default fallback
+
+    def fit(self, X: Union[np.ndarray, pd.DataFrame]):
+        """
+        Fit the kernel DOA model.
+
+        Args:
+            X (Union[np.ndarray, pd.DataFrame]): Training data.
+        """
+        self._data = self._validate_input(X)
+        if self._sigma is None:
+            self._sigma = np.median(pdist(self._data))
+        # Select and apply kernel function
+        kernel_func = self._select_kernel()
+        self._kernel_distances = kernel_func(self._data, self._data)
+
+        # Calculate threshold
+        self._threshold = self._calculate_threshold(self._kernel_distances)
+        self.doa_attributes = self.get_attributes()
+
+    def predict(self, new_data: Union[np.ndarray, pd.DataFrame]) -> Iterable[dict]:
+        """
+        Predict DOA for new data points.
+
+        Args:
+            new_data (Union[np.ndarray, pd.DataFrame]): Data to predict.
+
+        Returns:
+            Iterable[dict]: Prediction results for each data point.
+        """
+        new_data = self._validate_input(new_data)
+        kernel_func = self._select_kernel()
+
+        doa_results = []
+        for point in new_data:
+            # Compute kernel distances between the new point and all training data points
+            point_distances = [
+                kernel_func(point.reshape(1, -1), self._data[i].reshape(1, -1))[0, 0]
+                for i in range(len(self._data))
+            ]
+
+            # Calculate average kernel distance
+            avg_distance = np.mean(point_distances)
+
+            doa_results.append(
+                {
+                    "kernelDistance": avg_distance,
+                    "threshold": self._threshold,
+                    "inDoa": avg_distance >= self._threshold,
+                }
+            )
+
+        return doa_results
+
+    def get_attributes(self):
+        """
+        Returns the attributes of the Kernel DOA.
+
+        Returns:
+            KernelDOAAttributes: Attributes of the Kernel DOA.
+        """
+        kernel_data = KernelBasedDoa(sigma=self._sigma, threshold=self._threshold)
+        return kernel_data.to_dict()
