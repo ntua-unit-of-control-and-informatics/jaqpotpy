@@ -3,8 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import Union, Iterable, Any, Callable
 from scipy.stats import chi2
-from scipy.spatial.distance import pdist, squareform, cdist
-from sklearn.metrics.pairwise import rbf_kernel
+from scipy.spatial.distance import pdist, cdist
 
 from jaqpotpy.api.openapi.models.bounding_box_doa import BoundingBoxDoa
 from jaqpotpy.api.openapi.models.leverage_doa import LeverageDoa
@@ -411,6 +410,8 @@ class Mahalanobis(DOA):
 
         self._mean_vector = np.mean(self._data, axis=0)
         self._cov_matrix = np.cov(self._data, rowvar=False)
+        epsilon = 1e-6
+        self._cov_matrix += np.eye(self._cov_matrix.shape[0]) * epsilon
         self._inv_cov_matrix = np.linalg.inv(self._cov_matrix)
         self.calculate_threshold()
         self.doa_attributes = self.get_attributes()
