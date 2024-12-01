@@ -4,7 +4,14 @@ from sklearn.datasets import make_regression
 from jaqpotpy.datasets import JaqpotpyDataset
 from sklearn.linear_model import LinearRegression
 from jaqpotpy.models.sklearn import SklearnModel
-from jaqpotpy.doa import Leverage, BoundingBox, MeanVar, Mahalanobis, KernelBased
+from jaqpotpy.doa import (
+    Leverage,
+    BoundingBox,
+    MeanVar,
+    Mahalanobis,
+    KernelBased,
+    CityBlock,
+)
 
 # Generate a small regression dataset
 # This creates a dataset with 100 samples, each having 4 features and some noise.
@@ -30,7 +37,14 @@ dataset = JaqpotpyDataset(
 jaqpot_model = SklearnModel(
     dataset=dataset,
     model=LinearRegression(),
-    doa=[Leverage(), BoundingBox(), MeanVar(), Mahalanobis(), KernelBased()],
+    doa=[
+        Leverage(),
+        BoundingBox(),
+        MeanVar(),
+        Mahalanobis(),
+        KernelBased(),
+        CityBlock(),
+    ],
 )
 
 # Fit the model to the dataset
