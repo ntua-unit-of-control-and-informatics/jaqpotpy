@@ -5,4 +5,5 @@ from jaqpotpy.doa.doa import (
     BoundingBox,
     Mahalanobis,
     KernelBased,
+    CityBlock,
 )

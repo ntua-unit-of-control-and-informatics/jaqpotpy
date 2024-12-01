@@ -683,3 +683,111 @@ class KernelBased(DOA):
         """
         kernel_data = KernelBasedDoa(sigma=self._sigma, threshold=self._threshold)
         return kernel_data.to_dict()
+
+
+class CityBlock(DOA):
+    """City Block (Manhattan) Distance Domain of Applicability (DOA) calculation class.
+
+    Attributes:
+        _data (Union[np.array, pd.DataFrame]): Input data used for DOA calculation.
+        _mean_vector (np.array): Mean vector of the training data.
+        _threshold (float): Threshold value for City Block distance.
+        doa_attributes (CityBlockDoA): Attributes of the City Block DOA.
+
+    Methods:
+        __init__(): Initializes the CityBlock DOA class.
+        fit(X: Union[np.array, pd.DataFrame]): Fits the model using the input data.
+        predict(new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]: Predicts if new data points are within DOA.
+        calculate_distance(sample: np.array) -> float: Calculates City Block distance for a sample.
+        calculate_threshold(): Calculates the City Block distance threshold.
+    """
+
+    @property
+    def __name__(self):
+        """Name of the DOA method."""
+        return "CITY_BLOCK"
+
+    def __init__(self, threshold_percentile=95) -> None:
+        """Initializes the CityBlock DOA class."""
+        super().__init__()
+        if not (0 < threshold_percentile < 100):
+            raise ValueError("The threshold percentile must be between 0 and 100.")
+
+        self.threshold_percentile = threshold_percentile
+        self._data = None
+        self._mean_vector = None
+        self._threshold = None
+        self.doa_attributes = None
+
+    def fit(self, X: Union[np.array, pd.DataFrame]):
+        """
+        Fits the model using the input data.
+
+        Args:
+            X (Union[np.array, pd.DataFrame]): Input training data.
+        """
+        self._data = self._validate_input(X)
+
+        # Compute the mean vector of the training data
+        self._mean_vector = np.mean(self._data, axis=0)
+        self.calculate_threshold()
+        self.doa_attributes = self.get_attributes()
+
+    def calculate_distance(self, sample: np.array) -> float:
+        """
+        Calculates City Block (Manhattan) distance for a sample.
+
+        Args:
+            sample (np.array): Input sample to calculate distance for.
+
+        Returns:
+            float: City Block distance of the sample.
+        """
+        return np.sum(np.abs(sample - self._mean_vector))
+
+    def calculate_threshold(self):
+        """
+        Calculates the City Block distance threshold based on the chosen percentile.
+        """
+        distances = np.array([self.calculate_distance(sample) for sample in self._data])
+        self._threshold = np.percentile(distances, self.threshold_percentile)
+
+    def predict(self, new_data: Union[np.array, pd.DataFrame]) -> Iterable[Any]:
+        """
+        Predicts if new data points are within DOA.
+
+        Args:
+            new_data (Union[np.array, pd.DataFrame]): New data points to be predicted.
+
+        Returns:
+            Iterable[Any]: List of dictionaries containing the City Block distance,
+            threshold, and a boolean indicating if the data point is within DOA.
+        """
+        new_data = self._validate_input(new_data)
+        doa_results = []
+
+        for nd in new_data:
+            distance = self.calculate_distance(nd)
+            in_ad = distance <= self._threshold
+
+            doa = {
+                "cityBlockDistance": distance,
+                "threshold": self._threshold,
+                "inDoa": in_ad,
+            }
+            doa_results.append(doa)
+
+        return doa_results
+
+    def get_attributes(self):
+        """
+        Returns the attributes of the CityBlock DOA.
+
+        Returns:
+            CityBlockDOAAttributes: Attributes of the CityBlock DOA.
+        """
+        cityblock_data = CityBlockDoa(
+            mean_vector=self._mean_vector,
+            threshold=self._threshold,
+        )
+        return cityblock_data.to_dict()
