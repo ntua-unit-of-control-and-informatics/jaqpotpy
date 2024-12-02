@@ -18,8 +18,9 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict
-from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
+from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,8 +28,9 @@ class CityBlockDoa(BaseModel):
     """
     CityBlockDoa
     """ # noqa: E501
-    data: Optional[Dict[str, Any]] = None
-    __properties: ClassVar[List[str]] = ["data"]
+    mean_vector: Optional[Annotated[List[Union[StrictFloat, StrictInt]], Field(max_length=5000)]] = Field(default=None, alias="meanVector")
+    threshold: Optional[Union[StrictFloat, StrictInt]] = None
+    __properties: ClassVar[List[str]] = ["meanVector", "threshold"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -81,7 +83,8 @@ class CityBlockDoa(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "data": obj.get("data")
+            "meanVector": obj.get("meanVector"),
+            "threshold": obj.get("threshold")
         })
         return _obj
 
