@@ -1,4 +1,5 @@
 import torch.nn as nn
+import numpy as np
 import torch
 import torch.nn.functional as F
 import base64
@@ -35,6 +36,7 @@ class Sequence_LSTM(nn.Module):
         dropout,
         activation,
         bidirectional=False,
+        seed=42,
     ):
         super(Sequence_LSTM, self).__init__()
         self.hidden_size = hidden_size
@@ -54,6 +56,9 @@ class Sequence_LSTM(nn.Module):
         self.activation = activation
         self.fc1 = nn.Linear(hidden_size * self.num_directions, hidden_size)
         self.fc2 = nn.Linear(hidden_size, output_size)
+        self.seed = seed
+        torch.manual_seed(self.seed)
+        np.random.seed(self.seed)
 
     def forward(self, x):
         h0 = torch.zeros(

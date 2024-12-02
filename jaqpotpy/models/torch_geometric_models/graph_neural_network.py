@@ -111,7 +111,6 @@ class BaseGraphNetwork(nn.Module):
         self.heads = heads
         torch.manual_seed(self.seed)
         np.random.seed(self.seed)
-        print(activation)
         self._validate_inputs()
 
         self.graph_layers = nn.ModuleList()
