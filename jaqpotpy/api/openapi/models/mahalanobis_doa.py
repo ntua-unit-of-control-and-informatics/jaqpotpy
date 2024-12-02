@@ -18,8 +18,8 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict
-from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,8 +27,10 @@ class MahalanobisDoa(BaseModel):
     """
     MahalanobisDoa
     """ # noqa: E501
-    data: Optional[Dict[str, Any]] = None
-    __properties: ClassVar[List[str]] = ["data"]
+    mean_vector: Optional[List[Union[StrictFloat, StrictInt]]] = Field(default=None, alias="meanVector")
+    cov_matrix: Optional[List[List[Union[StrictFloat, StrictInt]]]] = Field(default=None, alias="covMatrix")
+    threshold: Optional[Union[StrictFloat, StrictInt]] = None
+    __properties: ClassVar[List[str]] = ["meanVector", "covMatrix", "threshold"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -81,7 +83,9 @@ class MahalanobisDoa(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "data": obj.get("data")
+            "meanVector": obj.get("meanVector"),
+            "covMatrix": obj.get("covMatrix"),
+            "threshold": obj.get("threshold")
         })
         return _obj
 
