@@ -27,6 +27,8 @@ from jaqpotpy.api.openapi.api.lead_api import LeadApi
 from jaqpotpy.api.openapi.api.model_api import ModelApi
 from jaqpotpy.api.openapi.api.organization_api import OrganizationApi
 from jaqpotpy.api.openapi.api.organization_invitation_api import OrganizationInvitationApi
+from jaqpotpy.api.openapi.api.user_api import UserApi
+from jaqpotpy.api.openapi.api.user_settings_api import UserSettingsApi
 
 # import ApiClient
 from jaqpotpy.api.openapi.api_response import ApiResponse
@@ -41,6 +43,7 @@ from jaqpotpy.api.openapi.exceptions import ApiException
 
 # import models into sdk package
 from jaqpotpy.api.openapi.models.api_key import ApiKey
+from jaqpotpy.api.openapi.models.archive_model200_response import ArchiveModel200Response
 from jaqpotpy.api.openapi.models.binary_classification_scores import BinaryClassificationScores
 from jaqpotpy.api.openapi.models.bounding_box_doa import BoundingBoxDoa
 from jaqpotpy.api.openapi.models.city_block_doa import CityBlockDoa
@@ -89,6 +92,7 @@ from jaqpotpy.api.openapi.models.r_pbpk_config import RPbpkConfig
 from jaqpotpy.api.openapi.models.regression_scores import RegressionScores
 from jaqpotpy.api.openapi.models.scores import Scores
 from jaqpotpy.api.openapi.models.transformer import Transformer
+from jaqpotpy.api.openapi.models.unarchive_model200_response import UnarchiveModel200Response
 from jaqpotpy.api.openapi.models.update_api_key200_response import UpdateApiKey200Response
 from jaqpotpy.api.openapi.models.update_api_key_request import UpdateApiKeyRequest
 from jaqpotpy.api.openapi.models.user import User

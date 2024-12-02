@@ -242,9 +242,9 @@ class Jaqpot:
             raise ValueError("Task should be either classification or regression")
         # Type
         if featurizer.__class__.__name__ == "SmilesVectorizer":
-            model_type = ModelType.TORCH_ONNX_SEQUENCE
+            model_type = ModelType.TORCH_SEQUENCE_ONNX
         elif featurizer.__class__.__name__ == "SmilesGraphFeaturizer":
-            model_type = ModelType.TORCH_ONNX_GRAPH
+            model_type = ModelType.TORCH_GEOMETRIC_ONNX
         else:
             raise ValueError(
                 "Featurizer should be either SmilesVectorizer or SmilesGraphFeaturizer"

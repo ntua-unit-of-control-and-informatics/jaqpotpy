@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -30,9 +30,10 @@ class UserSettings(BaseModel):
     id: Optional[StrictInt] = None
     dark_mode: Optional[StrictBool] = Field(default=False, alias="darkMode")
     collapse_sidebar: Optional[StrictBool] = Field(default=False, alias="collapseSidebar")
+    avatar_url: Optional[StrictStr] = Field(default=None, alias="avatarUrl")
     is_admin: Optional[StrictBool] = Field(default=None, alias="isAdmin")
-    is_upci: Optional[StrictBool] = Field(default=None, alias="isUpci")
-    __properties: ClassVar[List[str]] = ["id", "darkMode", "collapseSidebar", "isAdmin", "isUpci"]
+    is_upci_user: Optional[StrictBool] = Field(default=None, alias="isUpciUser")
+    __properties: ClassVar[List[str]] = ["id", "darkMode", "collapseSidebar", "avatarUrl", "isAdmin", "isUpciUser"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -69,7 +70,7 @@ class UserSettings(BaseModel):
         """
         excluded_fields: Set[str] = set([
             "is_admin",
-            "is_upci",
+            "is_upci_user",
         ])
 
         _dict = self.model_dump(
@@ -92,8 +93,9 @@ class UserSettings(BaseModel):
             "id": obj.get("id"),
             "darkMode": obj.get("darkMode") if obj.get("darkMode") is not None else False,
             "collapseSidebar": obj.get("collapseSidebar") if obj.get("collapseSidebar") is not None else False,
+            "avatarUrl": obj.get("avatarUrl"),
             "isAdmin": obj.get("isAdmin"),
-            "isUpci": obj.get("isUpci")
+            "isUpciUser": obj.get("isUpciUser")
         })
         return _obj
 

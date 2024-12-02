@@ -52,6 +52,8 @@ class Model(BaseModel):
     shared_with_organizations: Optional[List[Organization]] = Field(default=None, alias="sharedWithOrganizations")
     visibility: ModelVisibility
     task: ModelTask
+    archived: Optional[StrictBool] = None
+    archived_at: Optional[datetime] = Field(default=None, description="The date and time when the model was last archived.", alias="archivedAt")
     torch_config: Optional[Dict[str, Any]] = Field(default=None, alias="torchConfig")
     preprocessors: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
     featurizers: Optional[Annotated[List[Transformer], Field(max_length=50)]] = None
@@ -66,8 +68,8 @@ class Model(BaseModel):
     scores: Optional[ModelScores] = None
     r_pbpk_config: Optional[RPbpkConfig] = Field(default=None, alias="rPbpkConfig")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
-    updated_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "torchConfig", "preprocessors", "featurizers", "rawPreprocessor", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "rPbpkConfig", "createdAt", "updatedAt"]
+    updated_at: Optional[datetime] = Field(default=None, description="The date and time when the model was last updated.", alias="updatedAt")
+    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "archived", "archivedAt", "torchConfig", "preprocessors", "featurizers", "rawPreprocessor", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "rPbpkConfig", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -190,6 +192,8 @@ class Model(BaseModel):
             "sharedWithOrganizations": [Organization.from_dict(_item) for _item in obj["sharedWithOrganizations"]] if obj.get("sharedWithOrganizations") is not None else None,
             "visibility": obj.get("visibility"),
             "task": obj.get("task"),
+            "archived": obj.get("archived"),
+            "archivedAt": obj.get("archivedAt"),
             "torchConfig": obj.get("torchConfig"),
             "preprocessors": [Transformer.from_dict(_item) for _item in obj["preprocessors"]] if obj.get("preprocessors") is not None else None,
             "featurizers": [Transformer.from_dict(_item) for _item in obj["featurizers"]] if obj.get("featurizers") is not None else None,
