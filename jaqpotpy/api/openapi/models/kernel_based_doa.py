@@ -18,8 +18,8 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict
-from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr, field_validator
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,8 +27,21 @@ class KernelBasedDoa(BaseModel):
     """
     KernelBasedDoa
     """ # noqa: E501
-    data: Optional[Dict[str, Any]] = None
-    __properties: ClassVar[List[str]] = ["data"]
+    sigma: Optional[Union[StrictFloat, StrictInt]] = None
+    gamma: Optional[Union[StrictFloat, StrictInt]] = None
+    threshold: Optional[Union[StrictFloat, StrictInt]] = None
+    kernel_type: Optional[StrictStr] = Field(default=None, alias="kernelType")
+    __properties: ClassVar[List[str]] = ["sigma", "gamma", "threshold", "kernelType"]
+
+    @field_validator('kernel_type')
+    def kernel_type_validate_enum(cls, value):
+        """Validates the enum"""
+        if value is None:
+            return value
+
+        if value not in set(['GAUSSIAN', 'RBF', 'LAPLACIAN', 'PERCENTILE', 'MEAN_STD']):
+            raise ValueError("must be one of enum values ('GAUSSIAN', 'RBF', 'LAPLACIAN', 'PERCENTILE', 'MEAN_STD')")
+        return value
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -81,7 +94,10 @@ class KernelBasedDoa(BaseModel):
             return cls.model_validate(obj)
 
         _obj = cls.model_validate({
-            "data": obj.get("data")
+            "sigma": obj.get("sigma"),
+            "gamma": obj.get("gamma"),
+            "threshold": obj.get("threshold"),
+            "kernelType": obj.get("kernelType")
         })
         return _obj
 
