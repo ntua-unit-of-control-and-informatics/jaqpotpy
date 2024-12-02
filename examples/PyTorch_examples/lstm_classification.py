@@ -10,6 +10,11 @@ from jaqpotpy.datasets import SmilesSeqDataset
 from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
 from tdc.single_pred import Tox
 import onnxruntime
+import random
+
+np.random.seed(42)
+t.manual_seed(42)
+random.seed(42)
 
 data = Tox(name="AMES")
 split = data.get_split()
@@ -27,7 +32,6 @@ tokenizer.fit(train_smiles)
 train_dataset = SmilesSeqDataset(train_smiles, train_y, tokenizer)
 val_dataset = SmilesSeqDataset(val_smiles, val_y, tokenizer)
 test_dataset = SmilesSeqDataset(test_smiles, test_y, tokenizer)
-
 train_loader = t.utils.data.DataLoader(train_dataset, batch_size=512, shuffle=True)
 val_loader = t.utils.data.DataLoader(val_dataset, batch_size=512, shuffle=False)
 test_loader = t.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=False)
@@ -44,7 +48,7 @@ model = Sequence_LSTM(
 loss = t.nn.BCEWithLogitsLoss()
 optimizer = t.optim.Adam(model.parameters(), lr=0.001)
 trainer = BinarySequenceTrainer(
-    model=model, n_epochs=2, optimizer=optimizer, loss_fn=loss
+    model=model, n_epochs=10, optimizer=optimizer, loss_fn=loss
 )
 
 trainer.train(train_loader=train_loader, val_loader=val_loader)
@@ -55,8 +59,7 @@ print(val_metrics)
 _, test_metrics, _ = trainer.evaluate(test_loader)
 print(test_metrics)
 
-
-### Inference Torch
+# ### Inference Torch
 
 random_smiles = ["CCCCC(CC)COC(=O)C(=C(C1=CC=CC=C1)C2=CC=CC=C2)C#N"]
 input = tokenizer.transform(random_smiles)
@@ -64,42 +67,49 @@ model.eval()
 
 output = model(input)
 
-### ONNX Inference
-dict = tokenizer.get_dict()
-tokenizer = SmilesVectorizer()
-tokenizer.load_dict(dict)
-random_smiles = ["CCCCC(CC)COC(=O)C(=C(C1=CC=CC=C1)C2=CC=CC=C2)C#N"]
-input = tokenizer.transform(random_smiles)
-onnx_model = lstm_to_onnx(model, tokenizer)
-onnx_model = base64.b64decode(onnx_model)
-ort_session = onnxruntime.InferenceSession(onnx_model)
+# ### ONNX Inference
+# dict = tokenizer.get_dict()
+# tokenizer = SmilesVectorizer()
+# tokenizer.load_dict(dict)
+# random_smiles = ["CCCCC(CC)COC(=O)C(=C(C1=CC=CC=C1)C2=CC=CC=C2)C#N"]
+# input = tokenizer.transform(random_smiles)
+# onnx_model = lstm_to_onnx(model, tokenizer)
+# onnx_model = base64.b64decode(onnx_model)
+# ort_session = onnxruntime.InferenceSession(onnx_model)
 
 
-def _to_numpy(tensor):
-    return (
-        tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
-    )
+# def _to_numpy(tensor):
+#     return (
+#         tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+#     )
 
 
-ort_inputs = {ort_session.get_inputs()[0].name: _to_numpy(input)}
-ort_outs = t.tensor(np.array(ort_session.run(None, ort_inputs)))
+# ort_inputs = {ort_session.get_inputs()[0].name: _to_numpy(input)}
+# print(ort_session.get_inputs()[0].name)
+# ort_outs = t.tensor(np.array(ort_session.run(None, ort_inputs)))
+# # print(output)
+# import torch.nn.functional as F
 
-print(output)
-print(ort_outs)
+# print(F.sigmoid(ort_outs))
 
-print(tokenizer.__class__.__name__)
-
-onnx_model = onnx_model = lstm_to_onnx(model, tokenizer)
-jaqpot = Jaqpot()
-# Login to Jaqpot
-jaqpot.login()
-# Deploy the model on Jaqpot
-jaqpot.deploy_torch_model(
-    onnx_model,
-    featurizer=tokenizer,
-    name="Graph Sage Network",
-    description="Test without featurizer",
-    target_name="ACTIVITY",
-    visibility="PRIVATE",
-    task="regression",  # Specify the task (regression or binary_classification)
-)
+# onnx_model = onnx_model = lstm_to_onnx(model, tokenizer)
+# # Login to Jaqpot
+# jaqpot = Jaqpot(
+#     base_url="http://localhost.jaqpot.org",
+#     app_url="http://localhost.jaqpot.org:3000",
+#     login_url="http://localhost.jaqpot.org:8070",
+#     api_url="http://localhost.jaqpot.org:8080",
+#     keycloak_realm="jaqpot-local",
+#     keycloak_client_id="jaqpot-local-test",
+# )
+# jaqpot.login()
+# # Deploy the model on Jaqpot
+# jaqpot.deploy_torch_model(
+#     onnx_model,
+#     featurizer=tokenizer,
+#     name="LSTM",
+#     description="LSTM for binary classification",
+#     target_name="ACTIVITY",
+#     visibility="PRIVATE",
+#     task="binary_classification",  # Specify the task (regression or binary_classification)
+# )
