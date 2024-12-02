@@ -1,9 +1,17 @@
 import pandas as pd
+import numpy as np
 from sklearn.datasets import make_regression
 from jaqpotpy.datasets import JaqpotpyDataset
 from sklearn.linear_model import LinearRegression
 from jaqpotpy.models.sklearn import SklearnModel
-from jaqpotpy.doa import Leverage, BoundingBox, MeanVar
+from jaqpotpy.doa import (
+    Leverage,
+    BoundingBox,
+    MeanVar,
+    Mahalanobis,
+    KernelBased,
+    CityBlock,
+)
 
 # Generate a small regression dataset
 # This creates a dataset with 100 samples, each having 4 features and some noise.
@@ -29,7 +37,14 @@ dataset = JaqpotpyDataset(
 jaqpot_model = SklearnModel(
     dataset=dataset,
     model=LinearRegression(),
-    doa=[Leverage(), BoundingBox(), MeanVar()],
+    doa=[
+        Leverage(),
+        BoundingBox(),
+        MeanVar(),
+        Mahalanobis(),
+        KernelBased(),
+        CityBlock(),
+    ],
 )
 
 # Fit the model to the dataset
@@ -38,7 +53,8 @@ jaqpot_model.fit()
 
 # Generate a small prediction dataset
 # Create a new dataset with 5 samples, each having 4 features.
-X_test, _ = make_regression(n_samples=5, n_features=4, noise=0.2, random_state=42)
+np.random.seed(34)
+X_test = np.random.normal(0, 1.5, size=(5, 4))
 
 # Create a DataFrame with the features
 # Store the features in columns "X1", "X2", "X3", "X4".
