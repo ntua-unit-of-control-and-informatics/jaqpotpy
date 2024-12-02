@@ -31,7 +31,10 @@ class KernelBasedDoa(BaseModel):
     gamma: Optional[Union[StrictFloat, StrictInt]] = None
     threshold: Optional[Union[StrictFloat, StrictInt]] = None
     kernel_type: Optional[StrictStr] = Field(default=None, alias="kernelType")
-    __properties: ClassVar[List[str]] = ["sigma", "gamma", "threshold", "kernelType"]
+    threshold_method: Optional[StrictStr] = Field(default=None, alias="thresholdMethod")
+    threshold_percentile: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="thresholdPercentile")
+    data_points: Optional[List[List[Union[StrictFloat, StrictInt]]]] = Field(default=None, alias="dataPoints")
+    __properties: ClassVar[List[str]] = ["sigma", "gamma", "threshold", "kernelType", "thresholdMethod", "thresholdPercentile", "dataPoints"]
 
     @field_validator('kernel_type')
     def kernel_type_validate_enum(cls, value):
@@ -97,7 +100,10 @@ class KernelBasedDoa(BaseModel):
             "sigma": obj.get("sigma"),
             "gamma": obj.get("gamma"),
             "threshold": obj.get("threshold"),
-            "kernelType": obj.get("kernelType")
+            "kernelType": obj.get("kernelType"),
+            "thresholdMethod": obj.get("thresholdMethod"),
+            "thresholdPercentile": obj.get("thresholdPercentile"),
+            "dataPoints": obj.get("dataPoints")
         })
         return _obj
 
