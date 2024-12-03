@@ -477,7 +477,7 @@ class Mahalanobis(DOA):
         """
         mahalanobis_data = MahalanobisDoa(
             mean_vector=self._mean_vector,
-            cov_matrix=self._inv_cov_matrix,
+            inv_cov_matrix=self._inv_cov_matrix,
             threshold=self._threshold,
         )
         return mahalanobis_data.to_dict()
@@ -693,8 +693,6 @@ class KernelBased(DOA):
             gamma=self._gamma,
             threshold=self._threshold,
             kernel_type=self._kernel_type,
-            threshold_method=self._threshold_method,
-            threshold_percentile=self._threshold_percentile,
             data_points=self._data,
         )
         return kernel_data.to_dict()

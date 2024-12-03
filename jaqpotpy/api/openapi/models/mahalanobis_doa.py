@@ -28,9 +28,9 @@ class MahalanobisDoa(BaseModel):
     MahalanobisDoa
     """ # noqa: E501
     mean_vector: Optional[List[Union[StrictFloat, StrictInt]]] = Field(default=None, alias="meanVector")
-    cov_matrix: Optional[List[List[Union[StrictFloat, StrictInt]]]] = Field(default=None, alias="covMatrix")
+    inv_cov_matrix: Optional[List[List[Union[StrictFloat, StrictInt]]]] = Field(default=None, alias="invCovMatrix")
     threshold: Optional[Union[StrictFloat, StrictInt]] = None
-    __properties: ClassVar[List[str]] = ["meanVector", "covMatrix", "threshold"]
+    __properties: ClassVar[List[str]] = ["meanVector", "invCovMatrix", "threshold"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -84,7 +84,7 @@ class MahalanobisDoa(BaseModel):
 
         _obj = cls.model_validate({
             "meanVector": obj.get("meanVector"),
-            "covMatrix": obj.get("covMatrix"),
+            "invCovMatrix": obj.get("invCovMatrix"),
             "threshold": obj.get("threshold")
         })
         return _obj
