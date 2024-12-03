@@ -455,7 +455,9 @@ class Mahalanobis(DOA):
 
         for nd in new_data:
             distance = self.calculate_distance(nd)
-            in_ad = distance <= self._threshold
+            in_ad = False
+            if distance <= self._threshold:
+                in_ad = True
 
             doa = {
                 "mahalanobisDistance": distance,
@@ -475,7 +477,7 @@ class Mahalanobis(DOA):
         """
         mahalanobis_data = MahalanobisDoa(
             mean_vector=self._mean_vector,
-            cov_matrix=self._cov_matrix,
+            inv_cov_matrix=self._inv_cov_matrix,
             threshold=self._threshold,
         )
         return mahalanobis_data.to_dict()
@@ -494,7 +496,7 @@ class KernelBased(DOA):
 
     def __init__(
         self,
-        kernel_type="gaussian",
+        kernel_type="GAUSSIAN",
         threshold_method="percentile",
         threshold_percentile=5,
         sigma=None,
@@ -517,7 +519,7 @@ class KernelBased(DOA):
         Raises:
             ValueError: If parameters do not meet specified constraints.
         """
-        valid_kernel_types = ["gaussian", "rbf", "laplacian"]
+        valid_kernel_types = ["GAUSSIAN", "RBF", "LAPLACIAN"]
         if kernel_type not in valid_kernel_types:
             raise ValueError(
                 f"Invalid kernel type. Must be one of {valid_kernel_types}"
@@ -655,6 +657,8 @@ class KernelBased(DOA):
         kernel_func = self._select_kernel()
 
         doa_results = []
+        if isinstance(self._data, list):
+            self._data = np.array(self._data)  # Convert to NumPy array
         for point in new_data:
             # Compute kernel distances between the new point and all training data points
             point_distances = [
@@ -664,12 +668,14 @@ class KernelBased(DOA):
 
             # Calculate average kernel distance
             avg_distance = np.mean(point_distances)
-
+            in_ad = False
+            if avg_distance >= self._threshold:
+                in_ad = True
             doa_results.append(
                 {
                     "kernelDistance": avg_distance,
                     "threshold": self._threshold,
-                    "inDoa": avg_distance >= self._threshold,
+                    "inDoa": in_ad,
                 }
             )
 
@@ -682,7 +688,13 @@ class KernelBased(DOA):
         Returns:
             KernelDOAAttributes: Attributes of the Kernel DOA.
         """
-        kernel_data = KernelBasedDoa(sigma=self._sigma, threshold=self._threshold)
+        kernel_data = KernelBasedDoa(
+            sigma=self._sigma,
+            gamma=self._gamma,
+            threshold=self._threshold,
+            kernel_type=self._kernel_type,
+            data_points=self._data,
+        )
         return kernel_data.to_dict()
 
 
@@ -769,7 +781,9 @@ class CityBlock(DOA):
 
         for nd in new_data:
             distance = self.calculate_distance(nd)
-            in_ad = distance <= self._threshold
+            in_ad = False
+            if distance <= self._threshold:
+                in_ad = True
 
             doa = {
                 "cityBlockDistance": distance,
