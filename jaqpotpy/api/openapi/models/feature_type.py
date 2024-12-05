@@ -33,6 +33,7 @@ class FeatureType(str, Enum):
     SMILES = 'SMILES'
     STRING = 'STRING'
     TEXT = 'TEXT'
+    BOOLEAN = 'BOOLEAN'
     FLOAT_ARRAY = 'FLOAT_ARRAY'
     STRING_ARRAY = 'STRING_ARRAY'
 
