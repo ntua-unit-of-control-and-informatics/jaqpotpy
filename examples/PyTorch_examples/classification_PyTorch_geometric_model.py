@@ -95,12 +95,12 @@ loss, metrics, conf_matrix = trainer.evaluate(test_loader)
 onnx_model = pyg_to_onnx(model, featurizer)
 # Create an instance of Jaqpot
 jaqpot = Jaqpot(
-    base_url="http://localhost.jaqpot.org",
-    app_url="http://localhost.jaqpot.org:3000",
-    login_url="http://localhost.jaqpot.org:8070",
-    api_url="http://localhost.jaqpot.org:8080",
-    keycloak_realm="jaqpot-local",
-    keycloak_client_id="jaqpot-local-test",
+    # base_url="http://localhost.jaqpot.org",
+    # app_url="http://localhost.jaqpot.org:3000",
+    # login_url="http://localhost.jaqpot.org:8070",
+    # api_url="http://localhost.jaqpot.org:8080",
+    # keycloak_realm="jaqpot-local",
+    # keycloak_client_id="jaqpot-local-test",
 )
 # Login to Jaqpot
 jaqpot.login()
