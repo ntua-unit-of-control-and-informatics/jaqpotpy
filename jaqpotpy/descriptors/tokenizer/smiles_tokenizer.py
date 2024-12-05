@@ -25,14 +25,9 @@ class SmilesVectorizer(object):
         charset="@C)(=cOn1S2/H[N]\\",
         pad=10,
         maxlength=120,
-        leftpad=True,
-        isomericSmiles=True,
-        augment=True,
-        canonical=False,
         startchar="^",
         endchar="$",
         unknownchar="?",
-        binary=False,
     ):
         # Special Characters
         self.startchar = startchar
@@ -40,11 +35,6 @@ class SmilesVectorizer(object):
         self.unknownchar = unknownchar
 
         # Vectorization and SMILES options
-        self.binary = binary
-        self.leftpad = leftpad
-        self.isomericSmiles = isomericSmiles
-        self.augment = augment
-        self.canonical = canonical
         self._pad = pad
         self._maxlength = maxlength
 
@@ -94,35 +84,35 @@ class SmilesVectorizer(object):
         """Calculates and sets the output dimensions of the vectorized molecules from the current settings"""
         self.dims = (self.maxlength + self.pad, self._charlen)
 
-    def fit(self, mols, extra_chars=[]):
+    def fit(self, smiles, extra_chars=[]):
         """Performs extraction of the charset and length of a SMILES datasets and sets self.maxlength and self.charset
 
         :parameter smiles: Numpy array or Pandas series containing smiles as strings
         :parameter extra_chars: List of extra chars to add to the charset (e.g. "\\\\" when "/" is present)
         """
-        smiles = [Chem.MolToSmiles(mol) for mol in mols]
         charset = set(
             "".join(list(smiles))
         )  # Is there a smarter way when the list of SMILES is HUGE!
         self.charset = "".join(charset.union(set(extra_chars)))
         self.maxlength = max([len(smile) for smile in smiles])
 
-    def randomize_smiles(self, smiles):
-        """Perform a randomization of a SMILES string
-        must be RDKit sanitizable"""
-        mol = Chem.MolFromSmiles(smiles)
-        nmol = self.randomize_mol(mol)
-        return Chem.MolToSmiles(
-            nmol, canonical=self.canonical, isomericSmiles=self.isomericSmiles
-        )
+    # DO NOT REMOVE COMMENTS. MIGHT BE USEFUL IN THE FUTURE
+    # def randomize_smiles(self, smiles):
+    #     """Perform a randomization of a SMILES string
+    #     must be RDKit sanitizable"""
+    #     mol = Chem.MolFromSmiles(smiles)
+    #     nmol = self.randomize_mol(mol)
+    #     return Chem.MolToSmiles(
+    #         nmol, canonical=self.canonical, isomericSmiles=self.isomericSmiles
+    #     )
 
-    def randomize_mol(self, mol):
-        """Performs a randomization of the atom order of an RDKit molecule"""
-        ans = list(range(mol.GetNumAtoms()))
-        np.random.shuffle(ans)
-        return Chem.RenumberAtoms(mol, ans)
+    # def randomize_mol(self, mol):
+    #     """Performs a randomization of the atom order of an RDKit molecule"""
+    #     ans = list(range(mol.GetNumAtoms()))
+    #     np.random.shuffle(ans)
+    #     return Chem.RenumberAtoms(mol, ans)
 
-    def transform(self, mols, augment=None, canonical=None):
+    def transform(self, smiles):
         """Perform an enumeration (atom order randomization) and vectorization of a Numpy array of RDkit molecules
 
         :parameter mols: The RDKit molecules to transform in a list or array
@@ -132,42 +122,37 @@ class SmilesVectorizer(object):
         :output: Numpy array with the vectorized molecules with shape [batch, maxlength+pad, charset]
         """
         # TODO make it possible to use both SMILES, RDKit mols and RDKit binary strings in input
-        one_hot = torch.zeros([len(mols)] + list(self.dims), dtype=torch.float32)
+        one_hot = torch.zeros([len(smiles)] + list(self.dims), dtype=torch.float32)
 
         # Possibl override object settings
-        if augment is None:
-            augment = self.augment
-        if canonical is None:
-            canonical = self.canonical
+        # if augment is None:
+        #     augment = self.augment
+        # if canonical is None:
+        #     canonical = self.canonical
 
-        for i, mol in enumerate(mols):
-            # Fast convert from RDKit binary
-            if self.binary:
-                mol = Chem.Mol(mol)
-
-            if augment:
-                mol = self.randomize_mol(mol)
-            ss = Chem.MolToSmiles(
-                mol, canonical=canonical, isomericSmiles=self.isomericSmiles
-            )
+        for i, smile in enumerate(smiles):
+            #     # Fast convert from RDKit binary
+            #     if self.binary:
+            #         mol = Chem.Mol(mol)
+            #     # if augment:
+            #     #     mol = self.randomize_mol(mol)
+            #     ss = Chem.MolToSmiles(
+            #         mol, canonical=self.canonical, isomericSmiles=self.isomericSmiles
+            #     )
 
             # TODO, Improvement make it robust to too long SMILES strings
             # TODO, Improvement make a "jitter", with random offset within the possible frame
             # TODO, Improvement make it report to many "?"'s
+            offset = self.dims[0] - len(smile) - 1
 
-            if self.leftpad:
-                offset = self.dims[0] - len(ss) - 1
-            else:
-                offset = 1
-
-            for j, c in enumerate(ss):
+            for j, c in enumerate(smile):
                 charidx = self._char_to_int.get(c, self._char_to_int[self.unknownchar])
                 one_hot[i, j + offset, charidx] = 1
 
             # Pad the start
             one_hot[i, offset - 1, self._char_to_int[self.startchar]] = 1
             # Pad the end
-            one_hot[i, offset + len(ss) :, self._char_to_int[self.endchar]] = 1
+            one_hot[i, offset + len(smile) :, self._char_to_int[self.endchar]] = 1
             # Pad the space in front of start (Could this lead to funky effects during sampling?)
             # one_hot[i,:offset-1,self._char_to_int[self.endchar]] = 1
 
@@ -191,4 +176,36 @@ class SmilesVectorizer(object):
             if strip:
                 smile = smile.strip(self.startchar + self.endchar)
             smiles.append(smile)
-        return np.array(smiles)
+        return smiles
+
+    def get_dict(self):
+        """
+        Returns a dictionary representation of the featurizer's settings and feature sets.
+
+        Returns:
+            dict: Featurizer configuration and feature sets.
+        """
+        config_dict = {
+            "charset": self.charset,
+            "pad": self.pad,
+            "maxlength": self.maxlength,
+            "startchar": self.startchar,
+            "endchar": self.endchar,
+            "unknownchar": self.unknownchar,
+        }
+        return config_dict
+
+    def load_dict(self, feat_dict):
+        """
+        Loads settings and feature sets from a dictionary.
+
+        Args:
+            feat_dict (dict): Dictionary containing featurizer settings and feature sets.
+        """
+        self.charset = feat_dict["charset"]
+        self.pad = feat_dict["pad"]
+        self.maxlength = feat_dict["maxlength"]
+        self.startchar = feat_dict["startchar"]
+        self.endchar = feat_dict["endchar"]
+        self.unknownchar = feat_dict["unknownchar"]
+        return self

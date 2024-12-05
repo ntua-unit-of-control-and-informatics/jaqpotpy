@@ -1,22 +1,23 @@
 import torch.nn as nn
-from typing import List
+import numpy as np
 import torch
 import torch.nn.functional as F
 import base64
 import io
 
 
-def lstm_to_onnx(torch_model, dataset):
+def lstm_to_onnx(torch_model, featurizer):
     if torch_model.training:
         torch_model.eval()
     torch_model = torch_model.cpu()
+    dummy_smiles = ["CCC"]
+    dummy_input = featurizer.transform(dummy_smiles)
     buffer = io.BytesIO()
     torch.onnx.export(
         torch_model,
-        args=(dataset.X),
+        args=(dummy_input),
         f=buffer,
-        input_names=["batch", "sequence", "features"],
-        dynamic_axes={"batch": [0]},
+        input_names=["sequence"],
     )
     onnx_model_bytes = buffer.getvalue()
     buffer.close()
@@ -25,7 +26,7 @@ def lstm_to_onnx(torch_model, dataset):
     return model_scripted_base64
 
 
-class Sequence_LSTM(nn.Module):
+class SequenceLstmModel(nn.Module):
     def __init__(
         self,
         input_size,
@@ -35,8 +36,9 @@ class Sequence_LSTM(nn.Module):
         dropout,
         activation,
         bidirectional=False,
+        seed=42,
     ):
-        super(Sequence_LSTM, self).__init__()
+        super(SequenceLstmModel, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.bidirectional = bidirectional
@@ -54,6 +56,9 @@ class Sequence_LSTM(nn.Module):
         self.activation = activation
         self.fc1 = nn.Linear(hidden_size * self.num_directions, hidden_size)
         self.fc2 = nn.Linear(hidden_size, output_size)
+        self.seed = seed
+        torch.manual_seed(self.seed)
+        np.random.seed(self.seed)
 
     def forward(self, x):
         h0 = torch.zeros(
