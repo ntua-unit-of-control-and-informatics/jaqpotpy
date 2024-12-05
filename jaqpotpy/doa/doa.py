@@ -161,7 +161,7 @@ class Leverage(DOA):
     def calculate_matrix(self):
         """Calculates the DOA matrix (_doa_matrix) using the input data."""
         x_T = self._data.transpose()
-        x_out = x_T.dot(self._data)
+        x_out = x_T.dot(self._data).astype(np.float64)
         self._doa_matrix = np.linalg.pinv(x_out)
 
     def fit(self, X: Union[np.array, pd.DataFrame]):
