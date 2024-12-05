@@ -59,57 +59,24 @@ print(val_metrics)
 _, test_metrics, _ = trainer.evaluate(test_loader)
 print(test_metrics)
 
-# ### Inference Torch
-
-random_smiles = ["CCCCC(CC)COC(=O)C(=C(C1=CC=CC=C1)C2=CC=CC=C2)C#N"]
-input = tokenizer.transform(random_smiles)
-model.eval()
-
-output = model(input)
-
-# ### ONNX Inference
-# dict = tokenizer.get_dict()
-# tokenizer = SmilesVectorizer()
-# tokenizer.load_dict(dict)
-# random_smiles = ["CCCCC(CC)COC(=O)C(=C(C1=CC=CC=C1)C2=CC=CC=C2)C#N"]
-# input = tokenizer.transform(random_smiles)
-# onnx_model = lstm_to_onnx(model, tokenizer)
-# onnx_model = base64.b64decode(onnx_model)
-# ort_session = onnxruntime.InferenceSession(onnx_model)
-
-
-# def _to_numpy(tensor):
-#     return (
-#         tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
-#     )
-
-
-# ort_inputs = {ort_session.get_inputs()[0].name: _to_numpy(input)}
-# print(ort_session.get_inputs()[0].name)
-# ort_outs = t.tensor(np.array(ort_session.run(None, ort_inputs)))
-# # print(output)
-# import torch.nn.functional as F
-
-# print(F.sigmoid(ort_outs))
-
-# onnx_model = onnx_model = lstm_to_onnx(model, tokenizer)
+onnx_model = onnx_model = lstm_to_onnx(model, tokenizer)
 # # Login to Jaqpot
-# jaqpot = Jaqpot(
-#     base_url="http://localhost.jaqpot.org",
-#     app_url="http://localhost.jaqpot.org:3000",
-#     login_url="http://localhost.jaqpot.org:8070",
-#     api_url="http://localhost.jaqpot.org:8080",
-#     keycloak_realm="jaqpot-local",
-#     keycloak_client_id="jaqpot-local-test",
-# )
-# jaqpot.login()
-# # Deploy the model on Jaqpot
-# jaqpot.deploy_torch_model(
-#     onnx_model,
-#     featurizer=tokenizer,
-#     name="LSTM",
-#     description="LSTM for binary classification",
-#     target_name="ACTIVITY",
-#     visibility="PRIVATE",
-#     task="binary_classification",  # Specify the task (regression or binary_classification)
-# )
+jaqpot = Jaqpot(
+    base_url="http://localhost.jaqpot.org",
+    app_url="http://localhost.jaqpot.org:3000",
+    login_url="http://localhost.jaqpot.org:8070",
+    api_url="http://localhost.jaqpot.org:8080",
+    keycloak_realm="jaqpot-local",
+    keycloak_client_id="jaqpot-local-test",
+)
+jaqpot.login()
+# Deploy the model on Jaqpot
+jaqpot.deploy_torch_model(
+    onnx_model,
+    featurizer=tokenizer,
+    name="LSTM",
+    description="LSTM for binary classification",
+    target_name="ACTIVITY",
+    visibility="PRIVATE",
+    task="binary_classification",  # Specify the task (regression or binary_classification)
+)

@@ -10,7 +10,7 @@ from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
 )
 from jaqpotpy.models.trainers.graph_trainers import BinaryGraphModelTrainer
 
-df = pd.read_csv("./jaqpotpy/test_data/test_data_smiles_regression.csv")
+df = pd.read_csv("./jaqpotpy/test_data/test_data_smiles_classification.csv")
 
 # Prepare Smiles and endpoint lists
 # The endpoints can be either continuous or binary
@@ -94,7 +94,14 @@ loss, metrics, conf_matrix = trainer.evaluate(test_loader)
 # Convert pyg model to onnx for upload on Jaqpot
 onnx_model = pyg_to_onnx(model, featurizer)
 # Create an instance of Jaqpot
-jaqpot = Jaqpot()
+jaqpot = Jaqpot(
+    base_url="http://localhost.jaqpot.org",
+    app_url="http://localhost.jaqpot.org:3000",
+    login_url="http://localhost.jaqpot.org:8070",
+    api_url="http://localhost.jaqpot.org:8080",
+    keycloak_realm="jaqpot-local",
+    keycloak_client_id="jaqpot-local-test",
+)
 # Login to Jaqpot
 jaqpot.login()
 # Deploy the model on Jaqpot
