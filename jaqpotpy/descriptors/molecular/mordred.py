@@ -79,7 +79,7 @@ class MordredDescriptors(MolecularFeaturizer):
                 -1000.0 if self.is_missing(val) or isinstance(val, str) else val
                 for val in feature
             ]
-        return np.asarray(feature)
+        return np.asarray(feature, dtype=np.float64)
 
     def featurize_dataframe(
         self, datapoints, convert_nan: bool = True, log_every_n=1000, **kwargs
