@@ -228,6 +228,7 @@ class Jaqpot:
         -------
         None
         """
+        # Task
         if task == "binary_classification":
             model_task = ModelTask.BINARY_CLASSIFICATION
             feature_type = FeatureType.INTEGER
@@ -239,13 +240,22 @@ class Jaqpot:
             feature_type = FeatureType.INTEGER
         else:
             raise ValueError("Task should be either classification or regression")
+        # Type
+        if featurizer.__class__.__name__ == "SmilesVectorizer":
+            model_type = ModelType.TORCH_SEQUENCE_ONNX
+        elif featurizer.__class__.__name__ == "SmilesGraphFeaturizer":
+            model_type = ModelType.TORCH_GEOMETRIC_ONNX
+        else:
+            raise ValueError(
+                "Featurizer should be either SmilesVectorizer or SmilesGraphFeaturizer"
+            )
         model_api = ModelApi(self.http_client)
         # Change Base URL when not in local testing
         # baseurl: "http://localhost.jaqpot.org:8080/"
         torch_config = featurizer.get_dict()
         body_model = Model(
             name=name,
-            type=ModelType.TORCH_GEOMETRIC_ONNX,
+            type=model_type,
             jaqpotpy_version=jaqpotpy.__version__,
             libraries=get_installed_libraries(),
             dependent_features=[

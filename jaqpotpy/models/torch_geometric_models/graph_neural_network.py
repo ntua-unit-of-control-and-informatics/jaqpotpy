@@ -111,7 +111,6 @@ class BaseGraphNetwork(nn.Module):
         self.heads = heads
         torch.manual_seed(self.seed)
         np.random.seed(self.seed)
-        print(activation)
         self._validate_inputs()
 
         self.graph_layers = nn.ModuleList()
@@ -206,7 +205,7 @@ class BaseGraphNetwork(nn.Module):
             raise TypeError("batch_norm must be of type bool")
 
 
-class GraphSageNetwork(BaseGraphNetwork):
+class GraphSageNetworkModel(BaseGraphNetwork):
     """
     GraphSAGENetwork model.
 
@@ -229,7 +228,7 @@ class GraphSageNetwork(BaseGraphNetwork):
         """
         Initializes the GraphSageNetwork with SAGEConv-specific layers.
         """
-        super(GraphSageNetwork, self).__init__(
+        super(GraphSageNetworkModel, self).__init__(
             input_dim,
             hidden_layers,
             hidden_dim,
@@ -254,7 +253,7 @@ class GraphSageNetwork(BaseGraphNetwork):
         init.zeros_(self.fc.bias)
 
 
-class GraphConvolutionNetwork(BaseGraphNetwork):
+class GraphConvolutionNetworkModel(BaseGraphNetwork):
     """
     Graph Convolutional Network (GCN) model.
 
@@ -277,7 +276,7 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
         """
         Initializes the GraphConvolutionNetwork with GCNConv-specific layers.
         """
-        super(GraphConvolutionNetwork, self).__init__(
+        super(GraphConvolutionNetworkModel, self).__init__(
             input_dim,
             hidden_layers,
             hidden_dim,
@@ -302,7 +301,7 @@ class GraphConvolutionNetwork(BaseGraphNetwork):
         init.zeros_(self.fc.bias)
 
 
-class GraphAttentionNetwork(BaseGraphNetwork):
+class GraphAttentionNetworkModel(BaseGraphNetwork):
     """
     Graph Attention Network (GAT) model.
 
@@ -327,7 +326,7 @@ class GraphAttentionNetwork(BaseGraphNetwork):
         """
         Initializes the GraphAttentionNetwork with GATConv-specific layers.
         """
-        super(GraphAttentionNetwork, self).__init__(
+        super(GraphAttentionNetworkModel, self).__init__(
             input_dim,
             hidden_layers,
             hidden_dim,
@@ -356,7 +355,7 @@ class GraphAttentionNetwork(BaseGraphNetwork):
         init.zeros_(self.fc.bias)
 
 
-class GraphTransformerNetwork(BaseGraphNetwork):
+class GraphTransformerNetworkModel(BaseGraphNetwork):
     """
     Graph Transformer Network model.
 
@@ -381,7 +380,7 @@ class GraphTransformerNetwork(BaseGraphNetwork):
         """
         Initializes the GraphTransformerNetwork with TransformerConv-specific layers.
         """
-        super(GraphTransformerNetwork, self).__init__(
+        super(GraphTransformerNetworkModel, self).__init__(
             input_dim,
             hidden_layers,
             hidden_dim,

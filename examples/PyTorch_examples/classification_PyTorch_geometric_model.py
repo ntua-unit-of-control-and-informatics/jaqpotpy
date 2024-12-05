@@ -5,12 +5,12 @@ from jaqpotpy import Jaqpot
 from jaqpotpy.descriptors.graph import SmilesGraphFeaturizer
 from jaqpotpy.datasets import SmilesGraphDataset
 from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
-    GraphSageNetwork,
+    GraphSageNetworkModel,
     pyg_to_onnx,
 )
 from jaqpotpy.models.trainers.graph_trainers import BinaryGraphModelTrainer
 
-df = pd.read_csv("./jaqpotpy/test_data/test_data_smiles_regression.csv")
+df = pd.read_csv("./jaqpotpy/test_data/test_data_smiles_classification.csv")
 
 # Prepare Smiles and endpoint lists
 # The endpoints can be either continuous or binary
@@ -60,7 +60,7 @@ test_dataset.precompute_featurization()
 # Create a GraphNeuralNetwork architecture (GraphSageNetwork as an example)
 # Obtain node_features from the featurizer
 node_features = featurizer.get_num_node_features()
-model = GraphSageNetwork(
+model = GraphSageNetworkModel(
     input_dim=node_features,  # Input neurons
     hidden_layers=1,  # Number of hidden layers
     hidden_dim=4,  # Hidden neurons
@@ -94,7 +94,14 @@ loss, metrics, conf_matrix = trainer.evaluate(test_loader)
 # Convert pyg model to onnx for upload on Jaqpot
 onnx_model = pyg_to_onnx(model, featurizer)
 # Create an instance of Jaqpot
-jaqpot = Jaqpot()
+jaqpot = Jaqpot(
+    # base_url="http://localhost.jaqpot.org",
+    # app_url="http://localhost.jaqpot.org:3000",
+    # login_url="http://localhost.jaqpot.org:8070",
+    # api_url="http://localhost.jaqpot.org:8080",
+    # keycloak_realm="jaqpot-local",
+    # keycloak_client_id="jaqpot-local-test",
+)
 # Login to Jaqpot
 jaqpot.login()
 # Deploy the model on Jaqpot
