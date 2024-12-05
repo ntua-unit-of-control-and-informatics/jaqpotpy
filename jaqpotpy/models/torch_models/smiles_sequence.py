@@ -26,7 +26,7 @@ def lstm_to_onnx(torch_model, featurizer):
     return model_scripted_base64
 
 
-class Sequence_LSTM(nn.Module):
+class SequenceLstmModel(nn.Module):
     def __init__(
         self,
         input_size,
@@ -38,7 +38,7 @@ class Sequence_LSTM(nn.Module):
         bidirectional=False,
         seed=42,
     ):
-        super(Sequence_LSTM, self).__init__()
+        super(SequenceLstmModel, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.bidirectional = bidirectional

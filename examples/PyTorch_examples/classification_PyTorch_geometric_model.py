@@ -5,7 +5,7 @@ from jaqpotpy import Jaqpot
 from jaqpotpy.descriptors.graph import SmilesGraphFeaturizer
 from jaqpotpy.datasets import SmilesGraphDataset
 from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
-    GraphSageNetwork,
+    GraphSageNetworkModel,
     pyg_to_onnx,
 )
 from jaqpotpy.models.trainers.graph_trainers import BinaryGraphModelTrainer
@@ -60,7 +60,7 @@ test_dataset.precompute_featurization()
 # Create a GraphNeuralNetwork architecture (GraphSageNetwork as an example)
 # Obtain node_features from the featurizer
 node_features = featurizer.get_num_node_features()
-model = GraphSageNetwork(
+model = GraphSageNetworkModel(
     input_dim=node_features,  # Input neurons
     hidden_layers=1,  # Number of hidden layers
     hidden_dim=4,  # Hidden neurons

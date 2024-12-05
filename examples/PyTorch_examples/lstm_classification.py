@@ -4,7 +4,7 @@ import numpy as np
 import base64
 from rdkit import Chem
 from jaqpotpy import Jaqpot
-from jaqpotpy.models.torch_models import Sequence_LSTM, lstm_to_onnx
+from jaqpotpy.models.torch_models import SequenceLstmModel, lstm_to_onnx
 from jaqpotpy.models.trainers.sequence_trainers import BinarySequenceTrainer
 from jaqpotpy.datasets import SmilesSeqDataset
 from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
@@ -36,7 +36,7 @@ train_loader = t.utils.data.DataLoader(train_dataset, batch_size=512, shuffle=Tr
 val_loader = t.utils.data.DataLoader(val_dataset, batch_size=512, shuffle=False)
 test_loader = t.utils.data.DataLoader(test_dataset, batch_size=128, shuffle=False)
 
-model = Sequence_LSTM(
+model = SequenceLstmModel(
     input_size=tokenizer.dims[1],
     hidden_size=64,
     num_layers=1,
