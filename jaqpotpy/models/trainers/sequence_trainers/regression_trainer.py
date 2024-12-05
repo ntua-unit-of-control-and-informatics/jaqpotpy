@@ -1,18 +1,12 @@
-from jaqpotpy.api.openapi.models.feature import Feature
-from jaqpotpy.api.openapi.models.feature_type import FeatureType
 from tqdm import tqdm
 import torch
 from jaqpotpy.models.trainers import TorchModelTrainer
 from sklearn import metrics
-import torch.nn.functional as F
 
 
-class BinarySequenceTrainer(TorchModelTrainer):
+class RegressionSequenceTrainer(TorchModelTrainer):
     """
-    Trainer class for Binary Classification using LSTM Networks for SMILES.
-
-    Attributes:
-        decision_threshold (float): Decision threshold for binary classification.
+    Trainer class for Regression using LSTM Networks for SMILES.
     """
 
     def __init__(
@@ -85,7 +79,7 @@ class BinarySequenceTrainer(TorchModelTrainer):
             self.current_epoch += 1
 
             train_loss = self._train_one_epoch(train_loader)
-            _, train_metrics_dict, _ = self.evaluate(train_loader)
+            _, train_metrics_dict = self.evaluate(train_loader)
 
             if self.log_enabled:
                 self._log_metrics(
@@ -93,7 +87,7 @@ class BinarySequenceTrainer(TorchModelTrainer):
                 )
 
             if val_loader:
-                val_loss, val_metrics_dict, _ = self.evaluate(val_loader)
+                val_loss, val_metrics_dict = self.evaluate(val_loader)
                 if self.log_enabled:
                     self._log_metrics(
                         val_loss, metrics_dict=val_metrics_dict, mode="val"
@@ -161,36 +155,32 @@ class BinarySequenceTrainer(TorchModelTrainer):
         total_samples = 0
 
         all_preds = []
-        all_probs = []
-        all_labels = []
+        all_true = []
 
         self.model.eval()
         with torch.no_grad():
             for inputs, y in val_loader:
                 inputs = inputs.to(self.device)
 
-                outputs = self.model(inputs).squeeze(-1)
+                preds = self.model(inputs).squeeze(-1)
 
-                probs = F.sigmoid(outputs)
-                preds = (probs > 0.5).int()
-
-                all_probs.extend(probs.tolist())
                 all_preds.extend(preds.tolist())
-                all_labels.extend(y.tolist())
+                all_true.extend(y.tolist())
 
-                loss = self.loss_fn(outputs.float(), y.float())
+                loss = self.loss_fn(preds.float(), y.float())
 
                 running_loss += loss.item() * y.size(0)
                 total_samples += y.size(0)
 
             avg_loss = running_loss / len(val_loader.dataset)
 
-        metrics_dict = self._compute_metrics(all_labels, all_preds)
-        metrics_dict["roc_auc"] = metrics.roc_auc_score(all_labels, all_probs)
-        metrics_dict["loss"] = avg_loss
-        conf_mat = metrics.confusion_matrix(all_labels, all_preds)
+        all_true = torch.tensor(all_true).tolist()
+        all_preds = torch.tensor(all_preds).tolist()
 
-        return avg_loss, metrics_dict, conf_mat
+        metrics_dict = self._compute_metrics(all_true, all_preds)
+        metrics_dict["loss"] = avg_loss
+
+        return avg_loss, metrics_dict
 
     def predict(self, val_loader):
         """
@@ -206,37 +196,10 @@ class BinarySequenceTrainer(TorchModelTrainer):
         with torch.no_grad():
             for inputs, y in val_loader:
                 inputs = inputs.to(self.device)
-                outputs = self.model(inputs).squeeze(-1)
-
-                probs = F.sigmoid(outputs)
-                preds = (probs > 0.5).int()
-
+                preds = self.model(inputs).squeeze(-1)
                 all_preds.extend(preds.tolist())
 
         return all_preds
-
-    def predict_proba(self, val_loader):
-        """
-        Provide the probabilities of the predictions on the validation set.
-
-        Args:
-            val_loader (Union[torch.utils.data.DataLoader, torch_geometric.loader.DataLoader]): DataLoader for the validation dataset.
-        Returns:
-            list: List of predictions' probabilities.
-        """
-        all_probs = []
-        self.model.eval()
-        with torch.no_grad():
-            for inputs, y in val_loader:
-                inputs = inputs.to(self.device)
-
-                outputs = self.model(inputs).squeeze(-1)
-
-                probs = F.sigmoid(outputs)
-
-                all_probs.extend(probs.tolist())
-
-        return all_probs
 
     def _log_metrics(self, loss, metrics_dict, mode="train"):
         if mode == "train":
@@ -257,20 +220,29 @@ class BinarySequenceTrainer(TorchModelTrainer):
         self.logger.info(epoch_logs)
 
     def _compute_metrics(self, y_true, y_pred):
-        accuracy = metrics.accuracy_score(y_true, y_pred)
-        balanced_accuracy = metrics.balanced_accuracy_score(y_true, y_pred)
-        precision = metrics.precision_score(y_true, y_pred, zero_division=0)
-        recall = metrics.recall_score(y_true, y_pred, zero_division=0)
-        f1 = metrics.f1_score(y_true, y_pred, zero_division=0)
-        mcc = metrics.matthews_corrcoef(y_true, y_pred)
+        """Compute evaluation metrics based on the true and predicted values.
+
+        Args:
+        ----
+            y_true (list): List of true values.
+            y_pred (list): List of predicted values.
+
+        Returns:
+        -------
+            dict: A dictionary containing the computed metrics such as explained variance, R^2, MSE, RMSE, and MAE.
+        """
+        explained_variance = metrics.explained_variance_score(y_true, y_pred)
+        r2 = metrics.r2_score(y_true, y_pred)
+        mse = metrics.mean_squared_error(y_true, y_pred)
+        rmse = metrics.mean_squared_error(y_true, y_pred, squared=False)
+        mae = metrics.mean_absolute_error(y_true, y_pred)
 
         metrics_dict = {
-            "accuracy": accuracy,
-            "balanced_accuracy": balanced_accuracy,
-            "precision": precision,
-            "recall": recall,
-            "f1": f1,
-            "mcc": mcc,
+            "explained_variance": explained_variance,
+            "r2": r2,
+            "mse": mse,
+            "rmse": rmse,
+            "mae": mae,
         }
 
         return metrics_dict

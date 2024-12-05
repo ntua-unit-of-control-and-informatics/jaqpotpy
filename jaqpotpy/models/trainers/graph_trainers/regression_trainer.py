@@ -291,7 +291,7 @@ class RegressionGraphModelTrainer(TorchModelTrainer):
         explained_variance = metrics.explained_variance_score(y_true, y_pred)
         r2 = metrics.r2_score(y_true, y_pred)
         mse = metrics.mean_squared_error(y_true, y_pred)
-        rmse = metrics.root_mean_squared_error(y_true, y_pred)
+        rmse = metrics.mean_squared_error(y_true, y_pred, squared=False)
         mae = metrics.mean_absolute_error(y_true, y_pred)
 
         metrics_dict = {
