@@ -1,7 +1,7 @@
 import torch as t
 from rdkit import Chem
 from jaqpotpy import Jaqpot
-from jaqpotpy.models.torch_models import Sequence_LSTM
+from jaqpotpy.models.torch_models import Sequence_LSTM, lstm_to_onnx
 from jaqpotpy.models.trainers.sequence_trainers import RegressionSequenceTrainer
 from jaqpotpy.datasets import SmilesSeqDataset
 from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
@@ -18,9 +18,7 @@ test_smiles = split["test"]["Drug"]
 test_y = split["test"]["Y"]
 
 tokenizer = SmilesVectorizer()
-# train_mols = [Chem.MolFromSmiles(smile) for smile in train_smiles]
-# val_mols = [Chem.MolFromSmiles(smile) for smile in val_smiles]
-# test_mols = [Chem.MolFromSmiles(smile) for smile in test_smiles]
+
 tokenizer.fit(train_smiles)
 train_dataset = SmilesSeqDataset(train_smiles, train_y, tokenizer)
 val_dataset = SmilesSeqDataset(val_smiles, val_y, tokenizer)
@@ -42,7 +40,7 @@ model = Sequence_LSTM(
 loss = t.nn.MSELoss()
 optimizer = t.optim.Adam(model.parameters(), lr=0.001)
 trainer = RegressionSequenceTrainer(
-    model=model, n_epochs=10, optimizer=optimizer, loss_fn=loss
+    model=model, n_epochs=5, optimizer=optimizer, loss_fn=loss
 )
 
 trainer.train(train_loader=train_loader, val_loader=val_loader)
@@ -52,3 +50,18 @@ print(val_metrics)
 
 _, test_metrics = trainer.evaluate(test_loader)
 print(test_metrics)
+
+onnx_model = onnx_model = lstm_to_onnx(model, tokenizer)
+# # Login to Jaqpot
+jaqpot = Jaqpot()
+jaqpot.login()
+# Deploy the model on Jaqpot
+jaqpot.deploy_torch_model(
+    onnx_model,
+    featurizer=tokenizer,
+    name="LSTM",
+    description="LSTM for binary classification",
+    target_name="ACTIVITY",
+    visibility="PRIVATE",
+    task="regression",  # Specify the task (regression or binary_classification)
+)

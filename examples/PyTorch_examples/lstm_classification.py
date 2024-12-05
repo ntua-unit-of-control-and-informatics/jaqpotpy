@@ -61,14 +61,7 @@ print(test_metrics)
 
 onnx_model = onnx_model = lstm_to_onnx(model, tokenizer)
 # # Login to Jaqpot
-jaqpot = Jaqpot(
-    base_url="http://localhost.jaqpot.org",
-    app_url="http://localhost.jaqpot.org:3000",
-    login_url="http://localhost.jaqpot.org:8070",
-    api_url="http://localhost.jaqpot.org:8080",
-    keycloak_realm="jaqpot-local",
-    keycloak_client_id="jaqpot-local-test",
-)
+jaqpot = Jaqpot()
 jaqpot.login()
 # Deploy the model on Jaqpot
 jaqpot.deploy_torch_model(
