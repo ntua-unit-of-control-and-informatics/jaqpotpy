@@ -76,7 +76,9 @@ class JaqpotpyDataset(BaseDataset):
                     "featurizer should be a list containing MolecularFeaturizer instances."
                 )
 
-        super().__init__(df=df, path=path, y_cols=y_cols, x_cols=x_cols, task=task)
+        super().__init__(
+            df=df, path=path, y_cols=y_cols, x_cols=copy.deepcopy(x_cols), task=task
+        )
 
         self._validate_column_overlap(self.smiles_cols, self.x_cols, self.y_cols)
         self._validate_column_names(self.smiles_cols, "smiles_cols")
