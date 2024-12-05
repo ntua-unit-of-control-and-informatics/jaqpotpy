@@ -96,6 +96,7 @@ class SmilesVectorizer(object):
         self.charset = "".join(charset.union(set(extra_chars)))
         self.maxlength = max([len(smile) for smile in smiles])
 
+    # DO NOT REMOVE COMMENTS. MIGHT BE USEFUL IN THE FUTURE
     # def randomize_smiles(self, smiles):
     #     """Perform a randomization of a SMILES string
     #     must be RDKit sanitizable"""
