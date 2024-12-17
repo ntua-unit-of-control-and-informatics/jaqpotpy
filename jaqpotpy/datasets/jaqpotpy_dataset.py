@@ -319,7 +319,7 @@ class JaqpotpyDataset(BaseDataset):
                 )
             transformed_X = FeatureSelector.fit_transform(X_filtered)
             selected_columns_mask = FeatureSelector.get_support()
-            self.selected_features = X_filtered.columns[selected_columns_mask]
+            self.selected_features = X_filtered.columns[selected_columns_mask].tolist()
             self.X = pd.concat(
                 [
                     pd.DataFrame(data=transformed_X, columns=self.selected_features),
