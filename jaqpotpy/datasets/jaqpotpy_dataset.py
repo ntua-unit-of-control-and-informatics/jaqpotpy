@@ -327,13 +327,14 @@ class JaqpotpyDataset(BaseDataset):
                 ],
                 axis=1,
             )
+            self.selected_features += X_excluded.columns.tolist()
 
         elif SelectColumns is not None:
             if not all(item in self.X.columns for item in SelectColumns):
                 raise ValueError("Provided features not in dataset features")
             else:
                 self.X = self.X[SelectColumns]
-                self.selected_features = SelectColumns
+                self.selected_features = SelectColumns + X_excluded.columns.tolist()
 
     def copy(self):
         """
