@@ -319,7 +319,7 @@ class JaqpotpyDataset(BaseDataset):
                 )
             transformed_X = FeatureSelector.fit_transform(X_filtered)
             selected_columns_mask = FeatureSelector.get_support()
-            self.selected_features = X_filtered.columns[selected_columns_mask]
+            self.selected_features = X_filtered.columns[selected_columns_mask].tolist()
             self.X = pd.concat(
                 [
                     pd.DataFrame(data=transformed_X, columns=self.selected_features),
@@ -327,13 +327,14 @@ class JaqpotpyDataset(BaseDataset):
                 ],
                 axis=1,
             )
+            self.selected_features += X_excluded.columns.tolist()
 
         elif SelectColumns is not None:
             if not all(item in self.X.columns for item in SelectColumns):
                 raise ValueError("Provided features not in dataset features")
             else:
                 self.X = self.X[SelectColumns]
-                self.selected_features = SelectColumns
+                self.selected_features = SelectColumns + X_excluded.columns.tolist()
 
     def copy(self):
         """
