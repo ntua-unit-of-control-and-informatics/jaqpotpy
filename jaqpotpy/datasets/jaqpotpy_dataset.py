@@ -269,11 +269,13 @@ class JaqpotpyDataset(BaseDataset):
             ValueError: If FeatureSelector is not a valid sklearn feature selector.
             ValueError: If any features in SelectColumns are not in the dataset.
         """
-        if (FeatureSelector is None and SelectColumns is None) or (
-            FeatureSelector is not None and SelectColumns is not None
-        ):
+        if FeatureSelector is None and SelectColumns is None and ExcludeColumns is None:
             raise ValueError(
-                "Either FeatureSelector or SelectColumns must be provided, but not both."
+                "Only one from FeatureSelector, SelectColumns and ExcludeColumns must be provided."
+            )
+        elif FeatureSelector is not None and SelectColumns is not None:
+            raise ValueError(
+                "You cannot provide both FeatureSelector and SelectColumns."
             )
 
         if ExcludeColumns:
