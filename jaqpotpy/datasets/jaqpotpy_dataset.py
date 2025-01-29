@@ -357,6 +357,21 @@ class JaqpotpyDataset(BaseDataset):
         )
         return copied_instance
 
+    def df_astype(self, dtype):
+        """
+        Convert the dataset to the specified data type.
+
+        Args:
+            dtype: The data type to convert to.
+
+        Returns:
+            JaqpotpyDataset: The dataset converted to the specified data type.
+        """
+        self.df = self.df.astype(dtype)
+        self.X = self.X.astype(dtype)
+        self.y = self.y.astype(dtype)
+        return self
+
     def __get_X__(self):
         """
         Get a copy of the feature matrix X.
