@@ -566,7 +566,6 @@ class SklearnModel(Model):
                 self.model.__class__.__name__ == "GaussianProcessRegressor"
                 and "return_std" in kwargs
             ):
-                # isinstance(sklearn_prediction, tuple) and len(sklearn_prediction) == 2:
                 endpoint_prediction = sklearn_prediction[0]
                 std_prediction = sklearn_prediction[1]
             else:
