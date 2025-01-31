@@ -229,6 +229,8 @@ class SklearnModel(Model):
                 feature["featureType"] = FeatureType.INTEGER
             elif feature["featureType"] in ["float", "float64"]:
                 feature["featureType"] = FeatureType.FLOAT
+            elif feature["featureType"] in ["bool"]:
+                feature["featureType"] = FeatureType.BOOLEAN
             elif feature["featureType"] in ["string, object", "O"]:
                 feature["featureType"] = FeatureType.CATEGORICAL
                 categories = self.dataset.df[feature["key"]].unique()
