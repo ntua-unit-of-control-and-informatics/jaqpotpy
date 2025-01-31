@@ -357,7 +357,7 @@ class JaqpotpyDataset(BaseDataset):
         )
         return copied_instance
 
-    def df_astype(self, columns, dtype):
+    def df_astype(self, dtype, columns=None):
         """
         Convert the dataset to the specified data type.
 
