@@ -1,4 +1,5 @@
 from typing import Any, Dict, Optional, List, Union
+from sklearn import tree, ensemble
 from sklearn import preprocessing, pipeline, compose, metrics
 from sklearn.preprocessing import LabelEncoder
 from sklearn.base import BaseEstimator
@@ -198,6 +199,7 @@ class SklearnModel(Model):
         self.initial_types = None
         self.onnx_preprocessor = None
         self.onnx_model = None
+        self.onnx_options = None
         self.type = ModelType.SKLEARN_ONNX
         self.independentFeatures = None
         self.dependentFeatures = None
@@ -328,41 +330,13 @@ class SklearnModel(Model):
         """
         name = self.preprocess_pipeline.__class__.__name__ + "_ONNX"
         self.initial_types_preprocessor = []
-        dtype_array = self.dataset.X.dtypes.values
-        dtype_str_array = np.array([str(dtype) for dtype in dtype_array])
-        all_numerical = all(
-            dtype
-            in [
-                "int8",
-                "int16",
-                "int32",
-                "int64",
-                "uint8",
-                "uint16",
-                "uint32",
-                "uint64",
-                "float16",
-                "float32",
-                "float64",
-                "bool",
-            ]
-            for dtype in dtype_str_array
-        )
-        if all_numerical:
-            self.initial_types_preprocessor = [
+        for i, feature in enumerate(self.dataset.X.columns):
+            self.initial_types_preprocessor.append(
                 (
-                    "input",
-                    self._map_onnx_dtype("float32", len(self.dataset.X.columns)),
+                    self.dataset.X.columns[i],
+                    self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
                 )
-            ]
-        else:
-            for i, feature in enumerate(self.dataset.X.columns):
-                self.initial_types_preprocessor.append(
-                    (
-                        self.dataset.X.columns[i],
-                        self._map_onnx_dtype(self.dataset.X[feature].dtype.name),
-                    )
-                )
+            )
         self.onnx_preprocessor = convert_sklearn(
             self.preprocess_pipeline,
             initial_types=self.initial_types_preprocessor,
@@ -378,12 +352,18 @@ class SklearnModel(Model):
             onnx_options (Optional[Dict]): Options for ONNX conversion.
         """
         name = self.model.__class__.__name__ + "_ONNX"
+        compatible_dtype = (
+            "float32"
+            if self.model.__class__.__name__ in ensemble.__all__ + tree.__all__
+            else "float64"
+        )
         self.initial_types = []
         self.initial_types = [
             (
                 "input",
                 self._map_onnx_dtype(
-                    "float32", self.trained_model.named_steps["model"].n_features_in_
+                    compatible_dtype,
+                    self.trained_model.named_steps["model"].n_features_in_,
                 ),
             )
         ]
@@ -420,6 +400,7 @@ class SklearnModel(Model):
         Args:
             onnx_options (Optional[Dict]): Options for ONNX conversion.
         """
+        self.onnx_options = onnx_options
         self.libraries = get_installed_libraries()
         if isinstance(self.featurizer, (MolecularFeaturizer, list)):
             if not isinstance(self.featurizer, list):
@@ -443,7 +424,7 @@ class SklearnModel(Model):
                     (preprocessor.__class__.__name__, preprocessor)
                 )
             self.preprocess_pipeline.fit(X)
-            self._create_onnx_preprocessor(onnx_options=onnx_options)
+            self._create_onnx_preprocessor(onnx_options=self.onnx_options)
 
         if self.doa:
             self.doa_data = []
@@ -542,7 +523,7 @@ class SklearnModel(Model):
             for feature in self.dataset.y_cols
         )
         self._dtypes_to_jaqpotypes()
-        self._create_onnx_model(onnx_options=onnx_options)
+        self._create_onnx_model(onnx_options=self.onnx_options)
 
     def predict(self, dataset: JaqpotpyDataset, **kwargs):
         """
@@ -581,7 +562,11 @@ class SklearnModel(Model):
             X_transformed = X
         sklearn_prediction = model.predict(X_transformed, **kwargs)
         if self.preprocess_y[0] is not None:
-            if isinstance(sklearn_prediction, tuple) and len(sklearn_prediction) == 2:
+            if (
+                self.model.__class__.__name__ == "GaussianProcessRegressor"
+                and "return_std" in kwargs
+            ):
+                # isinstance(sklearn_prediction, tuple) and len(sklearn_prediction) == 2:
                 endpoint_prediction = sklearn_prediction[0]
                 std_prediction = sklearn_prediction[1]
             else:
@@ -663,9 +648,12 @@ class SklearnModel(Model):
         input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
         onnx_prediction = sess.run(None, input_data)
         if (
-            isinstance(onnx_prediction, list)
-            and len(onnx_prediction) == 2
-            and self.task in ["REGRESSION"]
+            self.onnx_options
+            and self.model.__class__.__name__ == "GaussianProcessRegressor"
+            and any(
+                "return_std" in options and options["return_std"]
+                for options in self.onnx_options.values()
+            )
         ):
             predict_std = True
             endpoint_prediction = onnx_prediction[0]
