@@ -703,8 +703,6 @@ class SklearnModel(Model):
             input_dtype = (
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
-                else "float64"
-                if isinstance(self.initial_types[0][1], DoubleTensorType)
                 else "string"
             )
             input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
