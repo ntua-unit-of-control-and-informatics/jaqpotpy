@@ -356,7 +356,8 @@ class SklearnModel(Model):
         name = self.model.__class__.__name__ + "_ONNX"
         compatible_dtype = (
             "float32"
-            if self.model.__class__.__name__ in ensemble.__all__ + tree.__all__
+            if (self.model.__class__.__name__ in ensemble.__all__ + tree.__all__)
+            or self.task != "regression"
             else "float64"
         )
         self.initial_types = []
@@ -702,6 +703,8 @@ class SklearnModel(Model):
             input_dtype = (
                 "float32"
                 if isinstance(self.initial_types[0][1], FloatTensorType)
+                else "float64"
+                if isinstance(self.initial_types[0][1], DoubleTensorType)
                 else "string"
             )
             input_data = {sess.get_inputs()[0].name: X.astype(input_dtype)}
