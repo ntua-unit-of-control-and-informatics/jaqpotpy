@@ -357,7 +357,7 @@ class SklearnModel(Model):
         compatible_dtype = (
             "float32"
             if (self.model.__class__.__name__ in ensemble.__all__ + tree.__all__)
-            or self.task != "regression"
+            or self.task != "REGRESSION"
             else "float64"
         )
         self.initial_types = []
