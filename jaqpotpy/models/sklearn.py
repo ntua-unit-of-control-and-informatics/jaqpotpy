@@ -356,7 +356,8 @@ class SklearnModel(Model):
         name = self.model.__class__.__name__ + "_ONNX"
         compatible_dtype = (
             "float32"
-            if self.model.__class__.__name__ in ensemble.__all__ + tree.__all__
+            if (self.model.__class__.__name__ in ensemble.__all__ + tree.__all__)
+            or self.task != "REGRESSION"
             else "float64"
         )
         self.initial_types = []
