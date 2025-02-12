@@ -298,7 +298,7 @@ class JaqpotpyDataset(BaseDataset):
 
         if (
             len(X_filtered.select_dtypes(include="object").columns) > 0
-            and SelectColumns is None
+            and FeatureSelector is not None
         ):
             raise TypeError(
                 "Some of the columns contain character variables. Please provide all character columns in the 'ExcludeColumns' argument as a list."
