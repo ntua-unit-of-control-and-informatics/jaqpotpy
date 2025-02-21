@@ -31,6 +31,7 @@ class Dataset(BaseModel):
     Dataset
     """ # noqa: E501
     id: Optional[StrictInt] = None
+    name: Optional[StrictStr] = None
     type: DatasetType
     entry_type: StrictStr = Field(alias="entryType")
     input: Annotated[List[Any], Field(max_length=100)]
@@ -44,7 +45,7 @@ class Dataset(BaseModel):
     execution_finished_at: Optional[datetime] = Field(default=None, alias="executionFinishedAt")
     created_at: Optional[datetime] = Field(default=None, alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "type", "entryType", "input", "result", "status", "failureReason", "userId", "modelId", "modelName", "executedAt", "executionFinishedAt", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "name", "type", "entryType", "input", "result", "status", "failureReason", "userId", "modelId", "modelName", "executedAt", "executionFinishedAt", "createdAt", "updatedAt"]
 
     @field_validator('entry_type')
     def entry_type_validate_enum(cls, value):
@@ -115,6 +116,7 @@ class Dataset(BaseModel):
 
         _obj = cls.model_validate({
             "id": obj.get("id"),
+            "name": obj.get("name"),
             "type": obj.get("type"),
             "entryType": obj.get("entryType"),
             "input": obj.get("input"),

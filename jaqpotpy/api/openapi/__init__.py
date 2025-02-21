@@ -54,6 +54,7 @@ from jaqpotpy.api.openapi.models.dataset_csv import DatasetCSV
 from jaqpotpy.api.openapi.models.dataset_type import DatasetType
 from jaqpotpy.api.openapi.models.doa import Doa
 from jaqpotpy.api.openapi.models.doa_method import DoaMethod
+from jaqpotpy.api.openapi.models.docker_config import DockerConfig
 from jaqpotpy.api.openapi.models.error_code import ErrorCode
 from jaqpotpy.api.openapi.models.error_response import ErrorResponse
 from jaqpotpy.api.openapi.models.feature import Feature
