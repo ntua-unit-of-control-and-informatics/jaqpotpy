@@ -23,6 +23,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, Strict
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from typing_extensions import Annotated
 from jaqpotpy.api.openapi.models.doa import Doa
+from jaqpotpy.api.openapi.models.docker_config import DockerConfig
 from jaqpotpy.api.openapi.models.feature import Feature
 from jaqpotpy.api.openapi.models.library import Library
 from jaqpotpy.api.openapi.models.model_scores import ModelScores
@@ -44,7 +45,7 @@ class Model(BaseModel):
     name: Annotated[str, Field(min_length=3, strict=True, max_length=255)]
     description: Optional[Annotated[str, Field(min_length=3, strict=True, max_length=50000)]] = None
     type: ModelType
-    jaqpotpy_version: StrictStr = Field(alias="jaqpotpyVersion")
+    jaqpotpy_version: Optional[StrictStr] = Field(default=None, alias="jaqpotpyVersion")
     doas: Optional[Annotated[List[Doa], Field(max_length=50)]] = None
     libraries: Annotated[List[Library], Field(max_length=1000)]
     dependent_features: Annotated[List[Feature], Field(max_length=1000)] = Field(alias="dependentFeatures")
@@ -67,9 +68,10 @@ class Model(BaseModel):
     legacy_prediction_service: Optional[StrictStr] = Field(default=None, alias="legacyPredictionService")
     scores: Optional[ModelScores] = None
     r_pbpk_config: Optional[RPbpkConfig] = Field(default=None, alias="rPbpkConfig")
+    docker_config: Optional[DockerConfig] = Field(default=None, alias="dockerConfig")
     created_at: Optional[datetime] = Field(default=None, description="The date and time when the feature was created.", alias="createdAt")
     updated_at: Optional[datetime] = Field(default=None, description="The date and time when the model was last updated.", alias="updatedAt")
-    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "archived", "archivedAt", "torchConfig", "preprocessors", "featurizers", "rawPreprocessor", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "rPbpkConfig", "createdAt", "updatedAt"]
+    __properties: ClassVar[List[str]] = ["id", "name", "description", "type", "jaqpotpyVersion", "doas", "libraries", "dependentFeatures", "independentFeatures", "sharedWithOrganizations", "visibility", "task", "archived", "archivedAt", "torchConfig", "preprocessors", "featurizers", "rawPreprocessor", "rawModel", "creator", "canEdit", "isAdmin", "selectedFeatures", "tags", "legacyPredictionService", "scores", "rPbpkConfig", "dockerConfig", "createdAt", "updatedAt"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -168,6 +170,9 @@ class Model(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of r_pbpk_config
         if self.r_pbpk_config:
             _dict['rPbpkConfig'] = self.r_pbpk_config.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of docker_config
+        if self.docker_config:
+            _dict['dockerConfig'] = self.docker_config.to_dict()
         return _dict
 
     @classmethod
@@ -207,6 +212,7 @@ class Model(BaseModel):
             "legacyPredictionService": obj.get("legacyPredictionService"),
             "scores": ModelScores.from_dict(obj["scores"]) if obj.get("scores") is not None else None,
             "rPbpkConfig": RPbpkConfig.from_dict(obj["rPbpkConfig"]) if obj.get("rPbpkConfig") is not None else None,
+            "dockerConfig": DockerConfig.from_dict(obj["dockerConfig"]) if obj.get("dockerConfig") is not None else None,
             "createdAt": obj.get("createdAt"),
             "updatedAt": obj.get("updatedAt")
         })

@@ -32,7 +32,7 @@ class PredictionModel(BaseModel):
     """
     PredictionModel
     """ # noqa: E501
-    id: Optional[StrictInt] = Field(default=None, description="Unique identifier for the prediction model")
+    id: StrictInt = Field(description="Unique identifier for the prediction model")
     dependent_features: List[Feature] = Field(description="List of dependent features for the model", alias="dependentFeatures")
     independent_features: List[Feature] = Field(description="List of independent features for the model", alias="independentFeatures")
     type: ModelType
@@ -123,11 +123,6 @@ class PredictionModel(BaseModel):
                 if _item_preprocessors:
                     _items.append(_item_preprocessors.to_dict())
             _dict['preprocessors'] = _items
-        # set to None if id (nullable) is None
-        # and model_fields_set contains the field
-        if self.id is None and "id" in self.model_fields_set:
-            _dict['id'] = None
-
         # set to None if torch_config (nullable) is None
         # and model_fields_set contains the field
         if self.torch_config is None and "torch_config" in self.model_fields_set:
