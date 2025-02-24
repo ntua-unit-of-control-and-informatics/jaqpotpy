@@ -293,30 +293,40 @@ class Jaqpot:
         name: str,
         description: str,
         visibility: ModelVisibility,
-    ):
+    ) -> None:
         """
-        Deploy a docker model on Jaqpot
+        Deploys a Docker-based model on Jaqpot.
 
-        Parameters
-        ----------
-        model : object
-            The sklearn model to be deployed. The model should have attributes
-            like `onnx_model`, `onnx_preprocessor`, `type`, `jaqpotpy_version`,
-            `doa_data`, `libraries`, `dependentFeatures`, `independentFeatures`,
-            `selected_features`, `featurizers`, `preprocessors`, and `scores`.
-        name : str
-            The name of the model.
-        description : str
-            A description of the model.
-        visibility : str
-            The visibility of the model (e.g., 'public', 'private').
+        This method registers a Docker-encapsulated machine learning model on the Jaqpot platform,
+        allowing it to be accessed via the Jaqpot API.
 
-        Returns
-        -------
-        None
+        Args:
+            model (DockerModel):
+                The Docker-based model to be deployed. The model must contain attributes such as:
+                - `jaqpotpy_version` (str): The version of JaqpotPy used.
+                - `docker_config` (DockerConfig): The Docker container configuration.
+                - `dependent_features` (List[Feature]): The output features of the model.
+                - `independent_features` (List[Feature]): The input features of the model.
+
+            name (str):
+                The name of the model to be displayed on Jaqpot.
+
+            description (str):
+                A short textual description of the model.
+
+            visibility (ModelVisibility):
+                The access level of the model (e.g., public, private, or restricted to an organization).
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If any of the required parameters are invalid or missing.
+            JaqpotAPIError: If the deployment request fails due to an API issue.
         """
         model_api = ModelApi(self.http_client)
         raw_model = ""
+
         body_model = Model(
             name=name,
             type=ModelType.DOCKER,
@@ -334,9 +344,7 @@ class Jaqpot:
                     key=feature_i["key"],
                     name=feature_i["name"],
                     feature_type=feature_i["featureType"],
-                    possible_values=feature_i["possible_values"]
-                    if "possible_values" in feature_i
-                    else None,
+                    possible_values=feature_i.get("possible_values"),
                 )
                 for feature_i in model.independent_features
             ],
@@ -346,4 +354,5 @@ class Jaqpot:
             description=description,
             docker_config=model.docker_config,
         )
+
         self._create_model_request(body_model, model_api)
