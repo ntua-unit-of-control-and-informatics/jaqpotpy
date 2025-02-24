@@ -16,6 +16,7 @@ from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.url_utils import add_subdomain
+from jaqpotpy.models.docker_model import DockerModel
 
 ENCODING = "utf-8"
 
@@ -180,6 +181,9 @@ class Jaqpot:
             preprocessors=model.preprocessors,
             scores=model.scores,
         )
+        self._create_model_request(body_model, model_api)
+
+    def _create_model_request(self, body_model, model_api):
         response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
             model_url = response.headers.get("Location")
@@ -282,3 +286,64 @@ class Jaqpot:
         else:
             self.log.error("Error code: " + str(response.status_code.value))
             self.log.error("Error message: " + response.content.decode("utf-8"))
+
+    def deploy_docker_model(
+        self,
+        model: DockerModel,
+        name: str,
+        description: str,
+        visibility: ModelVisibility,
+    ):
+        """
+        Deploy a docker model on Jaqpot
+
+        Parameters
+        ----------
+        model : object
+            The sklearn model to be deployed. The model should have attributes
+            like `onnx_model`, `onnx_preprocessor`, `type`, `jaqpotpy_version`,
+            `doa_data`, `libraries`, `dependentFeatures`, `independentFeatures`,
+            `selected_features`, `featurizers`, `preprocessors`, and `scores`.
+        name : str
+            The name of the model.
+        description : str
+            A description of the model.
+        visibility : str
+            The visibility of the model (e.g., 'public', 'private').
+
+        Returns
+        -------
+        None
+        """
+        model_api = ModelApi(self.http_client)
+        raw_model = ""
+        body_model = Model(
+            name=name,
+            type=ModelType.DOCKER,
+            jaqpotpy_version=model.jaqpotpy_version,
+            dependent_features=[
+                Feature(
+                    key=feature_i["key"],
+                    name=feature_i["name"],
+                    feature_type=feature_i["featureType"],
+                )
+                for feature_i in model.dependent_features
+            ],
+            independent_features=[
+                Feature(
+                    key=feature_i["key"],
+                    name=feature_i["name"],
+                    feature_type=feature_i["featureType"],
+                    possible_values=feature_i["possible_values"]
+                    if "possible_values" in feature_i
+                    else None,
+                )
+                for feature_i in model.independent_features
+            ],
+            visibility=visibility,
+            task=ModelTask.REGRESSION,
+            raw_model=raw_model,
+            description=description,
+            docker_config=model.docker_config,
+        )
+        self._create_model_request(body_model, model_api)
