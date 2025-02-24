@@ -1,7 +1,6 @@
 from typing import List
 from jaqpot_api_client import DockerConfig, Feature, ModelVisibility, ModelType
 
-from jaqpotpy import Jaqpot
 from jaqpotpy.models import Model
 
 
@@ -40,7 +39,7 @@ class DockerModel(Model):
         self.model_type = ModelType.DOCKER  # Ensuring the model type is explicitly set
 
     def deploy_on_jaqpot(
-        self, jaqpot: Jaqpot, name: str, description: str, visibility: ModelVisibility
+        self, jaqpot, name: str, description: str, visibility: ModelVisibility
     ) -> None:
         """
         Deploys the Docker-based model to Jaqpot.
