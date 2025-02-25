@@ -1,5 +1,5 @@
 import subprocess
-from jaqpotpy.api.openapi.models.library import Library
+from jaqpot_api_client.models.library import Library
 
 
 def get_installed_libraries():

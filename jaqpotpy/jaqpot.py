@@ -4,16 +4,16 @@ from keycloak import KeycloakOpenID
 
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
-from jaqpotpy.api.jaqpot_api_http_client import JaqpotApiHttpClient
+from jaqpot_python_sdk.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
+from jaqpot_python_sdk.jaqpot_api_http_client import JaqpotApiHttpClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
-from jaqpotpy.api.openapi.api.model_api import ModelApi
-from jaqpotpy.api.openapi.models.feature import Feature
-from jaqpotpy.api.openapi.models.feature_type import FeatureType
-from jaqpotpy.api.openapi.models.model import Model
-from jaqpotpy.api.openapi.models.model_task import ModelTask
-from jaqpotpy.api.openapi.models.model_type import ModelType
-from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
+from jaqpot_api_client.api.model_api import ModelApi
+from jaqpot_api_client.models.feature import Feature
+from jaqpot_api_client.models.feature_type import FeatureType
+from jaqpot_api_client.models.model import Model
+from jaqpot_api_client.models.model_task import ModelTask
+from jaqpot_api_client.models.model_type import ModelType
+from jaqpot_api_client.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.url_utils import add_subdomain
 from jaqpotpy.models.docker_model import DockerModel

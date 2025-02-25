@@ -7,9 +7,9 @@ from skl2onnx import convert_sklearn, to_onnx, update_registered_converter
 from sklearn.calibration import LabelEncoder
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.models.doa import Doa
+from jaqpot_api_client.models.doa import Doa
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
-from jaqpotpy.api.openapi.models import ModelScores, ModelType
+from jaqpot_api_client.models import ModelScores, ModelType
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.doa import DOA
 from skl2onnx.common.shape_calculator import (
