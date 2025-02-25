@@ -5,12 +5,12 @@ from typing import Union, Iterable, Any, Callable
 from scipy.stats import chi2
 from scipy.spatial.distance import pdist, cdist
 
-from jaqpotpy.api.openapi.models.bounding_box_doa import BoundingBoxDoa
-from jaqpotpy.api.openapi.models.leverage_doa import LeverageDoa
-from jaqpotpy.api.openapi.models.mean_var_doa import MeanVarDoa
-from jaqpotpy.api.openapi.models.mahalanobis_doa import MahalanobisDoa
-from jaqpotpy.api.openapi.models.kernel_based_doa import KernelBasedDoa
-from jaqpotpy.api.openapi.models.city_block_doa import CityBlockDoa
+from jaqpot_api_client.models.bounding_box_doa import BoundingBoxDoa
+from jaqpot_api_client.models.leverage_doa import LeverageDoa
+from jaqpot_api_client.models.mean_var_doa import MeanVarDoa
+from jaqpot_api_client.models.mahalanobis_doa import MahalanobisDoa
+from jaqpot_api_client.models.kernel_based_doa import KernelBasedDoa
+from jaqpot_api_client.models.city_block_doa import CityBlockDoa
 
 
 class DOA(ABC):

@@ -1,5 +1,5 @@
-from jaqpotpy.api.openapi.models.feature import Feature
-from jaqpotpy.api.openapi.models.feature_type import FeatureType
+from jaqpot_api_client.models.feature import Feature
+from jaqpot_api_client.models.feature_type import FeatureType
 from tqdm import tqdm
 import torch
 import io

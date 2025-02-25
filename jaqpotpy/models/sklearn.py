@@ -19,7 +19,7 @@ from skl2onnx.common.data_types import (
     StringTensorType,
 )
 import jaqpotpy
-from jaqpotpy.api.openapi.models import (
+from jaqpot_api_client.models import (
     ModelScores,
     Scores,
     RegressionScores,
@@ -29,7 +29,7 @@ from jaqpotpy.api.openapi.models import (
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.openapi.models import (
+from jaqpot_api_client.models import (
     FeatureType,
     FeaturePossibleValue,
     ModelType,
