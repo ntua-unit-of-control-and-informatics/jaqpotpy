@@ -16,6 +16,7 @@ from jaqpotpy.api.openapi.models.model_type import ModelType
 from jaqpotpy.api.openapi.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.url_utils import add_subdomain
+from jaqpotpy.models.docker_model import DockerModel
 
 ENCODING = "utf-8"
 
@@ -180,6 +181,9 @@ class Jaqpot:
             preprocessors=model.preprocessors,
             scores=model.scores,
         )
+        self._create_model_request(body_model, model_api)
+
+    def _create_model_request(self, body_model, model_api):
         response = model_api.create_model_with_http_info(model=body_model)
         if response.status_code < 300:
             model_url = response.headers.get("Location")
@@ -282,3 +286,74 @@ class Jaqpot:
         else:
             self.log.error("Error code: " + str(response.status_code.value))
             self.log.error("Error message: " + response.content.decode("utf-8"))
+
+    def deploy_docker_model(
+        self,
+        model: DockerModel,
+        name: str,
+        description: str,
+        visibility: ModelVisibility,
+    ) -> None:
+        """
+        Deploys a Docker-based model on Jaqpot.
+
+        This method registers a Docker-encapsulated machine learning model on the Jaqpot platform,
+        allowing it to be accessed via the Jaqpot API.
+
+        Args:
+            model (DockerModel):
+                The Docker-based model to be deployed. The model must contain attributes such as:
+                - `jaqpotpy_version` (str): The version of JaqpotPy used.
+                - `docker_config` (DockerConfig): The Docker container configuration.
+                - `dependent_features` (List[Feature]): The output features of the model.
+                - `independent_features` (List[Feature]): The input features of the model.
+
+            name (str):
+                The name of the model to be displayed on Jaqpot.
+
+            description (str):
+                A short textual description of the model.
+
+            visibility (ModelVisibility):
+                The access level of the model (e.g., public, private, or restricted to an organization).
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If any of the required parameters are invalid or missing.
+            JaqpotAPIError: If the deployment request fails due to an API issue.
+        """
+        model_api = ModelApi(self.http_client)
+        raw_model = ""
+
+        body_model = Model(
+            name=name,
+            type=ModelType.DOCKER,
+            jaqpotpy_version=model.jaqpotpy_version,
+            dependent_features=[
+                Feature(
+                    key=feature_i["key"],
+                    name=feature_i["name"],
+                    feature_type=feature_i["featureType"],
+                )
+                for feature_i in model.dependent_features
+            ],
+            independent_features=[
+                Feature(
+                    key=feature_i["key"],
+                    name=feature_i["name"],
+                    feature_type=feature_i["featureType"],
+                    possible_values=feature_i.get("possible_values"),
+                )
+                for feature_i in model.independent_features
+            ],
+            visibility=visibility,
+            task=ModelTask.REGRESSION,
+            raw_model=raw_model,
+            description=description,
+            docker_config=model.docker_config.to_dict(),
+            libraries=[],
+        )
+
+        self._create_model_request(body_model, model_api)
