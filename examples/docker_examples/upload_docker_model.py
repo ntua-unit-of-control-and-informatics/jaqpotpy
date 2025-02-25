@@ -4,14 +4,22 @@ from jaqpotpy import Jaqpot
 
 # Define independent and dependent features
 independent_features = [
-    Feature(key="x1", name="X1", feature_type=FeatureType.FLOAT),
-    Feature(key="x2", name="X2", feature_type=FeatureType.FLOAT),
+    Feature(
+        key="numGenerations", name="numGenerations", feature_type=FeatureType.FLOAT
+    ).to_dict(),
 ]
 
-dependent_features = [Feature(key="y", name="Y", feature_type=FeatureType.FLOAT)]
+dependent_features = [
+    Feature(
+        key="prediction", name="Prediction", feature_type=FeatureType.FLOAT
+    ).to_dict(),
+    Feature(key="smiles", name="SMILES", feature_type=FeatureType.STRING).to_dict(),
+]
 
 # Create a dummy DockerConfig (update values as needed)
-docker_config = DockerConfig(app_name="fake-model", docker_image="fake-model-image")
+docker_config = DockerConfig(
+    app_name="gflownet2", docker_image="upcintua/jaqpot-gflownet"
+)
 
 # Instantiate a DockerModel
 jaqpot_model = DockerModel(
@@ -21,14 +29,7 @@ jaqpot_model = DockerModel(
 )
 
 # Create an instance of Jaqpot (ensure local Jaqpot is running)
-jaqpot = Jaqpot(
-    base_url="http://localhost.jaqpot.org",
-    app_url="http://localhost.jaqpot.org:3000",
-    login_url="http://localhost.jaqpot.org:8070",
-    api_url="http://localhost.jaqpot.org:8080",
-    keycloak_realm="jaqpot-local",
-    keycloak_client_id="jaqpot-local-test",
-)
+jaqpot = Jaqpot()
 
 # Login to Jaqpot (requires authorization from browser)
 jaqpot.login()
@@ -36,7 +37,7 @@ jaqpot.login()
 # Deploy the model on Jaqpot
 jaqpot_model.deploy_on_jaqpot(
     jaqpot=jaqpot,
-    name="Fake model",
+    name="Gflownet model",
     description="This is my first attempt to train and upload a Jaqpot model.",
-    visibility=ModelVisibility.PRIVATE,  # Fixed to use the correct enum
+    visibility=ModelVisibility.PRIVATE,
 )

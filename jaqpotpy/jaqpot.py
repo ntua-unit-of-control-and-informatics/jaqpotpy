@@ -352,7 +352,8 @@ class Jaqpot:
             task=ModelTask.REGRESSION,
             raw_model=raw_model,
             description=description,
-            docker_config=model.docker_config,
+            docker_config=model.docker_config.to_dict(),
+            libraries=[],
         )
 
         self._create_model_request(body_model, model_api)
