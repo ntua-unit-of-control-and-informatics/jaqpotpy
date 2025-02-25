@@ -18,7 +18,7 @@ dependent_features = [
 
 # Create a dummy DockerConfig (update values as needed)
 docker_config = DockerConfig(
-    app_name="gflownet2", docker_image="upcintua/jaqpot-gflownet"
+    app_name="gflownet", docker_image="upcintua/jaqpot-gflownet"
 )
 
 # Instantiate a DockerModel
