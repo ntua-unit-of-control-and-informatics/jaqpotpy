@@ -161,6 +161,7 @@ class SklearnModel(Model):
         doa: Optional[Union[DOA, list]] = None,
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
         preprocess_y: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
+        verbose=True,
     ):
         """
         Initialize the SklearnModel.
@@ -178,6 +179,7 @@ class SklearnModel(Model):
         self.preprocess_pipeline = None
         self.pipeline = None
         self.trained_model = None
+        self.verbose = verbose
         self.doa = doa if isinstance(doa, list) else [doa] if doa else None
         self.doa_data = None
         self.preprocess_x = (
@@ -481,14 +483,18 @@ class SklearnModel(Model):
                 self.train_scores[self.dataset.y_cols[output]] = self._get_metrics(
                     y[:, output], y_pred[:, output]
                 )
-                print(f"Goodness-of-fit metrics of output {output} on training set:")
-                print(self.train_scores[self.dataset.y_cols[output]])
+                if self.verbose:
+                    print(
+                        f"Goodness-of-fit metrics of output {output} on training set:"
+                    )
+                    print(self.train_scores[self.dataset.y_cols[output]])
         else:
             self.train_scores = self._get_metrics(
                 self.dataset.__get_Y__().to_numpy(), y_pred
             )
-            print("Goodness-of-fit metrics on training set:")
-            print(self.train_scores)
+            if self.verbose:
+                print("Goodness-of-fit metrics on training set:")
+                print(self.train_scores)
         self._create_jaqpot_scores(
             self.train_scores, score_type="train", n_output=self.dataset.y.shape[1]
         )
