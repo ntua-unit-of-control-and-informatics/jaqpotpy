@@ -4,6 +4,7 @@ import numpy as np
 from typing import Union, Iterable, Any, Callable
 from scipy.stats import chi2
 from scipy.spatial.distance import pdist, cdist
+from scipy.linalg import pinv
 
 from jaqpot_api_client.models.bounding_box_doa import BoundingBoxDoa
 from jaqpot_api_client.models.leverage_doa import LeverageDoa
@@ -162,7 +163,20 @@ class Leverage(DOA):
         """Calculates the DOA matrix (_doa_matrix) using the input data."""
         x_T = self._data.transpose()
         x_out = x_T.dot(self._data).astype(np.float64)
-        self._doa_matrix = np.linalg.pinv(x_out)
+        lambda_reg = 1e-10
+        x_out += np.eye(x_out.shape[0]) * lambda_reg
+        self.doa_matrix = None
+
+        while self.doa_matrix is None:
+            try:
+                self._doa_matrix = pinv(x_out)
+            except:
+                print(
+                    "Matrix inversion failed, trying with reduce ridge lambda. Current value: ",
+                    lambda_reg,
+                )
+                lambda_reg = lambda_reg * 10
+                x_out += np.eye(x_out.shape[0]) * lambda_reg
 
     def fit(self, X: Union[np.array, pd.DataFrame]):
         """Fits the model using the input data X.
