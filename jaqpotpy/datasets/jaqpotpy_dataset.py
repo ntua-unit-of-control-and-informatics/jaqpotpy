@@ -270,7 +270,8 @@ class JaqpotpyDataset(BaseDataset):
 
         # Identify columns and rows with non-finite values
         numeric_cols = self.X.select_dtypes(include=[np.number]).columns
-        col_mask = self.X[numeric_cols].apply(
+        col_mask = pd.Series(True, index=self.X.columns)
+        col_mask[numeric_cols] = self.X[numeric_cols].apply(
             lambda col: np.isfinite(col).all(), axis=0
         )
         row_mask = self.X[numeric_cols].apply(
@@ -295,14 +296,11 @@ class JaqpotpyDataset(BaseDataset):
                     "Dropping rows with non-finite values with row_index:",
                     non_finite_rows,
                 )
-                if self.smiles is not None:
+                if len(self.smiles_cols) > 0:
                     print(
                         "The corresponding SMILES are:",
                         self.smiles.loc[non_finite_rows].to_string(),
                     )
-
-                else:
-                    print("Dropping rows with non-finite values:", non_finite_rows)
 
             self.dropped_rows = non_finite_rows
             self.X = self.X.loc[row_mask, :]
@@ -312,7 +310,7 @@ class JaqpotpyDataset(BaseDataset):
 
             if self.y is not None:
                 self.y = self.y[row_mask].reset_index(drop=True)
-            if self.smiles is not None:
+            if len(self.smiles_cols) > 0:
                 self.smiles = self.smiles[row_mask].reset_index(drop=True)
 
             self.df = pd.concat([self.X, self.y], axis=1)
@@ -340,7 +338,7 @@ class JaqpotpyDataset(BaseDataset):
                         "Rows with non-finite values with row_index:",
                         non_finite_rows,
                     )
-                    if self.smiles is not None:
+                    if len(self.smiles_cols) > 0:
                         print(
                             "The corresponding SMILES are:",
                             self.smiles.loc[non_finite_rows].to_string(),
