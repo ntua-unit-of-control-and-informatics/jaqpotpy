@@ -269,8 +269,13 @@ class JaqpotpyDataset(BaseDataset):
             self.y = self.df[self.y_cols]
 
         # Identify columns and rows with non-finite values
-        col_mask = self.X.apply(lambda col: np.isfinite(col).all(), axis=0)
-        row_mask = self.X.apply(lambda row: np.isfinite(row).all(), axis=1)
+        numeric_cols = self.X.select_dtypes(include=[np.number]).columns
+        col_mask = self.X[numeric_cols].apply(
+            lambda col: np.isfinite(col).all(), axis=0
+        )
+        row_mask = self.X[numeric_cols].apply(
+            lambda row: np.isfinite(row).all(), axis=1
+        )
         non_finite_columns = self.X.columns[~col_mask]
         non_finite_rows = self.X.index[~row_mask]
 
