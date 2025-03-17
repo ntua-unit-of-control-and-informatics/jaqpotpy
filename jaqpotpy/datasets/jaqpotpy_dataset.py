@@ -285,10 +285,6 @@ class JaqpotpyDataset(BaseDataset):
                 print("Dropping columns with non-finite values:", non_finite_columns)
             self.dropped_cols = non_finite_columns
             self.X = self.X.loc[:, col_mask]
-            self.x_colnames = self.X.columns.tolist()
-            self.df = pd.concat([self.X, self.y], axis=1)
-            self.X.columns = self.X.columns.astype(str)
-            self.df.columns = self.df.columns.astype(str)
 
         elif self.remove_inf_rows:
             if self.verbose and len(non_finite_rows) > 0:
@@ -306,23 +302,12 @@ class JaqpotpyDataset(BaseDataset):
             self.X = self.X.loc[row_mask, :]
             self.row_index_before_inf_drop = self.X.index
             self.X = self.X.reset_index(drop=True)
-            self.x_colnames = self.X.columns.tolist()
-
             if self.y is not None:
                 self.y = self.y[row_mask].reset_index(drop=True)
             if len(self.smiles_cols) > 0:
                 self.smiles = self.smiles[row_mask].reset_index(drop=True)
 
-            self.df = pd.concat([self.X, self.y], axis=1)
-            self.X.columns = self.X.columns.astype(str)
-            self.df.columns = self.df.columns.astype(str)
-
         else:
-            self.df = pd.concat([self.X, self.y], axis=1)
-            self.x_colnames = self.X.columns.tolist()
-            self.X.columns = self.X.columns.astype(str)
-            self.df.columns = self.df.columns.astype(str)
-
             if self.verbose:
                 if len(non_finite_columns) > 0:
                     print(
@@ -346,6 +331,11 @@ class JaqpotpyDataset(BaseDataset):
 
                 else:
                     print("No rows with non-finite values found.")
+
+        self.x_colnames = self.X.columns.tolist()
+        self.df = pd.concat([self.X, self.y], axis=1)
+        self.X.columns = self.X.columns.astype(str)
+        self.df.columns = self.df.columns.astype(str)
 
     def select_features(
         self, FeatureSelector=None, SelectColumns=None, ExcludeColumns=None
