@@ -4,7 +4,8 @@ import unittest
 import pandas as pd
 import os
 import numpy as np
-
+import io
+import contextlib
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_selection import VarianceThreshold
@@ -1215,6 +1216,78 @@ class TestModels(unittest.TestCase):
             np.array([[12, 5], [12, 4]]),
             f'Expected cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"] == [[12,  5],[12,  4]], got cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"] {cross_val_scores[dataset.y_cols[0]]["fold_3"]["confusionMatrix"]}',
         )
+
+    def test_nonfinite_removal_messages(self):
+        # Create a simple dataframe with one non-finite value in column 'B'
+        df = pd.DataFrame(
+            {
+                "A": [1.0, 2.0, 3.0],
+                "B": [4.0, np.inf, 6.0],
+                "C": [7.0, 8.0, 9.0],
+            }
+        )
+
+        # --- CASE 1: Remove columns with non-finite values ---
+        # Expected console output:
+        # "Dropping columns with non-finite values: Index(['B'], dtype='object')"
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            _ = JaqpotpyDataset(
+                df=df,
+                y_cols=None,
+                smiles_cols=None,
+                x_cols=["A", "B", "C"],
+                task="BINARY_CLASSIFICATION",
+                featurizer=None,
+                remove_inf_cols=True,
+            )
+            output = buf.getvalue().strip()
+        expected_output_case1 = (
+            "Dropping columns with non-finite values: Index(['B'], dtype='object')"
+        )
+        assert (
+            output == expected_output_case1
+        ), f"Case 1: Expected '{expected_output_case1}', got '{output}'"
+
+        # --- CASE 2: Remove rows with non-finite values ---
+        # Expected console output:
+        # "Dropping rows with non-finite values with row_index: Index([1], dtype='int64')"
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            _ = JaqpotpyDataset(
+                df=df,
+                y_cols=None,
+                smiles_cols=None,
+                x_cols=["A", "B", "C"],
+                task="BINARY_CLASSIFICATION",
+                featurizer=None,
+                remove_inf_rows=True,
+            )
+            output = buf.getvalue().strip()
+        expected_output_case2 = "Dropping rows with non-finite values with row_index: Index([1], dtype='int64')"
+        assert (
+            output == expected_output_case2
+        ), f"Case 2: Expected '{expected_output_case2}', got '{output}'"
+
+        # --- CASE 3: Do not remove non-finite values ---
+        # Expected console output:
+        # "Columns with non-finite values: Index(['B'], dtype='object')
+        #  Rows with non-finite values with row_index: Index([1], dtype='int64')"
+        with io.StringIO() as buf, contextlib.redirect_stdout(buf):
+            _ = JaqpotpyDataset(
+                df=df,
+                y_cols=None,
+                smiles_cols=None,
+                x_cols=["A", "B", "C"],
+                task="BINARY_CLASSIFICATION",
+                featurizer=None,
+            )
+            output = buf.getvalue().strip()
+        expected_output_case3 = (
+            "Columns with non-finite values: Index(['B'], dtype='object')\n"
+            "Rows with non-finite values with row_index: Index([1], dtype='int64')"
+        )
+        assert (
+            output == expected_output_case3
+        ), f"Case 3: Expected '{expected_output_case3}', got '{output}'"
 
 
 if __name__ == "__main__":
