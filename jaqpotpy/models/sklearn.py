@@ -27,6 +27,7 @@ from jaqpot_api_client.models import (
     BinaryClassificationScores,
 )
 from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from jaqpotpy.transformers import LogTransformer  # adjust path accordingly
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpot_api_client.models import (
@@ -873,6 +874,8 @@ class SklearnModel(Model):
         valid_preprocessing_classes = (
             valid_preprocessing_classes_1 + valid_preprocessing_classes_2
         )
+
+        valid_preprocessing_classes.append(LogTransformer)
 
         for preprocessor in preprocessor_list:
             # Check if preprocessor is an instance of one of these classes
