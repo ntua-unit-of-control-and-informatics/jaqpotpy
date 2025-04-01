@@ -36,6 +36,7 @@ dependencies = [
     "requests==2.32.2",
     "ruff==0.6.3",
     "scikit-learn==1.5.0",
+    "setuptools==75.6.0",
     "simplejson==3.19.2",
     "skl2onnx==1.17.0",
     "torch-geometric==2.5.0",
