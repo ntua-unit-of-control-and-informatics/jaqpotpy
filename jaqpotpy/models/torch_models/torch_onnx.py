@@ -1,10 +1,8 @@
 import torch
 import io
-import base64
 
 from jaqpot_api_client import Feature, ModelVisibility, ModelTask
 
-from jaqpotpy import Jaqpot
 from jaqpotpy.models import Model
 import logging
 from typing import List
@@ -48,7 +46,7 @@ class TorchONNXModel(Model):
         logger.info("Conversion complete")
 
     def deploy_on_jaqpot(
-        self, jaqpot: Jaqpot, name: str, description: str, visibility: ModelVisibility
+        self, jaqpot, name: str, description: str, visibility: ModelVisibility
     ):
         if self.onnx_bytes is None:
             self.convert_to_onnx()

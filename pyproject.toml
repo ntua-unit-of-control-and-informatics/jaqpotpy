@@ -43,7 +43,7 @@ dependencies = [
     "torch==2.3.0",
     "tqdm==4.66.4",
     "xgboost==2.1.1",
-    "jaqpot-api-client==6.40.7",
+    "jaqpot-api-client>=6.40.7",
     "jaqpot-python-sdk==6.0.2"
 ]
 
