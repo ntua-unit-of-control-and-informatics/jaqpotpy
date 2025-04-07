@@ -5,7 +5,6 @@ from keycloak import KeycloakOpenID
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpot_python_sdk.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
-from jaqpot_python_sdk.jaqpot_api_http_client import JaqpotApiHttpClient
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.models.feature import Feature
@@ -17,6 +16,7 @@ from jaqpot_api_client.models.model_visibility import ModelVisibility
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.url_utils import add_subdomain
 from jaqpotpy.models.docker_model import DockerModel
+from jaqpotpy.models.torch_models.torch_onnx import TorchONNXModel
 
 ENCODING = "utf-8"
 
@@ -286,6 +286,49 @@ class Jaqpot:
         else:
             self.log.error("Error code: " + str(response.status_code.value))
             self.log.error("Error message: " + response.content.decode("utf-8"))
+
+    def deploy_torch_onnx_model(
+        self,
+        model: TorchONNXModel,
+        name: str,
+        description: str,
+        visibility: ModelVisibility,
+    ):
+        """
+        Deploy a Torch model on Jaqpot.
+
+        Parameters
+        ----------
+        model : TorchONNXModel
+            The model to be deployed. Must have ONNX and metadata.
+        name : str
+            The name of the model.
+        description : str
+            Description of the model.
+        visibility : str
+            'public' or 'private'
+
+        Returns
+        -------
+        None
+        """
+        model_api = ModelApi(self.http_client)
+        raw_model = model_to_b64encoding(model.onnx_bytes)
+
+        body_model = Model(
+            name=name,
+            type=ModelType.TORCH_ONNX,
+            libraries=[],
+            jaqpotpy_version=jaqpotpy.__version__,
+            dependent_features=model.dependent_features,
+            independent_features=model.independent_features,
+            visibility=visibility,
+            task=model.task,
+            raw_model=raw_model,
+            description=description,
+        )
+
+        self._create_model_request(body_model, model_api)
 
     def deploy_docker_model(
         self,
