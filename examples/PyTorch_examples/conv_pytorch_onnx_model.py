@@ -1,21 +1,26 @@
 import torch
 from jaqpot_api_client import ModelTask, Feature, FeatureType, ModelVisibility
 
+from examples.PyTorch_examples.preprocessors.my_image_preprocessor import (
+    MyImagePreprocessor,
+)
 from jaqpotpy.models.torch_models.torch_onnx import TorchONNXModel
 
 
 class MyModel(torch.nn.Module):
     def __init__(self):
         super(MyModel, self).__init__()
-        self.conv1 = torch.nn.Conv2d(1, 128, 5)
+        self.conv1 = torch.nn.Conv2d(3, 128, 5)
 
     def forward(self, x):
         return torch.relu(self.conv1(x))
 
 
-input_tensor = torch.rand((1, 1, 128, 128), dtype=torch.float32)
+input_tensor = torch.rand((1, 3, 128, 128), dtype=torch.float32)
 
 model = MyModel()
+preprocessor = MyImagePreprocessor()
+onnx_preprocessor = preprocessor.export_to_onnx()
 
 independent_features = list(
     [Feature(key="image", name="Image", feature_type=FeatureType.IMAGE)]
@@ -41,11 +46,12 @@ jaqpot_model = TorchONNXModel(
     ModelTask.REGRESSION,
     independent_features=independent_features,
     dependent_features=independent_features,
+    onnx_preprocessor=onnx_preprocessor,
 )
 jaqpot.login()
 jaqpot_model.deploy_on_jaqpot(
     jaqpot,
-    name="Torch ONNX Model v1",
+    name="Torch ONNX Model v4",
     description="Torch description",
     visibility=ModelVisibility.PUBLIC,
 )

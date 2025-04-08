@@ -314,6 +314,11 @@ class Jaqpot:
         """
         model_api = ModelApi(self.http_client)
         raw_model = model_to_b64encoding(model.onnx_bytes)
+        raw_preprocessor = (
+            model_to_b64encoding(model.onnx_preprocessor)
+            if model.onnx_preprocessor
+            else None
+        )
 
         body_model = Model(
             name=name,
@@ -326,6 +331,7 @@ class Jaqpot:
             task=model.task,
             raw_model=raw_model,
             description=description,
+            raw_preprocessor=raw_preprocessor,
         )
 
         self._create_model_request(body_model, model_api)

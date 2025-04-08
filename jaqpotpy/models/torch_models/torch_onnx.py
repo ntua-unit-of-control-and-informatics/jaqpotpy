@@ -18,6 +18,7 @@ class TorchONNXModel(Model):
         task: ModelTask,
         independent_features: List[Feature],
         dependent_features: List[Feature],
+        onnx_preprocessor,
     ):
         super().__init__()
         self.model = model
@@ -26,6 +27,7 @@ class TorchONNXModel(Model):
         self.onnx_bytes = None
         self.independent_features = independent_features
         self.dependent_features = dependent_features
+        self.onnx_preprocessor = onnx_preprocessor
 
     def convert_to_onnx(self):
         logger.info("Converting model to ONNX")

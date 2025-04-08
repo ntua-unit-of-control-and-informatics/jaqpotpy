@@ -6,7 +6,6 @@ import pandas as pd
 import sklearn.feature_selection as skfs
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.datasets.dataset_base import BaseDataset
-import numpy as np
 
 
 class JaqpotpyDataset(BaseDataset):
@@ -19,9 +18,6 @@ class JaqpotpyDataset(BaseDataset):
         smiles_cols: Optional[Iterable[str]] = None,
         featurizer: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
         task: str = None,
-        verbose: bool = True,
-        remove_inf_cols: bool = False,
-        remove_inf_rows: bool = False,
     ) -> None:
         """
         Initialize the JaqpotpyDataset.
@@ -34,10 +30,6 @@ class JaqpotpyDataset(BaseDataset):
             smiles_cols (Optional[Iterable[str]]): The columns containing SMILES strings.
             featurizer (Optional[List[MolecularFeaturizer] or MolecularFeaturizer]): The featurizer(s) to use.
             task (str): The task type (e.g., regression, classification).
-            verbose (bool, optional): If True, enables detailed logging or printing. Default is True.
-            remove_inf_cols (bool, optional): If True, drops columns containing infinite values. Default is False.
-            remove_inf_rows (bool, optional): If True, removes rows containing infinite values. Default is False.
-
         """
         if not (
             isinstance(smiles_cols, str)
@@ -88,17 +80,6 @@ class JaqpotpyDataset(BaseDataset):
             df=df, path=path, y_cols=y_cols, x_cols=copy.deepcopy(x_cols), task=task
         )
 
-        if remove_inf_cols and remove_inf_rows:
-            raise ValueError(
-                "Have to select whether to remove the rows or columns that contain infinite values."
-            )
-
-        else:
-            self.remove_inf_rows = remove_inf_rows
-            self.dropped_rows = None
-            self.remove_inf_cols = remove_inf_cols
-            self.dropped_cols = None
-
         self._validate_column_overlap(self.smiles_cols, self.x_cols, self.y_cols)
         self._validate_column_names(self.smiles_cols, "smiles_cols")
         self._validate_column_names(self.x_cols, "x_cols")
@@ -120,8 +101,6 @@ class JaqpotpyDataset(BaseDataset):
         self.smiles = None
         self.x_colnames = None
         self._X_old = None
-        self.verbose = verbose
-        self.row_index_before_inf_drop = None
         self.create()
 
     @property
@@ -252,6 +231,7 @@ class JaqpotpyDataset(BaseDataset):
         if len(self.x_cols) == 0:
             if len(descriptors) > 0:
                 self.X = descriptors
+                self.x_colnames = self.X.columns.tolist()
             else:
                 raise ValueError(
                     "The design matrix X is empty. Please provide either"
@@ -262,77 +242,13 @@ class JaqpotpyDataset(BaseDataset):
             self.X = pd.concat(
                 [self.df[self.x_cols], pd.DataFrame(descriptors)], axis=1
             )
+            self.x_colnames = self.X.columns.tolist()
 
         if not self.y_cols:
             self.y = None
         else:
             self.y = self.df[self.y_cols]
 
-        # Identify columns and rows with non-finite values
-        numeric_cols = self.X.select_dtypes(include=[np.number]).columns
-        col_mask = pd.Series(True, index=self.X.columns)
-        col_mask[numeric_cols] = self.X[numeric_cols].apply(
-            lambda col: np.isfinite(col).all(), axis=0
-        )
-        row_mask = self.X[numeric_cols].apply(
-            lambda row: np.isfinite(row).all(), axis=1
-        )
-        non_finite_columns = self.X.columns[~col_mask]
-        non_finite_rows = self.X.index[~row_mask]
-
-        if self.remove_inf_cols:
-            if self.verbose and len(non_finite_columns) > 0:
-                print("Dropping columns with non-finite values:", non_finite_columns)
-            self.dropped_cols = non_finite_columns
-            self.X = self.X.loc[:, col_mask]
-
-        elif self.remove_inf_rows:
-            if self.verbose and len(non_finite_rows) > 0:
-                print(
-                    "Dropping rows with non-finite values with row_index:",
-                    non_finite_rows,
-                )
-                if len(self.smiles_cols) > 0:
-                    print(
-                        "The corresponding SMILES are:",
-                        self.smiles.loc[non_finite_rows].to_string(),
-                    )
-
-            self.dropped_rows = non_finite_rows
-            self.X = self.X.loc[row_mask, :]
-            self.row_index_before_inf_drop = self.X.index
-            self.X = self.X.reset_index(drop=True)
-            if self.y is not None:
-                self.y = self.y[row_mask].reset_index(drop=True)
-            if len(self.smiles_cols) > 0:
-                self.smiles = self.smiles[row_mask].reset_index(drop=True)
-
-        else:
-            if self.verbose:
-                if len(non_finite_columns) > 0:
-                    print(
-                        "Columns with non-finite values:",
-                        non_finite_columns,
-                    )
-
-                else:
-                    print("No columns with non-finite values found.")
-
-                if len(non_finite_rows) > 0:
-                    print(
-                        "Rows with non-finite values with row_index:",
-                        non_finite_rows,
-                    )
-                    if len(self.smiles_cols) > 0:
-                        print(
-                            "The corresponding SMILES are:",
-                            self.smiles.loc[non_finite_rows].to_string(),
-                        )
-
-                else:
-                    print("No rows with non-finite values found.")
-
-        self.x_colnames = self.X.columns.tolist()
         self.df = pd.concat([self.X, self.y], axis=1)
         self.X.columns = self.X.columns.astype(str)
         self.df.columns = self.df.columns.astype(str)
