@@ -48,6 +48,7 @@ class JaqpotTensorDataset(BaseDataset):
         Create the dataset
         """
         self.df = self.df.reset_index(drop=True)
+        self.X = self.df[self.x_cols]
 
         if not self.y_cols:
             self.y = None
