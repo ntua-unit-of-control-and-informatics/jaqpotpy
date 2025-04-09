@@ -23,7 +23,7 @@ preprocessor = MyImagePreprocessor()
 onnx_preprocessor = preprocessor.export_to_onnx()
 
 independent_features = list(
-    [Feature(key="input", name="Image", feature_type=FeatureType.IMAGE)]
+    [Feature(key="input", name="Input", feature_type=FeatureType.IMAGE)]
 )
 dependent_features = list(
     [Feature(key="image", name="Image", feature_type=FeatureType.IMAGE)]
@@ -54,7 +54,7 @@ jaqpot_model = TorchONNXModel(
 jaqpot.login()
 jaqpot_model.deploy_on_jaqpot(
     jaqpot,
-    name="Torch ONNX Model v10",
+    name="Torch ONNX Model v12",
     description="Torch description",
     visibility=ModelVisibility.PUBLIC,
 )
