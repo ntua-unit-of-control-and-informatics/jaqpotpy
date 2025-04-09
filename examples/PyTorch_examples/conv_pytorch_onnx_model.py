@@ -10,10 +10,10 @@ from jaqpotpy.models.torch_models.torch_onnx import TorchONNXModel
 class MyModel(torch.nn.Module):
     def __init__(self):
         super(MyModel, self).__init__()
-        self.conv1 = torch.nn.Conv2d(3, 128, 5)
+        self.conv1 = torch.nn.Conv2d(3, 3, 5)  # <- only 3 output channels
 
     def forward(self, x):
-        return torch.relu(self.conv1(x))
+        return torch.sigmoid(self.conv1(x))  # normalize to [0, 1] for image
 
 
 input_tensor = torch.rand((1, 3, 128, 128), dtype=torch.float32)
@@ -23,6 +23,9 @@ preprocessor = MyImagePreprocessor()
 onnx_preprocessor = preprocessor.export_to_onnx()
 
 independent_features = list(
+    [Feature(key="input", name="Image", feature_type=FeatureType.IMAGE)]
+)
+dependent_features = list(
     [Feature(key="image", name="Image", feature_type=FeatureType.IMAGE)]
 )
 
@@ -45,13 +48,13 @@ jaqpot_model = TorchONNXModel(
     input_tensor,
     ModelTask.REGRESSION,
     independent_features=independent_features,
-    dependent_features=independent_features,
+    dependent_features=dependent_features,
     onnx_preprocessor=onnx_preprocessor,
 )
 jaqpot.login()
 jaqpot_model.deploy_on_jaqpot(
     jaqpot,
-    name="Torch ONNX Model v4",
+    name="Torch ONNX Model v10",
     description="Torch description",
     visibility=ModelVisibility.PUBLIC,
 )
