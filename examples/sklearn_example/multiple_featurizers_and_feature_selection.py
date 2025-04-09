@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_selection import VarianceThreshold
 from jaqpotpy.models import SklearnModel
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotTabularDataset
 from jaqpotpy.descriptors import RDKitDescriptors, MACCSKeysFingerprint
 
 data = pd.DataFrame(
@@ -52,7 +52,7 @@ data = pd.DataFrame(
 featurizers = [RDKitDescriptors(), MACCSKeysFingerprint()]
 
 # Create a JaqpotpyDataset object for training, specifying data columns and task type
-train_dataset = JaqpotpyDataset(
+train_dataset = JaqpotTabularDataset(
     df=data,
     x_cols=[
         "cat_col",
@@ -100,7 +100,7 @@ X_test = pd.DataFrame(
 )
 
 # Create a JaqpotpyDataset object for testing, using same column setup as training dataset
-test_dataset = JaqpotpyDataset(
+test_dataset = JaqpotTabularDataset(
     df=X_test,
     smiles_cols="smiles",
     x_cols=["cat_col", "temperature"],

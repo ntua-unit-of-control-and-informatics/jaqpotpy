@@ -33,7 +33,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from jaqpotpy import Jaqpot
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotTabularDataset
 from jaqpotpy.models import SklearnModel
 
 # Creating a Simulated Dataset for Model Training
@@ -46,7 +46,7 @@ y_cols = ["ACTIVITY"]
 x_cols = ["X1", "X2"]
 
 # Step 1: Create a Jaqpotpy dataset
-dataset = JaqpotpyDataset(df=df, y_cols=y_cols, x_cols=x_cols, task="regression")
+dataset = JaqpotTabularDataset(df=df, y_cols=y_cols, x_cols=x_cols, task="regression")
 
 # Step 2: Build a model
 rf = RandomForestRegressor(random_state=42)
@@ -54,8 +54,8 @@ myModel = SklearnModel(dataset=dataset, model=rf)
 myModel.fit()
 
 # Step 3: Upload the model on Jaqpot
-jaqpot = Jaqpot() 
-jaqpot.login() #log in to Jaqppt
+jaqpot = Jaqpot()
+jaqpot.login()  # log in to Jaqppt
 myModel.deploy_on_jaqpot(
     jaqpot=jaqpot,
     name="Demo: Regression",

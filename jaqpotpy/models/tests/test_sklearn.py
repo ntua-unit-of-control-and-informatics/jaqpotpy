@@ -16,7 +16,7 @@ from sklearn.preprocessing import (
     LabelEncoder,
 )
 from jaqpotpy.descriptors.molecular import TopologicalFingerprint
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotTabularDataset
 from jaqpotpy.models import SklearnModel
 
 
@@ -111,7 +111,7 @@ class TestModels(unittest.TestCase):
         No preprocessing is applied on the data.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=None,
@@ -124,7 +124,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=None
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -170,7 +170,7 @@ class TestModels(unittest.TestCase):
         Preprocessing is applied only on the input features.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=None,
@@ -184,7 +184,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -235,7 +235,7 @@ class TestModels(unittest.TestCase):
         error must be raised.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=None,
@@ -257,7 +257,7 @@ class TestModels(unittest.TestCase):
 
     def test_SklearnModel_classification_xy_preprocessing1(self):
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=None,
@@ -292,7 +292,7 @@ class TestModels(unittest.TestCase):
         where both x and y columns are preprocessed.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=None,
@@ -320,7 +320,7 @@ class TestModels(unittest.TestCase):
 
     def test_SklearnModel_multi_classification_no_preprocessing(self):
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=None,
@@ -351,7 +351,7 @@ class TestModels(unittest.TestCase):
         Preprocessing is applied only on x features.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.multi_classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -365,7 +365,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_multiclass_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -412,7 +412,7 @@ class TestModels(unittest.TestCase):
         error must be raised.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.multi_classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -442,7 +442,7 @@ class TestModels(unittest.TestCase):
         where both x and y columns are preprocessed.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.multi_classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -473,7 +473,7 @@ class TestModels(unittest.TestCase):
         without any preprocessing on data.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -486,7 +486,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=None
         )
         jaqpot_model.fit()
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -512,7 +512,7 @@ class TestModels(unittest.TestCase):
         applied only on the input features.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -526,7 +526,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=pre
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -552,7 +552,7 @@ class TestModels(unittest.TestCase):
         applied only on the output variables.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=None,
@@ -566,7 +566,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_y=pre
         )
         jaqpot_model.fit()
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -594,7 +594,7 @@ class TestModels(unittest.TestCase):
         applied on the input and output variables.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=None,
@@ -613,7 +613,7 @@ class TestModels(unittest.TestCase):
             preprocess_y=pre_y,
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -641,7 +641,7 @@ class TestModels(unittest.TestCase):
         without any preprocessing on data.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_multioutput_df,
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=["SMILES"],
@@ -655,7 +655,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=None
         )
         jaqpot_model.fit()
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -698,7 +698,7 @@ class TestModels(unittest.TestCase):
         with preprocessing only on X data.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_multioutput_df,
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=["SMILES"],
@@ -714,7 +714,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=pre
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -757,7 +757,7 @@ class TestModels(unittest.TestCase):
         with preprocessing only on Y data.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_multioutput_df,
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=None,
@@ -773,7 +773,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_y=pre
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -816,7 +816,7 @@ class TestModels(unittest.TestCase):
         with preprocessing X and Y data.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_multioutput_df,
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=None,
@@ -837,7 +837,7 @@ class TestModels(unittest.TestCase):
             preprocess_y=pre_y,
         )
         jaqpot_model.fit({StandardScaler: {"div": "div_cast"}})
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=None,
@@ -935,7 +935,7 @@ class TestModels(unittest.TestCase):
         applied only on the input features.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -949,7 +949,7 @@ class TestModels(unittest.TestCase):
             dataset=dataset, doa=None, model=model, preprocess_x=pre
         )
         jaqpot_model.fit()
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_df,
             y_cols=None,
             smiles_cols=["SMILES"],
@@ -969,7 +969,7 @@ class TestModels(unittest.TestCase):
         applied only on the input features.
         """
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -992,7 +992,7 @@ class TestModels(unittest.TestCase):
     def test_scores_regression(self):
         """Test goodness-of-fit scores in the case of regression"""
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -1026,7 +1026,7 @@ class TestModels(unittest.TestCase):
     def test_scores_classification(self):
         """Test goodness-of-fit scores in the case of classification."""
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.multi_classification_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -1059,7 +1059,7 @@ class TestModels(unittest.TestCase):
     def test_scores_multi_output_regressions(self):
         """Test goodness-of-fit scores in the case of multi-output-regression."""
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_multioutput_df,
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=["SMILES"],
@@ -1108,7 +1108,7 @@ class TestModels(unittest.TestCase):
     def test_randomization_test(self):
         """Test randomization test."""
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -1123,7 +1123,7 @@ class TestModels(unittest.TestCase):
         )
         jaqpot_model.fit(onnx_options={StandardScaler: {"div": "div_cast"}})
 
-        prediction_dataset = JaqpotpyDataset(
+        prediction_dataset = JaqpotTabularDataset(
             df=self.regression_df,
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
@@ -1159,7 +1159,7 @@ class TestModels(unittest.TestCase):
         y_cols = ["ACTIVITY"]
         x_cols = ["X1", "X2", "Cat_col"]
         featurizer = TopologicalFingerprint()
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.classification_categorical_string_labels_df.iloc[0:100, :],
             y_cols=y_cols,
             smiles_cols=smiles_cols,
@@ -1182,7 +1182,7 @@ class TestModels(unittest.TestCase):
             preprocess_y=LabelEncoder(),
         )
         jaqpot_model.fit()
-        validation_dataset = JaqpotpyDataset(
+        validation_dataset = JaqpotTabularDataset(
             df=self.prediction_categorical_df,
             smiles_cols=smiles_cols,
             x_cols=x_cols,
@@ -1231,7 +1231,7 @@ class TestModels(unittest.TestCase):
         # Expected console output:
         # "Dropping columns with non-finite values: Index(['B'], dtype='object')"
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-            _ = JaqpotpyDataset(
+            _ = JaqpotTabularDataset(
                 df=df,
                 y_cols=None,
                 smiles_cols=None,
@@ -1252,7 +1252,7 @@ class TestModels(unittest.TestCase):
         # Expected console output:
         # "Dropping rows with non-finite values with row_index: Index([1], dtype='int64')"
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-            _ = JaqpotpyDataset(
+            _ = JaqpotTabularDataset(
                 df=df,
                 y_cols=None,
                 smiles_cols=None,
@@ -1272,7 +1272,7 @@ class TestModels(unittest.TestCase):
         # "Columns with non-finite values: Index(['B'], dtype='object')
         #  Rows with non-finite values with row_index: Index([1], dtype='int64')"
         with io.StringIO() as buf, contextlib.redirect_stdout(buf):
-            _ = JaqpotpyDataset(
+            _ = JaqpotTabularDataset(
                 df=df,
                 y_cols=None,
                 smiles_cols=None,

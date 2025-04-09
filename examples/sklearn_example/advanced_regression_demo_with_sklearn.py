@@ -4,7 +4,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotTabularDataset
 from jaqpotpy.models import SklearnModel
 from jaqpotpy import Jaqpot
 from jaqpotpy.doa import (
@@ -64,7 +64,7 @@ cat_cols = [
 ]
 
 # Initialize the JaqpotpyDataset for training
-train_dataset = JaqpotpyDataset(
+train_dataset = JaqpotTabularDataset(
     df=train_df,
     y_cols=y_cols,  # Specify target column
     x_cols=x_cols,  # Specify feature columns
@@ -110,7 +110,7 @@ jaqpotModel.random_seed = 1231
 jaqpotModel.fit()  # Train the model with the specified configuration
 
 # Prepare the test dataset for model evaluation
-test_dataset = JaqpotpyDataset(
+test_dataset = JaqpotTabularDataset(
     df=test_df,
     y_cols=y_cols,  # Target column for test data
     x_cols=x_cols,  # Feature columns for test data
