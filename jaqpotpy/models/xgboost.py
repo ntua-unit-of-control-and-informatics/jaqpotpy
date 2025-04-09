@@ -8,7 +8,7 @@ from sklearn.calibration import LabelEncoder
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpot_api_client.models.doa import Doa
-from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from jaqpotpy.datasets.jaqpot_tabular_dataset import JaqpotTabularDataset
 from jaqpot_api_client.models import ModelScores, ModelType
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.doa import DOA
@@ -28,7 +28,7 @@ class XGBoostModel(SklearnModel):
     XGBoostModel class for handling XGBoost models within the Jaqpotpy framework.
 
     Attributes:
-        dataset (JaqpotpyDataset): The dataset used for training the model.
+        dataset (JaqpotTabularDataset): The dataset used for training the model.
         model (Any): The XGBoost model instance.
         doa (Optional[DOA or list]): Domain of Applicability (DOA) methods.
         preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessing steps for input features.
@@ -37,7 +37,7 @@ class XGBoostModel(SklearnModel):
 
     def __init__(
         self,
-        dataset: JaqpotpyDataset,
+        dataset: JaqpotTabularDataset,
         model: Any,
         doa: Optional[DOA or list] = None,
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
@@ -107,7 +107,7 @@ class XGBoostModel(SklearnModel):
 
     def fit(
         self,
-        eval_set: Optional[List[JaqpotpyDataset]] = None,
+        eval_set: Optional[List[JaqpotTabularDataset]] = None,
         onnx_options: Optional[Dict] = None,
     ):
         self.libraries = get_installed_libraries()

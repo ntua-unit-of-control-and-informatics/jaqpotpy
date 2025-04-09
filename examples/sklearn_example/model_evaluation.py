@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from jaqpotpy.models import SklearnModel
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotTabularDataset
 from jaqpotpy.descriptors import RDKitDescriptors
 
 # Create sample data
@@ -40,7 +40,7 @@ data = pd.DataFrame(
 featurizer = RDKitDescriptors()
 
 # Prepare the dataset for training with Jaqpotpy
-train_dataset = JaqpotpyDataset(
+train_dataset = JaqpotTabularDataset(
     df=data,
     x_cols=[
         "temperature",
@@ -78,7 +78,7 @@ X_test = pd.DataFrame(
 
 
 # Prepare the test dataset with Jaqpotpy
-test_dataset = JaqpotpyDataset(
+test_dataset = JaqpotTabularDataset(
     df=X_test,
     smiles_cols="smiles",
     x_cols=["cat_col", "temperature"],

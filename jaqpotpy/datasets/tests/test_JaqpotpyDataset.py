@@ -10,7 +10,7 @@ from jaqpotpy.descriptors.molecular import (
     RDKitDescriptors,
     TopologicalFingerprint,
 )
-from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from jaqpotpy.datasets.jaqpot_tabular_dataset import JaqpotTabularDataset
 
 
 class TestDatasets(unittest.TestCase):
@@ -55,7 +55,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_dataset_with_path_single_smiles_and_external(self):
         # Assert that all JaqpotpyDataset features return the desired values
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             path=self.path,
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
@@ -135,7 +135,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_dataset_with_df_single_smiles_and_external(self):
         # Assert that JaqpotpyDataset built with dataframe has the correct dimensions
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             path=self.path,
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
@@ -149,7 +149,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_dataset_with_only_external(self):
         # Assert that JaqpotpyDataset built with only two external has the correct dimensions
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             path=self.path,
             y_cols=self.y_cols,
             smiles_cols=None,
@@ -164,7 +164,7 @@ class TestDatasets(unittest.TestCase):
     def test_dataset_no_x_no_smiles_none(self):
         # Assert that a TypeError is thrown if the user doesn't provide any smiles and external
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 y_cols=self.y_cols,
                 smiles_cols=None,  # ["SMILES"],
@@ -176,7 +176,7 @@ class TestDatasets(unittest.TestCase):
     def test_dataset_no_x_no_smiles_empty_list(self):
         # Assert that a ValueError is thrown if the user doesn't provide any smiles and external
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 y_cols=self.y_cols,
                 smiles_cols=[],  # ["SMILES"],
@@ -187,7 +187,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_dataset_only_smiles(self):
         # Assert that JaqpotpyDataset built with only smiles has the correct dimensions
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             path=self.path,
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
@@ -201,7 +201,7 @@ class TestDatasets(unittest.TestCase):
     def test_dataset_smiles_no_featurizer(self):
         # Assert that a TypeError is thrown if the user gives smiles but no featurizer
         with self.assertRaises(TypeError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 path=self.path,
                 y_cols=self.y_cols,
                 smiles_cols=self.single_smiles_cols,
@@ -213,7 +213,7 @@ class TestDatasets(unittest.TestCase):
     def test_dataset_smiles_no_task(self):
         # Assert that a TypeError is thrown if the user doesn't provide a task
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 path=self.path,
                 y_cols=self.y_cols,
                 smiles_cols=None,
@@ -225,7 +225,7 @@ class TestDatasets(unittest.TestCase):
     def test_dataset_smiles_wrong_task(self):
         # Assert that a TypeError is thrown if the user provides a wrong task label
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 path=self.path,
                 y_cols=self.y_cols,
                 smiles_cols=None,
@@ -237,7 +237,7 @@ class TestDatasets(unittest.TestCase):
     def test_overlap_smiles_x(self):
         # Test should fail, as there is overlap between smiles_cols and x_cols
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES", "Χ1"],  # Overlap with x_cols
@@ -249,7 +249,7 @@ class TestDatasets(unittest.TestCase):
     def test_overlap_smiles_y(self):
         # Test should fail, as there is overlap between smiles_cols and y_cols
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES", "ACTIVITY"],  # Overlap with y_cols
@@ -261,7 +261,7 @@ class TestDatasets(unittest.TestCase):
     def test_overlap_x_y(self):
         # Test should fail, as there is overlap between x_cols and y_cols
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 y_cols=["ACTIVITY", "X2"],  # Overlap with x_cols
                 smiles_cols=self.single_smiles_cols,
@@ -273,7 +273,7 @@ class TestDatasets(unittest.TestCase):
     def test_invalid_smiles_cols(self):
         # Test should fail as SMILES2 does not exist in the DataFrame
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES2"],  # Non-existent column
@@ -285,7 +285,7 @@ class TestDatasets(unittest.TestCase):
     def test_invalid_x_cols(self):
         # Test should fail as feat3 does not exist in the DataFrame
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 y_cols=self.y_cols,
                 smiles_cols=self.single_smiles_cols,
@@ -297,7 +297,7 @@ class TestDatasets(unittest.TestCase):
     def test_invalid_y_cols(self):
         # Test should fail as ACTIVITY2 does not exist in the DataFrame
         with self.assertRaises(ValueError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 y_cols=["ACTIVITY2"],  # Non-existent column
                 smiles_cols=self.single_smiles_cols,
@@ -309,7 +309,7 @@ class TestDatasets(unittest.TestCase):
     def test_no_path_no_df(self):
         # Test should fail as ACTIVITY2 does not exist in the DataFrame
         with self.assertRaises(TypeError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 y_cols=["ACTIVITY2"],  # Non-existent column
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
@@ -320,7 +320,7 @@ class TestDatasets(unittest.TestCase):
     def test_path_and_df(self):
         # Test should fail as ACTIVITY2 does not exist in the DataFrame
         with self.assertRaises(TypeError):
-            JaqpotpyDataset(
+            JaqpotTabularDataset(
                 df=self.single_smiles_df,
                 path=self.path,
                 y_cols=["ACTIVITY2"],  # Non-existent column
@@ -332,7 +332,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_dataset_with_multiple_descriptors(self):
         # Assert that JaqpotpyDataset built with multiple descriptors has the correct dimensions
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             df=self.single_smiles_df.iloc[0:3, :],
             y_cols=self.y_cols,
             smiles_cols=["SMILES"],
@@ -346,7 +346,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_select_features_with_feature_selector(self):
         # Test with a FeatureSelector (VarianceThreshold)
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             path=self.path,
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
@@ -366,7 +366,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_select_features_with_selection_list(self):
         # Test with a predefined selection list
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             path=self.path,
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
@@ -389,7 +389,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_select_features_with_both_arguments(self):
         # Test that passing both FeatureSelector and SelectColumns raises an error
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             path=self.path,
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
@@ -405,7 +405,7 @@ class TestDatasets(unittest.TestCase):
 
     def test_select_features_with_neither_argument(self):
         # Test that passing neither FeatureSelector nor SelectColumns raises an error
-        dataset = JaqpotpyDataset(
+        dataset = JaqpotTabularDataset(
             path=self.path,
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,

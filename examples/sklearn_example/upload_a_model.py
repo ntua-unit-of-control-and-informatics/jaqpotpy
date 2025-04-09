@@ -1,6 +1,8 @@
 import pandas as pd
-from sklearn.datasets import make_classification
-from jaqpotpy.datasets import JaqpotpyDataset
+from sklearn.datasets import make_multilabel_classification, make_classification
+from sklearn.ensemble import RandomForestClassifier
+
+from jaqpotpy.datasets import JaqpotTabularDataset
 from sklearn.linear_model import LogisticRegression
 from jaqpotpy.models import SklearnModel
 
@@ -14,7 +16,7 @@ df["y"] = y
 
 # Initialize a JaqpotpyDataset with the DataFrame
 # Specify the feature columns and the target column, and define the task as binary classification.
-dataset = JaqpotpyDataset(
+dataset = JaqpotTabularDataset(
     df=df,
     x_cols=["X1", "X2", "X3", "X4"],
     y_cols=["y"],

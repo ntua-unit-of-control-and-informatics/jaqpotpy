@@ -289,6 +289,60 @@ class BaseDataset(ABC):
         """
         raise NotImplementedError
 
+    def _validate_column_names(self, cols, col_type):
+        """
+        Validate if the columns specified in cols are present in the DataFrame.
+
+        Args:
+            cols: The columns to validate.
+            col_type: The type of columns (e.g., 'smiles_cols', 'x_cols', 'y_cols').
+
+        Raises:
+            ValueError: If any columns are missing from the DataFrame.
+        """
+        if len(cols) == 0:
+            return
+
+        missing_cols = [col for col in cols if col not in self.df.columns]
+
+        if missing_cols:
+            raise ValueError(
+                f"The following columns in {col_type} are not present in the DataFrame: {missing_cols}"
+            )
+
+    def _validate_column_space(self):
+        """
+        Validate and replace spaces in column names with underscores.
+        """
+        for ix, col in enumerate(self.x_cols):
+            if " " in col:
+                new_col = col.replace(" ", "_")
+                self.x_cols[ix] = new_col
+                self.df.rename(columns={col: new_col}, inplace=True)
+                print(
+                    f"Warning: Column names cannot have spaces. Column '{col}' has been renamed to '{new_col}'"
+                )
+
+    def df_astype(self, dtype, columns=None):
+        """
+        Convert the dataset to the specified data type.
+
+        Args:
+            dtype: The data type to convert to.
+            columns: The columns of the dataset
+
+        Returns:
+            JaqpotTabularDataset: The dataset converted to the specified data type.
+        """
+        if columns is None:
+            columns = self.df.columns
+        self.df[columns] = self.df[columns].astype(dtype)
+        valid_x_columns = [col for col in columns if col in self.X.columns]
+        self.X[valid_x_columns] = self.X[valid_x_columns].astype(dtype)
+        if self.y_cols in columns:
+            self.y = self.y.astype(dtype)
+        return self
+
 
 if __name__ == "__main__":
     ...

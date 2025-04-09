@@ -26,7 +26,7 @@ from jaqpot_api_client.models import (
     MulticlassClassificationScores,
     BinaryClassificationScores,
 )
-from jaqpotpy.datasets.jaqpotpy_dataset import JaqpotpyDataset
+from jaqpotpy.datasets.jaqpot_tabular_dataset import JaqpotTabularDataset
 from jaqpotpy.transformers import LogTransformer  # adjust path accordingly
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
@@ -48,7 +48,7 @@ class SklearnModel(Model):
 
     Attributes
     ----------
-    dataset : JaqpotpyDataset
+    dataset : JaqpotTabularDataset
         The dataset used for training the model.
     model : Any
         The Scikit-learn model to be trained.
@@ -157,7 +157,7 @@ class SklearnModel(Model):
 
     def __init__(
         self,
-        dataset: JaqpotpyDataset,
+        dataset: JaqpotTabularDataset,
         model: Any,
         doa: Optional[Union[DOA, list]] = None,
         preprocess_x: Optional[Union[BaseEstimator, List[BaseEstimator]]] = None,
@@ -168,7 +168,7 @@ class SklearnModel(Model):
         Initialize the SklearnModel.
 
         Args:
-            dataset (JaqpotpyDataset): The dataset used for training the model.
+            dataset (JaqpotTabularDataset): The dataset used for training the model.
             model (Any): The Scikit-learn model.
             doa (Optional[Union[DOA, list]]): Domain of Applicability methods.
             preprocess_x (Optional[Union[BaseEstimator, List[BaseEstimator]]]): Preprocessors for features.
@@ -536,17 +536,17 @@ class SklearnModel(Model):
         self._dtypes_to_jaqpotypes()
         self._create_onnx_model(onnx_options=self.onnx_options)
 
-    def predict(self, dataset: JaqpotpyDataset, **kwargs):
+    def predict(self, dataset: JaqpotTabularDataset, **kwargs):
         """
         Predict using the trained model.
 
         Args:
-            dataset (JaqpotpyDataset): The dataset for prediction.
+            dataset (JaqpotTabularDataset): The dataset for prediction.
 
         Returns:
             Predictions.
         """
-        if not isinstance(dataset, JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.selected_features is not None:
             X_mat = dataset.X[self.selected_features]
@@ -603,17 +603,17 @@ class SklearnModel(Model):
                 sklearn_prediction = endpoint_prediction
         return sklearn_prediction
 
-    def predict_proba(self, dataset: JaqpotpyDataset):
+    def predict_proba(self, dataset: JaqpotTabularDataset):
         """
         Predict probabilities using the trained model.
 
         Args:
-            dataset (JaqpotpyDataset): The dataset for prediction.
+            dataset (JaqpotTabularDataset): The dataset for prediction.
 
         Returns:
             List of probabilities.
         """
-        if not isinstance(dataset, JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError("predict_proba is available only for classification tasks")
@@ -631,17 +631,17 @@ class SklearnModel(Model):
         ]
         return sklearn_probs_list
 
-    def predict_onnx(self, dataset: JaqpotpyDataset):
+    def predict_onnx(self, dataset: JaqpotTabularDataset):
         """
         Predict using the ONNX model.
 
         Args:
-            dataset (JaqpotpyDataset): The dataset for prediction.
+            dataset (JaqpotTabularDataset): The dataset for prediction.
 
         Returns:
             ONNX predictions.
         """
-        if not isinstance(dataset, JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         sess = InferenceSession(self.onnx_model.SerializeToString())
         if self.preprocess_x:
@@ -686,17 +686,17 @@ class SklearnModel(Model):
             onnx_prediction = endpoint_prediction.tolist()
         return onnx_prediction
 
-    def predict_proba_onnx(self, dataset: JaqpotpyDataset):
+    def predict_proba_onnx(self, dataset: JaqpotTabularDataset):
         """
         Predict probabilities using the ONNX model.
 
         Args:
-            dataset (JaqpotpyDataset): The dataset for prediction.
+            dataset (JaqpotTabularDataset): The dataset for prediction.
 
         Returns:
             List of ONNX probabilities.
         """
-        if not isinstance(dataset, JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
         if self.task == "regression":
             raise ValueError(
@@ -728,17 +728,17 @@ class SklearnModel(Model):
         ]
         return onnx_probs_list
 
-    def predict_doa(self, dataset: JaqpotpyDataset):
+    def predict_doa(self, dataset: JaqpotTabularDataset):
         """
         Predict the Domain of Applicability (DOA).
 
         Args:
-            dataset (JaqpotpyDataset): The dataset for prediction.
+            dataset (JaqpotTabularDataset): The dataset for prediction.
 
         Returns:
             DOA results.
         """
-        if not isinstance(dataset, JaqpotpyDataset):
+        if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
 
         X = dataset.X
@@ -892,12 +892,12 @@ class SklearnModel(Model):
                         f"Response preprocessing must be an instance of a valid class from sklearn.preprocessing, but got {type(preprocessor)}."
                     )
 
-    def cross_validate(self, dataset: JaqpotpyDataset, n_splits=5, random_seed=42):
+    def cross_validate(self, dataset: JaqpotTabularDataset, n_splits=5, random_seed=42):
         """
         Perform cross-validation.
 
         Args:
-            dataset (JaqpotpyDataset): The dataset for cross-validation.
+            dataset (JaqpotTabularDataset): The dataset for cross-validation.
             n_splits (int): The number of splits.
 
         Returns:
@@ -933,13 +933,13 @@ class SklearnModel(Model):
         return self.average_cross_val_scores
 
     def _single_cross_validation(
-        self, dataset: JaqpotpyDataset, y, random_seed, n_splits=5, n_output=1
+        self, dataset: JaqpotTabularDataset, y, random_seed, n_splits=5, n_output=1
     ):
         """
         Perform a single cross-validation.
 
         Args:
-            dataset (JaqpotpyDataset): The dataset for cross-validation.
+            dataset (JaqpotTabularDataset): The dataset for cross-validation.
             y: The target variable.
             n_splits (int): The number of splits.
             n_output (int): The number of outputs.
@@ -998,12 +998,12 @@ class SklearnModel(Model):
 
         return avg_metrics
 
-    def evaluate(self, dataset: JaqpotpyDataset):
+    def evaluate(self, dataset: JaqpotTabularDataset):
         """
         Evaluate the model on a dataset.
 
         Args:
-            dataset (JaqpotpyDataset): The dataset for evaluation.
+            dataset (JaqpotTabularDataset): The dataset for evaluation.
 
         Returns:
             Evaluation scores.
@@ -1053,14 +1053,17 @@ class SklearnModel(Model):
         return self._get_metrics(y_true[:, output], y_pred[:, output])
 
     def randomization_test(
-        self, train_dataset: JaqpotpyDataset, test_dataset: JaqpotpyDataset, n_iters=10
+        self,
+        train_dataset: JaqpotTabularDataset,
+        test_dataset: JaqpotTabularDataset,
+        n_iters=10,
     ):
         """
         Perform a randomization test.
 
         Args:
-            train_dataset (JaqpotpyDataset): The training dataset.
-            test_dataset (JaqpotpyDataset): The testing dataset.
+            train_dataset (JaqpotTabularDataset): The training dataset.
+            test_dataset (JaqpotTabularDataset): The testing dataset.
             n_iters (int): The number of iterations.
 
         Returns:

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.datasets import make_regression
-from jaqpotpy.datasets import JaqpotpyDataset
+from jaqpotpy.datasets import JaqpotTabularDataset
 from sklearn.linear_model import LinearRegression
 from jaqpotpy.models.sklearn import SklearnModel
 from jaqpotpy.doa import (
@@ -24,7 +24,7 @@ df["y"] = y
 
 # Initialize a JaqpotpyDataset with the DataFrame
 # Specify the feature columns and the target column, and define the task as regression.
-dataset = JaqpotpyDataset(
+dataset = JaqpotTabularDataset(
     df=df,
     x_cols=["X1", "X2", "X3", "X4"],
     y_cols=["y"],
@@ -62,7 +62,7 @@ df_test = pd.DataFrame(X_test, columns=["X1", "X2", "X3", "X4"])
 
 # Initialize a JaqpotpyDataset for prediction
 # Specify the feature columns and set y_cols to None since we are predicting.
-test_dataset = JaqpotpyDataset(
+test_dataset = JaqpotTabularDataset(
     df=df_test,
     x_cols=["X1", "X2", "X3", "X4"],
     y_cols=None,
