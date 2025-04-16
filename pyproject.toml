@@ -15,36 +15,12 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "attrs==23.2.0",
-    "httpx==0.27.0",
-    "kennard-stone==2.2.1",
-    "mendeleev==0.16.2",
-    "mordredcommunity==2.0.5",
-    "onnx==1.17.0",
-    "onnxmltools==1.12.0",
-    "onnxruntime==1.19.2",
-    "pandas==2.2.2",
-    "polling2==0.5.0",
-    "pre-commit==4.0.1",
-    "pydantic==2.7.1",
-    "pydotplus==2.0.2",
-    "pyjwt==2.8.0",
-    "pymatgen==2024.5.1",
-    "python-dotenv==1.0.1",
-    "python-keycloak==4.3.0",
-    "rdkit==2023.9.6",
-    "requests==2.32.2",
-    "ruff==0.6.3",
-    "scikit-learn==1.5.0",
-    "setuptools==75.6.0",
-    "simplejson==3.19.2",
-    "skl2onnx==1.17.0",
-    "torch-geometric==2.5.0",
-    "torch==2.3.0",
-    "tqdm==4.66.4",
-    "xgboost==2.1.1",
-    "jaqpot-api-client>=6.40.7",
-    "jaqpot-python-sdk==6.0.2"
+    "torch>=2.0.0",
+    "onnx>=1.13.0",
+    "onnxruntime>=1.13.0",
+    "httpx",
+    "pydantic>=2.0",
+    "jaqpot-api-client>=6.40.7"
 ]
 
 [[project.authors]]
