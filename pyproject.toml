@@ -29,6 +29,7 @@ dependencies = [
     "scikit-learn>=1.5.0",
     "setuptools>=75.0.0",
     "python-keycloak>=4.3.0",
+    "jaqpot-python-sdk>=6.0.2"
 ]
 
 [[project.authors]]
