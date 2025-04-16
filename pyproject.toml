@@ -25,6 +25,7 @@ dependencies = [
     "pydantic>=2.0",
     "requests>=2.32.2",
     "jaqpot-api-client>=6.40.7",
+    "rdkit>=2023.9.6",
     "pandas>=2.2.2",
     "scikit-learn>=1.5.0",
     "setuptools>=75.0.0",
