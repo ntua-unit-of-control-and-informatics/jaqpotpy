@@ -29,20 +29,12 @@ dependent_features = list(
     [Feature(key="image", name="Image", feature_type=FeatureType.IMAGE)]
 )
 
-
 # Upload model on Jaqpot
 # First import Jaqpot class from jaqpotpy
 from jaqpotpy import Jaqpot  # noqa: E402
 
 # Next, create an instance of Jaqpot
-jaqpot = Jaqpot(
-    base_url="http://localhost.jaqpot.org",
-    app_url="http://localhost.jaqpot.org:3000",
-    login_url="http://localhost.jaqpot.org:8070",
-    api_url="http://localhost.jaqpot.org:8080",
-    keycloak_realm="jaqpot-local",
-    keycloak_client_id="jaqpot-local-test",
-)
+jaqpot = Jaqpot()
 jaqpot_model = TorchONNXModel(
     model,
     input_tensor,
