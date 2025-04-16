@@ -18,6 +18,7 @@ dependencies = [
     "torch>=2.0.0",
     "onnx>=1.19.0",
     "onnxruntime>=1.19.0",
+    "skl2onnx>=1.17.0",
     "httpx",
     "pydantic>=2.0",
     "jaqpot-api-client>=6.40.7"
