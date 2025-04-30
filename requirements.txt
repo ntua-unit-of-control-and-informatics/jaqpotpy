@@ -24,7 +24,7 @@ setuptools==75.6.0
 jaqpot-api-client==6.43.0
 jaqpot-python-sdk==6.0.5
 # Torch requirements
-torch==2.3.0
+torch==2.7.0
 torch-geometric==2.5.0
 # -f https://data.pyg.org/whl/torch-2.3.0+cpu.html
 # torch-sparse==0.6.18
