@@ -1,5 +1,6 @@
 import webbrowser
 
+from jaqpot_api_client.api import LargeModelApi
 from keycloak import KeycloakOpenID
 
 import jaqpotpy
@@ -13,12 +14,15 @@ from jaqpot_api_client.models.model import Model
 from jaqpot_api_client.models.model_task import ModelTask
 from jaqpot_api_client.models.model_type import ModelType
 from jaqpot_api_client.models.model_visibility import ModelVisibility
+
+from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.url_utils import add_subdomain
 from jaqpotpy.models.docker_model import DockerModel
 from jaqpotpy.models.torch_models.torch_onnx import TorchONNXModel
 
 ENCODING = "utf-8"
+MAX_INLINE_MODEL_SIZE = 5 * 1024 * 1024  # 5MB
 
 
 class Jaqpot:
@@ -71,6 +75,53 @@ class Jaqpot:
         self.access_token = None
         self.http_client = None
 
+    def _deploy_model(
+        self,
+        body_model: Model,
+        raw_model_bytes: bytes,
+        raw_preprocessor_bytes: bytes = None,
+    ):
+        model_api = ModelApi(self.http_client)
+        model_size = len(raw_model_bytes)
+
+        if model_size <= MAX_INLINE_MODEL_SIZE:
+            body_model.raw_model = model_to_b64encoding(raw_model_bytes)
+            if raw_preprocessor_bytes:
+                body_model.raw_preprocessor = model_to_b64encoding(
+                    raw_preprocessor_bytes
+                )
+
+            self._create_model_request(body_model, model_api)
+        else:
+            self.log.info("Large model detected, using /v1/large-models flow")
+
+            # Large upload
+            large_model_api = LargeModelApi(self.http_client)
+            body_model.raw_model = None
+            body_model.raw_preprocessor = None
+
+            response = large_model_api.create_large_model_with_http_info(
+                model=body_model
+            )
+
+            if response.status_code < 300:
+                result = response.response_data
+                model_id = result.model_id
+                upload_url = result.upload_url
+                self.log.info(f"Upload your model to:\n{upload_url}")
+                self.log.info(
+                    f"After upload, confirm using: POST /v1/large-models/{model_id}/confirm-upload"
+                )
+                upload_file_to_s3_presigned_url(upload_url, raw_model_bytes)
+
+                response = large_model_api.confirm_large_model_upload_with_http_info(
+                    model_id
+                )
+                if response.status_code < 300:
+                    self.log_info("Model upload confirmed")
+            else:
+                self.log.error("Error code: " + str(response.status_code.value))
+
     def login(self):
         """
         Log in to Jaqpot using Keycloak.
@@ -117,6 +168,21 @@ class Jaqpot:
             .build()
         )
 
+    def _create_model_request(self, body_model, model_api):
+        response = model_api.create_model_with_http_info(model=body_model)
+        if response.status_code < 300:
+            model_url = response.headers.get("Location")
+            model_id = model_url.split("/")[-1]
+
+            self.log.info(
+                "Model has been successfully uploaded. The url of the model is %s",
+                self.app_url + "/dashboard/models/" + model_id,
+            )
+        else:
+            # error = response.headers.get("error")
+            # error_description = response.headers.get("error_description")
+            self.log.error("Error code: " + str(response.status_code.value))
+
     def deploy_sklearn_model(self, model, name, description, visibility):
         """
         Deploy an sklearn model on Jaqpot.
@@ -139,10 +205,9 @@ class Jaqpot:
         -------
         None
         """
-        model_api = ModelApi(self.http_client)
-        raw_model = model_to_b64encoding(model.onnx_model.SerializeToString())
-        raw_preprocessor = (
-            model_to_b64encoding(model.onnx_preprocessor.SerializeToString())
+        raw_model_bytes = model.onnx_model.SerializeToString()
+        raw_preprocessor_bytes = (
+            model.onnx_preprocessor.SerializeToString()
             if model.onnx_preprocessor
             else None
         )
@@ -173,30 +238,13 @@ class Jaqpot:
             ],
             visibility=ModelVisibility(visibility),
             task=ModelTask(model.task.upper()),
-            raw_preprocessor=raw_preprocessor,
-            raw_model=raw_model,
             selected_features=model.selected_features,
             description=description,
             featurizers=model.featurizers,
             preprocessors=model.preprocessors,
             scores=model.scores,
         )
-        self._create_model_request(body_model, model_api)
-
-    def _create_model_request(self, body_model, model_api):
-        response = model_api.create_model_with_http_info(model=body_model)
-        if response.status_code < 300:
-            model_url = response.headers.get("Location")
-            model_id = model_url.split("/")[-1]
-
-            self.log.info(
-                "Model has been successfully uploaded. The url of the model is %s",
-                self.app_url + "/dashboard/models/" + model_id,
-            )
-        else:
-            # error = response.headers.get("error")
-            # error_description = response.headers.get("error_description")
-            self.log.error("Error code: " + str(response.status_code.value))
+        self._deploy_model(body_model, raw_model_bytes, raw_preprocessor_bytes)
 
     def deploy_torch_model(
         self,
@@ -312,12 +360,9 @@ class Jaqpot:
         -------
         None
         """
-        model_api = ModelApi(self.http_client)
-        raw_model = model_to_b64encoding(model.onnx_bytes)
-        raw_preprocessor = (
-            model_to_b64encoding(model.onnx_preprocessor)
-            if model.onnx_preprocessor
-            else None
+        raw_model_bytes = model.onnx_bytes
+        raw_preprocessor_bytes = (
+            model.onnx_preprocessor if model.onnx_preprocessor else None
         )
 
         body_model = Model(
@@ -329,12 +374,10 @@ class Jaqpot:
             independent_features=model.independent_features,
             visibility=visibility,
             task=model.task,
-            raw_model=raw_model,
             description=description,
-            raw_preprocessor=raw_preprocessor,
         )
 
-        self._create_model_request(body_model, model_api)
+        self._deploy_model(body_model, raw_model_bytes, raw_preprocessor_bytes)
 
     def deploy_docker_model(
         self,
