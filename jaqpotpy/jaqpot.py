@@ -105,7 +105,7 @@ class Jaqpot:
             )
 
             if response.status_code < 300:
-                result = response.response_data
+                result = response.data
                 model_id = result.model_id
                 upload_url = result.upload_url
                 self.log.info(f"Upload your model to:\n{upload_url}")
