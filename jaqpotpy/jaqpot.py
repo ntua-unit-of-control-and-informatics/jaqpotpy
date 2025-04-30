@@ -108,9 +108,8 @@ class Jaqpot:
                 result = response.data
                 model_id = result.model_id
                 upload_url = result.upload_url
-                self.log.info(f"Upload your model to:\n{upload_url}")
                 self.log.info(
-                    f"After upload, confirm using: POST /v1/large-models/{model_id}/confirm-upload"
+                    "Uploading your model directly to s3, due to its large size..."
                 )
                 upload_file_to_s3_presigned_url(upload_url, raw_model_bytes)
 
@@ -118,7 +117,10 @@ class Jaqpot:
                     model_id
                 )
                 if response.status_code < 300:
-                    self.log_info("Model upload confirmed")
+                    self.log.info(
+                        "Model has been successfully uploaded. The url of the model is %s",
+                        self.app_url + "/dashboard/models/" + model_id,
+                    )
             else:
                 self.log.error("Error code: " + str(response.status_code.value))
 
