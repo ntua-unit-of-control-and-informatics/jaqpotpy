@@ -127,7 +127,7 @@ jaqpot_model.convert_to_onnx()
 # Upload to Jaqpot
 jaqpot_model.deploy_on_jaqpot(
     jaqpot=jaqpot,
-    name="Nanomaterial Classifier v8",
+    name="Nanomaterial Classifier v9",
     description="Classifies nanomaterial types from TEM images.",
     visibility=ModelVisibility.PUBLIC,
 )
