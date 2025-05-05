@@ -22,7 +22,7 @@ from jaqpotpy.models.docker_model import DockerModel
 from jaqpotpy.models.torch_models.torch_onnx import TorchONNXModel
 
 ENCODING = "utf-8"
-MAX_INLINE_MODEL_SIZE = 5 * 1024 * 1024  # 5MB
+MAX_INLINE_MODEL_SIZE = 1024 * 1024 * 1024  # 5MB
 
 
 class Jaqpot:
