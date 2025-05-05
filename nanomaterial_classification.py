@@ -1,9 +1,12 @@
 import torch.nn as nn
 import torchvision.models as models
+
+from jaqpotpy import Jaqpot
 from jaqpotpy.models.torch_models import TorchONNXModel
 from jaqpot_api_client import ModelTask, Feature, FeatureType, ModelVisibility
 import torch
 import io
+import torch.nn.functional as F
 from jaqpotpy.jaqpot_local import JaqpotLocal
 
 
@@ -20,13 +23,24 @@ Original file is located at
 """Create model"""
 
 
-model = models.resnet18(pretrained=True)
-model.fc = nn.Linear(model.fc.in_features, 6)
+class NanomaterialClassifier(nn.Module):
+    def __init__(self, num_classes=6):
+        super().__init__()
+        self.base = models.resnet18(pretrained=True)
+        self.base.fc = nn.Linear(self.base.fc.in_features, num_classes)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        logits = self.base(x)
+        probs = self.softmax(logits)
+        return probs
+
+
+model = NanomaterialClassifier(num_classes=6)
 
 """Load model from drive"""
 
-
-model.load_state_dict(torch.load("./best_model.pth"))
+model.load_state_dict(torch.load("./best_model.pth", map_location=torch.device("cpu")))
 model.eval()
 
 """Upload to Jaqpot
@@ -50,21 +64,20 @@ class MyImagePreprocessor(nn.Module):
         super().__init__()
 
     def forward(self, x):
-        # Input is NHWC: [batch, height, width, channels]
-        x = x.permute(0, 3, 1, 2)  # → NCHW: [batch, channels, height, width]
-        return torch.nn.functional.interpolate(
-            x, size=(224, 224), mode="bilinear", align_corners=False
-        )
+        # x: [batch, height, width, channels]
+        x = x.permute(0, 3, 1, 2)  # NHWC → NCHW
+        x = F.interpolate(x, size=(224, 224), mode="bilinear", align_corners=False)
+        return x
 
     def export_to_onnx(self):
-        dummy_preprocessor_input = torch.randn(1, 224, 224, 3)  # NHWC input for export
+        dummy_preprocessor_input = torch.randn(1, 1024, 1280, 3)
 
         f = io.BytesIO()
         torch.onnx.export(
             self,
             dummy_preprocessor_input,
             f,
-            input_names=["image"],  # ✅ match incoming request key
+            input_names=["image"],  # must match inference input
             output_names=["tensor"],
             opset_version=11,
             dynamic_axes={"image": {0: "batch_size", 1: "height", 2: "width"}},
@@ -93,7 +106,7 @@ dependent_features = [
 input_tensor = torch.randn(1, 3, 224, 224)
 
 # Create Jaqpot instance
-jaqpot = JaqpotLocal()
+jaqpot = Jaqpot()
 jaqpot.login()
 
 model.cpu()
@@ -114,7 +127,7 @@ jaqpot_model.convert_to_onnx()
 # Upload to Jaqpot
 jaqpot_model.deploy_on_jaqpot(
     jaqpot=jaqpot,
-    name="Nanomaterial Classifier v4",
+    name="Nanomaterial Classifier v8",
     description="Classifies nanomaterial types from TEM images.",
     visibility=ModelVisibility.PUBLIC,
 )
