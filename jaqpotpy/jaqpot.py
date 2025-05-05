@@ -98,7 +98,10 @@ class Jaqpot:
             # Large upload
             large_model_api = LargeModelApi(self.http_client)
             body_model.raw_model = None
-            body_model.raw_preprocessor = None
+            if raw_preprocessor_bytes:
+                body_model.raw_preprocessor = model_to_b64encoding(
+                    raw_preprocessor_bytes
+                )
 
             response = large_model_api.create_large_model_with_http_info(
                 model=body_model
