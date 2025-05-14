@@ -1,7 +1,7 @@
 import torch
 from jaqpot_api_client import ModelTask, Feature, FeatureType, ModelVisibility
 
-from examples.PyTorch_examples.preprocessors.my_image_preprocessor import (
+from examples.pytorch.preprocessors.my_image_preprocessor import (
     MyImagePreprocessor,
 )
 from jaqpotpy.models.torch_models.torch_onnx import TorchONNXModel
