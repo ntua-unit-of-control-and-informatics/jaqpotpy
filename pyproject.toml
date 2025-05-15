@@ -31,7 +31,8 @@ dependencies = [
     "setuptools>=75.0.0",
     "python-keycloak>=4.3.0",
     "jaqpot-python-sdk>=6.0.2",
-    "torch-geometric>=2.5.0"
+    "torch-geometric>=2.5.0",
+    "xgboost>=2.1.1"
 ]
 
 [[project.authors]]
