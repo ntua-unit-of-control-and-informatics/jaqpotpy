@@ -1,25 +1,20 @@
-from typing import Any, Dict, Optional, List, Tuple, Union
+from typing import Any, Dict, Optional, List, Union
+
 import pandas as pd
-from sklearn import pipeline
-from sklearn.base import BaseEstimator
-import numpy as np
-from skl2onnx import convert_sklearn, to_onnx, update_registered_converter
-from sklearn.calibration import LabelEncoder
-import jaqpotpy
-from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpot_api_client.models.doa import Doa
-from jaqpotpy.datasets.jaqpot_tabular_dataset import JaqpotTabularDataset
 from jaqpot_api_client.models import ModelScores, ModelType
-from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
-from jaqpotpy.doa import DOA
-from skl2onnx.common.shape_calculator import (
-    calculate_linear_classifier_output_shapes,
-    calculate_linear_regressor_output_shapes,
-)
-from xgboost import XGBClassifier, XGBRegressor
+from jaqpot_api_client.models.doa import Doa
 from onnxmltools.convert.xgboost import (
     convert,
 )
+from sklearn import pipeline
+from sklearn.base import BaseEstimator
+from sklearn.calibration import LabelEncoder
+
+import jaqpotpy
+from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.datasets.jaqpot_tabular_dataset import JaqpotTabularDataset
+from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
+from jaqpotpy.doa import DOA
 from jaqpotpy.models.sklearn import SklearnModel
 
 
