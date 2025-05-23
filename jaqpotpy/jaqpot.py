@@ -1,12 +1,7 @@
 import webbrowser
+from getpass import getpass
 
 from jaqpot_api_client.api import LargeModelApi
-from keycloak import KeycloakOpenID
-
-import jaqpotpy
-from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpot_python_sdk.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
-from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.models.feature import Feature
 from jaqpot_api_client.models.feature_type import FeatureType
@@ -14,7 +9,12 @@ from jaqpot_api_client.models.model import Model
 from jaqpot_api_client.models.model_task import ModelTask
 from jaqpot_api_client.models.model_type import ModelType
 from jaqpot_api_client.models.model_visibility import ModelVisibility
+from jaqpot_python_sdk.jaqpot_api_client_builder import JaqpotApiHttpClientBuilder
+from keycloak import KeycloakOpenID
 
+import jaqpotpy
+from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger
 from jaqpotpy.helpers.url_utils import add_subdomain
@@ -158,7 +158,7 @@ class Jaqpot:
         # Automatically open the browser (optional)
         webbrowser.open(auth_url)
 
-        code = input("Enter the authorization code you received: ")
+        code = getpass("Enter the authorization code you received: ")
 
         # Exchange the code for an access token
         token_response = keycloak_openid.token(
