@@ -3,20 +3,31 @@ from dotenv import load_dotenv
 from datetime import datetime
 from jaqpot_python_sdk.jaqpot_api_client import JaqpotApiClient
 from jaqpot_api_client import ModelApi, FeatureApi, PartiallyUpdateModelFeatureRequest
+from os import environ
 
 # --------------------------------------------------------------------
 # This script is used to update the model features in the Jaqpot API
 # --------------------------------------------------------------------
-load_dotenv("keys.env")
-old_full_model_id = 2069
-old_lite_model_id = 2038
+load_dotenv(".env")
+# Get API keys from environment variables and print them
 
-new_full_model_id = 2116
-new_lite_model_id = 2115
+# Print available environment variables and model IDs for debugging
+print("Environment variables loaded:")
+if "JAQPOT_API_KEY" in environ:
+    print(f"JAQPOT_API_KEY: {environ['JAQPOT_API_KEY'][:5]}...")
+else:
+    print("JAQPOT_API_KEY not found")
 
 
-old_model_id = old_full_model_id
-new_model_id = new_full_model_id
+old_full_model_id = 2116
+# old_lite_model_id = 2115
+
+new_full_model_id = 2124
+# new_lite_model_id = 2123
+
+
+# old_model_id = old_full_model_id
+# new_model_id = new_full_model_id
 
 api_client = JaqpotApiClient().http_client
 feature_api = FeatureApi(api_client=api_client)
@@ -68,10 +79,10 @@ update_features(
 update_features(previous_model, new_model, feature_api, new_full_model_id, "dependent")
 
 # Update features for lite model
-print(f"\nUpdating features for Lite Model (ID: {new_lite_model_id})")
-previous_model = ModelApi(api_client=api_client).get_model_by_id(old_lite_model_id)
-new_model = ModelApi(api_client=api_client).get_model_by_id(new_lite_model_id)
-update_features(
-    previous_model, new_model, feature_api, new_lite_model_id, "independent"
-)
-update_features(previous_model, new_model, feature_api, new_lite_model_id, "dependent")
+# print(f"\nUpdating features for Lite Model (ID: {new_lite_model_id})")
+# previous_model = ModelApi(api_client=api_client).get_model_by_id(old_lite_model_id)
+# new_model = ModelApi(api_client=api_client).get_model_by_id(new_lite_model_id)
+# update_features(
+#     previous_model, new_model, feature_api, new_lite_model_id, "independent"
+# )
+# update_features(previous_model, new_model, feature_api, new_lite_model_id, "dependent")
