@@ -5,6 +5,8 @@ from sklearn.ensemble import RandomForestClassifier
 from jaqpotpy.datasets import JaqpotTabularDataset
 from sklearn.linear_model import LogisticRegression
 from jaqpotpy.models import SklearnModel
+from jaqpot_api_client.models.model_task import ModelTask
+from jaqpot_api_client.models.model_visibility import ModelVisibility
 
 # Generate a small binary classification dataset
 X, y = make_classification(n_samples=100, n_features=4, random_state=42)
@@ -49,5 +51,5 @@ jaqpot_model.deploy_on_jaqpot(
     jaqpot=jaqpot,
     name="My first Jaqpot Model",
     description="This is my first attempt to train and upload a Jaqpot model.",
-    visibility="PRIVATE",
+    visibility=ModelVisibility.PRIVATE,
 )

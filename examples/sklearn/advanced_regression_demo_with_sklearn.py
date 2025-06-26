@@ -12,6 +12,7 @@ from jaqpotpy.doa import (
     BoundingBox,
     Leverage,
 )  # Domain of Applicability (DOA) methods
+from jaqpot_api_client.models.model_visibility import ModelVisibility
 
 # Define the path to the dataset
 path = "examples/demo_datasets/cytotoxicity_data.csv"  # this needs update
@@ -133,5 +134,5 @@ jaqpotModel.deploy_on_jaqpot(
     jaqpot=jaqpot,  # Authenticated Jaqpot instance
     name="Test predictive model",  # Name of the deployed model
     description="Test",  # Short description for reference
-    visibility="PRIVATE",  # Visibility setting on Jaqpot platform
+    visibility=ModelVisibility.PRIVATE,  # Visibility setting on Jaqpot platform
 )
