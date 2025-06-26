@@ -1,0 +1,34 @@
+version: 2
+updates:
+  # Enable version updates for Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Automatically approve and merge minor and patch updates
+    open-pull-requests-limit: 10
+    # Group updates by dependency type
+    groups:
+      sklearn-related:
+        patterns:
+          - "scikit-learn*"
+          - "skl2onnx*"
+      torch-related:
+        patterns:
+          - "torch*"
+          - "onnx*"
+      jaqpot-related:
+        patterns:
+          - "jaqpot-*"
+      dev-dependencies:
+        patterns:
+          - "pre-commit*"
+          - "ruff*"
+          - "pytest*"
+    # Security updates get higher priority
+    labels:
+      - "dependencies"
+    # Commit message prefix
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
