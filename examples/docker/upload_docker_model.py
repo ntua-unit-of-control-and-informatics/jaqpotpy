@@ -6,14 +6,12 @@ from jaqpotpy import Jaqpot
 independent_features = [
     Feature(
         key="numGenerations", name="numGenerations", feature_type=FeatureType.FLOAT
-    ).to_dict(),
+    ),
 ]
 
 dependent_features = [
-    Feature(
-        key="prediction", name="Prediction", feature_type=FeatureType.FLOAT
-    ).to_dict(),
-    Feature(key="smiles", name="SMILES", feature_type=FeatureType.STRING).to_dict(),
+    Feature(key="prediction", name="Prediction", feature_type=FeatureType.FLOAT),
+    Feature(key="smiles", name="SMILES", feature_type=FeatureType.STRING),
 ]
 
 # Create a dummy DockerConfig (update values as needed)

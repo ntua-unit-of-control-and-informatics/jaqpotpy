@@ -428,23 +428,8 @@ class Jaqpot:
             name=name,
             type=ModelType.DOCKER,
             jaqpotpy_version=model.jaqpotpy_version,
-            dependent_features=[
-                Feature(
-                    key=feature_i["key"],
-                    name=feature_i["name"],
-                    feature_type=feature_i["featureType"],
-                )
-                for feature_i in model.dependent_features
-            ],
-            independent_features=[
-                Feature(
-                    key=feature_i["key"],
-                    name=feature_i["name"],
-                    feature_type=feature_i["featureType"],
-                    possible_values=feature_i.get("possible_values"),
-                )
-                for feature_i in model.independent_features
-            ],
+            dependent_features=model.dependent_features,
+            independent_features=model.independent_features,
             visibility=visibility,
             task=ModelTask.REGRESSION,
             raw_model=raw_model,
