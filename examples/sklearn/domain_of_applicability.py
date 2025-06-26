@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from jaqpot_api_client import ModelTask
 from sklearn.datasets import make_regression
 from jaqpotpy.datasets import JaqpotTabularDataset
 from sklearn.linear_model import LinearRegression
@@ -28,7 +29,7 @@ dataset = JaqpotTabularDataset(
     df=df,
     x_cols=["X1", "X2", "X3", "X4"],
     y_cols=["y"],
-    task="regression",
+    task=ModelTask.REGRESSION,
 )
 
 # Wrap the scikit-learn model with Jaqpotpy's SklearnModel
@@ -66,7 +67,7 @@ test_dataset = JaqpotTabularDataset(
     df=df_test,
     x_cols=["X1", "X2", "X3", "X4"],
     y_cols=None,
-    task="regression",
+    task=ModelTask.REGRESSION,
 )
 
 # Use the trained model to make check if the test data are in or out of the domain of applicability

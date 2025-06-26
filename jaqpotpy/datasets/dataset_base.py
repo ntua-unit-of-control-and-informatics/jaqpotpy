@@ -5,6 +5,7 @@ import os
 import pickle
 from typing import Iterable, Optional
 import pandas as pd
+from jaqpot_api_client.models.model_task import ModelTask
 
 
 class BaseDataset(ABC):
@@ -19,8 +20,8 @@ class BaseDataset(ABC):
         The columns to be used as features.
     y_cols : Optional[Iterable[str]]
         The columns to be used as labels.
-    _task : str
-        The task type, either 'regression' or 'classification'.
+    _task : ModelTask
+        The task type (ModelTask.REGRESSION, ModelTask.BINARY_CLASSIFICATION, or ModelTask.MULTICLASS_CLASSIFICATION).
     _dataset_name : str
         The name of the dataset.
     y : Iterable[str]
@@ -35,7 +36,7 @@ class BaseDataset(ABC):
         path: Optional[str] = None,
         y_cols: Iterable[str] = None,
         x_cols: Optional[Iterable[str]] = None,
-        task: str = None,
+        task: ModelTask = None,
     ) -> None:
         """
         Initializes the BaseDataset with either a DataFrame or a path to a CSV file.
@@ -50,8 +51,8 @@ class BaseDataset(ABC):
             The columns to be used as labels.
         x_cols : Iterable[str], optional
             The columns to be used as features.
-        task : str, optional
-            The task type, either 'regression' or 'classification'.
+        task : ModelTask, optional
+            The task type (ModelTask.REGRESSION, ModelTask.BINARY_CLASSIFICATION, or ModelTask.MULTICLASS_CLASSIFICATION).
 
         Raises
         ------
@@ -139,7 +140,7 @@ class BaseDataset(ABC):
 
         Returns
         -------
-        str
+        ModelTask
             The task type.
         """
         return self._task
@@ -151,24 +152,24 @@ class BaseDataset(ABC):
 
         Parameters
         ----------
-        value : str
-            The task type, either 'REGRESSION', 'BINARY_CLASSIFICATION', or 'MULTICLASS_CLASSIFICATION'.
+        value : ModelTask
+            The task type (ModelTask.REGRESSION, ModelTask.BINARY_CLASSIFICATION, or ModelTask.MULTICLASS_CLASSIFICATION).
 
         Raises
         ------
         ValueError
             If the task type is not one of the allowed values.
         """
-        if value is None or value.upper() not in [
-            "REGRESSION",
-            "BINARY_CLASSIFICATION",
-            "MULTICLASS_CLASSIFICATION",
+        if value is None or value not in [
+            ModelTask.REGRESSION,
+            ModelTask.BINARY_CLASSIFICATION,
+            ModelTask.MULTICLASS_CLASSIFICATION,
         ]:
             raise ValueError(
-                "Task must be either 'REGRESSION', BINARY_CLASSIFICATION' or 'MULTICLASS_CLASSIFICATION'."
+                "Task must be either ModelTask.REGRESSION, ModelTask.BINARY_CLASSIFICATION, or ModelTask.MULTICLASS_CLASSIFICATION."
             )
 
-        self._task = value.upper()
+        self._task = value
 
     @property
     def dataset_name(self):

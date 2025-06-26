@@ -3,6 +3,7 @@ from sklearn.datasets import make_regression
 from jaqpotpy.datasets import JaqpotTabularDataset
 from sklearn.linear_model import LinearRegression
 from jaqpotpy.models import SklearnModel
+from jaqpot_api_client.models.model_task import ModelTask
 
 # Generate a small regression dataset
 # This creates a dataset with 100 samples, each having 4 features and some noise.
@@ -19,7 +20,7 @@ dataset = JaqpotTabularDataset(
     df=df,
     x_cols=["X1", "X2", "X3", "X4"],
     y_cols=["y"],
-    task="regression",
+    task=ModelTask.REGRESSION,
 )
 
 # Wrap the scikit-learn model with Jaqpotpy's SklearnModel
@@ -44,7 +45,7 @@ test_dataset = JaqpotTabularDataset(
     df=df_test,
     x_cols=["X1", "X2", "X3", "X4"],
     y_cols=None,
-    task="regression",
+    task=ModelTask.REGRESSION,
 )
 
 # Use the trained model to make predictions on the new dataset

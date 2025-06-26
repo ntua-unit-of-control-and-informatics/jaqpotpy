@@ -9,6 +9,8 @@ from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
     pyg_to_onnx,
 )
 from jaqpotpy.models.trainers.graph_trainers import BinaryGraphModelTrainer
+from jaqpot_api_client.models.model_task import ModelTask
+from jaqpot_api_client.models.model_visibility import ModelVisibility
 
 df = pd.read_csv("./jaqpotpy/test_data/test_data_smiles_classification.csv")
 
@@ -111,6 +113,6 @@ jaqpot.deploy_torch_model(
     name="Graph Sage Network",
     description="Graph Sage Network for regression",
     target_name="ACTIVITY",
-    visibility="PRIVATE",
-    task="binary_classification",  # Specify the task (regression or binary_classification)
+    visibility=ModelVisibility.PRIVATE,
+    task=ModelTask.BINARY_CLASSIFICATION,  # Specify the task (regression or binary_classification)
 )

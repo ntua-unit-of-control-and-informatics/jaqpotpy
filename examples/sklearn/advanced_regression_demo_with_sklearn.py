@@ -1,5 +1,6 @@
 # Import necessary libraries for data handling, model training, and deployment
 import pandas as pd
+from jaqpot_api_client import ModelTask
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
@@ -12,6 +13,7 @@ from jaqpotpy.doa import (
     BoundingBox,
     Leverage,
 )  # Domain of Applicability (DOA) methods
+from jaqpot_api_client.models.model_visibility import ModelVisibility
 
 # Define the path to the dataset
 path = "examples/demo_datasets/cytotoxicity_data.csv"  # this needs update
@@ -68,7 +70,7 @@ train_dataset = JaqpotTabularDataset(
     df=train_df,
     y_cols=y_cols,  # Specify target column
     x_cols=x_cols,  # Specify feature columns
-    task="REGRESSION",  # Define task type
+    task=ModelTask.REGRESSION,  # Define task type
 )
 
 # Define preprocessing pipeline for feature columns
@@ -114,7 +116,7 @@ test_dataset = JaqpotTabularDataset(
     df=test_df,
     y_cols=y_cols,  # Target column for test data
     x_cols=x_cols,  # Feature columns for test data
-    task="REGRESSION",  # Specify regression task
+    task=ModelTask.REGRESSION,  # Specify regression task
 )
 
 # Evaluate model on the test dataset to assess performance
@@ -133,5 +135,5 @@ jaqpotModel.deploy_on_jaqpot(
     jaqpot=jaqpot,  # Authenticated Jaqpot instance
     name="Test predictive model",  # Name of the deployed model
     description="Test",  # Short description for reference
-    visibility="PRIVATE",  # Visibility setting on Jaqpot platform
+    visibility=ModelVisibility.PRIVATE,  # Visibility setting on Jaqpot platform
 )

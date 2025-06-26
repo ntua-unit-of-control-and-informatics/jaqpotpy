@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from jaqpot_api_client import ModelTask
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_selection import VarianceThreshold
 from jaqpotpy.models import SklearnModel
@@ -60,7 +61,7 @@ train_dataset = JaqpotTabularDataset(
     ],  # Features include categorical and temperature columns
     y_cols=["activity"],  # Target column
     smiles_cols=["smiles"],  # Column containing SMILES strings for featurization
-    task="regression",  # Task type is regression
+    task=ModelTask.REGRESSION,  # Task type is regression
     featurizer=featurizers,  # List of featurizers to apply to 'smiles'
 )
 
@@ -105,7 +106,7 @@ test_dataset = JaqpotTabularDataset(
     smiles_cols="smiles",
     x_cols=["cat_col", "temperature"],
     y_cols=None,
-    task="regression",
+    task=ModelTask.REGRESSION,
     featurizer=featurizers,
 )
 

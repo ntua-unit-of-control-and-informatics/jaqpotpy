@@ -2,6 +2,8 @@ import torch
 from torch_geometric.loader import DataLoader
 import pandas as pd
 from jaqpotpy import Jaqpot
+from jaqpot_api_client.models.model_task import ModelTask
+from jaqpot_api_client.models.model_visibility import ModelVisibility
 from jaqpotpy.descriptors.graph import SmilesGraphFeaturizer
 from jaqpotpy.datasets import SmilesGraphDataset
 from jaqpotpy.models.torch_geometric_models.graph_neural_network import (
@@ -104,6 +106,6 @@ jaqpot.deploy_torch_model(
     name="Graph Sage Network",
     description="Graph Sage Network for regression",
     target_name="ACTIVITY",
-    visibility="PRIVATE",
-    task="regression",  # Specify the task (regression or binary_classification)
+    visibility=ModelVisibility.PRIVATE,
+    task=ModelTask.REGRESSION,  # Specify the task (regression or binary_classification)
 )

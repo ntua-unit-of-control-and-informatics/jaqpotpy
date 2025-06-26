@@ -6,6 +6,8 @@ import os
 import numpy as np
 import io
 import contextlib
+
+from jaqpot_api_client import ModelTask
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.feature_selection import VarianceThreshold
@@ -116,7 +118,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -129,7 +131,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
 
@@ -175,7 +177,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -189,7 +191,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
 
@@ -240,7 +242,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -262,7 +264,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -297,7 +299,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -325,7 +327,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -356,7 +358,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="multiclass_classification",
+            task=ModelTask.MULTICLASS_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -370,7 +372,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
 
@@ -417,7 +419,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="multiclass_classification",
+            task=ModelTask.MULTICLASS_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -447,7 +449,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="multiclass_classification",
+            task=ModelTask.MULTICLASS_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -478,7 +480,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         model = RandomForestRegressor(random_state=42)
@@ -491,7 +493,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -517,7 +519,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         pre = StandardScaler()
@@ -531,7 +533,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -557,7 +559,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         pre = MinMaxScaler()
@@ -571,7 +573,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -599,7 +601,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         pre_x = StandardScaler()
@@ -618,7 +620,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -646,7 +648,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -660,7 +662,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -703,7 +705,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -719,7 +721,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -762,7 +764,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -778,7 +780,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -821,7 +823,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -842,7 +844,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=None,
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
 
@@ -940,7 +942,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         pre = [StandardScaler(), MinMaxScaler()]
@@ -954,7 +956,7 @@ class TestModels(unittest.TestCase):
             y_cols=None,
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
 
@@ -974,7 +976,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         model = RandomForestRegressor(random_state=42)
@@ -997,7 +999,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         pre = StandardScaler()
@@ -1031,7 +1033,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="multiclass_classification",
+            task=ModelTask.MULTICLASS_CLASSIFICATION,
             featurizer=featurizer,
         )
         pre = StandardScaler()
@@ -1064,7 +1066,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY", "ACTIVITY_2"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         model = RandomForestRegressor(random_state=42)
@@ -1113,7 +1115,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         pre = StandardScaler()
@@ -1128,7 +1130,7 @@ class TestModels(unittest.TestCase):
             y_cols=["ACTIVITY"],
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
-            task="regression",
+            task=ModelTask.REGRESSION,
             featurizer=featurizer,
         )
         jaqpot_model.randomization_test(
@@ -1164,7 +1166,7 @@ class TestModels(unittest.TestCase):
             y_cols=y_cols,
             smiles_cols=smiles_cols,
             x_cols=x_cols,
-            task="BINARY_CLASSIFICATION",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
@@ -1187,7 +1189,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=smiles_cols,
             x_cols=x_cols,
             y_cols=y_cols,
-            task="BINARY_CLASSIFICATION",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=featurizer,
         )
 
@@ -1236,7 +1238,7 @@ class TestModels(unittest.TestCase):
                 y_cols=None,
                 smiles_cols=None,
                 x_cols=["A", "B", "C"],
-                task="BINARY_CLASSIFICATION",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=None,
                 remove_inf_cols=True,
             )
@@ -1257,7 +1259,7 @@ class TestModels(unittest.TestCase):
                 y_cols=None,
                 smiles_cols=None,
                 x_cols=["A", "B", "C"],
-                task="BINARY_CLASSIFICATION",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=None,
                 remove_inf_rows=True,
             )
@@ -1277,7 +1279,7 @@ class TestModels(unittest.TestCase):
                 y_cols=None,
                 smiles_cols=None,
                 x_cols=["A", "B", "C"],
-                task="BINARY_CLASSIFICATION",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=None,
             )
             output = buf.getvalue().strip()

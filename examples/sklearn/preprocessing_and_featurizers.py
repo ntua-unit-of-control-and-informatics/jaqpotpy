@@ -6,6 +6,7 @@ from sklearn.compose import ColumnTransformer
 from jaqpotpy.models import SklearnModel
 from jaqpotpy.datasets import JaqpotTabularDataset
 from jaqpotpy.descriptors import RDKitDescriptors
+from jaqpot_api_client.models.model_task import ModelTask
 
 # Define the dataset with SMILES strings, a categorical variable, temperature, and activity values
 data = pd.DataFrame(
@@ -48,7 +49,7 @@ train_dataset = JaqpotTabularDataset(
     x_cols=["cat_col", "temperature"],  # Feature columns
     y_cols=["activity"],  # Target column
     smiles_cols=["smiles"],  # SMILES column for molecular descriptor generation
-    task="regression",  # Type of task: regression
+    task=ModelTask.REGRESSION,  # Type of task: regression
     featurizer=featurizer,  # Use RDKit featurizer for SMILES-based features
 )
 
@@ -95,7 +96,7 @@ test_dataset = JaqpotTabularDataset(
     smiles_cols="smiles",
     x_cols=["cat_col", "temperature"],
     y_cols=None,
-    task="regression",
+    task=ModelTask.REGRESSION,
     featurizer=featurizer,  # Same featurizer for consistency with training
 )
 

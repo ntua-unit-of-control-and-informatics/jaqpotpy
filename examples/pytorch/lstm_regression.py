@@ -5,6 +5,8 @@ from jaqpotpy.models.torch_models import SequenceLstmModel, lstm_to_onnx
 from jaqpotpy.models.trainers.sequence_trainers import RegressionSequenceTrainer
 from jaqpotpy.datasets import SmilesSeqDataset
 from jaqpotpy.descriptors.tokenizer import SmilesVectorizer
+from jaqpot_api_client.models.model_task import ModelTask
+from jaqpot_api_client.models.model_visibility import ModelVisibility
 from tdc.single_pred import ADME
 
 data = ADME(name="Lipophilicity_AstraZeneca")
@@ -62,6 +64,6 @@ jaqpot.deploy_torch_model(
     name="LSTM",
     description="LSTM for binary classification",
     target_name="ACTIVITY",
-    visibility="PRIVATE",
-    task="regression",  # Specify the task (regression or binary_classification)
+    visibility=ModelVisibility.PRIVATE,
+    task=ModelTask.REGRESSION,  # Specify the task (regression or binary_classification)
 )

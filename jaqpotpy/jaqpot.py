@@ -188,7 +188,9 @@ class Jaqpot:
             # error_description = response.headers.get("error_description")
             self.log.error("Error code: " + str(response.status_code.value))
 
-    def deploy_sklearn_model(self, model, name, description, visibility):
+    def deploy_sklearn_model(
+        self, model, name, description, visibility: ModelVisibility
+    ):
         """
         Deploy an sklearn model on Jaqpot.
 
@@ -203,8 +205,8 @@ class Jaqpot:
             The name of the model.
         description : str
             A description of the model.
-        visibility : str
-            The visibility of the model (e.g., 'public', 'private').
+        visibility : ModelVisibility
+            The visibility of the model (ModelVisibility.PUBLIC, ModelVisibility.PRIVATE, or ModelVisibility.ORG_SHARED).
 
         Returns
         -------
@@ -258,7 +260,7 @@ class Jaqpot:
         name,
         description,
         target_name,
-        visibility,
+        visibility: ModelVisibility,
         task,
     ):
         """
@@ -276,8 +278,8 @@ class Jaqpot:
             A description of the model.
         target_name : str
             The name of the target feature.
-        visibility : str
-            The visibility of the model (e.g., 'public', 'private').
+        visibility : ModelVisibility
+            The visibility of the model (ModelVisibility.PUBLIC, ModelVisibility.PRIVATE, or ModelVisibility.ORG_SHARED).
         task : str
             The task type (e.g., 'binary_classification', 'regression', 'multiclass_classification').
 
@@ -286,13 +288,13 @@ class Jaqpot:
         None
         """
         # Task
-        if task == "binary_classification":
+        if task == ModelTask.BINARY_CLASSIFICATION:
             model_task = ModelTask.BINARY_CLASSIFICATION
             feature_type = FeatureType.INTEGER
-        elif task == "regression":
+        elif task == ModelTask.REGRESSION:
             model_task = ModelTask.REGRESSION
             feature_type = FeatureType.FLOAT
-        elif task == "multiclass_classification":
+        elif task == ModelTask.MULTICLASS_CLASSIFICATION:
             model_task = ModelTask.MULTICLASS_CLASSIFICATION
             feature_type = FeatureType.INTEGER
         else:

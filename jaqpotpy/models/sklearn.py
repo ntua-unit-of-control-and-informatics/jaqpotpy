@@ -18,6 +18,8 @@ from skl2onnx.common.data_types import (
     BooleanTensorType,
     StringTensorType,
 )
+from jaqpot_api_client.models.model_task import ModelTask
+from jaqpot_api_client.models.model_visibility import ModelVisibility
 import jaqpotpy
 from jaqpot_api_client.models import (
     ModelScores,
@@ -615,7 +617,7 @@ class SklearnModel(Model):
         """
         if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        if self.task == "regression":
+        if self.task == ModelTask.REGRESSION:
             raise ValueError("predict_proba is available only for classification tasks")
         if self.selected_features is not None:
             X_mat = dataset.X[self.selected_features]
@@ -698,7 +700,7 @@ class SklearnModel(Model):
         """
         if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        if self.task == "regression":
+        if self.task == ModelTask.REGRESSION:
             raise ValueError(
                 "predict_onnx_proba is available only for classification tasks"
             )
@@ -752,7 +754,7 @@ class SklearnModel(Model):
 
         return doa_results
 
-    def deploy_on_jaqpot(self, jaqpot, name, description, visibility):
+    def deploy_on_jaqpot(self, jaqpot, name, description, visibility: ModelVisibility):
         """
         Deploy the model on Jaqpot.
 
@@ -760,7 +762,7 @@ class SklearnModel(Model):
             jaqpot: The Jaqpot instance.
             name (str): The name of the model.
             description (str): The description of the model.
-            visibility: The visibility of the model.
+            visibility (ModelVisibility): The visibility of the model.
         """
         jaqpot.deploy_sklearn_model(
             model=self, name=name, description=description, visibility=visibility
