@@ -14,6 +14,7 @@ from keycloak import KeycloakOpenID
 
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.api.local_model import JaqpotLocalModel
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger
@@ -74,6 +75,7 @@ class Jaqpot:
         self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
         self.access_token = None
         self.http_client = None
+        self._local = None
 
     def _deploy_model(
         self,
@@ -441,3 +443,43 @@ class Jaqpot:
         )
 
         self._create_model_request(body_model, model_api)
+
+    @property
+    def local(self):
+        """
+        Access to local model functionality for downloading and running models locally.
+
+        Returns:
+            JaqpotLocalModel: Instance for local model operations
+        """
+        if self._local is None:
+            if self.http_client is None:
+                raise ValueError("Must be logged in to use local model functionality")
+            self._local = JaqpotLocalModel(self)
+        return self._local
+
+    def download_model(self, model_id: str, cache: bool = True):
+        """
+        Download a model from Jaqpot platform for local use.
+
+        Args:
+            model_id (str): The ID of the model to download
+            cache (bool): Whether to cache the downloaded model
+
+        Returns:
+            Dict containing model metadata and ONNX bytes
+        """
+        return self.local.download_model(model_id, cache)
+
+    def predict_local(self, model_data, data):
+        """
+        Make predictions using a locally downloaded model.
+
+        Args:
+            model_data: Either model_id (str) or model data dict from download_model
+            data: Input data for prediction (numpy array, list, or dict)
+
+        Returns:
+            PredictionResponse with predictions in same format as Jaqpot API
+        """
+        return self.local.predict_local(model_data, data)
