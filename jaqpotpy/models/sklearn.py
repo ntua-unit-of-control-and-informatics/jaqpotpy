@@ -18,6 +18,7 @@ from skl2onnx.common.data_types import (
     BooleanTensorType,
     StringTensorType,
 )
+from jaqpot_api_client.models.model_task import ModelTask
 import jaqpotpy
 from jaqpot_api_client.models import (
     ModelScores,
@@ -615,7 +616,7 @@ class SklearnModel(Model):
         """
         if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        if self.task == "regression":
+        if self.task == ModelTask.REGRESSION:
             raise ValueError("predict_proba is available only for classification tasks")
         if self.selected_features is not None:
             X_mat = dataset.X[self.selected_features]
@@ -698,7 +699,7 @@ class SklearnModel(Model):
         """
         if not isinstance(dataset, JaqpotTabularDataset):
             raise TypeError("Expected dataset to be of type JaqpotpyDataset")
-        if self.task == "regression":
+        if self.task == ModelTask.REGRESSION:
             raise ValueError(
                 "predict_onnx_proba is available only for classification tasks"
             )

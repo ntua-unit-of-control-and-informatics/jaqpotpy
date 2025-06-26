@@ -6,6 +6,7 @@ import pandas as pd
 import sklearn.feature_selection as skfs
 from jaqpotpy.descriptors.base_classes import MolecularFeaturizer
 from jaqpotpy.datasets.dataset_base import BaseDataset
+from jaqpot_api_client.models.model_task import ModelTask
 import numpy as np
 
 
@@ -18,7 +19,7 @@ class JaqpotTabularDataset(BaseDataset):
         x_cols: Optional[Iterable[str]] = None,
         smiles_cols: Optional[Iterable[str]] = None,
         featurizer: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
-        task: str = None,
+        task: ModelTask = None,
         verbose: bool = True,
         remove_inf_cols: bool = False,
         remove_inf_rows: bool = False,
@@ -33,7 +34,7 @@ class JaqpotTabularDataset(BaseDataset):
             x_cols (Optional[Iterable[str]]): The columns representing the features.
             smiles_cols (Optional[Iterable[str]]): The columns containing SMILES strings.
             featurizer (Optional[List[MolecularFeaturizer] or MolecularFeaturizer]): The featurizer(s) to use.
-            task (str): The task type (e.g., regression, classification).
+            task (ModelTask): The task type (ModelTask.REGRESSION, ModelTask.BINARY_CLASSIFICATION, or ModelTask.MULTICLASS_CLASSIFICATION).
             verbose (bool, optional): If True, enables detailed logging or printing. Default is True.
             remove_inf_cols (bool, optional): If True, drops columns containing infinite values. Default is False.
             remove_inf_rows (bool, optional): If True, removes rows containing infinite values. Default is False.

@@ -286,13 +286,13 @@ class Jaqpot:
         None
         """
         # Task
-        if task == "binary_classification":
+        if task == ModelTask.BINARY_CLASSIFICATION:
             model_task = ModelTask.BINARY_CLASSIFICATION
             feature_type = FeatureType.INTEGER
-        elif task == "regression":
+        elif task == ModelTask.REGRESSION:
             model_task = ModelTask.REGRESSION
             feature_type = FeatureType.FLOAT
-        elif task == "multiclass_classification":
+        elif task == ModelTask.MULTICLASS_CLASSIFICATION:
             model_task = ModelTask.MULTICLASS_CLASSIFICATION
             feature_type = FeatureType.INTEGER
         else:
