@@ -1,6 +1,7 @@
 # Import necessary libraries
 import pandas as pd
 import numpy as np
+from jaqpot_api_client import ModelTask
 from sklearn.ensemble import RandomForestRegressor
 from jaqpotpy.models import SklearnModel
 from jaqpotpy.datasets import JaqpotTabularDataset
@@ -47,7 +48,7 @@ train_dataset = JaqpotTabularDataset(
     ],
     y_cols=["activity"],
     smiles_cols=["smiles"],
-    task="regression",
+    task=ModelTask.REGRESSION,
     featurizer=featurizer,
 )
 
@@ -83,7 +84,7 @@ test_dataset = JaqpotTabularDataset(
     smiles_cols="smiles",
     x_cols=["cat_col", "temperature"],
     y_cols=["activity"],
-    task="regression",
+    task=ModelTask.REGRESSION,
     featurizer=featurizer,
 )
 

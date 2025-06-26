@@ -46,7 +46,7 @@ y_cols = ["ACTIVITY"]
 x_cols = ["X1", "X2"]
 
 # Step 1: Create a Jaqpotpy dataset
-dataset = JaqpotTabularDataset(df=df, y_cols=y_cols, x_cols=x_cols, task="regression")
+dataset = JaqpotTabularDataset(df=df, y_cols=y_cols, x_cols=x_cols, task=ModelTask.REGRESSION)
 
 # Step 2: Build a model
 rf = RandomForestRegressor(random_state=42)
@@ -60,7 +60,7 @@ myModel.deploy_on_jaqpot(
     jaqpot=jaqpot,
     name="Demo: Regression",
     description="This is a description",
-    visibility="PRIVATE"
+    visibility=ModelVisibility.PRIVATE
 )
 
 ```

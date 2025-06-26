@@ -1,5 +1,6 @@
 # Import necessary libraries for data handling, model training, and deployment
 import pandas as pd
+from jaqpot_api_client import ModelTask
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
@@ -69,7 +70,7 @@ train_dataset = JaqpotTabularDataset(
     df=train_df,
     y_cols=y_cols,  # Specify target column
     x_cols=x_cols,  # Specify feature columns
-    task="REGRESSION",  # Define task type
+    task=ModelTask.REGRESSION,  # Define task type
 )
 
 # Define preprocessing pipeline for feature columns
@@ -115,7 +116,7 @@ test_dataset = JaqpotTabularDataset(
     df=test_df,
     y_cols=y_cols,  # Target column for test data
     x_cols=x_cols,  # Feature columns for test data
-    task="REGRESSION",  # Specify regression task
+    task=ModelTask.REGRESSION,  # Specify regression task
 )
 
 # Evaluate model on the test dataset to assess performance

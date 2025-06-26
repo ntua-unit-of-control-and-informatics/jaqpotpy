@@ -22,7 +22,7 @@ dataset = JaqpotTabularDataset(
     df=df,
     x_cols=["X1", "X2", "X3", "X4"],
     y_cols=["y"],
-    task="binary_classification",
+    task=ModelTask.BINARY_CLASSIFICATION,
 )
 
 # Wrap the scikit-learn model with Jaqpotpy's SklearnModel

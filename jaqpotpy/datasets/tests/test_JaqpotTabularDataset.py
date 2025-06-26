@@ -4,6 +4,8 @@ import os
 import unittest
 import pandas as pd
 import sklearn.feature_selection as skfs
+from jaqpot_api_client import ModelTask
+
 from jaqpotpy.descriptors.molecular import (
     MACCSKeysFingerprint,
     MordredDescriptors,
@@ -60,7 +62,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizer,
         )
         self.assertIsNotNone(dataset.df, "DataFrame should not be None")
@@ -140,7 +142,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizer,
         )
 
@@ -154,7 +156,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=None,
             x_cols=self.x_cols,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizer,
         )
 
@@ -169,7 +171,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=None,  # ["SMILES"],
                 x_cols=None,  # self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -181,7 +183,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=[],  # ["SMILES"],
                 x_cols=[],  # self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -192,7 +194,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=None,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizer,
         )
         self.assertEqual(dataset.df.shape[1], 168, "DataFrame should have 170 columns")
@@ -206,7 +208,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=None,
             )
 
@@ -242,7 +244,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES", "Χ1"],  # Overlap with x_cols
                 x_cols=self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -254,7 +256,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES", "ACTIVITY"],  # Overlap with y_cols
                 x_cols=self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -266,7 +268,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=["ACTIVITY", "X2"],  # Overlap with x_cols
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -278,7 +280,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=["SMILES2"],  # Non-existent column
                 x_cols=self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -290,7 +292,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=self.y_cols,
                 smiles_cols=self.single_smiles_cols,
                 x_cols=["feat3"],  # Non-existent column
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -302,7 +304,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=["ACTIVITY2"],  # Non-existent column
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -313,7 +315,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=["ACTIVITY2"],  # Non-existent column
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -326,7 +328,7 @@ class TestDatasets(unittest.TestCase):
                 y_cols=["ACTIVITY2"],  # Non-existent column
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
-                task="binary_classification",
+                task=ModelTask.BINARY_CLASSIFICATION,
                 featurizer=self.featurizer,
             )
 
@@ -337,7 +339,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=["SMILES"],
             x_cols=None,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizers,
         )
 
@@ -351,7 +353,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizer,
         )
         feature_selector = skfs.VarianceThreshold(threshold=0.1)
@@ -371,7 +373,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizer,
         )
         selection_list = ["X1", "X2"]
@@ -394,7 +396,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizer,
         )
         with self.assertRaises(ValueError):
@@ -410,7 +412,7 @@ class TestDatasets(unittest.TestCase):
             y_cols=self.y_cols,
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
-            task="binary_classification",
+            task=ModelTask.BINARY_CLASSIFICATION,
             featurizer=self.featurizer,
         )
         with self.assertRaises(ValueError):
