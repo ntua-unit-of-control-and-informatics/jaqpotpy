@@ -30,5 +30,5 @@ updates:
       - "dependencies"
     # Commit message prefix
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
