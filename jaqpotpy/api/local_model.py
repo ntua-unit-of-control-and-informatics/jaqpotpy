@@ -1,7 +1,6 @@
 import base64
 import io
 import pickle
-import requests
 from typing import Union, Dict, Any, List, Optional
 
 import numpy as np
@@ -55,45 +54,123 @@ class JaqpotLocalModel:
 
     def _download_model_bytes(self, model) -> bytes:
         """
-        Download ONNX model bytes from base64 encoding or S3 URL.
+        Download ONNX model bytes from base64 encoding or S3 presigned URL.
         """
-        if hasattr(model, "actual_url") and model.actual_url:
-            # Large model stored in S3
-            response = requests.get(model.actual_url)
-            response.raise_for_status()
-            return response.content
-        elif hasattr(model, "raw_model") and model.raw_model:
-            # Small model stored as base64
+        # First try to get model from database (small models)
+        if hasattr(model, "raw_model") and model.raw_model:
             try:
                 return base64.b64decode(model.raw_model)
-            except Exception as e:
+            except Exception:
                 # If it's already bytes, return as is
                 if isinstance(model.raw_model, bytes):
                     return model.raw_model
+                # If base64 decode fails, continue to try presigned URL
+                pass
+
+        # Try to get presigned download URL for S3 models
+        try:
+            # Try to get presigned download URL (this assumes the API client has been updated)
+            # For now we'll handle this manually until the API client is regenerated
+            import requests
+
+            # Make direct API call to get presigned URL using LocalModelService
+            auth_header = self.jaqpot_client.http_client.default_headers.get(
+                "Authorization", ""
+            )
+            headers = {"Authorization": f"Bearer {auth_header.replace('Bearer ', '')}"}
+            api_host = self.jaqpot_client.http_client.configuration.host
+            response = requests.get(
+                f"{api_host}/v1/models/{model.id}/local/download-url",
+                headers=headers,
+                timeout=30,
+            )
+
+            if response.status_code == 200:
+                download_info = response.json()
+                download_url = download_info["downloadUrl"]
+
+                # Download model from presigned URL
+                model_response = requests.get(
+                    download_url, timeout=300
+                )  # 5 minutes for large models
+                model_response.raise_for_status()
+                return model_response.content
+            elif response.status_code == 404:
+                # Model not in S3, might be in database only
+                pass
+            else:
+                response.raise_for_status()
+
+        except Exception as e:
+            print(f"Warning: Could not download model from S3 using presigned URL: {e}")
+
+        # Fallback: check if we have raw_model in database
+        if hasattr(model, "raw_model") and model.raw_model:
+            try:
+                return base64.b64decode(model.raw_model)
+            except Exception as e:
+                if isinstance(model.raw_model, bytes):
+                    return model.raw_model
                 raise ValueError(f"Could not decode model bytes: {e}")
-        else:
-            raise ValueError("Model does not contain ONNX data")
+
+        raise ValueError("Model data not available in database or S3 storage")
 
     def _download_preprocessor_bytes(self, model) -> Optional[Any]:
         """
-        Download and deserialize preprocessor from base64 encoding or S3 URL.
+        Download and deserialize preprocessor from base64 encoding or S3 presigned URL.
         """
-        try:
-            if (
-                hasattr(model, "actual_preprocessor_url")
-                and model.actual_preprocessor_url
-            ):
-                # Large preprocessor stored in S3
-                response = requests.get(model.actual_preprocessor_url)
-                response.raise_for_status()
-                return pickle.loads(response.content)
-            elif hasattr(model, "raw_preprocessor") and model.raw_preprocessor:
-                # Small preprocessor stored as base64
+        # First try to get preprocessor from database (small preprocessors)
+        if hasattr(model, "raw_preprocessor") and model.raw_preprocessor:
+            try:
                 preprocessor_bytes = base64.b64decode(model.raw_preprocessor)
                 return pickle.loads(preprocessor_bytes)
+            except Exception:
+                # If base64 decode fails, continue to try presigned URL
+                pass
+
+        # Try to get presigned download URL for S3 preprocessors
+        try:
+            import requests
+
+            # Make direct API call to get presigned URL for preprocessor using LocalModelService
+            auth_header = self.jaqpot_client.http_client.default_headers.get(
+                "Authorization", ""
+            )
+            headers = {"Authorization": f"Bearer {auth_header.replace('Bearer ', '')}"}
+            api_host = self.jaqpot_client.http_client.configuration.host
+            response = requests.get(
+                f"{api_host}/v1/models/{model.id}/local/preprocessor/download-url",
+                headers=headers,
+                timeout=30,
+            )
+
+            if response.status_code == 200:
+                download_info = response.json()
+                download_url = download_info["downloadUrl"]
+
+                # Download preprocessor from presigned URL
+                preprocessor_response = requests.get(download_url, timeout=60)
+                preprocessor_response.raise_for_status()
+                return pickle.loads(preprocessor_response.content)
+            elif response.status_code == 404:
+                # Preprocessor not found
+                return None
+            else:
+                response.raise_for_status()
+
         except Exception as e:
-            print(f"Warning: Could not load preprocessor: {e}")
-            return None
+            print(
+                f"Warning: Could not download preprocessor from S3 using presigned URL: {e}"
+            )
+
+        # Fallback: check if we have raw_preprocessor in database
+        if hasattr(model, "raw_preprocessor") and model.raw_preprocessor:
+            try:
+                preprocessor_bytes = base64.b64decode(model.raw_preprocessor)
+                return pickle.loads(preprocessor_bytes)
+            except Exception as e:
+                print(f"Warning: Could not load preprocessor from database: {e}")
+
         return None
 
     def predict_local(

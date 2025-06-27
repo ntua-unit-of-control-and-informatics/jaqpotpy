@@ -3,6 +3,13 @@ Example: Using Jaqpot Local Model Functionality
 
 This example demonstrates how to download ONNX models from the Jaqpot platform
 and run predictions locally in your Jupyter notebook or Python environment.
+
+The implementation now supports:
+- Automatic fallback from S3 presigned URLs to database storage
+- Large models stored in S3 with efficient presigned URL downloads
+- Small models stored directly in the database as base64
+- Preprocessor downloads with the same fallback mechanism
+- Local caching for improved performance
 """
 
 import numpy as np
