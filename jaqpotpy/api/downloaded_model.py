@@ -13,7 +13,7 @@ from jaqpot_api_client.models.dataset import Dataset
 from ..inference.service import get_prediction_service
 
 
-class JaqpotLocalModel:
+class JaqpotDownloadedModel:
     def __init__(self, jaqpot_client):
         self.jaqpot_client = jaqpot_client
         self._cached_models = {}
@@ -63,12 +63,11 @@ class JaqpotLocalModel:
         # First try to get model from database (small models)
         if hasattr(model, "raw_model") and model.raw_model:
             try:
-                return base64.b64decode(model.raw_model)
+                return model.raw_model
             except Exception:
                 # If it's already bytes, return as is
                 if isinstance(model.raw_model, bytes):
                     return model.raw_model
-                # If base64 decode fails, continue to try presigned URL
                 pass
 
         # Try to get presigned download URL for S3 models
@@ -107,15 +106,6 @@ class JaqpotLocalModel:
 
         except Exception as e:
             print(f"Warning: Could not download model from S3 using presigned URL: {e}")
-
-        # Fallback: check if we have raw_model in database
-        if hasattr(model, "raw_model") and model.raw_model:
-            try:
-                return base64.b64decode(model.raw_model)
-            except Exception as e:
-                if isinstance(model.raw_model, bytes):
-                    return model.raw_model
-                raise ValueError(f"Could not decode model bytes: {e}")
 
         raise ValueError("Model data not available in database or S3 storage")
 

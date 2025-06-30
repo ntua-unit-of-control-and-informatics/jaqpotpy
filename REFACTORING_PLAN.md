@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document outlines the plan to extract prediction logic from `jaqpotpy-inference` to `jaqpotpy` to create a shared codebase for both local development and production inference.
+This document outlines the plan to extract prediction logic from `jaqpotpy-inference` to `jaqpotpy` to create a shared
+codebase for both local development and production inference.
 
 ## Goals
 
@@ -14,6 +15,7 @@ This document outlines the plan to extract prediction logic from `jaqpotpy-infer
 ## Current State Analysis
 
 ### jaqpotpy (Local Development)
+
 ```
 jaqpotpy/api/local_model.py
 ├── download_model()          # ✅ Enhanced with S3 presigned URLs
@@ -25,6 +27,7 @@ jaqpotpy/api/local_model.py
 ```
 
 ### jaqpotpy-inference (Production)
+
 ```
 jaqpotpy-inference/src/
 ├── handlers/                 # 🔥 Model-type-specific prediction logic
@@ -48,6 +51,7 @@ jaqpotpy-inference/src/
 ## Proposed New Architecture
 
 ### Enhanced jaqpotpy Structure
+
 ```
 jaqpotpy/
 ├── api/
@@ -76,6 +80,7 @@ jaqpotpy/
 ```
 
 ### Simplified jaqpotpy-inference Structure
+
 ```
 jaqpotpy-inference/src/
 ├── api/
@@ -93,6 +98,7 @@ jaqpotpy-inference/src/
 ### Phase 1: Extract Core Prediction Logic
 
 #### 1.1 Create jaqpotpy.inference package
+
 ```bash
 cd jaqpotpy
 mkdir -p jaqpotpy/inference/{handlers,core,utils}
@@ -101,6 +107,7 @@ touch jaqpotpy/inference/{handlers,core,utils}/__init__.py
 ```
 
 #### 1.2 Move predict_methods.py
+
 ```python
 # jaqpotpy/inference/core/predict_methods.py
 # Copied from jaqpotpy-inference/src/helpers/predict_methods.py
@@ -127,6 +134,7 @@ def calculate_doas(input_feed, request):
 ```
 
 #### 1.3 Move dataset utilities
+
 ```python
 # jaqpotpy/inference/core/dataset_utils.py
 # Copied from jaqpotpy-inference/src/helpers/dataset_utils.py
@@ -142,6 +150,7 @@ def build_graph_dataset_from_request(request):
 ```
 
 #### 1.4 Move model loading utilities
+
 ```python
 # jaqpotpy/inference/core/model_loader.py
 # Enhanced version combining jaqpotpy local_model + jaqpotpy-inference logic
@@ -156,6 +165,7 @@ def load_onnx_model_from_metadata(model_metadata, jaqpot_client=None):
 ### Phase 2: Create Model Type Handlers
 
 #### 2.1 Sklearn Handler
+
 ```python
 # jaqpotpy/inference/handlers/sklearn_handler.py
 
@@ -175,6 +185,7 @@ def handle_sklearn_prediction(request, local_mode=False):
 ```
 
 #### 2.2 Torch Handlers (similar pattern)
+
 ```python
 # jaqpotpy/inference/handlers/torch_handler.py
 # jaqpotpy/inference/handlers/torch_sequence_handler.py  
@@ -184,6 +195,7 @@ def handle_sklearn_prediction(request, local_mode=False):
 ### Phase 3: Create Unified Prediction Service
 
 #### 3.1 Prediction Service Orchestrator
+
 ```python
 # jaqpotpy/inference/service.py
 
@@ -220,11 +232,13 @@ class PredictionService:
 ### Phase 4: Update Local Model API
 
 #### 4.1 Enhanced Local Model
+
 ```python
-# jaqpotpy/api/local_model.py (updated)
+# jaqpotpy/api/downloaded_model.py (updated)
 
 from ..inference.service import PredictionService
 from jaqpot_api_client import PredictionRequest, ModelType
+
 
 class JaqpotLocalModel:
     def __init__(self, jaqpot_client):
@@ -232,17 +246,17 @@ class JaqpotLocalModel:
         self._cached_models = {}
         self._cached_preprocessors = {}
         self.prediction_service = PredictionService(local_mode=True, jaqpot_client=jaqpot_client)
-    
+
     def predict_local(self, model_data, data):
         """Enhanced prediction using shared inference logic."""
         # Create PredictionRequest from local data
         request = self._create_prediction_request(model_data, data)
-        
+
         # Use shared prediction service
         response = self.prediction_service.predict(request)
-        
+
         return response
-    
+
     def _create_prediction_request(self, model_data, data):
         """Convert local model data and input to PredictionRequest format."""
         # Implementation to bridge local and production formats
@@ -251,6 +265,7 @@ class JaqpotLocalModel:
 ### Phase 5: Simplify jaqpotpy-inference
 
 #### 5.1 Updated FastAPI Service
+
 ```python
 # jaqpotpy-inference/src/services/predict_service.py (simplified)
 
@@ -268,32 +283,38 @@ def run_prediction(req: PredictionRequest) -> PredictionResponse:
 ## Migration Steps
 
 ### Step 1: Preparation
+
 1. ✅ Test current jaqpotpy local model functionality
 2. ✅ Fix jaqpot-api compilation errors
 3. 🔄 Verify jaqpot-api presigned URL endpoints work
 
 ### Step 2: Extract Core Logic
+
 1. Create jaqpotpy/inference package structure
 2. Copy predict_methods.py from jaqpotpy-inference
 3. Copy dataset_utils.py and model_loader.py
 4. Update imports and dependencies
 
 ### Step 3: Create Handlers
+
 1. Extract handler logic from jaqpotpy-inference
 2. Create unified handlers in jaqpotpy
 3. Add local_mode support to all handlers
 
 ### Step 4: Update Local Model
+
 1. Integrate PredictionService with JaqpotLocalModel
 2. Add model type detection and routing
 3. Test local prediction with all model types
 
 ### Step 5: Update jaqpotpy-inference
+
 1. Update jaqpotpy-inference to depend on jaqpotpy
 2. Simplify prediction service to use shared logic
 3. Remove duplicated code
 
 ### Step 6: Integration Testing
+
 1. Test local predictions match production predictions
 2. Performance testing for both paths
 3. End-to-end testing across all repositories
@@ -301,6 +322,7 @@ def run_prediction(req: PredictionRequest) -> PredictionResponse:
 ## Dependencies and Requirements
 
 ### jaqpotpy New Dependencies
+
 ```python
 # pyproject.toml additions
 dependencies = [
@@ -314,6 +336,7 @@ dependencies = [
 ```
 
 ### jaqpotpy-inference Updated Dependencies
+
 ```python
 # requirements.txt simplified
 jaqpotpy>=1.XX.YY  # Depend on jaqpotpy for prediction logic
@@ -326,6 +349,7 @@ boto3  # For S3 operations
 ## Testing Strategy
 
 ### Unit Tests
+
 ```python
 # tests/test_inference_service.py
 def test_sklearn_prediction_consistency():
@@ -343,6 +367,7 @@ def test_sklearn_handler_production_mode():
 ```
 
 ### Integration Tests
+
 ```python
 # test_integration.py
 def test_end_to_end_prediction_workflow():
@@ -352,17 +377,21 @@ def test_end_to_end_prediction_workflow():
 ## Risk Mitigation
 
 ### Backwards Compatibility
+
 - Keep existing `JaqpotLocalModel.predict_local()` API unchanged
 - Deprecate old methods gradually, don't break immediately
 
 ### Rollback Plan
+
 - Keep jaqpotpy-inference working independently during migration
 - Feature flags to enable/disable shared logic
 - Comprehensive testing before production deployment
 
 ### Performance Considerations
+
 - Benchmark prediction performance before/after refactoring
 - Monitor memory usage with shared dependencies
 - Optimize import patterns to avoid circular dependencies
 
-This refactoring will create a single source of truth for prediction logic while maintaining the flexibility of both local development and production inference workflows.
+This refactoring will create a single source of truth for prediction logic while maintaining the flexibility of both
+local development and production inference workflows.
