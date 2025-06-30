@@ -7,6 +7,10 @@ import numpy as np
 import onnxruntime as rt
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.models.prediction_response import PredictionResponse
+from jaqpot_api_client.models.prediction_request import PredictionRequest
+from jaqpot_api_client.models.dataset import Dataset
+
+from ..inference.service import get_prediction_service
 
 
 class JaqpotLocalModel:
@@ -181,6 +185,9 @@ class JaqpotLocalModel:
         """
         Make predictions using a locally downloaded model.
 
+        This method now uses the shared inference service to ensure identical results
+        to production inference while maintaining the same external API.
+
         Args:
             model_data: Either model_id (str) or model data dict from download_model
             data: Input data for prediction (numpy array, list, or dict)
@@ -196,74 +203,71 @@ class JaqpotLocalModel:
             else:
                 model_data = self._cached_models[model_id]
 
-        # Preprocess data if preprocessor is available
-        processed_data = self._preprocess_data(model_data, data)
+        # Get model metadata
+        model_metadata = model_data["model_metadata"]
 
-        # Run ONNX inference
-        predictions = self._run_onnx_inference(model_data, processed_data)
+        # Convert local data format to PredictionRequest format for shared service
+        request = self._create_prediction_request(model_metadata, data)
 
-        # Format response
-        return PredictionResponse(predictions=predictions)
+        # Use shared prediction service (local mode with jaqpot client)
+        prediction_service = get_prediction_service(
+            local_mode=True, jaqpot_client=self.jaqpot_client
+        )
 
-    def _preprocess_data(
-        self, model_data: Dict[str, Any], data: Union[np.ndarray, List, Dict]
-    ) -> np.ndarray:
+        # Execute prediction using shared logic
+        return prediction_service.predict(request)
+
+    def _create_prediction_request(self, model_metadata, data) -> PredictionRequest:
         """
-        Preprocess input data using the model's preprocessor if available.
+        Convert local model format and data to PredictionRequest format.
+
+        Args:
+            model_metadata: Model metadata from the Jaqpot API
+            data: Input data (numpy array, list, or dict)
+
+        Returns:
+            PredictionRequest: Request object for shared inference service
         """
-        # Convert input data to numpy array if needed
-        if isinstance(data, list):
-            data = np.array(data)
-        elif isinstance(data, dict):
-            # Assume dict has feature names as keys
-            data = np.array([list(data.values())])
+        # Convert data to the expected format for the dataset
+        if isinstance(data, dict):
+            # Convert dict to list of lists format expected by Dataset
+            input_data = [list(data.values())]
+        elif isinstance(data, list):
+            # Ensure it's a list of lists
+            if len(data) > 0 and not isinstance(data[0], list):
+                input_data = [data]
+            else:
+                input_data = data
+        elif isinstance(data, np.ndarray):
+            # Convert numpy array to list of lists
+            if data.ndim == 1:
+                input_data = [data.tolist()]
+            else:
+                input_data = data.tolist()
+        else:
+            raise ValueError(f"Unsupported data type: {type(data)}")
 
-        # Ensure 2D array for sklearn compatibility
-        if data.ndim == 1:
-            data = data.reshape(1, -1)
+        # Create dataset object
+        dataset = Dataset(input=input_data)
 
-        # Apply preprocessor if available
-        preprocessor = model_data.get("preprocessor")
-        if preprocessor is not None:
-            try:
-                data = preprocessor.transform(data)
-            except Exception as e:
-                print(f"Warning: Preprocessing failed, using raw data: {e}")
+        # Create prediction request
+        # Note: For local mode, we'll set raw_model to the base64 encoded model
+        # that we downloaded, so the shared service doesn't need to download again
+        model_with_data = type(model_metadata)(
+            id=model_metadata.id,
+            type=model_metadata.type,
+            raw_model=None,  # Will be loaded by presigned URL in local mode
+            raw_preprocessor=getattr(model_metadata, "raw_preprocessor", None),
+            doas=getattr(model_metadata, "doas", None),
+            # Copy other relevant fields
+            **{
+                k: v
+                for k, v in model_metadata.__dict__.items()
+                if k not in ["raw_model", "raw_preprocessor", "doas"]
+            },
+        )
 
-        return data
-
-    def _run_onnx_inference(self, model_data: Dict[str, Any], data: np.ndarray) -> List:
-        """
-        Run ONNX inference on preprocessed data.
-        """
-        onnx_bytes = model_data["onnx_bytes"]
-
-        # Create ONNX runtime session
-        sess = rt.InferenceSession(onnx_bytes)
-
-        # Get input/output info
-        input_name = sess.get_inputs()[0].name
-        input_dtype = sess.get_inputs()[0].type
-
-        # Convert data to appropriate dtype
-        if "float" in input_dtype:
-            data = data.astype(np.float32)
-        elif "int" in input_dtype:
-            data = data.astype(np.int32)
-
-        # Run inference
-        try:
-            outputs = sess.run(None, {input_name: data})
-            predictions = outputs[0]
-
-            # Convert to list for JSON serialization
-            if isinstance(predictions, np.ndarray):
-                predictions = predictions.tolist()
-
-            return predictions
-
-        except Exception as e:
-            raise RuntimeError(f"ONNX inference failed: {e}")
+        return PredictionRequest(model=model_with_data, dataset=dataset)
 
     def clear_cache(self):
         """

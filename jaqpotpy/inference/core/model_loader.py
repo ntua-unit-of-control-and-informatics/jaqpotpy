@@ -71,16 +71,18 @@ def load_onnx_model_from_file(file_obj: Union[BinaryIO, io.BytesIO]) -> onnx.Mod
 
 
 def retrieve_onnx_model_from_request(
-    request: PredictionRequest, s3_client=None
+    request: PredictionRequest, s3_client=None, jaqpot_client=None
 ) -> onnx.ModelProto:
     """
     Retrieve an ONNX model from a prediction request.
 
-    This function handles both inline models (base64 encoded) and S3-stored models.
+    This function handles both inline models (base64 encoded), S3-stored models,
+    and presigned URL downloads for local development.
 
     Args:
         request (PredictionRequest): The prediction request
-        s3_client: Optional S3 client for downloading models from S3
+        s3_client: Optional S3 client for downloading models from S3 (production mode)
+        jaqpot_client: Optional Jaqpot client for presigned URLs (local mode)
 
     Returns:
         onnx.ModelProto: The loaded ONNX model
@@ -89,29 +91,84 @@ def retrieve_onnx_model_from_request(
         Exception: If model retrieval or loading fails
     """
     if request.model.raw_model is None:
-        # Model is stored in S3
-        if s3_client is None:
-            raise Exception("S3 client required for downloading model from S3")
-
-        file_obj, error = s3_client.download_file(str(request.model.id))
-        if file_obj is None:
-            raise Exception(f"Failed to download model from S3: {error}")
-
-        return load_onnx_model_from_file(file_obj)
+        # Model is stored in S3 - use different strategies based on available clients
+        if jaqpot_client is not None:
+            # Local mode: Use presigned URLs
+            model_bytes = _download_model_via_presigned_url(
+                request.model, jaqpot_client
+            )
+            return load_onnx_model_from_bytes(model_bytes)
+        elif s3_client is not None:
+            # Production mode: Direct S3 download
+            file_obj, error = s3_client.download_file(str(request.model.id))
+            if file_obj is None:
+                raise Exception(f"Failed to download model from S3: {error}")
+            return load_onnx_model_from_file(file_obj)
+        else:
+            raise Exception(
+                "Either S3 client (production) or Jaqpot client (local) required for downloading model from S3"
+            )
     else:
         # Model is inline (base64 encoded)
         return load_onnx_model_from_base64(request.model.raw_model)
 
 
+def _download_model_via_presigned_url(model, jaqpot_client) -> bytes:
+    """
+    Download model bytes using presigned URLs (local development mode).
+
+    Args:
+        model: Model object with id attribute
+        jaqpot_client: Jaqpot client for making API calls
+
+    Returns:
+        bytes: Raw model bytes
+
+    Raises:
+        Exception: If download fails
+    """
+    import requests
+
+    try:
+        # Get presigned download URL using LocalModelService
+        auth_header = jaqpot_client.http_client.default_headers.get("Authorization", "")
+        headers = {"Authorization": f"Bearer {auth_header.replace('Bearer ', '')}"}
+        api_host = jaqpot_client.http_client.configuration.host
+        response = requests.get(
+            f"{api_host}/v1/models/{model.id}/local/download-url",
+            headers=headers,
+            timeout=30,
+        )
+
+        if response.status_code == 200:
+            download_info = response.json()
+            download_url = download_info["downloadUrl"]
+
+            # Download model from presigned URL
+            model_response = requests.get(
+                download_url, timeout=300
+            )  # 5 minutes for large models
+            model_response.raise_for_status()
+            return model_response.content
+        elif response.status_code == 404:
+            raise Exception(f"Model {model.id} not found in S3 storage")
+        else:
+            response.raise_for_status()
+
+    except Exception as e:
+        raise Exception(f"Failed to download model via presigned URL: {str(e)}")
+
+
 def retrieve_raw_model_from_request(
-    request: PredictionRequest, s3_client=None
+    request: PredictionRequest, s3_client=None, jaqpot_client=None
 ) -> bytes:
     """
     Retrieve raw model bytes from a prediction request.
 
     Args:
         request (PredictionRequest): The prediction request
-        s3_client: Optional S3 client for downloading models from S3
+        s3_client: Optional S3 client for downloading models from S3 (production mode)
+        jaqpot_client: Optional Jaqpot client for presigned URLs (local mode)
 
     Returns:
         bytes: Raw model bytes
@@ -120,19 +177,25 @@ def retrieve_raw_model_from_request(
         Exception: If model retrieval fails
     """
     if request.model.raw_model is None:
-        # Model is stored in S3
-        if s3_client is None:
-            raise Exception("S3 client required for downloading model from S3")
+        # Model is stored in S3 - use different strategies based on available clients
+        if jaqpot_client is not None:
+            # Local mode: Use presigned URLs
+            return _download_model_via_presigned_url(request.model, jaqpot_client)
+        elif s3_client is not None:
+            # Production mode: Direct S3 download
+            file_obj, error = s3_client.download_file(str(request.model.id))
+            if file_obj is None:
+                raise Exception(f"Failed to download model from S3: {error}")
 
-        file_obj, error = s3_client.download_file(str(request.model.id))
-        if file_obj is None:
-            raise Exception(f"Failed to download model from S3: {error}")
-
-        # Read bytes from file object
-        if hasattr(file_obj, "read"):
-            return file_obj.read()
+            # Read bytes from file object
+            if hasattr(file_obj, "read"):
+                return file_obj.read()
+            else:
+                return file_obj
         else:
-            return file_obj
+            raise Exception(
+                "Either S3 client (production) or Jaqpot client (local) required for downloading model from S3"
+            )
     else:
         # Model is inline (base64 encoded)
         return base64.b64decode(request.model.raw_model)

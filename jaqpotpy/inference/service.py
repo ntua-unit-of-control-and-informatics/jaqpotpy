@@ -113,7 +113,9 @@ class PredictionService:
     def _predict_sklearn_onnx(self, request: PredictionRequest):
         """Handle sklearn ONNX model prediction."""
         # Load model and preprocessor
-        model = retrieve_onnx_model_from_request(request, self.s3_client)
+        model = retrieve_onnx_model_from_request(
+            request, s3_client=self.s3_client, jaqpot_client=self.jaqpot_client
+        )
         preprocessor = None
         if (
             hasattr(request.model, "raw_preprocessor")
@@ -125,7 +127,8 @@ class PredictionService:
             )
             preprocessor = retrieve_onnx_model_from_request(
                 type(request)(model=preprocessor_request, dataset=request.dataset),
-                self.s3_client,
+                s3_client=self.s3_client,
+                jaqpot_client=self.jaqpot_client,
             )
 
         # Build dataset
@@ -137,7 +140,9 @@ class PredictionService:
     def _predict_torch_onnx(self, request: PredictionRequest):
         """Handle PyTorch ONNX model prediction."""
         # Load model and preprocessor
-        model = retrieve_onnx_model_from_request(request, self.s3_client)
+        model = retrieve_onnx_model_from_request(
+            request, s3_client=self.s3_client, jaqpot_client=self.jaqpot_client
+        )
         preprocessor = None
         if (
             hasattr(request.model, "raw_preprocessor")
@@ -149,7 +154,8 @@ class PredictionService:
             )
             preprocessor = retrieve_onnx_model_from_request(
                 type(request)(model=preprocessor_request, dataset=request.dataset),
-                self.s3_client,
+                s3_client=self.s3_client,
+                jaqpot_client=self.jaqpot_client,
             )
 
         # Build dataset
@@ -162,7 +168,9 @@ class PredictionService:
     def _predict_torch_sequence(self, request: PredictionRequest):
         """Handle PyTorch sequence model prediction."""
         # Load model and preprocessor
-        model = retrieve_onnx_model_from_request(request, self.s3_client)
+        model = retrieve_onnx_model_from_request(
+            request, s3_client=self.s3_client, jaqpot_client=self.jaqpot_client
+        )
         preprocessor = None
         if (
             hasattr(request.model, "raw_preprocessor")
@@ -174,7 +182,8 @@ class PredictionService:
             )
             preprocessor = retrieve_onnx_model_from_request(
                 type(request)(model=preprocessor_request, dataset=request.dataset),
-                self.s3_client,
+                s3_client=self.s3_client,
+                jaqpot_client=self.jaqpot_client,
             )
 
         # Build dataset
@@ -187,7 +196,9 @@ class PredictionService:
     def _predict_torch_geometric(self, request: PredictionRequest):
         """Handle PyTorch Geometric model prediction."""
         # Load model and preprocessor
-        model = retrieve_onnx_model_from_request(request, self.s3_client)
+        model = retrieve_onnx_model_from_request(
+            request, s3_client=self.s3_client, jaqpot_client=self.jaqpot_client
+        )
         preprocessor = None
         if (
             hasattr(request.model, "raw_preprocessor")
@@ -199,7 +210,8 @@ class PredictionService:
             )
             preprocessor = retrieve_onnx_model_from_request(
                 type(request)(model=preprocessor_request, dataset=request.dataset),
-                self.s3_client,
+                s3_client=self.s3_client,
+                jaqpot_client=self.jaqpot_client,
             )
 
         # Build dataset (could be tensor or graph dataset)
