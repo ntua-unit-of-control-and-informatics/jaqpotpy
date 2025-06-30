@@ -14,17 +14,18 @@ The implementation now supports:
 
 import numpy as np
 from jaqpotpy import Jaqpot
+from jaqpotpy.jaqpot_local import JaqpotLocalhost
 
 
 def main():
     # Initialize Jaqpot client
-    jaqpot = Jaqpot()
+    jaqpot = JaqpotLocalhost()
 
     # Login to Jaqpot platform
     jaqpot.login()
 
     # Download a model for local use
-    model_id = "your-model-id-here"  # Replace with actual model ID
+    model_id = 1280  # Replace with actual model ID
 
     print(f"Downloading model {model_id}...")
     model_data = jaqpot.download_model(model_id, cache=True)

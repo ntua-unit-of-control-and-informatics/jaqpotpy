@@ -13,13 +13,13 @@ from jaqpot_api_client.models.dataset import Dataset
 from ..inference.service import get_prediction_service
 
 
-class JaqpotDownloadedModel:
+class JaqpotModelDownloader:
     def __init__(self, jaqpot_client):
         self.jaqpot_client = jaqpot_client
         self._cached_models = {}
         self._cached_preprocessors = {}
 
-    def download_model(self, model_id: str, cache: bool = True) -> Dict[str, Any]:
+    def download_model(self, model_id: int, cache: bool = True) -> Dict[str, Any]:
         """
         Download a model from Jaqpot platform for local use.
 
@@ -34,7 +34,7 @@ class JaqpotDownloadedModel:
             return self._cached_models[model_id]
 
         model_api = ModelApi(self.jaqpot_client.http_client)
-        model = model_api.get_model(model_id=model_id)
+        model = model_api.get_model_by_id(id=model_id)
 
         # Download ONNX model bytes
         onnx_bytes = self._download_model_bytes(model)
@@ -77,10 +77,7 @@ class JaqpotDownloadedModel:
             import requests
 
             # Make direct API call to get presigned URL using LocalModelService
-            auth_header = self.jaqpot_client.http_client.default_headers.get(
-                "Authorization", ""
-            )
-            headers = {"Authorization": f"Bearer {auth_header.replace('Bearer ', '')}"}
+            headers = self.jaqpot_client.http_client.default_headers
             api_host = self.jaqpot_client.http_client.configuration.host
             response = requests.get(
                 f"{api_host}/v1/models/{model.id}/local/download-url",
@@ -127,10 +124,7 @@ class JaqpotDownloadedModel:
             import requests
 
             # Make direct API call to get presigned URL for preprocessor using LocalModelService
-            auth_header = self.jaqpot_client.http_client.default_headers.get(
-                "Authorization", ""
-            )
-            headers = {"Authorization": f"Bearer {auth_header.replace('Bearer ', '')}"}
+            headers = self.jaqpot_client.http_client.default_headers
             api_host = self.jaqpot_client.http_client.configuration.host
             response = requests.get(
                 f"{api_host}/v1/models/{model.id}/local/preprocessor/download-url",

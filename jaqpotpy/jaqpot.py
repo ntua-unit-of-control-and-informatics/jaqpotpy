@@ -14,7 +14,7 @@ from keycloak import KeycloakOpenID
 
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.downloaded_model import JaqpotDownloadedModel
+from jaqpotpy.api.model_downloader import JaqpotModelDownloader
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger
@@ -75,7 +75,7 @@ class Jaqpot:
         self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
         self.access_token = None
         self.http_client = None
-        self._local = None
+        self._model_downloader = None
 
     def _deploy_model(
         self,
@@ -445,31 +445,33 @@ class Jaqpot:
         self._create_model_request(body_model, model_api)
 
     @property
-    def local(self):
+    def model_downloader(self):
         """
-        Access to local model functionality for downloading and running models locally.
+        Access to model downloader functionality for downloading and running models locally.
 
         Returns:
-            JaqpotDownloadedModel: Instance for local model operations
+            JaqpotModelDownloader: Instance for model download operations
         """
-        if self._local is None:
+        if self._model_downloader is None:
             if self.http_client is None:
-                raise ValueError("Must be logged in to use local model functionality")
-            self._local = JaqpotDownloadedModel(self)
-        return self._local
+                raise ValueError(
+                    "Must be logged in to use model downloader functionality"
+                )
+            self._model_downloader = JaqpotModelDownloader(self)
+        return self._model_downloader
 
-    def download_model(self, model_id: str, cache: bool = True):
+    def download_model(self, model_id: int, cache: bool = True):
         """
         Download a model from Jaqpot platform for local use.
 
         Args:
-            model_id (str): The ID of the model to download
+            model_id (int): The ID of the model to download
             cache (bool): Whether to cache the downloaded model
 
         Returns:
             Dict containing model metadata and ONNX bytes
         """
-        return self.local.download_model(model_id, cache)
+        return self.model_downloader.download_model(model_id, cache)
 
     def predict_local(self, model_data, data):
         """
@@ -482,4 +484,4 @@ class Jaqpot:
         Returns:
             PredictionResponse with predictions in same format as Jaqpot API
         """
-        return self.local.predict_local(model_data, data)
+        return self.model_downloader.predict_local(model_data, data)
