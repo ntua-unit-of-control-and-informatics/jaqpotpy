@@ -4,6 +4,8 @@ from sklearn.ensemble import RandomForestClassifier
 
 from jaqpotpy.datasets import JaqpotTabularDataset
 from sklearn.linear_model import LogisticRegression
+
+from jaqpotpy.jaqpot_local import JaqpotLocalhost
 from jaqpotpy.models import SklearnModel
 from jaqpot_api_client.models.model_task import ModelTask
 from jaqpot_api_client.models.model_visibility import ModelVisibility
@@ -38,7 +40,7 @@ jaqpot_model.fit()
 from jaqpotpy import Jaqpot  # noqa: E402
 
 # Next, create an instance of Jaqpot
-jaqpot = Jaqpot()
+jaqpot = JaqpotLocalhost()
 # Then login to Jaqpot. jaqpot.login will prompt you to enter
 # an authorization code that you will receive from your
 #  browser after you login to Jaqpot.

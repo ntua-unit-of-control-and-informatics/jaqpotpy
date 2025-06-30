@@ -37,7 +37,7 @@ def test_model_download_and_inference():
     try:
         # Import jaqpotpy components
         from jaqpotpy import Jaqpot
-        from jaqpotpy.api.local_model import JaqpotLocalModel
+        from jaqpotpy.api.downloaded_model import JaqpotDownloadedModel
 
         logger.info("✅ Successfully imported jaqpotpy components")
     except ImportError as e:
@@ -73,7 +73,7 @@ def test_model_download_and_inference():
         return False
 
     # Initialize local model handler
-    local_model = JaqpotLocalModel(jaqpot)
+    local_model = JaqpotDownloadedModel(jaqpot)
     logger.info("📥 Initialized local model handler")
 
     # Test 1: Download model with presigned URL support
@@ -94,7 +94,7 @@ def test_model_download_and_inference():
         logger.info(f"   - Model Type: {model_metadata.type}")
         logger.info(f"   - Model Name: {model_metadata.name}")
         logger.info(
-            f"   - ONNX Size: {len(onnx_bytes):,} bytes ({len(onnx_bytes)/1024/1024:.2f} MB)"
+            f"   - ONNX Size: {len(onnx_bytes):,} bytes ({len(onnx_bytes) / 1024 / 1024:.2f} MB)"
         )
         logger.info(f"   - Has Preprocessor: {'Yes' if preprocessor else 'No'}")
         logger.info(
@@ -202,9 +202,9 @@ def test_model_download_and_inference():
 
         logger.info("✅ Performance benchmark:")
         logger.info(f"   - {num_predictions} predictions in {total_time:.2f} seconds")
-        logger.info(f"   - Average: {avg_time*1000:.2f} ms per prediction")
+        logger.info(f"   - Average: {avg_time * 1000:.2f} ms per prediction")
         logger.info(
-            f"   - Throughput: {num_predictions/total_time:.1f} predictions/second"
+            f"   - Throughput: {num_predictions / total_time:.1f} predictions/second"
         )
 
     except Exception as e:
@@ -229,10 +229,10 @@ def test_error_scenarios():
     logger.info("🚨 Testing error scenarios...")
 
     from jaqpotpy import Jaqpot
-    from jaqpotpy.api.local_model import JaqpotLocalModel
+    from jaqpotpy.api.downloaded_model import JaqpotDownloadedModel
 
     jaqpot = Jaqpot()
-    local_model = JaqpotLocalModel(jaqpot)
+    local_model = JaqpotDownloadedModel(jaqpot)
 
     # Test invalid model ID
     try:

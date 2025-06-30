@@ -14,7 +14,7 @@ from keycloak import KeycloakOpenID
 
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.local_model import JaqpotLocalModel
+from jaqpotpy.api.downloaded_model import JaqpotDownloadedModel
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger
@@ -450,12 +450,12 @@ class Jaqpot:
         Access to local model functionality for downloading and running models locally.
 
         Returns:
-            JaqpotLocalModel: Instance for local model operations
+            JaqpotDownloadedModel: Instance for local model operations
         """
         if self._local is None:
             if self.http_client is None:
                 raise ValueError("Must be logged in to use local model functionality")
-            self._local = JaqpotLocalModel(self)
+            self._local = JaqpotDownloadedModel(self)
         return self._local
 
     def download_model(self, model_id: str, cache: bool = True):

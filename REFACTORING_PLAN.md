@@ -116,17 +116,21 @@ def predict_sklearn_onnx(model, preprocessor, data, request):
     """Predict using sklearn ONNX model with preprocessing."""
     # Enhanced version that works for both local and production
 
-def predict_torch_onnx(model, preprocessor, data, request):  
+
+def predict_torch_onnx(model, preprocessor, data, request):
     """Predict using PyTorch ONNX model with image support."""
     # Enhanced version with image processing
+
 
 def predict_torch_sequence(model, preprocessor, data, request):
     """Predict using PyTorch sequence models (LSTM, RNN)."""
     # Sequence model prediction logic
 
+
 def predict_torch_geometric(model, preprocessor, data, request):
     """Predict using PyTorch Geometric models."""
     # Graph neural network prediction logic
+
 
 def calculate_doas(input_feed, request):
     """Calculate Domain of Applicability using jaqpotpy.doa classes."""
@@ -142,8 +146,10 @@ def calculate_doas(input_feed, request):
 def build_tabular_dataset_from_request(request):
     """Convert prediction request to tabular dataset."""
 
+
 def build_tensor_dataset_from_request(request):
     """Convert prediction request to tensor dataset."""
+
 
 def build_graph_dataset_from_request(request):
     """Convert prediction request to graph dataset."""
@@ -157,6 +163,7 @@ def build_graph_dataset_from_request(request):
 
 def load_onnx_model_from_request(request):
     """Load ONNX model from request (base64 or S3 URL)."""
+
 
 def load_onnx_model_from_metadata(model_metadata, jaqpot_client=None):
     """Load ONNX model from metadata for local development."""
@@ -172,6 +179,7 @@ def load_onnx_model_from_metadata(model_metadata, jaqpot_client=None):
 from ..core.predict_methods import predict_sklearn_onnx
 from ..core.dataset_utils import build_tabular_dataset_from_request
 
+
 def handle_sklearn_prediction(request, local_mode=False):
     """Handle sklearn ONNX prediction for both local and production."""
     if local_mode:
@@ -180,7 +188,7 @@ def handle_sklearn_prediction(request, local_mode=False):
     else:
         # Use production request-based loading
         model_data = load_onnx_model_from_request(request)
-    
+
     return predict_sklearn_onnx(model_data.model, model_data.preprocessor, data, request)
 ```
 
@@ -202,18 +210,19 @@ def handle_sklearn_prediction(request, local_mode=False):
 from jaqpot_api_client import ModelType, PredictionRequest, PredictionResponse
 from .handlers import (
     sklearn_handler,
-    torch_handler, 
+    torch_handler,
     torch_sequence_handler,
     torch_geometric_handler
 )
 
+
 class PredictionService:
     """Unified prediction service for both local and production inference."""
-    
+
     def __init__(self, local_mode=False, jaqpot_client=None):
         self.local_mode = local_mode
         self.jaqpot_client = jaqpot_client
-    
+
     def predict(self, request: PredictionRequest) -> PredictionResponse:
         """Route prediction to appropriate handler based on model type."""
         match request.model.type:
@@ -240,7 +249,7 @@ from ..inference.service import PredictionService
 from jaqpot_api_client import PredictionRequest, ModelType
 
 
-class JaqpotLocalModel:
+class JaqpotDownloadedModel:
     def __init__(self, jaqpot_client):
         self.jaqpot_client = jaqpot_client
         self._cached_models = {}
@@ -275,6 +284,7 @@ from jaqpot_api_client import PredictionRequest, PredictionResponse
 # Global prediction service instance
 prediction_service = PredictionService(local_mode=False)
 
+
 def run_prediction(req: PredictionRequest) -> PredictionResponse:
     """Simplified prediction service using jaqpotpy shared logic."""
     return prediction_service.predict(req)
@@ -303,7 +313,7 @@ def run_prediction(req: PredictionRequest) -> PredictionResponse:
 
 ### Step 4: Update Local Model
 
-1. Integrate PredictionService with JaqpotLocalModel
+1. Integrate PredictionService with JaqpotDownloadedModel
 2. Add model type detection and routing
 3. Test local prediction with all model types
 
@@ -328,9 +338,9 @@ def run_prediction(req: PredictionRequest) -> PredictionResponse:
 dependencies = [
     # ... existing dependencies ...
     "jaqpot-api-client",  # For PredictionRequest/Response types
-    "onnxruntime",        # Already exists
-    "torch",              # For tensor operations
-    "pillow",             # For image processing
+    "onnxruntime",  # Already exists
+    "torch",  # For tensor operations
+    "pillow",  # For image processing
     # ... others from jaqpotpy-inference requirements.txt
 ]
 ```
@@ -339,10 +349,11 @@ dependencies = [
 
 ```python
 # requirements.txt simplified
-jaqpotpy>=1.XX.YY  # Depend on jaqpotpy for prediction logic
+jaqpotpy >= 1.
+XX.YY  # Depend on jaqpotpy for prediction logic
 fastapi
 uvicorn
-pydantic-settings
+pydantic - settings
 boto3  # For S3 operations
 ```
 
@@ -355,12 +366,15 @@ boto3  # For S3 operations
 def test_sklearn_prediction_consistency():
     """Test local vs production sklearn predictions match."""
 
+
 def test_torch_prediction_consistency():
     """Test local vs production torch predictions match."""
+
 
 # tests/test_handlers.py  
 def test_sklearn_handler_local_mode():
     """Test sklearn handler in local mode."""
+
 
 def test_sklearn_handler_production_mode():
     """Test sklearn handler in production mode."""
@@ -378,7 +392,7 @@ def test_end_to_end_prediction_workflow():
 
 ### Backwards Compatibility
 
-- Keep existing `JaqpotLocalModel.predict_local()` API unchanged
+- Keep existing `JaqpotDownloadedModel.predict_local()` API unchanged
 - Deprecate old methods gradually, don't break immediately
 
 ### Rollback Plan

@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Jaqpotpy is a Python client library for deploying machine learning models to the Jaqpot platform. It supports scikit-learn, PyTorch, PyTorch Geometric, and XGBoost models with features for molecular descriptors, domain of applicability, and ONNX conversion.
+Jaqpotpy is a Python client library for deploying machine learning models to the Jaqpot platform. It supports
+scikit-learn, PyTorch, PyTorch Geometric, and XGBoost models with features for molecular descriptors, domain of
+applicability, and ONNX conversion.
 
 ## Core Architecture
 
@@ -12,18 +14,18 @@ Jaqpotpy is a Python client library for deploying machine learning models to the
 
 - **jaqpot.py**: Main client class for authentication and model deployment to Jaqpot platform
 - **models/**: Model wrappers and base classes
-  - `base_classes.py`: Abstract Model class with common interfaces
-  - `sklearn.py`: Scikit-learn model wrapper
-  - `torch_models/`: PyTorch model implementations
-  - `torch_geometric_models/`: Graph neural network models
-  - `docker_model.py`: Docker-based model deployment
+    - `base_classes.py`: Abstract Model class with common interfaces
+    - `sklearn.py`: Scikit-learn model wrapper
+    - `torch_models/`: PyTorch model implementations
+    - `torch_geometric_models/`: Graph neural network models
+    - `docker_model.py`: Docker-based model deployment
 - **datasets/**: Dataset handling and preprocessing
-  - `dataset_base.py`: Abstract BaseDataset class
-  - `jaqpot_tabular_dataset.py`: Tabular data handling
-  - `graph_pyg_dataset.py`: Graph data for PyTorch Geometric
+    - `dataset_base.py`: Abstract BaseDataset class
+    - `jaqpot_tabular_dataset.py`: Tabular data handling
+    - `graph_pyg_dataset.py`: Graph data for PyTorch Geometric
 - **descriptors/**: Molecular featurization
-  - `molecular/`: RDKit, Mordred, MACCS keys fingerprints
-  - `graph/`: Graph-based molecular features
+    - `molecular/`: RDKit, Mordred, MACCS keys fingerprints
+    - `graph/`: Graph-based molecular features
 - **doa/**: Domain of Applicability implementation
 - **preprocessors/**: Data preprocessing utilities
 - **transformers/**: Data transformation utilities
@@ -39,12 +41,14 @@ Jaqpotpy is a Python client library for deploying machine learning models to the
 ## Development Commands
 
 ### Testing
+
 ```bash
 pytest                    # Run all tests
 pytest path/to/test.py   # Run specific test file
 ```
 
 ### Linting and Formatting
+
 ```bash
 ruff check               # Lint code (configured in ruff.toml)
 ruff format              # Format code
@@ -52,12 +56,14 @@ flake8 .                 # Additional linting (CI uses specific flags)
 ```
 
 ### Building
+
 ```bash
 pip install -e .         # Install in development mode
 python -m build          # Build distribution packages
 ```
 
 ### Documentation
+
 ```bash
 cd jaqpotpy/sphinx_docs
 make html                # Build Sphinx documentation
@@ -73,6 +79,7 @@ make html                # Build Sphinx documentation
 ## Testing Structure
 
 Tests are co-located with source code in `tests/` subdirectories:
+
 - `jaqpotpy/datasets/tests/`
 - `jaqpotpy/descriptors/tests/`
 - `jaqpotpy/doa/tests/`
@@ -81,6 +88,7 @@ Tests are co-located with source code in `tests/` subdirectories:
 ## Examples and Usage
 
 The `examples/` directory contains working examples for:
+
 - sklearn model deployment
 - PyTorch model training and deployment
 - PyTorch Geometric graph models
@@ -89,7 +97,8 @@ The `examples/` directory contains working examples for:
 
 ## Local Model Development
 
-### JaqpotLocalModel Class (`api/local_model.py`)
+### JaqpotDownloadedModel Class (`api/local_model.py`)
+
 - Downloads models from Jaqpot platform for local testing
 - Supports both database-stored and S3-stored models with presigned URLs
 - Handles preprocessing pipeline reconstruction
@@ -97,12 +106,14 @@ The `examples/` directory contains working examples for:
 - Includes model caching for improved performance
 
 ### Key Methods
+
 - `download_model(model_id)`: Downloads model and preprocessor from platform
 - `predict_local(model_data, data)`: Runs inference using ONNX runtime
 - `_preprocess_data()`: Applies preprocessing transformations
 - `_run_onnx_inference()`: Executes ONNX model inference
 
 ### Testing Local Models
+
 ```bash
 # Test local model download and inference
 python test_local_model_download.py --model-id <model_id> [--local]
@@ -114,12 +125,14 @@ python test_local_model_download.py --model-id <model_id> --local
 ## Integration Points
 
 ### With jaqpot-api
+
 - Authenticates using Keycloak OAuth2 flow
 - Uploads models with metadata to platform
 - Downloads models for local development and testing
 - **NEW**: Uses presigned URLs for large model downloads from S3
 
 ### With jaqpotpy-inference
+
 - **Critical**: Local model logic must stay synchronized with production inference
 - Shares ONNX conversion and preprocessing logic
 - Both use identical prediction algorithms and data handling
@@ -128,11 +141,14 @@ python test_local_model_download.py --model-id <model_id> --local
 ## Major Refactoring in Progress
 
 ### Current Challenge: Code Duplication
-The local model implementation in `jaqpotpy/api/local_model.py` and production inference in `jaqpotpy-inference/` have duplicated prediction logic. This creates maintenance burden and consistency risks.
+
+The local model implementation in `jaqpotpy/api/local_model.py` and production inference in `jaqpotpy-inference/` have
+duplicated prediction logic. This creates maintenance burden and consistency risks.
 
 ### Planned Architecture Changes
 
 #### Phase 1: Extract Shared Prediction Logic
+
 ```
 jaqpotpy/inference/                    # 🆕 New shared inference package
 ├── handlers/                          # Model-type-specific handlers
@@ -152,6 +168,7 @@ jaqpotpy/inference/                    # 🆕 New shared inference package
 ```
 
 #### Phase 2: Unified Prediction Service
+
 ```python
 # Usage in local development
 from jaqpotpy.inference.service import PredictionService
@@ -167,6 +184,7 @@ response = service.predict(prediction_request)
 ```
 
 ### Benefits of Refactoring
+
 1. **Single Source of Truth**: Prediction logic maintained in one place
 2. **Guaranteed Consistency**: Local and production inference produce identical results
 3. **Simplified Testing**: Test once in jaqpotpy, confidence in production
@@ -176,11 +194,13 @@ response = service.predict(prediction_request)
 ### Key Files for Refactoring
 
 #### Current Implementation
+
 - `jaqpotpy/api/local_model.py`: Local model download and basic inference
 - `jaqpotpy-inference/src/helpers/predict_methods.py`: Production prediction algorithms
 - `jaqpotpy-inference/src/handlers/`: Model-type-specific production handlers
 
-#### Target Implementation  
+#### Target Implementation
+
 - `jaqpotpy/inference/service.py`: Unified prediction service
 - `jaqpotpy/inference/handlers/`: Shared model-type handlers
 - `jaqpotpy/api/local_model.py`: Enhanced to use shared inference logic
@@ -189,6 +209,7 @@ response = service.predict(prediction_request)
 ### Synchronization Requirements
 
 Changes to prediction logic in jaqpotpy local models must be reflected in jaqpotpy-inference:
+
 - Model loading and caching strategies
 - Data preprocessing steps
 - ONNX runtime configuration
@@ -201,11 +222,13 @@ Changes to prediction logic in jaqpotpy local models must be reflected in jaqpot
 ## Current Priorities
 
 ### Immediate Tasks
+
 1. **Fix jaqpot-api compilation errors** (see `jaqpot-api/FIX_COMPILATION_ERRORS.md`)
 2. **Test presigned URL download** using `test_local_model_download.py`
 3. **Verify local model functionality** with enhanced S3 support
 
 ### Next Phase
+
 1. **Extract prediction logic** from jaqpotpy-inference to jaqpotpy
 2. **Create unified inference service** supporting both local and production modes
 3. **Update jaqpotpy-inference** to use shared jaqpotpy logic
@@ -214,6 +237,7 @@ Changes to prediction logic in jaqpotpy local models must be reflected in jaqpot
 ## Testing Strategy
 
 ### Local Model Testing
+
 ```bash
 # Install in development mode
 pip install -e .
@@ -228,6 +252,7 @@ python test_local_model_download.py --model-id <model-id>                   # pr
 ```
 
 ### Integration Testing
+
 ```bash
 # After refactoring: test consistency between local and production
 python test_prediction_consistency.py --model-id <model-id>
@@ -235,9 +260,11 @@ python test_prediction_consistency.py --model-id <model-id>
 
 ## Release Process
 
-Releases are automated via GitHub Actions when creating a release on GitHub. Follow semantic versioning (1.XX.YY format).
+Releases are automated via GitHub Actions when creating a release on GitHub. Follow semantic versioning (1.XX.YY
+format).
 
 ### Post-Refactoring Release Strategy
+
 1. **Major Version Bump**: When shared inference logic is integrated (breaking changes)
 2. **Minor Version Bump**: When new model types or features are added
 3. **Patch Version Bump**: Bug fixes and performance improvements
@@ -245,9 +272,11 @@ Releases are automated via GitHub Actions when creating a release on GitHub. Fol
 ## Dependencies Management
 
 ### Current Dependencies
+
 Standard ML stack: numpy, pandas, scikit-learn, torch, onnx, etc.
 
 ### Post-Refactoring Dependencies
+
 ```python
 # Additional dependencies for shared inference logic
 "jaqpot-api-client",     # For PredictionRequest/Response types

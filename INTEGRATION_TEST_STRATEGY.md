@@ -2,13 +2,15 @@
 
 ## Overview
 
-This document outlines the comprehensive testing strategy for ensuring seamless integration across the three core Jaqpot repositories during the prediction logic refactoring.
+This document outlines the comprehensive testing strategy for ensuring seamless integration across the three core Jaqpot
+repositories during the prediction logic refactoring.
 
 ## Testing Phases
 
 ### Phase 1: Current State Validation (Pre-Refactoring)
 
 #### 1.1 API Endpoint Testing
+
 ```bash
 # Fix jaqpot-api compilation errors first
 cd jaqpot-api
@@ -24,6 +26,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ```
 
 #### 1.2 Local Model Download Testing
+
 ```bash
 # Test jaqpotpy local model functionality
 cd jaqpotpy
@@ -36,6 +39,7 @@ python test_local_model_download.py --model-id <torch-model-id>
 ```
 
 #### 1.3 Production Inference Testing
+
 ```bash
 # Test jaqpotpy-inference with existing models
 cd jaqpotpy-inference
@@ -50,47 +54,50 @@ curl -X POST "http://localhost:8002/predict" \
 ### Phase 2: Prediction Consistency Validation
 
 #### 2.1 Cross-Platform Prediction Testing
+
 Create test that verifies local and production predictions match:
 
 ```python
 # test_prediction_consistency.py
 
 import numpy as np
-from jaqpotpy.api.local_model import JaqpotLocalModel
+from jaqpotpy.api.downloaded_model import JaqpotDownloadedModel
 import requests
+
 
 def test_prediction_consistency(model_id, test_data):
     """Test that local and production predictions match exactly."""
-    
+
     # Local prediction using jaqpotpy
     jaqpot = JaqpotLocalhost()
     jaqpot.login()
-    local_model = JaqpotLocalModel(jaqpot)
-    
+    local_model = JaqpotDownloadedModel(jaqpot)
+
     model_data = local_model.download_model(model_id)
     local_response = local_model.predict_local(model_data, test_data)
-    
+
     # Production prediction using jaqpotpy-inference
     production_request = create_prediction_request(model_id, test_data)
     production_response = requests.post(
         "http://localhost:8002/predict",
         json=production_request
     )
-    
+
     # Compare predictions
     local_predictions = local_response.predictions
     production_predictions = production_response.json()["predictions"]
-    
+
     # Allow for small floating point differences
     np.testing.assert_allclose(
-        local_predictions, 
-        production_predictions, 
-        rtol=1e-10, 
+        local_predictions,
+        production_predictions,
+        rtol=1e-10,
         atol=1e-10,
         err_msg=f"Predictions don't match for model {model_id}"
     )
-    
+
     return True
+
 
 # Test different model types
 test_prediction_consistency("sklearn-model-id", sklearn_test_data)
@@ -101,6 +108,7 @@ test_prediction_consistency("torch-geometric-model-id", graph_test_data)
 ### Phase 3: Refactoring Integration Testing
 
 #### 3.1 Shared Logic Extraction Validation
+
 After extracting prediction logic to jaqpotpy:
 
 ```python
@@ -138,6 +146,7 @@ def test_handler_consistency():
 ```
 
 #### 3.2 jaqpotpy-inference Simplification Testing
+
 After updating jaqpotpy-inference to use jaqpotpy:
 
 ```python
@@ -158,62 +167,64 @@ def test_simplified_inference_service():
 ### Phase 4: End-to-End Integration Testing
 
 #### 4.1 Complete Workflow Testing
+
 ```python
 # test_end_to_end_workflow.py
 
 def test_complete_model_lifecycle():
     """Test complete model lifecycle across all repositories."""
-    
+
     # 1. Train and upload model using jaqpotpy
     jaqpot = Jaqpot()
     jaqpot.login()
-    
+
     model = SklearnModel(...)  # Train sklearn model
     model_id = jaqpot.deploy_model(model, name="e2e-test-model")
-    
+
     # 2. Download and test locally using jaqpotpy
-    local_model = JaqpotLocalModel(jaqpot)
+    local_model = JaqpotDownloadedModel(jaqpot)
     model_data = local_model.download_model(model_id)
     local_predictions = local_model.predict_local(model_data, test_data)
-    
+
     # 3. Test production inference using jaqpotpy-inference
     production_request = create_prediction_request(model_id, test_data)
     production_response = requests.post(
         "http://localhost:8002/predict",
         json=production_request
     )
-    
+
     # 4. Verify all three paths produce identical results
     upload_predictions = model.predict(test_data)  # Original model predictions
-    
+
     np.testing.assert_allclose(upload_predictions, local_predictions)
     np.testing.assert_allclose(local_predictions, production_response.json()["predictions"])
-    
+
     # 5. Clean up
     jaqpot.delete_model(model_id)
 ```
 
 #### 4.2 Performance Testing
+
 ```python
 # test_performance.py
 
 def test_prediction_performance():
     """Test that refactoring doesn't degrade performance."""
-    
+
     import time
-    
+
     # Measure local prediction performance
     start_time = time.time()
     for _ in range(100):
         local_model.predict_local(model_data, test_data)
     local_time = time.time() - start_time
-    
+
     # Measure production prediction performance
     start_time = time.time()
     for _ in range(100):
         requests.post("http://localhost:8002/predict", json=prediction_request)
     production_time = time.time() - start_time
-    
+
     # Performance should be comparable (within 50% difference)
     assert abs(local_time - production_time) / min(local_time, production_time) < 0.5
 ```
@@ -221,22 +232,24 @@ def test_prediction_performance():
 ## Test Data Requirements
 
 ### Model Types to Test
+
 1. **Sklearn Models**:
-   - Classification (binary, multiclass)
-   - Regression (single output, multi-output)
-   - With and without preprocessors
+    - Classification (binary, multiclass)
+    - Regression (single output, multi-output)
+    - With and without preprocessors
 
 2. **PyTorch Models**:
-   - Image input models
-   - Tabular data models
-   - Sequence models (LSTM, RNN)
+    - Image input models
+    - Tabular data models
+    - Sequence models (LSTM, RNN)
 
 3. **PyTorch Geometric Models**:
-   - Graph classification
-   - Graph regression
-   - Node prediction
+    - Graph classification
+    - Graph regression
+    - Node prediction
 
 ### Test Data Sets
+
 ```python
 # Generate comprehensive test data
 test_datasets = {
@@ -250,6 +263,7 @@ test_datasets = {
 ## Continuous Integration Setup
 
 ### GitHub Actions Workflow
+
 ```yaml
 # .github/workflows/integration-test.yml
 
@@ -326,26 +340,31 @@ jobs:
 ## Testing Timeline and Milestones
 
 ### Milestone 1: API Fix and Basic Testing (Week 1)
+
 - ✅ Fix jaqpot-api compilation errors
 - ✅ Test presigned URL endpoints
 - ✅ Test local model download functionality
 
 ### Milestone 2: Prediction Consistency (Week 2)
+
 - Test current local vs production prediction consistency
 - Identify and fix any prediction discrepancies
 - Establish baseline performance metrics
 
 ### Milestone 3: Shared Logic Integration (Week 3-4)
+
 - Extract prediction logic to jaqpotpy
 - Test shared inference service
 - Validate handler consistency
 
 ### Milestone 4: Production Integration (Week 5)
+
 - Update jaqpotpy-inference to use jaqpotpy
 - Test simplified inference service
 - End-to-end workflow validation
 
 ### Milestone 5: Performance and Stability (Week 6)
+
 - Performance testing and optimization
 - Load testing
 - Production deployment validation
@@ -353,6 +372,7 @@ jobs:
 ## Error Scenarios and Edge Cases
 
 ### Model Loading Edge Cases
+
 - Models stored only in database (no S3)
 - Models stored only in S3 (no database fallback)
 - Corrupted model files
@@ -360,6 +380,7 @@ jobs:
 - Authentication failures
 
 ### Prediction Edge Cases
+
 - Invalid input data formats
 - Missing features
 - Out-of-range values
@@ -367,6 +388,7 @@ jobs:
 - Timeout scenarios
 
 ### Integration Edge Cases
+
 - Version mismatches between repositories
 - API schema changes
 - Dependency conflicts
@@ -375,21 +397,25 @@ jobs:
 ## Success Criteria
 
 ### Functional Requirements
+
 - [ ] All model types (sklearn, torch, torch_geometric) work identically in local and production
 - [ ] Presigned URL download works for both models and preprocessors
 - [ ] Error handling is consistent across all platforms
 - [ ] Performance is maintained within acceptable bounds
 
 ### Quality Requirements
+
 - [ ] 100% test coverage for critical prediction paths
 - [ ] Zero prediction discrepancies between local and production
 - [ ] <5% performance degradation after refactoring
 - [ ] All integration tests pass in CI/CD pipeline
 
 ### Operational Requirements
+
 - [ ] Easy rollback strategy if issues arise
 - [ ] Clear monitoring and alerting for production
 - [ ] Documentation updated for new architecture
 - [ ] Team training completed on new shared logic
 
-This comprehensive testing strategy ensures that the prediction logic refactoring maintains quality and consistency while enabling the desired code sharing between jaqpotpy and jaqpotpy-inference.
+This comprehensive testing strategy ensures that the prediction logic refactoring maintains quality and consistency
+while enabling the desired code sharing between jaqpotpy and jaqpotpy-inference.
