@@ -40,7 +40,7 @@ jaqpot_model.fit()
 from jaqpotpy import Jaqpot  # noqa: E402
 
 # Next, create an instance of Jaqpot
-jaqpot = JaqpotLocalhost()
+jaqpot = Jaqpot()
 # Then login to Jaqpot. jaqpot.login will prompt you to enter
 # an authorization code that you will receive from your
 #  browser after you login to Jaqpot.
