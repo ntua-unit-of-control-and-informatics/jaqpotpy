@@ -25,7 +25,7 @@ class DownloadedModelPredictor:
     def predict(
         self,
         model_data: Union[str, Dict[str, Any]],
-        data: Union[np.ndarray, List, Dict],
+        input: Union[np.ndarray, List, Dict],
         model_downloader=None,
     ) -> PredictionResponse:
         """
@@ -36,7 +36,7 @@ class DownloadedModelPredictor:
 
         Args:
             model_data: Either model_id (str) or model data dict from download_model
-            data: Input data for prediction (numpy array, list, or dict)
+            input: Input data for prediction (numpy array, list, or dict)
             model_downloader: Optional model downloader instance for fetching models by ID
 
         Returns:
@@ -59,7 +59,7 @@ class DownloadedModelPredictor:
         model_metadata = model_data["model_metadata"]
 
         # Convert downloaded model format to PredictionRequest format for shared service
-        request = self._create_prediction_request(model_metadata, data, model_data)
+        request = self._create_prediction_request(model_metadata, input, model_data)
 
         # Use shared prediction service (downloaded model mode with jaqpot client)
         prediction_service = get_prediction_service(
@@ -83,24 +83,67 @@ class DownloadedModelPredictor:
         Returns:
             PredictionRequest: Request object for shared inference service
         """
-        # Convert data to the expected format for the dataset
+        # Convert data to the expected format for the dataset with jaqpotRowId
+        processed_input_data = []
+
         if isinstance(data, dict):
-            # Convert dict to list of lists format expected by Dataset
-            input_data = [list(data.values())]
+            # Single dict input - add jaqpotRowId
+            row_data = data.copy()
+            row_data["jaqpotRowId"] = "row_0"
+            processed_input_data = [row_data]
         elif isinstance(data, list):
-            # Ensure it's a list of lists
-            if len(data) > 0 and not isinstance(data[0], list):
-                input_data = [data]
+            if len(data) > 0 and isinstance(data[0], dict):
+                # List of dicts - add jaqpotRowId to each
+                for i, row in enumerate(data):
+                    row_data = row.copy()
+                    row_data["jaqpotRowId"] = f"row_{i}"
+                    processed_input_data.append(row_data)
+            elif len(data) > 0 and isinstance(data[0], list):
+                # List of lists - convert to dicts with jaqpotRowId
+                for i, row in enumerate(data):
+                    row_data = {f"feature_{j}": val for j, val in enumerate(row)}
+                    row_data["jaqpotRowId"] = f"row_{i}"
+                    processed_input_data.append(row_data)
             else:
-                input_data = data
+                # Single list - convert to dict with jaqpotRowId
+                row_data = {f"feature_{i}": val for i, val in enumerate(data)}
+                row_data["jaqpotRowId"] = "row_0"
+                processed_input_data = [row_data]
         elif isinstance(data, np.ndarray):
-            # Convert numpy array to list of lists
+            # Convert numpy array to dicts with jaqpotRowId
             if data.ndim == 1:
-                input_data = [data.tolist()]
+                # Check if array contains dicts (edge case: np.array([{...}]))
+                if len(data) > 0 and isinstance(data[0], dict):
+                    # Single dict wrapped in numpy array
+                    row_data = data[0].copy()
+                    row_data["jaqpotRowId"] = "row_0"
+                    processed_input_data = [row_data]
+                else:
+                    # Single row of numeric values
+                    row_data = {
+                        f"feature_{i}": float(val) for i, val in enumerate(data)
+                    }
+                    row_data["jaqpotRowId"] = "row_0"
+                    processed_input_data = [row_data]
             else:
-                input_data = data.tolist()
+                # Multiple rows
+                for i, row in enumerate(data):
+                    if isinstance(row, dict):
+                        # Row is already a dict
+                        row_data = row.copy()
+                        row_data["jaqpotRowId"] = f"row_{i}"
+                        processed_input_data.append(row_data)
+                    else:
+                        # Row is numeric values
+                        row_data = {
+                            f"feature_{j}": float(val) for j, val in enumerate(row)
+                        }
+                        row_data["jaqpotRowId"] = f"row_{i}"
+                        processed_input_data.append(row_data)
         else:
             raise ValueError(f"Unsupported data type: {type(data)}")
+
+        input_data = processed_input_data
 
         # Create dataset object with all required fields
         dataset = Dataset(
@@ -131,7 +174,7 @@ class DownloadedModelPredictor:
         dependent_features = getattr(model_metadata, "dependent_features", [])
         task = getattr(model_metadata, "task", None)
 
-        # Ensure we have the required fields
+        # Ensure we have the required fields with proper defaults
         if not independent_features:
             independent_features = []
         if not dependent_features:
@@ -142,6 +185,19 @@ class DownloadedModelPredictor:
 
             task = ModelTask.REGRESSION
 
+        # Ensure optional fields are lists, not None
+        selected_features = getattr(model_metadata, "selected_features", None)
+        if selected_features is None:
+            selected_features = []
+
+        featurizers = getattr(model_metadata, "featurizers", None)
+        if featurizers is None:
+            featurizers = []
+
+        preprocessors = getattr(model_metadata, "preprocessors", None)
+        if preprocessors is None:
+            preprocessors = []
+
         prediction_model = PredictionModel(
             id=model_metadata.id,
             type=model_metadata.type,
@@ -151,9 +207,9 @@ class DownloadedModelPredictor:
             raw_model=raw_model_b64,  # Base64 encoded ONNX bytes from downloaded model
             raw_preprocessor=raw_preprocessor_b64,  # Base64 encoded pickled preprocessor
             doas=getattr(model_metadata, "doas", None),
-            selected_features=getattr(model_metadata, "selected_features", None),
-            featurizers=getattr(model_metadata, "featurizers", None),
-            preprocessors=getattr(model_metadata, "preprocessors", None),
+            selected_features=selected_features,  # Ensured to be list, not None
+            featurizers=featurizers,  # Ensured to be list, not None
+            preprocessors=preprocessors,  # Ensured to be list, not None
         )
 
         return PredictionRequest(model=prediction_model, dataset=dataset)

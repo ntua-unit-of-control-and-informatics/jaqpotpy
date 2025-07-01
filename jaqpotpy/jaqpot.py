@@ -491,17 +491,17 @@ class Jaqpot:
         """
         return self.model_downloader.download_model(model_id, cache)
 
-    def predict_local(self, model_data, data):
+    def predict_local(self, model_data, input):
         """
         Make predictions using a locally downloaded model.
 
         Args:
             model_data: Either model_id (str) or model data dict from download_model
-            data: Input data for prediction (numpy array, list, or dict)
+            input: Input data for prediction (numpy array, list, or dict)
 
         Returns:
             PredictionResponse with predictions in same format as Jaqpot API
         """
         return self.downloaded_model_predictor.predict(
-            model_data, data, model_downloader=self.model_downloader
+            model_data, input, model_downloader=self.model_downloader
         )

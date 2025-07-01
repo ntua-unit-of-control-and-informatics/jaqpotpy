@@ -14,18 +14,17 @@ The implementation now supports:
 
 import numpy as np
 from jaqpotpy import Jaqpot
-from jaqpotpy.jaqpot_local import JaqpotLocalhost
 
 
 def main():
     # Initialize Jaqpot client
-    jaqpot = JaqpotLocalhost()
+    jaqpot = Jaqpot()
 
     # Login to Jaqpot platform
     jaqpot.login()
 
     # Download a model for offline use
-    model_id = 3  # Replace with actual model ID
+    model_id = 2184  # Replace with actual model ID
 
     print(f"Downloading model {model_id}...")
     model_data = jaqpot.download_model(model_id, cache=True)
@@ -37,7 +36,9 @@ def main():
     # 2. Python list: [[1.0, 2.0, 3.0]]
     # 3. Dictionary: {"feature1": 1.0, "feature2": 2.0, "feature3": 3.0}
 
-    sample_data = np.array([[1.0, 2.0, 3.0, 4.0]])  # Example input
+    sample_data = np.array(
+        [{"X1": 1.0, "X2": 2.0, "X3": 3.0, "X4": 4.0}]
+    )  # Example input
 
     # Make predictions with downloaded model
     print("Making predictions with downloaded model...")
@@ -48,8 +49,8 @@ def main():
     print(f"Predictions: {response.predictions}")
 
     # Alternative usage: You can also pass just the model_id if it's cached
-    response2 = jaqpot.predict_local(model_id, sample_data)
-    print(f"Cached model predictions: {response2.predictions}")
+    # response2 = jaqpot.predict_local(model_id, sample_data)
+    # print(f"Cached model predictions: {response2.predictions}")
 
     # Check cached models
     cached_models = jaqpot.model_downloader.list_cached_models()
@@ -61,7 +62,7 @@ def main():
 
 def batch_predictions_example():
     """Example of making multiple predictions efficiently with downloaded models"""
-    jaqpot = JaqpotLocalhost()
+    jaqpot = Jaqpot()
     jaqpot.login()
 
     model_id = "your-model-id-here"
