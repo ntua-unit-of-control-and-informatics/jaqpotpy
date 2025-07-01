@@ -15,6 +15,7 @@ from keycloak import KeycloakOpenID
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.api.model_downloader import JaqpotModelDownloader
+from jaqpotpy.api.downloaded_model_predictor import DownloadedModelPredictor
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger
@@ -76,6 +77,7 @@ class Jaqpot:
         self.access_token = None
         self.http_client = None
         self._model_downloader = None
+        self._downloaded_model_predictor = None
 
     def _deploy_model(
         self,
@@ -447,7 +449,7 @@ class Jaqpot:
     @property
     def model_downloader(self):
         """
-        Access to model downloader functionality for downloading and running models locally.
+        Access to model downloader functionality for downloading models locally.
 
         Returns:
             JaqpotModelDownloader: Instance for model download operations
@@ -459,6 +461,22 @@ class Jaqpot:
                 )
             self._model_downloader = JaqpotModelDownloader(self)
         return self._model_downloader
+
+    @property
+    def downloaded_model_predictor(self):
+        """
+        Access to downloaded model prediction functionality.
+
+        Returns:
+            DownloadedModelPredictor: Instance for making predictions with downloaded models
+        """
+        if self._downloaded_model_predictor is None:
+            if self.http_client is None:
+                raise ValueError(
+                    "Must be logged in to use downloaded model prediction functionality"
+                )
+            self._downloaded_model_predictor = DownloadedModelPredictor(self)
+        return self._downloaded_model_predictor
 
     def download_model(self, model_id: int, cache: bool = True):
         """
@@ -484,4 +502,6 @@ class Jaqpot:
         Returns:
             PredictionResponse with predictions in same format as Jaqpot API
         """
-        return self.model_downloader.predict_local(model_data, data)
+        return self.downloaded_model_predictor.predict(
+            model_data, data, model_downloader=self.model_downloader
+        )

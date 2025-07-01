@@ -6,11 +6,7 @@ from typing import Union, Dict, Any, List, Optional
 import numpy as np
 import onnxruntime as rt
 from jaqpot_api_client.api.model_api import ModelApi
-from jaqpot_api_client.models.prediction_response import PredictionResponse
-from jaqpot_api_client.models.prediction_request import PredictionRequest
-from jaqpot_api_client.models.dataset import Dataset
-
-from ..inference.service import get_prediction_service
+from jaqpot_api_client.api.model_download_api import ModelDownloadApi
 
 
 class JaqpotModelDownloader:
@@ -70,24 +66,17 @@ class JaqpotModelDownloader:
                     return model.raw_model
                 pass
 
-        # Try to get presigned download URL for S3 models
+        # Try to get presigned download URLs for S3 models using official API client
         try:
-            # Try to get presigned download URL (this assumes the API client has been updated)
-            # For now we'll handle this manually until the API client is regenerated
             import requests
 
-            # Make direct API call to get presigned URL using LocalModelService
-            headers = self.jaqpot_client.http_client.default_headers
-            api_host = self.jaqpot_client.http_client.configuration.host
-            response = requests.get(
-                f"{api_host}/v1/models/{model.id}/local/download-url",
-                headers=headers,
-                timeout=30,
+            model_download_api = ModelDownloadApi(self.jaqpot_client.http_client)
+            download_response = model_download_api.get_model_download_urls(
+                model_id=model.id, expiration_minutes=30
             )
 
-            if response.status_code == 200:
-                download_info = response.json()
-                download_url = download_info["downloadUrl"]
+            if download_response and download_response.model_url:
+                download_url = download_response.model_url
 
                 # Download model from presigned URL
                 model_response = requests.get(
@@ -95,14 +84,9 @@ class JaqpotModelDownloader:
                 )  # 5 minutes for large models
                 model_response.raise_for_status()
                 return model_response.content
-            elif response.status_code == 404:
-                # Model not in S3, might be in database only
-                pass
-            else:
-                response.raise_for_status()
 
         except Exception as e:
-            print(f"Warning: Could not download model from S3 using presigned URL: {e}")
+            print(f"Warning: Could not download model from S3 using official API: {e}")
 
         raise ValueError("Model data not available in database or S3 storage")
 
@@ -119,36 +103,26 @@ class JaqpotModelDownloader:
                 # If base64 decode fails, continue to try presigned URL
                 pass
 
-        # Try to get presigned download URL for S3 preprocessors
+        # Try to get presigned download URLs for S3 preprocessors using official API client
         try:
             import requests
 
-            # Make direct API call to get presigned URL for preprocessor using LocalModelService
-            headers = self.jaqpot_client.http_client.default_headers
-            api_host = self.jaqpot_client.http_client.configuration.host
-            response = requests.get(
-                f"{api_host}/v1/models/{model.id}/local/preprocessor/download-url",
-                headers=headers,
-                timeout=30,
+            model_download_api = ModelDownloadApi(self.jaqpot_client.http_client)
+            download_response = model_download_api.get_model_download_urls(
+                model_id=model.id, expiration_minutes=30
             )
 
-            if response.status_code == 200:
-                download_info = response.json()
-                download_url = download_info["downloadUrl"]
+            if download_response and download_response.preprocessor_url:
+                download_url = download_response.preprocessor_url
 
                 # Download preprocessor from presigned URL
                 preprocessor_response = requests.get(download_url, timeout=60)
                 preprocessor_response.raise_for_status()
                 return pickle.loads(preprocessor_response.content)
-            elif response.status_code == 404:
-                # Preprocessor not found
-                return None
-            else:
-                response.raise_for_status()
 
         except Exception as e:
             print(
-                f"Warning: Could not download preprocessor from S3 using presigned URL: {e}"
+                f"Warning: Could not download preprocessor from S3 using official API: {e}"
             )
 
         # Fallback: check if we have raw_preprocessor in database
@@ -160,98 +134,6 @@ class JaqpotModelDownloader:
                 print(f"Warning: Could not load preprocessor from database: {e}")
 
         return None
-
-    def predict_local(
-        self,
-        model_data: Union[str, Dict[str, Any]],
-        data: Union[np.ndarray, List, Dict],
-    ) -> PredictionResponse:
-        """
-        Make predictions using a locally downloaded model.
-
-        This method now uses the shared inference service to ensure identical results
-        to production inference while maintaining the same external API.
-
-        Args:
-            model_data: Either model_id (str) or model data dict from download_model
-            data: Input data for prediction (numpy array, list, or dict)
-
-        Returns:
-            PredictionResponse with predictions in same format as Jaqpot API
-        """
-        # Handle model_id string input
-        if isinstance(model_data, str):
-            model_id = model_data
-            if model_id not in self._cached_models:
-                model_data = self.download_model(model_id)
-            else:
-                model_data = self._cached_models[model_id]
-
-        # Get model metadata
-        model_metadata = model_data["model_metadata"]
-
-        # Convert local data format to PredictionRequest format for shared service
-        request = self._create_prediction_request(model_metadata, data)
-
-        # Use shared prediction service (local mode with jaqpot client)
-        prediction_service = get_prediction_service(
-            local_mode=True, jaqpot_client=self.jaqpot_client
-        )
-
-        # Execute prediction using shared logic
-        return prediction_service.predict(request)
-
-    def _create_prediction_request(self, model_metadata, data) -> PredictionRequest:
-        """
-        Convert local model format and data to PredictionRequest format.
-
-        Args:
-            model_metadata: Model metadata from the Jaqpot API
-            data: Input data (numpy array, list, or dict)
-
-        Returns:
-            PredictionRequest: Request object for shared inference service
-        """
-        # Convert data to the expected format for the dataset
-        if isinstance(data, dict):
-            # Convert dict to list of lists format expected by Dataset
-            input_data = [list(data.values())]
-        elif isinstance(data, list):
-            # Ensure it's a list of lists
-            if len(data) > 0 and not isinstance(data[0], list):
-                input_data = [data]
-            else:
-                input_data = data
-        elif isinstance(data, np.ndarray):
-            # Convert numpy array to list of lists
-            if data.ndim == 1:
-                input_data = [data.tolist()]
-            else:
-                input_data = data.tolist()
-        else:
-            raise ValueError(f"Unsupported data type: {type(data)}")
-
-        # Create dataset object
-        dataset = Dataset(input=input_data)
-
-        # Create prediction request
-        # Note: For local mode, we'll set raw_model to the base64 encoded model
-        # that we downloaded, so the shared service doesn't need to download again
-        model_with_data = type(model_metadata)(
-            id=model_metadata.id,
-            type=model_metadata.type,
-            raw_model=None,  # Will be loaded by presigned URL in local mode
-            raw_preprocessor=getattr(model_metadata, "raw_preprocessor", None),
-            doas=getattr(model_metadata, "doas", None),
-            # Copy other relevant fields
-            **{
-                k: v
-                for k, v in model_metadata.__dict__.items()
-                if k not in ["raw_model", "raw_preprocessor", "doas"]
-            },
-        )
-
-        return PredictionRequest(model=model_with_data, dataset=dataset)
 
     def clear_cache(self):
         """
