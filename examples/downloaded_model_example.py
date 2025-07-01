@@ -14,7 +14,7 @@ The implementation now supports:
 
 import numpy as np
 from jaqpotpy import Jaqpot
-from jaqpotpy.jaqpot_localhost import JaqpotLocalhost
+from jaqpotpy.jaqpot_local import JaqpotLocalhost
 
 
 def main():

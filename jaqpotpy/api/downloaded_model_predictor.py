@@ -1,9 +1,12 @@
+import base64
 from typing import Union, Dict, Any, List
 
 import numpy as np
 from jaqpot_api_client.models.prediction_response import PredictionResponse
 from jaqpot_api_client.models.prediction_request import PredictionRequest
+from jaqpot_api_client.models.prediction_model import PredictionModel
 from jaqpot_api_client.models.dataset import Dataset
+from jaqpot_api_client.models.dataset_type import DatasetType
 
 from ..inference.service import get_prediction_service
 
@@ -55,8 +58,8 @@ class DownloadedModelPredictor:
         # Get model metadata
         model_metadata = model_data["model_metadata"]
 
-        # Convert local data format to PredictionRequest format for shared service
-        request = self._create_prediction_request(model_metadata, data)
+        # Convert downloaded model format to PredictionRequest format for shared service
+        request = self._create_prediction_request(model_metadata, data, model_data)
 
         # Use shared prediction service (downloaded model mode with jaqpot client)
         prediction_service = get_prediction_service(
@@ -66,13 +69,16 @@ class DownloadedModelPredictor:
         # Execute prediction using shared logic
         return prediction_service.predict(request)
 
-    def _create_prediction_request(self, model_metadata, data) -> PredictionRequest:
+    def _create_prediction_request(
+        self, model_metadata, data, model_data
+    ) -> PredictionRequest:
         """
         Convert downloaded model format and data to PredictionRequest format.
 
         Args:
             model_metadata: Model metadata from the Jaqpot API
             data: Input data (numpy array, list, or dict)
+            model_data: Downloaded model data dict containing onnx_bytes and preprocessor
 
         Returns:
             PredictionRequest: Request object for shared inference service
@@ -96,24 +102,58 @@ class DownloadedModelPredictor:
         else:
             raise ValueError(f"Unsupported data type: {type(data)}")
 
-        # Create dataset object
-        dataset = Dataset(input=input_data)
-
-        # Create prediction request
-        # Note: For downloaded model mode, we'll set raw_model to the base64 encoded model
-        # that we downloaded, so the shared service doesn't need to download again
-        model_with_data = type(model_metadata)(
-            id=model_metadata.id,
-            type=model_metadata.type,
-            raw_model=None,  # Will be loaded by presigned URL in downloaded model mode
-            raw_preprocessor=getattr(model_metadata, "raw_preprocessor", None),
-            doas=getattr(model_metadata, "doas", None),
-            # Copy other relevant fields
-            **{
-                k: v
-                for k, v in model_metadata.__dict__.items()
-                if k not in ["raw_model", "raw_preprocessor", "doas"]
-            },
+        # Create dataset object with all required fields
+        dataset = Dataset(
+            type=DatasetType.PREDICTION, entryType="ARRAY", input=input_data
         )
 
-        return PredictionRequest(model=model_with_data, dataset=dataset)
+        # Prepare downloaded model data for inference service
+        # The model downloader provides:
+        # - onnx_bytes: Raw ONNX bytes that need to be base64 encoded
+        # - preprocessor: Deserialized Python object that needs to be pickled and base64 encoded
+        raw_model_b64 = None
+        raw_preprocessor_b64 = None
+
+        # Encode downloaded ONNX model bytes to base64 (PredictionModel expects base64 string)
+        if model_data.get("onnx_bytes"):
+            raw_model_b64 = base64.b64encode(model_data["onnx_bytes"]).decode("utf-8")
+
+        # Encode downloaded preprocessor to base64 (PredictionModel expects base64 string)
+        if model_data.get("preprocessor"):
+            import pickle
+
+            preprocessor_bytes = pickle.dumps(model_data["preprocessor"])
+            raw_preprocessor_b64 = base64.b64encode(preprocessor_bytes).decode("utf-8")
+
+        # Create prediction model with downloaded and properly encoded data
+        # Get required fields with proper defaults
+        independent_features = getattr(model_metadata, "independent_features", [])
+        dependent_features = getattr(model_metadata, "dependent_features", [])
+        task = getattr(model_metadata, "task", None)
+
+        # Ensure we have the required fields
+        if not independent_features:
+            independent_features = []
+        if not dependent_features:
+            dependent_features = []
+        if task is None:
+            # Default to a reasonable task if not specified
+            from jaqpot_api_client.models.model_task import ModelTask
+
+            task = ModelTask.REGRESSION
+
+        prediction_model = PredictionModel(
+            id=model_metadata.id,
+            type=model_metadata.type,
+            independent_features=independent_features,  # Required field
+            dependent_features=dependent_features,  # Required field
+            task=task,  # Required field
+            raw_model=raw_model_b64,  # Base64 encoded ONNX bytes from downloaded model
+            raw_preprocessor=raw_preprocessor_b64,  # Base64 encoded pickled preprocessor
+            doas=getattr(model_metadata, "doas", None),
+            selected_features=getattr(model_metadata, "selected_features", None),
+            featurizers=getattr(model_metadata, "featurizers", None),
+            preprocessors=getattr(model_metadata, "preprocessors", None),
+        )
+
+        return PredictionRequest(model=prediction_model, dataset=dataset)
