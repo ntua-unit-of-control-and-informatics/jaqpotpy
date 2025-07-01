@@ -1,20 +1,20 @@
 """
-Example: Using Jaqpot Local Model Functionality
+Example: Using Jaqpot Downloaded Model Functionality
 
 This example demonstrates how to download ONNX models from the Jaqpot platform
-and run predictions locally in your Jupyter notebook or Python environment.
+and run predictions in your Jupyter notebook or Python environment.
 
 The implementation now supports:
 - Automatic fallback from S3 presigned URLs to database storage
 - Large models stored in S3 with efficient presigned URL downloads
 - Small models stored directly in the database as base64
 - Preprocessor downloads with the same fallback mechanism
-- Local caching for improved performance
+- Downloaded model caching for improved performance
 """
 
 import numpy as np
 from jaqpotpy import Jaqpot
-from jaqpotpy.jaqpot_local import JaqpotLocalhost
+from jaqpotpy.jaqpot_localhost import JaqpotLocalhost
 
 
 def main():
@@ -24,8 +24,8 @@ def main():
     # Login to Jaqpot platform
     jaqpot.login()
 
-    # Download a model for local use
-    model_id = 1280  # Replace with actual model ID
+    # Download a model for offline use
+    model_id = 3  # Replace with actual model ID
 
     print(f"Downloading model {model_id}...")
     model_data = jaqpot.download_model(model_id, cache=True)
@@ -39,8 +39,8 @@ def main():
 
     sample_data = np.array([[1.0, 2.0, 3.0, 4.0]])  # Example input
 
-    # Make local predictions
-    print("Making local predictions...")
+    # Make predictions with downloaded model
+    print("Making predictions with downloaded model...")
     response = jaqpot.predict_local(model_data, sample_data)
 
     # The response is a PredictionResponse object with the same format
@@ -52,16 +52,16 @@ def main():
     print(f"Cached model predictions: {response2.predictions}")
 
     # Check cached models
-    cached_models = jaqpot.local.list_cached_models()
+    cached_models = jaqpot.model_downloader.list_cached_models()
     print(f"Cached models: {cached_models}")
 
     # Clear cache if needed
-    # jaqpot.local.clear_cache()
+    # jaqpot.model_downloader.clear_cache()
 
 
 def batch_predictions_example():
-    """Example of making multiple predictions efficiently"""
-    jaqpot = Jaqpot()
+    """Example of making multiple predictions efficiently with downloaded models"""
+    jaqpot = JaqpotLocalhost()
     jaqpot.login()
 
     model_id = "your-model-id-here"
