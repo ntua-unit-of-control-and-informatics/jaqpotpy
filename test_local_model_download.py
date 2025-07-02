@@ -37,20 +37,44 @@ def test_model_download_and_inference():
     try:
         # Import jaqpotpy components
         from jaqpotpy import Jaqpot
-        from jaqpotpy.api.downloaded_model import JaqpotDownloadedModel
+        from jaqpotpy.api.model_downloader import JaqpotModelDownloader
+        from jaqpotpy.api.downloaded_model_predictor import DownloadedModelPredictor
 
         logger.info("✅ Successfully imported jaqpotpy components")
     except ImportError as e:
         logger.error(f"❌ Failed to import jaqpotpy: {e}")
         logger.error("Make sure jaqpotpy is installed: pip install -e .")
-        return False
+        assert False, f"Failed to import jaqpotpy: {e}"
 
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Test jaqpotpy local model download")
-    parser.add_argument("--model-id", required=True, help="Model ID to test")
-    parser.add_argument("--api-url", default="https://api.jaqpot.org", help="API URL")
-    parser.add_argument("--local", action="store_true", help="Use localhost API")
-    args = parser.parse_args()
+    # Skip test if running under pytest without required environment variables
+    import os
+
+    if "PYTEST_CURRENT_TEST" in os.environ:
+        model_id = os.environ.get("TEST_MODEL_ID")
+        if not model_id:
+            import pytest
+
+            pytest.skip("Set TEST_MODEL_ID environment variable to run this test")
+
+        # Default test parameters for pytest
+        class Args:
+            def __init__(self):
+                self.model_id = model_id
+                self.api_url = os.environ.get("TEST_API_URL", "https://api.jaqpot.org")
+                self.local = os.environ.get("TEST_LOCAL", "").lower() == "true"
+
+        args = Args()
+    else:
+        # Parse command line arguments when run as script
+        parser = argparse.ArgumentParser(
+            description="Test jaqpotpy local model download"
+        )
+        parser.add_argument("--model-id", required=True, help="Model ID to test")
+        parser.add_argument(
+            "--api-url", default="https://api.jaqpot.org", help="API URL"
+        )
+        parser.add_argument("--local", action="store_true", help="Use localhost API")
+        args = parser.parse_args()
 
     # Initialize Jaqpot client
     if args.local:
@@ -70,18 +94,19 @@ def test_model_download_and_inference():
     except Exception as e:
         logger.error(f"❌ Failed to login: {e}")
         logger.error("Please check your credentials and network connection")
-        return False
+        assert False, f"Failed to login: {e}"
 
-    # Initialize local model handler
-    local_model = JaqpotDownloadedModel(jaqpot)
-    logger.info("📥 Initialized local model handler")
+    # Initialize model downloader and predictor
+    model_downloader = JaqpotModelDownloader(jaqpot)
+    model_predictor = DownloadedModelPredictor(jaqpot)
+    logger.info("📥 Initialized model downloader and predictor")
 
     # Test 1: Download model with presigned URL support
     logger.info(f"📦 Testing model download for model ID: {args.model_id}")
 
     start_time = time.time()
     try:
-        model_data = local_model.download_model(args.model_id, cache=True)
+        model_data = model_downloader.download_model(args.model_id, cache=True)
         download_time = time.time() - start_time
         logger.info(f"✅ Model download completed in {download_time:.2f} seconds")
 
@@ -106,7 +131,7 @@ def test_model_download_and_inference():
 
     except Exception as e:
         logger.error(f"❌ Model download failed: {e}")
-        return False
+        assert False, f"Model download failed: {e}"
 
     # Test 2: Generate sample data for prediction
     logger.info("🎲 Generating sample prediction data...")
@@ -136,14 +161,14 @@ def test_model_download_and_inference():
 
     except Exception as e:
         logger.error(f"❌ Sample data generation failed: {e}")
-        return False
+        assert False, f"Sample data generation failed: {e}"
 
     # Test 3: Run local prediction
     logger.info("🔮 Testing local prediction...")
 
     try:
         start_time = time.time()
-        prediction_response = local_model.predict_local(model_data, sample_data)
+        prediction_response = model_predictor.predict(model_data, sample_data)
         prediction_time = time.time() - start_time
 
         logger.info(f"✅ Prediction completed in {prediction_time:.4f} seconds")
@@ -151,7 +176,7 @@ def test_model_download_and_inference():
 
     except Exception as e:
         logger.error(f"❌ Local prediction failed: {e}")
-        return False
+        assert False, f"Local prediction failed: {e}"
 
     # Test 4: Test cache functionality
     logger.info("💾 Testing model caching...")
@@ -159,15 +184,15 @@ def test_model_download_and_inference():
     try:
         # Download same model again (should use cache)
         start_time = time.time()
-        local_model.download_model(args.model_id, cache=True)
+        model_downloader.download_model(args.model_id, cache=True)
         cache_time = time.time() - start_time
 
         logger.info(f"✅ Cached model retrieval in {cache_time:.4f} seconds")
-        logger.info(f"📚 Cached models: {local_model.list_cached_models()}")
+        logger.info(f"📚 Cached models: {list(model_downloader._cached_models.keys())}")
 
     except Exception as e:
         logger.error(f"❌ Cache test failed: {e}")
-        return False
+        assert False, f"Cache test failed: {e}"
 
     # Test 5: Test different data formats
     logger.info("🔄 Testing different input data formats...")
@@ -175,17 +200,17 @@ def test_model_download_and_inference():
     try:
         # Test with list format
         sample_list = list(sample_data.values())
-        list_response = local_model.predict_local(model_data, sample_list)
+        list_response = model_predictor.predict(model_data, sample_list)
         logger.info(f"✅ List format prediction: {list_response.predictions}")
 
         # Test with numpy array format
         sample_array = np.array(sample_list).reshape(1, -1)
-        array_response = local_model.predict_local(model_data, sample_array)
+        array_response = model_predictor.predict(model_data, sample_array)
         logger.info(f"✅ Array format prediction: {array_response.predictions}")
 
     except Exception as e:
         logger.error(f"❌ Multi-format test failed: {e}")
-        return False
+        assert False, f"Multi-format test failed: {e}"
 
     # Test 6: Performance benchmark
     logger.info("⚡ Running performance benchmark...")
@@ -195,7 +220,7 @@ def test_model_download_and_inference():
         start_time = time.time()
 
         for i in range(num_predictions):
-            local_model.predict_local(model_data, sample_data)
+            model_predictor.predict(model_data, sample_data)
 
         total_time = time.time() - start_time
         avg_time = total_time / num_predictions
@@ -209,7 +234,7 @@ def test_model_download_and_inference():
 
     except Exception as e:
         logger.error(f"❌ Performance benchmark failed: {e}")
-        return False
+        assert False, f"Performance benchmark failed: {e}"
 
     # Summary
     logger.info("🎉 All tests completed successfully!")
@@ -221,7 +246,7 @@ def test_model_download_and_inference():
     logger.info("   ✅ Multiple input formats")
     logger.info("   ✅ Performance benchmarking")
 
-    return True
+    # All tests passed - no assertion needed
 
 
 def test_error_scenarios():
@@ -229,14 +254,14 @@ def test_error_scenarios():
     logger.info("🚨 Testing error scenarios...")
 
     from jaqpotpy import Jaqpot
-    from jaqpotpy.api.downloaded_model import JaqpotDownloadedModel
+    from jaqpotpy.api.model_downloader import JaqpotModelDownloader
 
     jaqpot = Jaqpot()
-    local_model = JaqpotDownloadedModel(jaqpot)
+    model_downloader = JaqpotModelDownloader(jaqpot)
 
     # Test invalid model ID
     try:
-        local_model.download_model("invalid-model-id")
+        model_downloader.download_model("invalid-model-id")
         logger.warning("⚠️ Expected error for invalid model ID did not occur")
     except Exception as e:
         logger.info(f"✅ Correctly handled invalid model ID: {type(e).__name__}")
@@ -248,18 +273,17 @@ def main():
     logger.info("=" * 60)
 
     # Run main tests
-    success = test_model_download_and_inference()
-
-    if success:
+    try:
+        test_model_download_and_inference()
         logger.info("=" * 60)
         logger.info("🎊 ALL TESTS PASSED!")
         logger.info("The jaqpotpy local model functionality is working correctly.")
         logger.info("Ready for integration with jaqpotpy-inference!")
         return 0
-    else:
+    except AssertionError as e:
         logger.error("=" * 60)
         logger.error("💥 TESTS FAILED!")
-        logger.error("Please check the errors above and fix the issues.")
+        logger.error(f"Error: {e}")
         return 1
 
 
