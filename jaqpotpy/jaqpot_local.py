@@ -1,7 +1,7 @@
 from jaqpotpy import Jaqpot
 
 
-class JaqpotLocal(Jaqpot):
+class JaqpotLocalhost(Jaqpot):
     def __init__(self):
         super().__init__(
             base_url="http://localhost.jaqpot.org",

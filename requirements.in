@@ -21,7 +21,7 @@ ruff==0.6.3
 polling2==0.5.0
 python-dotenv==1.0.1
 setuptools==78.1.1
-jaqpot-api-client==6.43.0
+jaqpot-api-client==6.49.1
 jaqpot-python-sdk==6.0.5
 # Torch requirements
 torch==2.7.0

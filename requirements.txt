@@ -85,7 +85,7 @@ idna==3.10
     #   httpx
     #   requests
     #   yarl
-jaqpot-api-client==6.43.0
+jaqpot-api-client==6.49.1
     # via
     #   -r requirements.in
     #   jaqpot-python-sdk
