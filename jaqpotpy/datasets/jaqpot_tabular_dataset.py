@@ -282,9 +282,6 @@ class JaqpotTabularDataset(BaseDataset):
                         non_finite_columns,
                     )
 
-                else:
-                    print("No columns with non-finite values found.")
-
                 if len(non_finite_rows) > 0:
                     print(
                         "Rows with non-finite values with row_index:",
@@ -295,9 +292,6 @@ class JaqpotTabularDataset(BaseDataset):
                             "The corresponding SMILES are:",
                             self.smiles.loc[non_finite_rows].to_string(),
                         )
-
-                else:
-                    print("No rows with non-finite values found.")
 
         self.x_colnames = self.X.columns.tolist()
         self.df = pd.concat([self.X, self.y], axis=1)
