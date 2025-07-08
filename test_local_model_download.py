@@ -21,7 +21,6 @@ import argparse
 import sys
 import time
 import numpy as np
-from typing import Dict, Any, List
 import logging
 
 # Configure logging
@@ -37,8 +36,8 @@ def test_model_download_and_inference():
     try:
         # Import jaqpotpy components
         from jaqpotpy import Jaqpot
-        from jaqpotpy.api.model_downloader import JaqpotModelDownloader
-        from jaqpotpy.api.downloaded_model_predictor import DownloadedModelPredictor
+        from jaqpotpy.offline.model_downloader import JaqpotModelDownloader
+        from jaqpotpy.offline.downloaded_model_predictor import OfflineModelPredictor
 
         logger.info("✅ Successfully imported jaqpotpy components")
     except ImportError as e:
@@ -98,7 +97,7 @@ def test_model_download_and_inference():
 
     # Initialize model downloader and predictor
     model_downloader = JaqpotModelDownloader(jaqpot)
-    model_predictor = DownloadedModelPredictor(jaqpot)
+    model_predictor = OfflineModelPredictor(jaqpot)
     logger.info("📥 Initialized model downloader and predictor")
 
     # Test 1: Download model with presigned URL support
@@ -106,7 +105,7 @@ def test_model_download_and_inference():
 
     start_time = time.time()
     try:
-        model_data = model_downloader.download_model(args.model_id, cache=True)
+        model_data = model_downloader.download_onnx_model(args.model_id, cache=True)
         download_time = time.time() - start_time
         logger.info(f"✅ Model download completed in {download_time:.2f} seconds")
 
@@ -184,11 +183,13 @@ def test_model_download_and_inference():
     try:
         # Download same model again (should use cache)
         start_time = time.time()
-        model_downloader.download_model(args.model_id, cache=True)
+        model_downloader.download_onnx_model(args.model_id, cache=True)
         cache_time = time.time() - start_time
 
         logger.info(f"✅ Cached model retrieval in {cache_time:.4f} seconds")
-        logger.info(f"📚 Cached models: {list(model_downloader._cached_models.keys())}")
+        logger.info(
+            f"📚 Cached models: {list(model_downloader._cached_onnx_models.keys())}"
+        )
 
     except Exception as e:
         logger.error(f"❌ Cache test failed: {e}")
@@ -254,14 +255,14 @@ def test_error_scenarios():
     logger.info("🚨 Testing error scenarios...")
 
     from jaqpotpy import Jaqpot
-    from jaqpotpy.api.model_downloader import JaqpotModelDownloader
+    from jaqpotpy.offline.model_downloader import JaqpotModelDownloader
 
     jaqpot = Jaqpot()
     model_downloader = JaqpotModelDownloader(jaqpot)
 
     # Test invalid model ID
     try:
-        model_downloader.download_model("invalid-model-id")
+        model_downloader.download_onnx_model("invalid-model-id")
         logger.warning("⚠️ Expected error for invalid model ID did not occur")
     except Exception as e:
         logger.info(f"✅ Correctly handled invalid model ID: {type(e).__name__}")

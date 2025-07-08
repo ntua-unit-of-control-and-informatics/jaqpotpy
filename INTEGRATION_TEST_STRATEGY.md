@@ -66,37 +66,37 @@ import requests
 
 
 def test_prediction_consistency(model_id, test_data):
-    """Test that local and production predictions match exactly."""
+   """Test that local and production predictions match exactly."""
 
-    # Local prediction using jaqpotpy
-    jaqpot = JaqpotLocalhost()
-    jaqpot.login()
-    local_model = JaqpotDownloadedModel(jaqpot)
+   # Local prediction using jaqpotpy
+   jaqpot = JaqpotLocalhost()
+   jaqpot.login()
+   local_model = JaqpotDownloadedModel(jaqpot)
 
-    model_data = local_model.download_model(model_id)
-    local_response = local_model.predict_local(model_data, test_data)
+   model_data = local_model.download_onnx_model(model_id)
+   local_response = local_model.predict_local(model_data, test_data)
 
-    # Production prediction using jaqpotpy-inference
-    production_request = create_prediction_request(model_id, test_data)
-    production_response = requests.post(
-        "http://localhost:8002/predict",
-        json=production_request
-    )
+   # Production prediction using jaqpotpy-inference
+   production_request = create_prediction_request(model_id, test_data)
+   production_response = requests.post(
+      "http://localhost:8002/predict",
+      json=production_request
+   )
 
-    # Compare predictions
-    local_predictions = local_response.predictions
-    production_predictions = production_response.json()["predictions"]
+   # Compare predictions
+   local_predictions = local_response.predictions
+   production_predictions = production_response.json()["predictions"]
 
-    # Allow for small floating point differences
-    np.testing.assert_allclose(
-        local_predictions,
-        production_predictions,
-        rtol=1e-10,
-        atol=1e-10,
-        err_msg=f"Predictions don't match for model {model_id}"
-    )
+   # Allow for small floating point differences
+   np.testing.assert_allclose(
+      local_predictions,
+      production_predictions,
+      rtol=1e-10,
+      atol=1e-10,
+      err_msg=f"Predictions don't match for model {model_id}"
+   )
 
-    return True
+   return True
 
 
 # Test different model types
@@ -172,35 +172,35 @@ def test_simplified_inference_service():
 # test_end_to_end_workflow.py
 
 def test_complete_model_lifecycle():
-    """Test complete model lifecycle across all repositories."""
+   """Test complete model lifecycle across all repositories."""
 
-    # 1. Train and upload model using jaqpotpy
-    jaqpot = Jaqpot()
-    jaqpot.login()
+   # 1. Train and upload model using jaqpotpy
+   jaqpot = Jaqpot()
+   jaqpot.login()
 
-    model = SklearnModel(...)  # Train sklearn model
-    model_id = jaqpot.deploy_model(model, name="e2e-test-model")
+   model = SklearnModel(...)  # Train sklearn model
+   model_id = jaqpot.deploy_model(model, name="e2e-test-model")
 
-    # 2. Download and test locally using jaqpotpy
-    local_model = JaqpotDownloadedModel(jaqpot)
-    model_data = local_model.download_model(model_id)
-    local_predictions = local_model.predict_local(model_data, test_data)
+   # 2. Download and test locally using jaqpotpy
+   local_model = JaqpotDownloadedModel(jaqpot)
+   model_data = local_model.download_onnx_model(model_id)
+   local_predictions = local_model.predict_local(model_data, test_data)
 
-    # 3. Test production inference using jaqpotpy-inference
-    production_request = create_prediction_request(model_id, test_data)
-    production_response = requests.post(
-        "http://localhost:8002/predict",
-        json=production_request
-    )
+   # 3. Test production inference using jaqpotpy-inference
+   production_request = create_prediction_request(model_id, test_data)
+   production_response = requests.post(
+      "http://localhost:8002/predict",
+      json=production_request
+   )
 
-    # 4. Verify all three paths produce identical results
-    upload_predictions = model.predict(test_data)  # Original model predictions
+   # 4. Verify all three paths produce identical results
+   upload_predictions = model.predict(test_data)  # Original model predictions
 
-    np.testing.assert_allclose(upload_predictions, local_predictions)
-    np.testing.assert_allclose(local_predictions, production_response.json()["predictions"])
+   np.testing.assert_allclose(upload_predictions, local_predictions)
+   np.testing.assert_allclose(local_predictions, production_response.json()["predictions"])
 
-    # 5. Clean up
-    jaqpot.delete_model(model_id)
+   # 5. Clean up
+   jaqpot.delete_model(model_id)
 ```
 
 #### 4.2 Performance Testing

@@ -8,23 +8,26 @@ import onnxruntime as rt
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.api.model_download_api import ModelDownloadApi
 
+from .offline_model_data import OfflineModelData
+
 
 class JaqpotModelDownloader:
     def __init__(self, jaqpot_client):
         self.jaqpot_client = jaqpot_client
         self._cached_models = {}
-        self._cached_preprocessors = {}
 
-    def download_model(self, model_id: int, cache: bool = True) -> Dict[str, Any]:
+    def download_onnx_model(
+        self, model_id: int, cache: bool = True
+    ) -> OfflineModelData:
         """
         Download a model from Jaqpot platform for local use.
 
         Args:
-            model_id (str): The ID of the model to download
+            model_id (int): The ID of the model to download
             cache (bool): Whether to cache the downloaded model
 
         Returns:
-            Dict containing model metadata and ONNX bytes
+            OfflineModelData instance containing model metadata and ONNX bytes
         """
         if cache and model_id in self._cached_models:
             return self._cached_models[model_id]
@@ -40,31 +43,23 @@ class JaqpotModelDownloader:
         if hasattr(model, "raw_preprocessor") and model.raw_preprocessor:
             preprocessor = self._download_preprocessor_bytes(model)
 
-        model_data = {
-            "model_metadata": model,
-            "onnx_bytes": onnx_bytes,
-            "preprocessor": preprocessor,
-            "model_id": model_id,
-        }
+        # Create OfflineModelData instance
+        offline_model_data = OfflineModelData(
+            model_id=model_id,
+            model_metadata=model,
+            onnx_bytes=onnx_bytes,
+            preprocessor=preprocessor,
+        )
 
         if cache:
-            self._cached_models[model_id] = model_data
+            self._cached_models[model_id] = offline_model_data
 
-        return model_data
+        return offline_model_data
 
     def _download_model_bytes(self, model) -> bytes:
         """
         Download ONNX model bytes from base64 encoding or S3 presigned URL.
         """
-        # First try to get model from database (small models)
-        if hasattr(model, "raw_model") and model.raw_model:
-            try:
-                return model.raw_model
-            except Exception:
-                # If it's already bytes, return as is
-                if isinstance(model.raw_model, bytes):
-                    return model.raw_model
-                pass
 
         # Try to get presigned download URLs for S3 models using official API client
         try:
@@ -94,15 +89,6 @@ class JaqpotModelDownloader:
         """
         Download and deserialize preprocessor from base64 encoding or S3 presigned URL.
         """
-        # First try to get preprocessor from database (small preprocessors)
-        if hasattr(model, "raw_preprocessor") and model.raw_preprocessor:
-            try:
-                preprocessor_bytes = base64.b64decode(model.raw_preprocessor)
-                return pickle.loads(preprocessor_bytes)
-            except Exception:
-                # If base64 decode fails, continue to try presigned URL
-                pass
-
         # Try to get presigned download URLs for S3 preprocessors using official API client
         try:
             import requests
@@ -137,12 +123,11 @@ class JaqpotModelDownloader:
 
     def clear_cache(self):
         """
-        Clear cached models and preprocessors.
+        Clear cached models.
         """
         self._cached_models.clear()
-        self._cached_preprocessors.clear()
 
-    def list_cached_models(self) -> List[str]:
+    def list_cached_models(self) -> List[int]:
         """
         Get list of cached model IDs.
         """

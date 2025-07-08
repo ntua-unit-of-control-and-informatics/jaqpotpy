@@ -14,8 +14,8 @@ from keycloak import KeycloakOpenID
 
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
-from jaqpotpy.api.model_downloader import JaqpotModelDownloader
-from jaqpotpy.api.downloaded_model_predictor import DownloadedModelPredictor
+from jaqpotpy.offline.model_downloader import JaqpotModelDownloader
+from jaqpotpy.offline.downloaded_model_predictor import OfflineModelPredictor
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger
@@ -468,14 +468,14 @@ class Jaqpot:
         Access to downloaded model prediction functionality.
 
         Returns:
-            DownloadedModelPredictor: Instance for making predictions with downloaded models
+            OfflineModelPredictor: Instance for making predictions with downloaded models
         """
         if self._downloaded_model_predictor is None:
             if self.http_client is None:
                 raise ValueError(
                     "Must be logged in to use downloaded model prediction functionality"
                 )
-            self._downloaded_model_predictor = DownloadedModelPredictor(self)
+            self._downloaded_model_predictor = OfflineModelPredictor(self)
         return self._downloaded_model_predictor
 
     def download_model(self, model_id: int, cache: bool = True):
@@ -489,7 +489,7 @@ class Jaqpot:
         Returns:
             Dict containing model metadata and ONNX bytes
         """
-        return self.model_downloader.download_model(model_id, cache)
+        return self.model_downloader.download_onnx_model(model_id, cache)
 
     def predict_local(self, model_data, input):
         """
