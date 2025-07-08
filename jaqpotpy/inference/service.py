@@ -6,7 +6,10 @@ produces predictions, ensuring consistent results across all environments.
 """
 
 import logging
+
+import pandas as pd
 from jaqpot_api_client import PredictionResponse
+from jaqpot_api_client.models.dataset import Dataset
 
 from .core.predict_methods import (
     predict_sklearn_onnx,
@@ -14,9 +17,9 @@ from .core.predict_methods import (
     predict_torch_sequence,
     predict_torch_geometric,
 )
-from .core.dataset_utils import build_tabular_dataset_from_request
+from jaqpotpy.datasets.jaqpot_tabular_dataset import JaqpotTabularDataset
 from .core.model_loader import load_onnx_model_from_bytes
-
+from ..offline.offline_model_data import OfflineModelData
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +42,9 @@ class PredictionService:
             "TORCH_GEOMETRIC_ONNX": self._predict_torch_geometric,
         }
 
-    def predict(self, model_data, dataset, model_type: str) -> PredictionResponse:
+    def predict(
+        self, model_data: OfflineModelData, dataset: Dataset, model_type: str
+    ) -> PredictionResponse:
         """
         Make predictions using raw model data.
 
@@ -85,85 +90,39 @@ class PredictionService:
             logger.error(f"Prediction failed for model type {model_type}: {str(e)}")
             raise
 
-    def _predict_sklearn_onnx(self, model_data, dataset):
+    def _predict_sklearn_onnx(self, model_data, dataset: Dataset):
         """Handle sklearn ONNX model prediction with raw data."""
-        # Load ONNX model from raw bytes
-        onnx_model = load_onnx_model_from_bytes(model_data.onnx_bytes)
-
-        # Get preprocessor (raw object)
-        preprocessor = model_data.preprocessor
-
-        # Create a mock request for dataset building compatibility
-        mock_request = type(
-            "MockRequest", (), {"model": model_data.model_metadata, "dataset": dataset}
-        )()
-
-        # Build dataset using existing utilities
-        dataset_obj, _ = build_tabular_dataset_from_request(mock_request)
+        # Build dataset directly from input data
+        dataset_obj = self._build_tabular_dataset(model_data, dataset)
 
         # Run prediction using existing method
-        return predict_sklearn_onnx(onnx_model, preprocessor, dataset_obj, mock_request)
+        return predict_sklearn_onnx(model_data, dataset_obj)
 
-    def _predict_torch_onnx(self, model_data, dataset):
+    def _predict_torch_onnx(self, model_data, dataset: Dataset):
         """Handle PyTorch ONNX model prediction with raw data."""
-        # Load ONNX model from raw bytes
-        onnx_model = load_onnx_model_from_bytes(model_data.onnx_bytes)
-
-        # Get preprocessor (raw object)
-        preprocessor = model_data.preprocessor
-
-        # Create a mock request for dataset building compatibility
-        mock_request = type(
-            "MockRequest", (), {"model": model_data.model_metadata, "dataset": dataset}
-        )()
-
-        # Build dataset using existing utilities
-        dataset_obj, _ = build_tabular_dataset_from_request(mock_request)
+        # Build dataset directly from input data
+        dataset_obj = self._build_tabular_dataset(model_data, dataset)
 
         # Run prediction using existing method
-        return predict_torch_onnx(onnx_model, preprocessor, dataset_obj, mock_request)
+        return predict_torch_onnx(model_data, dataset_obj)
 
-    def _predict_torch_sequence(self, model_data, dataset):
+    def _predict_torch_sequence(self, model_data, dataset: Dataset):
         """Handle PyTorch sequence model prediction with raw data."""
-        # Load ONNX model from raw bytes
-        onnx_model = load_onnx_model_from_bytes(model_data.onnx_bytes)
 
-        # Get preprocessor (raw object)
-        preprocessor = model_data.preprocessor
-
-        # Create a mock request for dataset building compatibility
-        mock_request = type(
-            "MockRequest", (), {"model": model_data.model_metadata, "dataset": dataset}
-        )()
-
-        # Build dataset using existing utilities
-        dataset_obj, _ = build_tabular_dataset_from_request(mock_request)
+        # Build dataset directly from input data
+        dataset_obj = self._build_tabular_dataset(model_data, dataset)
 
         # Run prediction using existing method
-        return predict_torch_sequence(
-            onnx_model, preprocessor, dataset_obj, mock_request
-        )
+        return predict_torch_sequence(model_data, dataset_obj)
 
-    def _predict_torch_geometric(self, model_data, dataset):
+    def _predict_torch_geometric(self, model_data, dataset: Dataset):
         """Handle PyTorch Geometric model prediction with raw data."""
-        # Load ONNX model from raw bytes
-        onnx_model = load_onnx_model_from_bytes(model_data.onnx_bytes)
 
-        # Get preprocessor (raw object)
-        preprocessor = model_data.preprocessor
-
-        # Create a mock request for dataset building compatibility
-        mock_request = type(
-            "MockRequest", (), {"model": model_data.model_metadata, "dataset": dataset}
-        )()
-
-        # Build dataset using existing utilities
-        dataset_obj, _ = build_tabular_dataset_from_request(mock_request)
+        # Build dataset directly from input data
+        dataset_obj = self._build_tabular_dataset(model_data, dataset)
 
         # Run prediction using existing method
-        return predict_torch_geometric(
-            onnx_model, preprocessor, dataset_obj, mock_request
-        )
+        return predict_torch_geometric(model_data, dataset_obj)
 
     def get_supported_model_types(self) -> list:
         """
@@ -173,6 +132,54 @@ class PredictionService:
             list: List of supported model type strings
         """
         return list(self.handlers.keys())
+
+    def _build_tabular_dataset(
+        self, model_data, dataset: Dataset
+    ) -> JaqpotTabularDataset:
+        """
+        Build a JaqpotTabularDataset from raw model data and input dataset.
+
+        Args:
+            model_data: OfflineModelData with model metadata
+            dataset: Dataset with input data
+
+        Returns:
+            JaqpotTabularDataset: Dataset ready for prediction
+        """
+        # Extract jaqpotRowId and data
+        jaqpot_row_ids = []
+        input_data = []
+
+        for row in dataset.input:
+            jaqpot_row_ids.append(row.get("jaqpotRowId", ""))
+            # Remove jaqpotRowId from the data for the actual features
+            row_data = {k: v for k, v in row.items() if k != "jaqpotRowId"}
+            input_data.append(row_data)
+
+        # Get featurizers from model metadata (with safe default)
+        featurizers = getattr(model_data.model_metadata, "featurizers", []) or []
+
+        # Extract feature names from feature objects
+        x_col_names = [
+            getattr(feat, "key", str(feat)) for feat in model_data.independent_features
+        ]
+
+        # Create the dataset
+        dataset_obj = JaqpotTabularDataset(
+            df=pd.DataFrame(input_data),
+            x_cols=x_col_names,
+            task=model_data.task,
+            featurizer=featurizers,
+        )
+
+        # Apply feature selection if specified
+        selected_features = getattr(
+            model_data.model_metadata, "selected_features", None
+        )
+        if selected_features is not None and len(selected_features) > 0:
+            dataset_obj.select_features(SelectColumns=selected_features)
+
+        return dataset_obj
 
 
 # Global service instance

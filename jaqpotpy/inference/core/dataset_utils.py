@@ -75,6 +75,7 @@ def build_tabular_dataset_from_request(
     # Apply feature selection if specified
     if (
         hasattr(request.model, "selected_features")
+        and request.model.selected_features is not None
         and len(request.model.selected_features) > 0
     ):
         dataset.select_features(SelectColumns=request.model.selected_features)

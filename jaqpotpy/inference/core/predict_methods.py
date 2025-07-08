@@ -27,7 +27,7 @@ from .preprocessor_utils import recreate_preprocessor
 
 
 def calculate_doas(
-    input_feed: Dict[str, np.ndarray], request
+    input_feed: Dict[str, np.ndarray], model_data
 ) -> Optional[List[Dict[str, Any]]]:
     """
     Calculate the Domain of Applicability (DoA) for given input data using specified methods.
@@ -42,7 +42,10 @@ def calculate_doas(
               data instance. The keys in the dictionary are the names of the DoA methods used, and
               the values are the corresponding DoA predictions.
     """
-    if not hasattr(request.model, "doas") or not request.model.doas:
+    if (
+        not hasattr(model_data.model_metadata, "doas")
+        or not model_data.model_metadata.doas
+    ):
         return None
 
     doas_results = []
@@ -51,7 +54,7 @@ def calculate_doas(
     for _, data_instance in input_df.iterrows():
         doa_instance_prediction = {}
 
-        for doa_data in request.model.doas:
+        for doa_data in model_data.model_metadata.doas:
             doa_method = None
 
             if doa_data.method == "LEVERAGE":
@@ -89,7 +92,7 @@ def calculate_doas(
                 )
 
         # Majority voting
-        if len(request.model.doas) > 1:
+        if len(model_data.model_metadata.doas) > 1:
             in_doa_values = [
                 value["inDoa"] for value in doa_instance_prediction.values()
             ]
@@ -108,10 +111,8 @@ def calculate_doas(
 
 
 def predict_sklearn_onnx(
-    model: onnx.ModelProto,
-    preprocessor: Optional[onnx.ModelProto],
+    model_data,
     dataset: JaqpotTabularDataset,
-    request,
 ) -> Tuple[
     np.ndarray, List[Optional[Dict[str, float]]], Optional[List[Dict[str, Any]]]
 ]:
@@ -119,11 +120,8 @@ def predict_sklearn_onnx(
     Perform prediction using a scikit-learn ONNX model.
 
     Parameters:
-        model (onnx.ModelProto): The ONNX model to be used for prediction.
-        preprocessor (onnx.ModelProto, optional): Optional ONNX preprocessor model.
+        model_data: OfflineModelData containing the ONNX model and metadata.
         dataset (JaqpotTabularDataset): The dataset containing the input features.
-        request: A request object containing additional configuration for the prediction,
-                including model-specific settings and preprocessors.
 
     Returns:
         tuple: A tuple containing:
@@ -131,6 +129,13 @@ def predict_sklearn_onnx(
             - Probability estimates (List[Optional[Dict[str, float]]])
             - DOA results (Optional[List[Dict[str, Any]]])
     """
+    from .model_loader import load_onnx_model_from_bytes
+
+    # Load ONNX model from raw bytes
+    model = load_onnx_model_from_bytes(model_data.onnx_bytes)
+
+    # Get preprocessor (raw object)
+    preprocessor = model_data.preprocessor
 
     # Determine which graph to use for input preparation
     onnx_graph = preprocessor if preprocessor else model
@@ -157,7 +162,9 @@ def predict_sklearn_onnx(
 
     # Calculate DOA if requested
     doas_results = (
-        calculate_doas(input_feed, request) if hasattr(request.model, "doas") else None
+        calculate_doas(input_feed, model_data)
+        if hasattr(model_data.model_metadata, "doas")
+        else None
     )
 
     # Run main model inference
@@ -173,15 +180,18 @@ def predict_sklearn_onnx(
     onnx_prediction = model_session.run(None, input_feed)
 
     # Apply inverse preprocessing if needed
-    if hasattr(request.model, "preprocessors") and request.model.preprocessors:
-        for preprocessor_config in reversed(request.model.preprocessors):
+    if (
+        hasattr(model_data.model_metadata, "preprocessors")
+        and model_data.model_metadata.preprocessors
+    ):
+        for preprocessor_config in reversed(model_data.model_metadata.preprocessors):
             preprocessor_name = preprocessor_config.name
             preprocessor_config_data = preprocessor_config.config
             preprocessor_recreated = recreate_preprocessor(
                 preprocessor_name, preprocessor_config_data
             )
             if (
-                len(request.model.dependent_features) == 1
+                len(model_data.model_metadata.dependent_features) == 1
                 and preprocessor_name != "LabelEncoder"
             ):
                 onnx_prediction[0] = preprocessor_recreated.inverse_transform(
@@ -193,12 +203,14 @@ def predict_sklearn_onnx(
                 )
 
     # Flatten predictions if single output
-    if len(request.model.dependent_features) == 1:
+    if len(model_data.model_metadata.dependent_features) == 1:
         onnx_prediction[0] = onnx_prediction[0].flatten()
 
     # Calculate probabilities for classification tasks
     probs_list = []
-    if hasattr(request.model, "task") and request.model.task.lower() in [
+    if hasattr(
+        model_data.model_metadata, "task"
+    ) and model_data.model_metadata.task.lower() in [
         "binary_classification",
         "multiclass_classification",
     ]:
@@ -209,11 +221,11 @@ def predict_sklearn_onnx(
 
             # Handle label encoding
             if (
-                hasattr(request.model, "preprocessors")
-                and request.model.preprocessors
-                and request.model.preprocessors[0].name == "LabelEncoder"
+                hasattr(model_data.model_metadata, "preprocessors")
+                and model_data.model_metadata.preprocessors
+                and model_data.model_metadata.preprocessors[0].name == "LabelEncoder"
             ):
-                labels = request.model.preprocessors[0].config["classes_"]
+                labels = model_data.model_metadata.preprocessors[0].config["classes_"]
                 rounded_instance = {labels[k]: v for k, v in rounded_instance.items()}
 
             probs_list.append(rounded_instance)
@@ -224,23 +236,26 @@ def predict_sklearn_onnx(
 
 
 def predict_torch_onnx(
-    model: onnx.ModelProto,
-    preprocessor: Optional[onnx.ModelProto],
+    model_data,
     dataset: JaqpotTensorDataset,
-    request,
 ) -> np.ndarray:
     """
     Perform prediction using a PyTorch ONNX model.
 
     Parameters:
-        model (onnx.ModelProto): The ONNX model to be used for prediction.
-        preprocessor (onnx.ModelProto, optional): Optional ONNX preprocessor model.
+        model_data: OfflineModelData containing the ONNX model and metadata.
         dataset (JaqpotTensorDataset): The dataset containing the input features.
-        request: A request object containing additional configuration for the prediction.
 
     Returns:
         np.ndarray: The ONNX model predictions.
     """
+    from .model_loader import load_onnx_model_from_bytes
+
+    # Load ONNX model from raw bytes
+    model = load_onnx_model_from_bytes(model_data.onnx_bytes)
+
+    # Get preprocessor (raw object)
+    preprocessor = model_data.preprocessor
 
     # Determine which graph to use for input preparation
     onnx_graph = preprocessor if preprocessor else model
@@ -310,46 +325,38 @@ def squeeze_first_dim(arr: np.ndarray) -> np.ndarray:
 
 
 def predict_torch_sequence(
-    model: onnx.ModelProto,
-    preprocessor: Optional[onnx.ModelProto],
+    model_data,
     dataset: JaqpotTensorDataset,
-    request,
 ) -> np.ndarray:
     """
     Perform prediction using a PyTorch sequence ONNX model (LSTM, RNN, etc.).
 
     Parameters:
-        model (onnx.ModelProto): The ONNX model to be used for prediction.
-        preprocessor (onnx.ModelProto, optional): Optional ONNX preprocessor model.
+        model_data: OfflineModelData containing the ONNX model and metadata.
         dataset (JaqpotTensorDataset): The dataset containing the input features.
-        request: A request object containing additional configuration for the prediction.
 
     Returns:
         np.ndarray: The ONNX model predictions.
     """
     # For now, use the same logic as torch_onnx
     # This can be specialized for sequence-specific processing if needed
-    return predict_torch_onnx(model, preprocessor, dataset, request)
+    return predict_torch_onnx(model_data, dataset)
 
 
 def predict_torch_geometric(
-    model: onnx.ModelProto,
-    preprocessor: Optional[onnx.ModelProto],
+    model_data,
     dataset: Union[JaqpotTensorDataset, Any],  # Could be graph dataset
-    request,
 ) -> np.ndarray:
     """
     Perform prediction using a PyTorch Geometric ONNX model.
 
     Parameters:
-        model (onnx.ModelProto): The ONNX model to be used for prediction.
-        preprocessor (onnx.ModelProto, optional): Optional ONNX preprocessor model.
+        model_data: OfflineModelData containing the ONNX model and metadata.
         dataset: The dataset containing the input features (could be graph-specific).
-        request: A request object containing additional configuration for the prediction.
 
     Returns:
         np.ndarray: The ONNX model predictions.
     """
     # For now, use the same logic as torch_onnx
     # This can be specialized for graph-specific processing if needed
-    return predict_torch_onnx(model, preprocessor, dataset, request)
+    return predict_torch_onnx(model_data, dataset)
