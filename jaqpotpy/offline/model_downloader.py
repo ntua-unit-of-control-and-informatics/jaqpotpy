@@ -1,17 +1,15 @@
 import pickle
-from typing import Union, Dict, Any, List, Optional, TYPE_CHECKING
+from typing import Dict, Any, List, Optional
+
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.api.model_download_api import ModelDownloadApi
 
 from .offline_model_data import OfflineModelData
 
-if TYPE_CHECKING:
-    from jaqpotpy.jaqpot import Jaqpot
-
 
 class JaqpotModelDownloader:
-    def __init__(self, jaqpot_client: "Jaqpot") -> None:
-        self.jaqpot_client = jaqpot_client
+    def __init__(self, jaqpot) -> None:
+        self.jaqpot = jaqpot
         self._cached_models: Dict[int, OfflineModelData] = {}
 
     def download_onnx_model(
@@ -30,7 +28,7 @@ class JaqpotModelDownloader:
         if cache and model_id in self._cached_models:
             return self._cached_models[model_id]
 
-        model_api = ModelApi(self.jaqpot_client.http_client)
+        model_api = ModelApi(self.jaqpot.http_client)
         model = model_api.get_model_by_id(id=model_id)
 
         # Download ONNX model bytes
@@ -63,7 +61,7 @@ class JaqpotModelDownloader:
         try:
             import requests
 
-            model_download_api = ModelDownloadApi(self.jaqpot_client.http_client)
+            model_download_api = ModelDownloadApi(self.jaqpot.http_client)
             download_response = model_download_api.get_model_download_urls(
                 model_id=model.id, expiration_minutes=30
             )
@@ -91,7 +89,7 @@ class JaqpotModelDownloader:
         try:
             import requests
 
-            model_download_api = ModelDownloadApi(self.jaqpot_client.http_client)
+            model_download_api = ModelDownloadApi(self.jaqpot.http_client)
             download_response = model_download_api.get_model_download_urls(
                 model_id=model.id, expiration_minutes=30
             )
