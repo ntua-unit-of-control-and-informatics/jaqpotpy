@@ -15,7 +15,7 @@ from keycloak import KeycloakOpenID
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
 from jaqpotpy.offline.model_downloader import JaqpotModelDownloader
-from jaqpotpy.offline.downloaded_model_predictor import OfflineModelPredictor
+from jaqpotpy.offline.offline_model_predictor import OfflineModelPredictor
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger

@@ -64,29 +64,26 @@ class OfflineModelPredictor:
             model_data, OfflineModelData
         ), f"Expected OfflineModelData, got {type(model_data)}"
 
-        # Convert offline model format to PredictionRequest format for shared service
-        request = self._create_prediction_request(model_data, input)
+        # Convert input data to dataset format
+        dataset = self._create_dataset(input)
 
-        # Use shared prediction service (offline model mode with jaqpot client)
-        prediction_service = get_prediction_service(
-            offline_mode=True, jaqpot_client=self.jaqpot_client
+        # Get the unified prediction service
+        prediction_service = get_prediction_service()
+
+        # Execute prediction using raw model data
+        return prediction_service.predict(
+            model_data=model_data, dataset=dataset, model_type=model_data.model_type
         )
 
-        # Execute prediction using shared logic
-        return prediction_service.predict(request)
-
-    def _create_prediction_request(
-        self, model_data: OfflineModelData, data: Union[np.ndarray, List, Dict]
-    ) -> PredictionRequest:
+    def _create_dataset(self, data: Union[np.ndarray, List, Dict]) -> Dataset:
         """
-        Convert OfflineModelData and input data to PredictionRequest format.
+        Convert input data to Dataset format.
 
         Args:
-            model_data: OfflineModelData instance containing model components
             data: Input data (numpy array, list, or dict)
 
         Returns:
-            PredictionRequest: Request object for shared inference service
+            Dataset: Dataset object for shared inference service
         """
         # Convert data to the expected format for the dataset with jaqpotRowId
         processed_input_data = []
@@ -151,55 +148,4 @@ class OfflineModelPredictor:
         input_data = processed_input_data
 
         # Create dataset object with all required fields
-        dataset = Dataset(
-            type=DatasetType.PREDICTION, entryType="ARRAY", input=input_data
-        )
-
-        # Prepare offline model data for inference service
-        # Pass raw bytes directly - no base64 encoding here
-        raw_model_bytes = model_data.onnx_bytes
-        raw_preprocessor = model_data.preprocessor
-
-        # Create prediction model with offline model data
-        # Use OfflineModelData properties for clean access to metadata
-        independent_features = model_data.independent_features
-        dependent_features = model_data.dependent_features
-        task = model_data.task
-
-        # Ensure we have the required fields with proper defaults
-        if task is None:
-            # Default to a reasonable task if not specified
-            from jaqpot_api_client.models.model_task import ModelTask
-
-            task = ModelTask.REGRESSION
-
-        # Ensure optional fields are lists, not None
-        selected_features = getattr(
-            model_data.model_metadata, "selected_features", None
-        )
-        if selected_features is None:
-            selected_features = []
-
-        featurizers = getattr(model_data.model_metadata, "featurizers", None)
-        if featurizers is None:
-            featurizers = []
-
-        preprocessors = getattr(model_data.model_metadata, "preprocessors", None)
-        if preprocessors is None:
-            preprocessors = []
-
-        prediction_model = PredictionModel(
-            id=model_data.model_metadata.id,
-            type=model_data.model_type,
-            independent_features=independent_features,  # Required field
-            dependent_features=dependent_features,  # Required field
-            task=task,  # Required field
-            raw_model=raw_model_bytes,  # Raw ONNX bytes from offline model
-            raw_preprocessor=raw_preprocessor,  # Raw preprocessor object
-            doas=getattr(model_data.model_metadata, "doas", None),
-            selected_features=selected_features,  # Ensured to be list, not None
-            featurizers=featurizers,  # Ensured to be list, not None
-            preprocessors=preprocessors,  # Ensured to be list, not None
-        )
-
-        return PredictionRequest(model=prediction_model, dataset=dataset)
+        return Dataset(type=DatasetType.PREDICTION, entryType="ARRAY", input=input_data)

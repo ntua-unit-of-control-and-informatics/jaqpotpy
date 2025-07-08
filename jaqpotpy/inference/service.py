@@ -1,13 +1,12 @@
 """
-Unified prediction service for both offline and production inference.
+Unified prediction service working with raw model data.
 
-This service provides a single entry point for all model prediction logic,
-ensuring consistent results between offline development and production deployment.
+This service takes raw model data (ONNX bytes, preprocessors, metadata) and
+produces predictions, ensuring consistent results across all environments.
 """
 
 import logging
-from typing import Optional, Dict, Any, Union
-from jaqpot_api_client import PredictionRequest, PredictionResponse
+from jaqpot_api_client import PredictionResponse
 
 from .core.predict_methods import (
     predict_sklearn_onnx,
@@ -15,11 +14,8 @@ from .core.predict_methods import (
     predict_torch_sequence,
     predict_torch_geometric,
 )
-from .core.dataset_utils import (
-    build_tabular_dataset_from_request,
-    build_tensor_dataset_from_request,
-)
-from .core.model_loader import retrieve_onnx_model_from_request
+from .core.dataset_utils import build_tabular_dataset_from_request
+from .core.model_loader import load_onnx_model_from_bytes
 
 
 logger = logging.getLogger(__name__)
@@ -27,67 +23,48 @@ logger = logging.getLogger(__name__)
 
 class PredictionService:
     """
-    Unified prediction service supporting both offline and production inference.
+    Unified prediction service working with raw model data.
 
-    This service routes prediction requests to appropriate handlers based on
-    model type and provides consistent preprocessing and postprocessing.
+    This service takes raw model data (ONNX bytes, preprocessors, metadata) and
+    produces predictions, ensuring consistent results across all environments.
     """
 
-    def __init__(self, offline_mode: bool = False, jaqpot_client=None):
-        """
-        Initialize the prediction service.
-
-        Args:
-            offline_mode (bool): If True, enables offline development mode features
-            jaqpot_client: Optional Jaqpot client for offline model downloads
-        """
-        self.offline_mode = offline_mode
-        self.jaqpot_client = jaqpot_client
-
+    def __init__(self):
+        """Initialize the prediction service."""
         # Model type to handler mapping
         self.handlers = {
             "SKLEARN_ONNX": self._predict_sklearn_onnx,
             "TORCH_ONNX": self._predict_torch_onnx,
             "TORCH_SEQUENCE_ONNX": self._predict_torch_sequence,
             "TORCH_GEOMETRIC_ONNX": self._predict_torch_geometric,
-            "TORCHSCRIPT": self._predict_torch_geometric,  # Alias for torch geometric
         }
 
-    def predict(self, request: PredictionRequest) -> PredictionResponse:
+    def predict(self, model_data, dataset, model_type: str) -> PredictionResponse:
         """
-        Execute prediction for the given request.
+        Make predictions using raw model data.
 
         Args:
-            request (PredictionRequest): The prediction request
+            model_data: Raw model data (OfflineModelData or similar structure)
+            dataset: Dataset object with input data
+            model_type: Type of model (e.g., "SKLEARN_ONNX")
 
         Returns:
-            PredictionResponse: The prediction response
+            PredictionResponse: The prediction results
 
         Raises:
             ValueError: If model type is not supported
-            Exception: If prediction fails
         """
+        if model_type not in self.handlers:
+            raise ValueError(f"Unsupported model type: {model_type}")
+
         try:
-            model_type = getattr(request.model, "model_type", None) or getattr(
-                request.model, "type", None
-            )
+            logger.info(f"Starting prediction for model type {model_type}")
 
-            # Handle ModelType enum values
-            if hasattr(model_type, "value"):
-                model_type_str = model_type.value
-            else:
-                model_type_str = str(model_type)
+            # Get appropriate handler
+            handler = self.handlers[model_type]
 
-            if model_type_str not in self.handlers:
-                raise ValueError(f"Unsupported model type: {model_type}")
-
-            logger.info(
-                f"Processing prediction request for model {request.model.id} of type {model_type}"
-            )
-
-            # Route to appropriate handler
-            handler = self.handlers[model_type_str]
-            predictions, probabilities, doa_results = handler(request)
+            # Execute prediction with raw data
+            predictions, probabilities, doa_results = handler(model_data, dataset)
 
             # Build response
             response = PredictionResponse(
@@ -96,154 +73,97 @@ class PredictionService:
                 else predictions,
                 probabilities=probabilities,
                 doa=doa_results,
-                model_id=request.model.id,
+                model_id=getattr(model_data, "model_id", None),
             )
 
             logger.info(
-                f"Prediction completed successfully for model {request.model.id}"
+                f"Prediction completed successfully for model type {model_type}"
             )
             return response
 
         except Exception as e:
-            logger.error(f"Prediction failed for model {request.model.id}: {str(e)}")
+            logger.error(f"Prediction failed for model type {model_type}: {str(e)}")
             raise
 
-    def _predict_sklearn_onnx(self, request: PredictionRequest):
-        """Handle sklearn ONNX model prediction."""
-        # Load model and preprocessor
-        model = retrieve_onnx_model_from_request(
-            request, jaqpot_client=self.jaqpot_client
+    def _predict_sklearn_onnx(self, model_data, dataset):
+        """Handle sklearn ONNX model prediction with raw data."""
+        # Load ONNX model from raw bytes
+        onnx_model = load_onnx_model_from_bytes(model_data.onnx_bytes)
+
+        # Get preprocessor (raw object)
+        preprocessor = model_data.preprocessor
+
+        # Create a mock request for dataset building compatibility
+        mock_request = type(
+            "MockRequest", (), {"model": model_data.model_metadata, "dataset": dataset}
+        )()
+
+        # Build dataset using existing utilities
+        dataset_obj, _ = build_tabular_dataset_from_request(mock_request)
+
+        # Run prediction using existing method
+        return predict_sklearn_onnx(onnx_model, preprocessor, dataset_obj, mock_request)
+
+    def _predict_torch_onnx(self, model_data, dataset):
+        """Handle PyTorch ONNX model prediction with raw data."""
+        # Load ONNX model from raw bytes
+        onnx_model = load_onnx_model_from_bytes(model_data.onnx_bytes)
+
+        # Get preprocessor (raw object)
+        preprocessor = model_data.preprocessor
+
+        # Create a mock request for dataset building compatibility
+        mock_request = type(
+            "MockRequest", (), {"model": model_data.model_metadata, "dataset": dataset}
+        )()
+
+        # Build dataset using existing utilities
+        dataset_obj, _ = build_tabular_dataset_from_request(mock_request)
+
+        # Run prediction using existing method
+        return predict_torch_onnx(onnx_model, preprocessor, dataset_obj, mock_request)
+
+    def _predict_torch_sequence(self, model_data, dataset):
+        """Handle PyTorch sequence model prediction with raw data."""
+        # Load ONNX model from raw bytes
+        onnx_model = load_onnx_model_from_bytes(model_data.onnx_bytes)
+
+        # Get preprocessor (raw object)
+        preprocessor = model_data.preprocessor
+
+        # Create a mock request for dataset building compatibility
+        mock_request = type(
+            "MockRequest", (), {"model": model_data.model_metadata, "dataset": dataset}
+        )()
+
+        # Build dataset using existing utilities
+        dataset_obj, _ = build_tabular_dataset_from_request(mock_request)
+
+        # Run prediction using existing method
+        return predict_torch_sequence(
+            onnx_model, preprocessor, dataset_obj, mock_request
         )
-        preprocessor = None
-        if (
-            hasattr(request.model, "raw_preprocessor")
-            and request.model.raw_preprocessor
-        ):
-            # Handle preprocessor loading similar to main model
-            preprocessor_request = type(request.model)(
-                id=request.model.id, raw_model=request.model.raw_preprocessor
-            )
-            preprocessor = retrieve_onnx_model_from_request(
-                type(request)(model=preprocessor_request, dataset=request.dataset),
-                jaqpot_client=self.jaqpot_client,
-            )
 
-        # Build dataset
-        dataset, _ = build_tabular_dataset_from_request(request)
+    def _predict_torch_geometric(self, model_data, dataset):
+        """Handle PyTorch Geometric model prediction with raw data."""
+        # Load ONNX model from raw bytes
+        onnx_model = load_onnx_model_from_bytes(model_data.onnx_bytes)
 
-        # Run prediction
-        return predict_sklearn_onnx(model, preprocessor, dataset, request)
+        # Get preprocessor (raw object)
+        preprocessor = model_data.preprocessor
 
-    def _predict_torch_onnx(self, request: PredictionRequest):
-        """Handle PyTorch ONNX model prediction."""
-        # Load model and preprocessor
-        model = retrieve_onnx_model_from_request(
-            request, jaqpot_client=self.jaqpot_client
+        # Create a mock request for dataset building compatibility
+        mock_request = type(
+            "MockRequest", (), {"model": model_data.model_metadata, "dataset": dataset}
+        )()
+
+        # Build dataset using existing utilities
+        dataset_obj, _ = build_tabular_dataset_from_request(mock_request)
+
+        # Run prediction using existing method
+        return predict_torch_geometric(
+            onnx_model, preprocessor, dataset_obj, mock_request
         )
-        preprocessor = None
-        if (
-            hasattr(request.model, "raw_preprocessor")
-            and request.model.raw_preprocessor
-        ):
-            # Handle preprocessor loading
-            preprocessor_request = type(request.model)(
-                id=request.model.id, raw_model=request.model.raw_preprocessor
-            )
-            preprocessor = retrieve_onnx_model_from_request(
-                type(request)(model=preprocessor_request, dataset=request.dataset),
-                jaqpot_client=self.jaqpot_client,
-            )
-
-        # Build dataset
-        dataset, _ = build_tensor_dataset_from_request(request)
-
-        # Run prediction
-        predictions = predict_torch_onnx(model, preprocessor, dataset, request)
-        return predictions, [None] * len(predictions), None
-
-    def _predict_torch_sequence(self, request: PredictionRequest):
-        """Handle PyTorch sequence model prediction."""
-        # Load model and preprocessor
-        model = retrieve_onnx_model_from_request(
-            request, jaqpot_client=self.jaqpot_client
-        )
-        preprocessor = None
-        if (
-            hasattr(request.model, "raw_preprocessor")
-            and request.model.raw_preprocessor
-        ):
-            # Handle preprocessor loading
-            preprocessor_request = type(request.model)(
-                id=request.model.id, raw_model=request.model.raw_preprocessor
-            )
-            preprocessor = retrieve_onnx_model_from_request(
-                type(request)(model=preprocessor_request, dataset=request.dataset),
-                jaqpot_client=self.jaqpot_client,
-            )
-
-        # Build dataset
-        dataset, _ = build_tensor_dataset_from_request(request)
-
-        # Run prediction
-        predictions = predict_torch_sequence(model, preprocessor, dataset, request)
-        return predictions, [None] * len(predictions), None
-
-    def _predict_torch_geometric(self, request: PredictionRequest):
-        """Handle PyTorch Geometric model prediction."""
-        # Load model and preprocessor
-        model = retrieve_onnx_model_from_request(
-            request, jaqpot_client=self.jaqpot_client
-        )
-        preprocessor = None
-        if (
-            hasattr(request.model, "raw_preprocessor")
-            and request.model.raw_preprocessor
-        ):
-            # Handle preprocessor loading
-            preprocessor_request = type(request.model)(
-                id=request.model.id, raw_model=request.model.raw_preprocessor
-            )
-            preprocessor = retrieve_onnx_model_from_request(
-                type(request)(model=preprocessor_request, dataset=request.dataset),
-                jaqpot_client=self.jaqpot_client,
-            )
-
-        # Build dataset (could be tensor or graph dataset)
-        dataset, _ = build_tensor_dataset_from_request(request)
-
-        # Run prediction
-        predictions = predict_torch_geometric(model, preprocessor, dataset, request)
-        return predictions, [None] * len(predictions), None
-
-    def validate_request(self, request: PredictionRequest) -> bool:
-        """
-        Validate a prediction request.
-
-        Args:
-            request (PredictionRequest): The request to validate
-
-        Returns:
-            bool: True if valid, False otherwise
-        """
-        try:
-            # Check required fields
-            if not request.model or not request.dataset:
-                return False
-
-            if not hasattr(request.model, "model_type") or not request.model.model_type:
-                return False
-
-            if request.model.model_type not in self.handlers:
-                return False
-
-            # Check dataset has input data
-            if not hasattr(request.dataset, "input") or not request.dataset.input:
-                return False
-
-            return True
-
-        except Exception:
-            return False
 
     def get_supported_model_types(self) -> list:
         """
@@ -255,29 +175,18 @@ class PredictionService:
         return list(self.handlers.keys())
 
 
-# Global prediction service instances for different modes
-_offline_service = None
-_production_service = None
+# Global service instance
+_service = None
 
 
-def get_prediction_service(offline_mode: bool = False, **kwargs) -> PredictionService:
+def get_prediction_service() -> PredictionService:
     """
-    Get a prediction service instance.
-
-    Args:
-        offline_mode (bool): Whether to use offline mode
-        **kwargs: Additional arguments for service initialization
+    Get the global prediction service instance.
 
     Returns:
         PredictionService: Service instance
     """
-    global _offline_service, _production_service
-
-    if offline_mode:
-        if _offline_service is None:
-            _offline_service = PredictionService(offline_mode=True, **kwargs)
-        return _offline_service
-    else:
-        if _production_service is None:
-            _production_service = PredictionService(offline_mode=False, **kwargs)
-        return _production_service
+    global _service
+    if _service is None:
+        _service = PredictionService()
+    return _service
