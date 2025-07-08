@@ -10,6 +10,7 @@ import logging
 import pandas as pd
 from jaqpot_api_client import PredictionResponse
 from jaqpot_api_client.models.dataset import Dataset
+from jaqpot_api_client.models.feature_type import FeatureType
 
 from .core.predict_methods import (
     predict_sklearn_onnx,
@@ -72,15 +73,13 @@ class PredictionService:
             # Execute prediction with raw data
             predictions, probabilities, doa_results = handler(model_data, dataset)
 
-            # Build response
-            response = PredictionResponse(
-                predictions=predictions.tolist()
-                if hasattr(predictions, "tolist")
-                else predictions,
-                probabilities=probabilities,
-                doa=doa_results,
-                model_id=getattr(model_data, "model_id", None),
+            # Format predictions into expected structure
+            formatted_predictions = self._format_predictions(
+                predictions, probabilities, doa_results, model_data, dataset
             )
+
+            # Build response
+            response = PredictionResponse(predictions=formatted_predictions)
 
             logger.info(
                 f"Prediction completed successfully for model type {model_type}"
@@ -101,11 +100,11 @@ class PredictionService:
 
     def _predict_torch_onnx(self, model_data, dataset: Dataset):
         """Handle PyTorch ONNX model prediction with raw data."""
-        # Build dataset directly from input data
-        dataset_obj = self._build_tabular_dataset(model_data, dataset)
 
-        # Run prediction using existing method
-        predictions = predict_torch_onnx(model_data, dataset_obj)
+        # Use specialized handler that handles images and tensor processing
+        from .handlers.torch_onnx_handler import handle_torch_onnx_prediction
+
+        predictions = handle_torch_onnx_prediction(model_data, dataset)
 
         # PyTorch models don't return probabilities or DOA results
         return predictions, None, None
@@ -132,6 +131,124 @@ class PredictionService:
 
         # PyTorch models don't return probabilities or DOA results
         return predictions, None, None
+
+    def _format_predictions(
+        self, predictions, probabilities, doa_results, model_data, dataset: Dataset
+    ) -> list:
+        """
+        Format raw predictions into the expected response structure.
+
+        Each prediction becomes an object with:
+        - Feature keys mapped to predicted values
+        - jaqpotMetadata with row ID, probabilities, DOA
+        """
+        import numpy as np
+        import torch
+
+        # Extract jaqpot row IDs from dataset
+        jaqpot_row_ids = []
+        for row in dataset.input:
+            jaqpot_row_ids.append(row.get("jaqpotRowId", ""))
+
+        formatted_predictions = []
+
+        for i, jaqpot_row_id in enumerate(jaqpot_row_ids):
+            jaqpot_row_id = int(jaqpot_row_id)
+            results = {}
+
+            # Handle multi-dimensional predictions
+            if hasattr(predictions, "ndim") and predictions.ndim > 1:
+                if len(model_data.model_metadata.dependent_features) == 1:
+                    predictions = predictions.reshape(-1, 1)
+
+                # Map predictions to feature keys
+                for j, feature in enumerate(
+                    model_data.model_metadata.dependent_features
+                ):
+                    pred_value = (
+                        predictions[i, j] if predictions.ndim > 1 else predictions[i]
+                    )
+
+                    # Convert to appropriate Python type
+                    if isinstance(
+                        pred_value, (np.int16, np.int32, np.int64, np.longlong)
+                    ):
+                        results[feature.key] = int(pred_value)
+                    elif isinstance(pred_value, (np.float16, np.float32, np.float64)):
+                        results[feature.key] = float(pred_value)
+                    elif isinstance(pred_value, (torch.Tensor, np.ndarray)):
+                        # For tensor/array outputs (e.g., images, embeddings)
+                        if isinstance(pred_value, torch.Tensor):
+                            results[feature.key] = (
+                                pred_value.detach().cpu().numpy().tolist()
+                            )
+                        else:
+                            results[feature.key] = pred_value.tolist()
+                    else:
+                        results[feature.key] = pred_value
+            else:
+                # Single prediction per row - handle torch model outputs properly
+                pred_value = (
+                    predictions[i]
+                    if hasattr(predictions, "__getitem__")
+                    else predictions
+                )
+
+                # For torch models, handle complex output types including images
+                for j, feature in enumerate(
+                    model_data.model_metadata.dependent_features
+                ):
+                    if isinstance(pred_value, (np.ndarray, torch.Tensor)):
+                        tensor = (
+                            torch.tensor(pred_value)
+                            if isinstance(pred_value, np.ndarray)
+                            else pred_value
+                        )
+
+                        # Check if this is an image output
+                        if (
+                            hasattr(dataset, "result_types")
+                            and dataset.result_types
+                            and dataset.result_types.get(feature.key)
+                            and feature.feature_type == FeatureType.IMAGE
+                        ):
+                            # Handle image tensor output
+                            from .utils.image_utils import tensor_to_base64_img
+
+                            if tensor.ndim == 4:  # remove batch dim if present
+                                tensor = tensor.squeeze(0)
+
+                            if tensor.ndim == 3:
+                                results[feature.key] = tensor_to_base64_img(tensor)
+                            else:
+                                raise ValueError(
+                                    "Unexpected image tensor shape for output"
+                                )
+                        else:
+                            # Regular tensor output
+                            results[feature.key] = (
+                                tensor.detach().cpu().numpy().tolist()
+                            )
+                    elif isinstance(pred_value, (np.integer, int)):
+                        results[feature.key] = int(pred_value)
+                    elif isinstance(pred_value, (np.floating, float)):
+                        results[feature.key] = float(pred_value)
+                    else:
+                        results[feature.key] = pred_value
+
+            # Add metadata
+            metadata = {"jaqpotRowId": jaqpot_row_id}
+
+            # Add probabilities and DOA for sklearn models
+            if probabilities and i < len(probabilities):
+                metadata["probabilities"] = probabilities[i]
+            if doa_results and i < len(doa_results):
+                metadata["doa"] = doa_results[i]
+
+            results["jaqpotMetadata"] = metadata
+            formatted_predictions.append(results)
+
+        return formatted_predictions
 
     def get_supported_model_types(self) -> list:
         """
