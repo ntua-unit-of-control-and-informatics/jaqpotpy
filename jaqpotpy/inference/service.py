@@ -104,7 +104,10 @@ class PredictionService:
         dataset_obj = self._build_tabular_dataset(model_data, dataset)
 
         # Run prediction using existing method
-        return predict_torch_onnx(model_data, dataset_obj)
+        predictions = predict_torch_onnx(model_data, dataset_obj)
+
+        # PyTorch models don't return probabilities or DOA results
+        return predictions, None, None
 
     def _predict_torch_sequence(self, model_data, dataset: Dataset):
         """Handle PyTorch sequence model prediction with raw data."""
@@ -113,7 +116,10 @@ class PredictionService:
         dataset_obj = self._build_tabular_dataset(model_data, dataset)
 
         # Run prediction using existing method
-        return predict_torch_sequence(model_data, dataset_obj)
+        predictions = predict_torch_sequence(model_data, dataset_obj)
+
+        # PyTorch models don't return probabilities or DOA results
+        return predictions, None, None
 
     def _predict_torch_geometric(self, model_data, dataset: Dataset):
         """Handle PyTorch Geometric model prediction with raw data."""
@@ -122,7 +128,10 @@ class PredictionService:
         dataset_obj = self._build_tabular_dataset(model_data, dataset)
 
         # Run prediction using existing method
-        return predict_torch_geometric(model_data, dataset_obj)
+        predictions = predict_torch_geometric(model_data, dataset_obj)
+
+        # PyTorch models don't return probabilities or DOA results
+        return predictions, None, None
 
     def get_supported_model_types(self) -> list:
         """
