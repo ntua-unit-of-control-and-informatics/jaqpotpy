@@ -14,6 +14,8 @@ from keycloak import KeycloakOpenID
 
 import jaqpotpy
 from jaqpotpy.api.get_installed_libraries import get_installed_libraries
+from jaqpotpy.offline.model_downloader import JaqpotModelDownloader
+from jaqpotpy.offline.offline_model_predictor import OfflineModelPredictor
 from jaqpotpy.api.model_to_b64encoding import model_to_b64encoding
 from jaqpotpy.aws.s3 import upload_file_to_s3_presigned_url
 from jaqpotpy.helpers.logging import init_logger
@@ -74,6 +76,8 @@ class Jaqpot:
         self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
         self.access_token = None
         self.http_client = None
+        self._model_downloader = None
+        self._offline_model_predictor = None
 
     def _deploy_model(
         self,
@@ -441,3 +445,63 @@ class Jaqpot:
         )
 
         self._create_model_request(body_model, model_api)
+
+    @property
+    def model_downloader(self):
+        """
+        Access to model downloader functionality for downloading models locally.
+
+        Returns:
+            JaqpotModelDownloader: Instance for model download operations
+        """
+        if self._model_downloader is None:
+            if self.http_client is None:
+                raise ValueError(
+                    "Must be logged in to use model downloader functionality"
+                )
+            self._model_downloader = JaqpotModelDownloader(self)
+        return self._model_downloader
+
+    @property
+    def offline_model_predictor(self):
+        """
+        Access to offline model prediction functionality.
+
+        Returns:
+            OfflineModelPredictor: Instance for making predictions with offline models
+        """
+        if self._offline_model_predictor is None:
+            if self.http_client is None:
+                raise ValueError(
+                    "Must be logged in to use offline model prediction functionality"
+                )
+            self._offline_model_predictor = OfflineModelPredictor(self)
+        return self._offline_model_predictor
+
+    def download_model(self, model_id: int, cache: bool = True):
+        """
+        Download a model from Jaqpot platform for local use.
+
+        Args:
+            model_id (int): The ID of the model to download
+            cache (bool): Whether to cache the offline model
+
+        Returns:
+            Dict containing model metadata and ONNX bytes
+        """
+        return self.model_downloader.download_onnx_model(model_id, cache)
+
+    def predict_local(self, model_data, input):
+        """
+        Make predictions using a locally offline model.
+
+        Args:
+            model_data: Either model_id (str) or model data dict from download_model
+            input: Input data for prediction (numpy array, list, or dict)
+
+        Returns:
+            PredictionResponse with predictions in same format as Jaqpot API
+        """
+        return self.offline_model_predictor.predict(
+            model_data, input, model_downloader=self.model_downloader
+        )
