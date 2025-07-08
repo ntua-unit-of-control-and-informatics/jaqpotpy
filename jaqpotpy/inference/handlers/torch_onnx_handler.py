@@ -161,6 +161,9 @@ def _build_tensor_dataset_from_processed_input(
     """
     Build tensor dataset from processed input (matches original build_tensor_dataset_from_request).
 
+    This follows the exact same logic as build_tensor_dataset_from_request
+    but works with processed input data instead of request objects.
+
     Args:
         processed_input: List of processed row dictionaries
         independent_features: List of feature objects
@@ -172,22 +175,22 @@ def _build_tensor_dataset_from_processed_input(
     import pandas as pd
     from jaqpotpy.datasets.jaqpot_tensor_dataset import JaqpotTensorDataset
 
-    # Add back jaqpotRowId for dataset creation
+    # Add back jaqpotRowId for dataset creation (needed for original logic)
     for i, row in enumerate(processed_input):
         row["jaqpotRowId"] = str(i)
 
-    # Create DataFrame (matches original logic)
+    # Create DataFrame from input (matches original logic exactly)
     df = pd.DataFrame(processed_input)
-
-    # Extract jaqpot_row_ids (matches original logic)
     jaqpot_row_ids = []
+
+    # Extract row IDs (matches original logic exactly)
     for i in range(len(df)):
         jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
 
-    # Extract feature column names (matches original logic)
+    # Extract feature column names (matches original logic exactly)
     x_cols = [feature.key for feature in independent_features]
 
-    # Create tensor dataset (matches original logic)
+    # Create tensor dataset (matches original logic exactly)
     dataset = JaqpotTensorDataset(
         df=df,
         x_cols=x_cols,

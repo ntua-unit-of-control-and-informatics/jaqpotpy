@@ -265,6 +265,9 @@ class PredictionService:
         """
         Build a JaqpotTabularDataset from raw model data and input dataset.
 
+        This follows the exact same logic as build_tabular_dataset_from_request
+        but works with raw model data instead of request objects.
+
         Args:
             model_data: OfflineModelData with model metadata
             dataset: Dataset with input data
@@ -272,38 +275,65 @@ class PredictionService:
         Returns:
             JaqpotTabularDataset: Dataset ready for prediction
         """
-        # Extract jaqpotRowId and data
+        from .core.preprocessor_utils import recreate_featurizer
+
+        # Create DataFrame from input (matches original logic)
+        df = pd.DataFrame(dataset.input)
         jaqpot_row_ids = []
-        input_data = []
 
-        for row in dataset.input:
-            jaqpot_row_ids.append(row.get("jaqpotRowId", ""))
-            # Remove jaqpotRowId from the data for the actual features
-            row_data = {k: v for k, v in row.items() if k != "jaqpotRowId"}
-            input_data.append(row_data)
+        # Extract row IDs (matches original logic)
+        for i in range(len(df)):
+            jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
 
-        # Get featurizers from model metadata (with safe default)
-        featurizers = getattr(model_data.model_metadata, "featurizers", []) or []
+        independent_features = model_data.model_metadata.independent_features
 
-        # Extract feature names from feature objects
-        x_col_names = [
-            getattr(feat, "key", str(feat)) for feat in model_data.independent_features
+        # Separate SMILES columns from other features (matches original logic)
+        smiles_cols = [
+            feature.key
+            for feature in independent_features
+            if feature.feature_type == "SMILES"
+        ] or None
+
+        x_cols = [
+            feature.key
+            for feature in independent_features
+            if feature.feature_type != "SMILES"
         ]
 
-        # Create the dataset
+        # Recreate featurizers if present (matches original logic)
+        featurizers = []
+        if (
+            hasattr(model_data.model_metadata, "featurizers")
+            and model_data.model_metadata.featurizers
+        ):
+            for featurizer in model_data.model_metadata.featurizers:
+                featurizer_name = featurizer.name
+                featurizer_config = featurizer.config
+                featurizer_recreated = recreate_featurizer(
+                    featurizer_name, featurizer_config
+                )
+                featurizers.append(featurizer_recreated)
+        else:
+            featurizers = None
+
+        # Create dataset (matches original logic)
         dataset_obj = JaqpotTabularDataset(
-            df=pd.DataFrame(input_data),
-            x_cols=x_col_names,
-            task=model_data.task,
+            df=df,
+            smiles_cols=smiles_cols,
+            x_cols=x_cols,
+            task=model_data.model_metadata.task,
             featurizer=featurizers,
         )
 
-        # Apply feature selection if specified
-        selected_features = getattr(
-            model_data.model_metadata, "selected_features", None
-        )
-        if selected_features is not None and len(selected_features) > 0:
-            dataset_obj.select_features(SelectColumns=selected_features)
+        # Apply feature selection if specified (matches original logic)
+        if (
+            hasattr(model_data.model_metadata, "selected_features")
+            and model_data.model_metadata.selected_features is not None
+            and len(model_data.model_metadata.selected_features) > 0
+        ):
+            dataset_obj.select_features(
+                SelectColumns=model_data.model_metadata.selected_features
+            )
 
         return dataset_obj
 
