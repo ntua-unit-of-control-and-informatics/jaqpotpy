@@ -29,6 +29,10 @@ applicability, and ONNX conversion.
 - **doa/**: Domain of Applicability implementation
 - **preprocessors/**: Data preprocessing utilities
 - **transformers/**: Data transformation utilities
+- **offline/**: Offline model download and prediction
+    - `offline_model_data.py`: Container for downloaded model data
+    - `model_downloader.py`: Downloads models from Jaqpot platform
+    - `offline_model_predictor.py`: Makes predictions using downloaded models
 
 ### Key Design Patterns
 
@@ -97,20 +101,23 @@ The `examples/` directory contains working examples for:
 
 ## Local Model Development
 
-### JaqpotDownloadedModel Class (`api/local_model.py`)
+### Offline Model Classes (`offline/`)
 
-- Downloads models from Jaqpot platform for local testing
-- Supports both database-stored and S3-stored models with presigned URLs
-- Handles preprocessing pipeline reconstruction
-- Provides identical inference logic to production service
-- Includes model caching for improved performance
+- **OfflineModelData**: Container for downloaded model data with clean interface
+- **JaqpotModelDownloader**: Downloads models from Jaqpot platform for local testing
+- **OfflineModelPredictor**: Makes predictions using downloaded models
 
-### Key Methods
+#### Key Components
 
-- `download_model(model_id)`: Downloads model and preprocessor from platform
-- `predict_local(model_data, data)`: Runs inference using ONNX runtime
-- `_preprocess_data()`: Applies preprocessing transformations
-- `_run_onnx_inference()`: Executes ONNX model inference
+- **OfflineModelData**: Clean container for model metadata, ONNX bytes, and preprocessor
+- **JaqpotModelDownloader**: Downloads models from S3 with presigned URLs, handles caching
+- **OfflineModelPredictor**: Provides identical inference logic to production service
+
+#### Key Methods
+
+- `download_onnx_model(model_id)`: Downloads model and preprocessor, returns OfflineModelData
+- `predict(model_data, input)`: Runs inference using shared prediction service
+- Properties for clean access to model components (independent_features, dependent_features, etc.)
 
 ### Testing Local Models
 
@@ -142,7 +149,7 @@ python test_local_model_download.py --model-id <model_id> --local
 
 ### Current Challenge: Code Duplication
 
-The local model implementation in `jaqpotpy/api/local_model.py` and production inference in `jaqpotpy-inference/` have
+The offline model implementation in `jaqpotpy/offline/` and production inference in `jaqpotpy-inference/` have
 duplicated prediction logic. This creates maintenance burden and consistency risks.
 
 ### Planned Architecture Changes
@@ -195,7 +202,7 @@ response = service.predict(prediction_request)
 
 #### Current Implementation
 
-- `jaqpotpy/api/local_model.py`: Local model download and basic inference
+- `jaqpotpy/offline/`: Offline model download and basic inference
 - `jaqpotpy-inference/src/helpers/predict_methods.py`: Production prediction algorithms
 - `jaqpotpy-inference/src/handlers/`: Model-type-specific production handlers
 
@@ -203,12 +210,12 @@ response = service.predict(prediction_request)
 
 - `jaqpotpy/inference/service.py`: Unified prediction service
 - `jaqpotpy/inference/handlers/`: Shared model-type handlers
-- `jaqpotpy/api/local_model.py`: Enhanced to use shared inference logic
+- `jaqpotpy/offline/`: Enhanced to use shared inference logic
 - `jaqpotpy-inference/`: Simplified to depend on jaqpotpy shared logic
 
 ### Synchronization Requirements
 
-Changes to prediction logic in jaqpotpy local models must be reflected in jaqpotpy-inference:
+Changes to prediction logic in jaqpotpy offline models must be reflected in jaqpotpy-inference:
 
 - Model loading and caching strategies
 - Data preprocessing steps
