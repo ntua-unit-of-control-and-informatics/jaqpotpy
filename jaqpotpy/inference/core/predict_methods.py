@@ -9,6 +9,8 @@ import pandas as pd
 import numpy as np
 import onnx
 import gc
+import torch
+import io
 from typing import Optional, Tuple, List, Dict, Any, Union
 from onnxruntime import InferenceSession
 
@@ -348,7 +350,10 @@ def predict_torch_geometric(
     dataset: Union[JaqpotTensorDataset, Any],  # Could be graph dataset
 ) -> np.ndarray:
     """
-    Perform prediction using a PyTorch Geometric ONNX model.
+    Perform prediction using a PyTorch Geometric ONNX model or TorchScript model.
+
+    NOTE: This function is deprecated in favor of the specialized handler.
+    For torch geometric models, use the torch_geometric_handler directly.
 
     Parameters:
         model_data: OfflineModelData containing the ONNX model and metadata.
@@ -357,6 +362,8 @@ def predict_torch_geometric(
     Returns:
         np.ndarray: The ONNX model predictions.
     """
-    # For now, use the same logic as torch_onnx
-    # This can be specialized for graph-specific processing if needed
-    return predict_torch_onnx(model_data, dataset)
+    # This should not be called directly for torch geometric models
+    # The service should route to the specialized handler instead
+    raise NotImplementedError(
+        "Torch geometric predictions should use the specialized handler"
+    )

@@ -1,5 +1,7 @@
 from typing import Optional, Any, Dict
 
+from jaqpot_api_client import Model
+
 
 class OfflineModelData:
     """
@@ -12,9 +14,9 @@ class OfflineModelData:
     def __init__(
         self,
         model_id: int,
-        model_metadata: Any,
+        model_metadata: Model,
         onnx_bytes: bytes,
-        preprocessor: Optional[Any] = None,
+        preprocessor: Optional[bytes] = None,
     ):
         """
         Initialize OfflineModelData.

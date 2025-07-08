@@ -40,6 +40,7 @@ class PredictionService:
             "TORCH_ONNX": self._predict_torch_onnx,
             "TORCH_SEQUENCE_ONNX": self._predict_torch_sequence,
             "TORCH_GEOMETRIC_ONNX": self._predict_torch_geometric,
+            "TORCHSCRIPT": self._predict_torch_geometric,  # TorchScript uses same handler
         }
 
     def predict(
@@ -124,11 +125,10 @@ class PredictionService:
     def _predict_torch_geometric(self, model_data, dataset: Dataset):
         """Handle PyTorch Geometric model prediction with raw data."""
 
-        # Build dataset directly from input data
-        dataset_obj = self._build_tabular_dataset(model_data, dataset)
+        # Use specialized handler that bypasses JaqpotTabularDataset
+        from .handlers.torch_geometric_handler import handle_torch_geometric_prediction
 
-        # Run prediction using existing method
-        predictions = predict_torch_geometric(model_data, dataset_obj)
+        predictions = handle_torch_geometric_prediction(model_data, dataset)
 
         # PyTorch models don't return probabilities or DOA results
         return predictions, None, None

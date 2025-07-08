@@ -1,6 +1,7 @@
 import pickle
-from typing import Dict, Any, List, Optional
+from typing import Dict, List, Optional
 
+from jaqpot_api_client import Model
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.api.model_download_api import ModelDownloadApi
 
@@ -52,7 +53,7 @@ class JaqpotModelDownloader:
 
         return offline_model_data
 
-    def _download_model_bytes(self, model: Any) -> bytes:
+    def _download_model_bytes(self, model: Model) -> bytes:
         """
         Download ONNX model bytes from S3 presigned URL.
         """
@@ -79,9 +80,9 @@ class JaqpotModelDownloader:
         except Exception as e:
             print(f"Warning: Could not download model from S3 using official API: {e}")
 
-        raise ValueError("Model data not available in database or S3 storage")
+        raise ValueError(f"Failed to download model {model.id} from S3.")
 
-    def _download_preprocessor_bytes(self, model: Any) -> Optional[Any]:
+    def _download_preprocessor_bytes(self, model: Model) -> Optional[bytes]:
         """
         Download and deserialize preprocessor from S3 presigned URL.
         """
