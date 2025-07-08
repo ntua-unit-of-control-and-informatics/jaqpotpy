@@ -77,7 +77,7 @@ class Jaqpot:
         self.access_token = None
         self.http_client = None
         self._model_downloader = None
-        self._downloaded_model_predictor = None
+        self._offline_model_predictor = None
 
     def _deploy_model(
         self,
@@ -463,20 +463,20 @@ class Jaqpot:
         return self._model_downloader
 
     @property
-    def downloaded_model_predictor(self):
+    def offline_model_predictor(self):
         """
-        Access to downloaded model prediction functionality.
+        Access to offline model prediction functionality.
 
         Returns:
-            OfflineModelPredictor: Instance for making predictions with downloaded models
+            OfflineModelPredictor: Instance for making predictions with offline models
         """
-        if self._downloaded_model_predictor is None:
+        if self._offline_model_predictor is None:
             if self.http_client is None:
                 raise ValueError(
-                    "Must be logged in to use downloaded model prediction functionality"
+                    "Must be logged in to use offline model prediction functionality"
                 )
-            self._downloaded_model_predictor = OfflineModelPredictor(self)
-        return self._downloaded_model_predictor
+            self._offline_model_predictor = OfflineModelPredictor(self)
+        return self._offline_model_predictor
 
     def download_model(self, model_id: int, cache: bool = True):
         """
@@ -484,7 +484,7 @@ class Jaqpot:
 
         Args:
             model_id (int): The ID of the model to download
-            cache (bool): Whether to cache the downloaded model
+            cache (bool): Whether to cache the offline model
 
         Returns:
             Dict containing model metadata and ONNX bytes
@@ -493,7 +493,7 @@ class Jaqpot:
 
     def predict_local(self, model_data, input):
         """
-        Make predictions using a locally downloaded model.
+        Make predictions using a locally offline model.
 
         Args:
             model_data: Either model_id (str) or model data dict from download_model
@@ -502,6 +502,6 @@ class Jaqpot:
         Returns:
             PredictionResponse with predictions in same format as Jaqpot API
         """
-        return self.downloaded_model_predictor.predict(
+        return self.offline_model_predictor.predict(
             model_data, input, model_downloader=self.model_downloader
         )

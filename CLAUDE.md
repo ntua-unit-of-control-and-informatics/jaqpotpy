@@ -30,9 +30,9 @@ applicability, and ONNX conversion.
 - **preprocessors/**: Data preprocessing utilities
 - **transformers/**: Data transformation utilities
 - **offline/**: Offline model download and prediction
-    - `offline_model_data.py`: Container for downloaded model data
+    - `offline_model_data.py`: Container for offline model data
     - `model_downloader.py`: Downloads models from Jaqpot platform
-    - `offline_model_predictor.py`: Makes predictions using downloaded models
+    - `offline_model_predictor.py`: Makes predictions using offline models
 
 ### Key Design Patterns
 
@@ -103,9 +103,9 @@ The `examples/` directory contains working examples for:
 
 ### Offline Model Classes (`offline/`)
 
-- **OfflineModelData**: Container for downloaded model data with clean interface
+- **OfflineModelData**: Container for offline model data with clean interface
 - **JaqpotModelDownloader**: Downloads models from Jaqpot platform for local testing
-- **OfflineModelPredictor**: Makes predictions using downloaded models
+- **OfflineModelPredictor**: Makes predictions using offline models
 
 #### Key Components
 

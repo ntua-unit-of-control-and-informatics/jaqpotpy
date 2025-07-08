@@ -1,5 +1,5 @@
 """
-Example: Using Jaqpot Downloaded Model Functionality
+Example: Using Jaqpot Offline Model Functionality
 
 This example demonstrates how to download ONNX models from the Jaqpot platform
 and run predictions in your Jupyter notebook or Python environment.
@@ -9,7 +9,7 @@ The implementation now supports:
 - Large models stored in S3 with efficient presigned URL downloads
 - Small models stored directly in the database as base64
 - Preprocessor downloads with the same fallback mechanism
-- Downloaded model caching for improved performance
+- Offline model caching for improved performance
 """
 
 import numpy as np
@@ -40,8 +40,8 @@ def main():
         [{"X1": 1.0, "X2": 2.0, "X3": 3.0, "X4": 4.0}]
     )  # Example input
 
-    # Make predictions with downloaded model
-    print("Making predictions with downloaded model...")
+    # Make predictions with offline model
+    print("Making predictions with offline model...")
     response = jaqpot.predict_local(model_data, sample_data)
 
     # The response is a PredictionResponse object with the same format
@@ -61,7 +61,7 @@ def main():
 
 
 def batch_predictions_example():
-    """Example of making multiple predictions efficiently with downloaded models"""
+    """Example of making multiple predictions efficiently with offline models"""
     jaqpot = Jaqpot()
     jaqpot.login()
 
@@ -70,7 +70,7 @@ def batch_predictions_example():
     # Download model once
     model_data = jaqpot.download_model(model_id)
 
-    # Make multiple predictions with the same downloaded model
+    # Make multiple predictions with the same offline model
     test_data = [
         [1.0, 2.0, 3.0, 4.0],
         [2.0, 3.0, 4.0, 5.0],

@@ -6,7 +6,7 @@ This script tests the enhanced local model functionality that supports:
 1. Downloading models from database (base64 encoded)
 2. Downloading models from S3 using presigned URLs
 3. Downloading preprocessors with same fallback logic
-4. Running local inference with downloaded models
+4. Running local inference with offline models
 
 Usage:
     python test_local_model_download.py --model-id <model_id> [--api-url <url>]
@@ -37,7 +37,7 @@ def test_model_download_and_inference():
         # Import jaqpotpy components
         from jaqpotpy import Jaqpot
         from jaqpotpy.offline.model_downloader import JaqpotModelDownloader
-        from jaqpotpy.offline.downloaded_model_predictor import OfflineModelPredictor
+        from jaqpotpy.offline.offline_model_predictor import OfflineModelPredictor
 
         logger.info("✅ Successfully imported jaqpotpy components")
     except ImportError as e:
@@ -109,7 +109,7 @@ def test_model_download_and_inference():
         download_time = time.time() - start_time
         logger.info(f"✅ Model download completed in {download_time:.2f} seconds")
 
-        # Analyze downloaded model
+        # Analyze offline model
         model_metadata = model_data["model_metadata"]
         onnx_bytes = model_data["onnx_bytes"]
         preprocessor = model_data.get("preprocessor")

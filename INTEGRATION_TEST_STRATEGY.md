@@ -19,16 +19,16 @@ cd jaqpot-api
 
 # Test new presigned URL endpoints
 curl -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/v1/models/{model-id}/download-url?expirationMinutes=30"
+  "http://localhost:8080/v1/models/{model-id}/download/urls?expirationMinutes=30"
 
 curl -H "Authorization: Bearer $TOKEN" \
-  "http://localhost:8080/v1/models/{model-id}/preprocessor/download-url?expirationMinutes=30"
+  "http://localhost:8080/v1/models/{model-id}/preprocessor/download/urls?expirationMinutes=30"
 ```
 
-#### 1.2 Local Model Download Testing
+#### 1.2 Offline Model Download Testing
 
 ```bash
-# Test jaqpotpy local model functionality
+# Test jaqpotpy offline model functionality
 cd jaqpotpy
 python test_local_model_download.py --model-id <sklearn-model-id> --local
 python test_local_model_download.py --model-id <torch-model-id> --local
@@ -61,20 +61,20 @@ Create test that verifies local and production predictions match:
 # test_prediction_consistency.py
 
 import numpy as np
-from jaqpotpy.api.downloaded_model import JaqpotDownloadedModel
+from jaqpotpy import Jaqpot
 import requests
 
 
 def test_prediction_consistency(model_id, test_data):
    """Test that local and production predictions match exactly."""
 
-   # Local prediction using jaqpotpy
-   jaqpot = JaqpotLocalhost()
+   # Offline prediction using jaqpotpy
+   jaqpot = Jaqpot()
    jaqpot.login()
-   local_model = JaqpotDownloadedModel(jaqpot)
-
-   model_data = local_model.download_onnx_model(model_id)
-   local_response = local_model.predict_local(model_data, test_data)
+   
+   # Download model data using the new API
+   model_data = jaqpot.download_model(model_id)
+   offline_response = jaqpot.predict_local(model_data, test_data)
 
    # Production prediction using jaqpotpy-inference
    production_request = create_prediction_request(model_id, test_data)
@@ -84,12 +84,12 @@ def test_prediction_consistency(model_id, test_data):
    )
 
    # Compare predictions
-   local_predictions = local_response.predictions
+   offline_predictions = offline_response.predictions
    production_predictions = production_response.json()["predictions"]
 
    # Allow for small floating point differences
    np.testing.assert_allclose(
-      local_predictions,
+      offline_predictions,
       production_predictions,
       rtol=1e-10,
       atol=1e-10,
@@ -115,34 +115,38 @@ After extracting prediction logic to jaqpotpy:
 # test_shared_inference.py
 
 from jaqpotpy.inference.service import PredictionService
-from jaqpotpy.inference.handlers import sklearn_handler, torch_handler
+from jaqpotpy.offline.offline_model_data import OfflineModelData
+from jaqpot_api_client.models.dataset import Dataset
+import numpy as np
 
 def test_shared_inference_service():
     """Test the new shared inference service."""
     
-    # Test local mode
-    local_service = PredictionService(local_mode=True, jaqpot_client=jaqpot)
-    local_response = local_service.predict(prediction_request)
+    service = PredictionService()
     
-    # Test production mode
-    production_service = PredictionService(local_mode=False)
-    production_response = production_service.predict(prediction_request)
+    # Test with different model types using unified API
+    sklearn_response = service.predict(sklearn_model_data, dataset, "SKLEARN_ONNX")
+    torch_response = service.predict(torch_model_data, dataset, "TORCH_ONNX")
     
-    # Should produce identical results
-    assert local_response.predictions == production_response.predictions
+    # Should produce consistent results with raw model data
+    assert isinstance(sklearn_response.predictions, list)
+    assert isinstance(torch_response.predictions, list)
 
-def test_handler_consistency():
-    """Test individual handlers produce consistent results."""
+def test_unified_api():
+    """Test the unified API across model types."""
     
-    # Test sklearn handler
-    sklearn_response_local = sklearn_handler.handle_sklearn_prediction(
-        request, local_mode=True
-    )
-    sklearn_response_prod = sklearn_handler.handle_sklearn_prediction(
-        request, local_mode=False
+    from jaqpotpy.inference.core.predict_methods import (
+        predict_sklearn_onnx,
+        predict_torch_onnx
     )
     
-    assert sklearn_response_local.predictions == sklearn_response_prod.predictions
+    # All prediction methods now use (model_data, dataset) signature
+    sklearn_predictions, sklearn_probs, sklearn_doa = predict_sklearn_onnx(model_data, dataset)
+    torch_predictions = predict_torch_onnx(model_data, tensor_dataset)
+    
+    # Should work with OfflineModelData directly
+    assert isinstance(sklearn_predictions, np.ndarray)
+    assert isinstance(torch_predictions, np.ndarray)
 ```
 
 #### 3.2 jaqpotpy-inference Simplification Testing
@@ -181,10 +185,9 @@ def test_complete_model_lifecycle():
    model = SklearnModel(...)  # Train sklearn model
    model_id = jaqpot.deploy_model(model, name="e2e-test-model")
 
-   # 2. Download and test locally using jaqpotpy
-   local_model = JaqpotDownloadedModel(jaqpot)
-   model_data = local_model.download_onnx_model(model_id)
-   local_predictions = local_model.predict_local(model_data, test_data)
+   # 2. Download and test offline using jaqpotpy
+   model_data = jaqpot.download_model(model_id)
+   offline_predictions = jaqpot.predict_local(model_data, test_data)
 
    # 3. Test production inference using jaqpotpy-inference
    production_request = create_prediction_request(model_id, test_data)
@@ -196,8 +199,8 @@ def test_complete_model_lifecycle():
    # 4. Verify all three paths produce identical results
    upload_predictions = model.predict(test_data)  # Original model predictions
 
-   np.testing.assert_allclose(upload_predictions, local_predictions)
-   np.testing.assert_allclose(local_predictions, production_response.json()["predictions"])
+   np.testing.assert_allclose(upload_predictions, offline_predictions.predictions)
+   np.testing.assert_allclose(offline_predictions.predictions, production_response.json()["predictions"])
 
    # 5. Clean up
    jaqpot.delete_model(model_id)
@@ -213,11 +216,11 @@ def test_prediction_performance():
 
     import time
 
-    # Measure local prediction performance
+    # Measure offline prediction performance
     start_time = time.time()
     for _ in range(100):
-        local_model.predict_local(model_data, test_data)
-    local_time = time.time() - start_time
+        jaqpot.predict_local(model_data, test_data)
+    offline_time = time.time() - start_time
 
     # Measure production prediction performance
     start_time = time.time()
@@ -226,7 +229,7 @@ def test_prediction_performance():
     production_time = time.time() - start_time
 
     # Performance should be comparable (within 50% difference)
-    assert abs(local_time - production_time) / min(local_time, production_time) < 0.5
+    assert abs(offline_time - production_time) / min(offline_time, production_time) < 0.5
 ```
 
 ## Test Data Requirements
@@ -343,11 +346,11 @@ jobs:
 
 - ✅ Fix jaqpot-api compilation errors
 - ✅ Test presigned URL endpoints
-- ✅ Test local model download functionality
+- ✅ Test offline model download functionality
 
 ### Milestone 2: Prediction Consistency (Week 2)
 
-- Test current local vs production prediction consistency
+- Test current offline vs production prediction consistency
 - Identify and fix any prediction discrepancies
 - Establish baseline performance metrics
 
@@ -398,7 +401,7 @@ jobs:
 
 ### Functional Requirements
 
-- [ ] All model types (sklearn, torch, torch_geometric) work identically in local and production
+- [ ] All model types (sklearn, torch, torch_geometric) work identically in offline and production
 - [ ] Presigned URL download works for both models and preprocessors
 - [ ] Error handling is consistent across all platforms
 - [ ] Performance is maintained within acceptable bounds
