@@ -1,6 +1,4 @@
 from typing import Optional, Any, Dict
-import base64
-import pickle
 
 
 class OfflineModelData:
@@ -31,30 +29,6 @@ class OfflineModelData:
         self.model_metadata = model_metadata
         self.onnx_bytes = onnx_bytes
         self.preprocessor = preprocessor
-
-    @property
-    def onnx_base64(self) -> str:
-        """
-        Get ONNX model bytes as base64 encoded string.
-
-        Returns:
-            Base64 encoded ONNX model bytes
-        """
-        return base64.b64encode(self.onnx_bytes).decode("utf-8")
-
-    @property
-    def preprocessor_base64(self) -> Optional[str]:
-        """
-        Get preprocessor as base64 encoded pickled bytes.
-
-        Returns:
-            Base64 encoded pickled preprocessor, or None if no preprocessor
-        """
-        if self.preprocessor is None:
-            return None
-
-        preprocessor_bytes = pickle.dumps(self.preprocessor)
-        return base64.b64encode(preprocessor_bytes).decode("utf-8")
 
     @property
     def has_preprocessor(self) -> bool:

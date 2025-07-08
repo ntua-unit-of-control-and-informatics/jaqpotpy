@@ -1,4 +1,3 @@
-import base64
 from typing import Union, Dict, Any, List
 
 import numpy as np
@@ -153,9 +152,9 @@ class OfflineModelPredictor:
         )
 
         # Prepare downloaded model data for inference service
-        # Use OfflineModelData properties for clean access to base64 encoded data
-        raw_model_b64 = model_data.onnx_base64
-        raw_preprocessor_b64 = model_data.preprocessor_base64
+        # Pass raw bytes directly - no base64 encoding here
+        raw_model_bytes = model_data.onnx_bytes
+        raw_preprocessor = model_data.preprocessor
 
         # Create prediction model with downloaded and properly encoded data
         # Use OfflineModelData properties for clean access to metadata
@@ -191,8 +190,8 @@ class OfflineModelPredictor:
             independent_features=independent_features,  # Required field
             dependent_features=dependent_features,  # Required field
             task=task,  # Required field
-            raw_model=raw_model_b64,  # Base64 encoded ONNX bytes from downloaded model
-            raw_preprocessor=raw_preprocessor_b64,  # Base64 encoded pickled preprocessor
+            raw_model=raw_model_bytes,  # Raw ONNX bytes from downloaded model
+            raw_preprocessor=raw_preprocessor,  # Raw preprocessor object
             doas=getattr(model_data.model_metadata, "doas", None),
             selected_features=selected_features,  # Ensured to be list, not None
             featurizers=featurizers,  # Ensured to be list, not None

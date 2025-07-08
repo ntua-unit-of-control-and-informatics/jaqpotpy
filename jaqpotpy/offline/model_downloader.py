@@ -1,10 +1,5 @@
-import base64
-import io
 import pickle
 from typing import Union, Dict, Any, List, Optional
-
-import numpy as np
-import onnxruntime as rt
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.api.model_download_api import ModelDownloadApi
 
@@ -58,7 +53,7 @@ class JaqpotModelDownloader:
 
     def _download_model_bytes(self, model) -> bytes:
         """
-        Download ONNX model bytes from base64 encoding or S3 presigned URL.
+        Download ONNX model bytes from S3 presigned URL.
         """
 
         # Try to get presigned download URLs for S3 models using official API client
@@ -87,7 +82,7 @@ class JaqpotModelDownloader:
 
     def _download_preprocessor_bytes(self, model) -> Optional[Any]:
         """
-        Download and deserialize preprocessor from base64 encoding or S3 presigned URL.
+        Download and deserialize preprocessor from S3 presigned URL.
         """
         # Try to get presigned download URLs for S3 preprocessors using official API client
         try:
@@ -111,14 +106,7 @@ class JaqpotModelDownloader:
                 f"Warning: Could not download preprocessor from S3 using official API: {e}"
             )
 
-        # Fallback: check if we have raw_preprocessor in database
-        if hasattr(model, "raw_preprocessor") and model.raw_preprocessor:
-            try:
-                preprocessor_bytes = base64.b64decode(model.raw_preprocessor)
-                return pickle.loads(preprocessor_bytes)
-            except Exception as e:
-                print(f"Warning: Could not load preprocessor from database: {e}")
-
+        # No database fallback - only S3 downloads supported
         return None
 
     def clear_cache(self):
