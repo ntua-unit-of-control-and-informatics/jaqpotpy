@@ -3,9 +3,9 @@ from typing import Optional, Any, Dict
 
 class OfflineModelData:
     """
-    Container for downloaded model data from Jaqpot platform.
+    Container for offline model data from Jaqpot platform.
 
-    This class provides a clean interface for accessing downloaded model components
+    This class provides a clean interface for accessing offline model components
     including ONNX model bytes, preprocessor, and metadata.
     """
 

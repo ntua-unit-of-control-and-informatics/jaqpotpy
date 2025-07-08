@@ -1,4 +1,4 @@
-from typing import Union, Dict, Any, List
+from typing import Union, Dict, Any, List, Optional, TYPE_CHECKING
 
 import numpy as np
 from jaqpot_api_client.models.prediction_response import PredictionResponse
@@ -10,26 +10,30 @@ from jaqpot_api_client.models.dataset_type import DatasetType
 from jaqpotpy.inference.service import get_prediction_service
 from .offline_model_data import OfflineModelData
 
+if TYPE_CHECKING:
+    from jaqpotpy.jaqpot import Jaqpot
+    from .model_downloader import JaqpotModelDownloader
+
 
 class OfflineModelPredictor:
     """
-    Handles predictions using downloaded models.
+    Handles predictions using offline models.
 
-    This class is responsible for making predictions using models that have been
-    downloaded from the Jaqpot platform, ensuring identical results to production inference.
+    This class is responsible for making predictions using offline models from
+    the Jaqpot platform, ensuring identical results to production inference.
     """
 
-    def __init__(self, jaqpot_client):
+    def __init__(self, jaqpot_client: "Jaqpot") -> None:
         self.jaqpot_client = jaqpot_client
 
     def predict(
         self,
         model_data: Union[str, OfflineModelData],
         input: Union[np.ndarray, List, Dict],
-        model_downloader=None,
+        model_downloader: Optional["JaqpotModelDownloader"] = None,
     ) -> PredictionResponse:
         """
-        Make predictions using a downloaded model.
+        Make predictions using an offline model.
 
         This method uses the shared inference service to ensure identical results
         to production inference while maintaining the same external API.
@@ -60,19 +64,19 @@ class OfflineModelPredictor:
             model_data, OfflineModelData
         ), f"Expected OfflineModelData, got {type(model_data)}"
 
-        # Convert downloaded model format to PredictionRequest format for shared service
+        # Convert offline model format to PredictionRequest format for shared service
         request = self._create_prediction_request(model_data, input)
 
-        # Use shared prediction service (downloaded model mode with jaqpot client)
+        # Use shared prediction service (offline model mode with jaqpot client)
         prediction_service = get_prediction_service(
-            local_mode=True, jaqpot_client=self.jaqpot_client
+            offline_mode=True, jaqpot_client=self.jaqpot_client
         )
 
         # Execute prediction using shared logic
         return prediction_service.predict(request)
 
     def _create_prediction_request(
-        self, model_data: OfflineModelData, data
+        self, model_data: OfflineModelData, data: Union[np.ndarray, List, Dict]
     ) -> PredictionRequest:
         """
         Convert OfflineModelData and input data to PredictionRequest format.
@@ -90,25 +94,25 @@ class OfflineModelPredictor:
         if isinstance(data, dict):
             # Single dict input - add jaqpotRowId
             row_data = data.copy()
-            row_data["jaqpotRowId"] = "row_0"
+            row_data["jaqpotRowId"] = "0"
             processed_input_data = [row_data]
         elif isinstance(data, list):
             if len(data) > 0 and isinstance(data[0], dict):
                 # List of dicts - add jaqpotRowId to each
                 for i, row in enumerate(data):
                     row_data = row.copy()
-                    row_data["jaqpotRowId"] = f"row_{i}"
+                    row_data["jaqpotRowId"] = str(i)
                     processed_input_data.append(row_data)
             elif len(data) > 0 and isinstance(data[0], list):
                 # List of lists - convert to dicts with jaqpotRowId
                 for i, row in enumerate(data):
                     row_data = {f"feature_{j}": val for j, val in enumerate(row)}
-                    row_data["jaqpotRowId"] = f"row_{i}"
+                    row_data["jaqpotRowId"] = str(i)
                     processed_input_data.append(row_data)
             else:
                 # Single list - convert to dict with jaqpotRowId
                 row_data = {f"feature_{i}": val for i, val in enumerate(data)}
-                row_data["jaqpotRowId"] = "row_0"
+                row_data["jaqpotRowId"] = "0"
                 processed_input_data = [row_data]
         elif isinstance(data, np.ndarray):
             # Convert numpy array to dicts with jaqpotRowId
@@ -117,14 +121,14 @@ class OfflineModelPredictor:
                 if len(data) > 0 and isinstance(data[0], dict):
                     # Single dict wrapped in numpy array
                     row_data = data[0].copy()
-                    row_data["jaqpotRowId"] = "row_0"
+                    row_data["jaqpotRowId"] = "0"
                     processed_input_data = [row_data]
                 else:
                     # Single row of numeric values
                     row_data = {
                         f"feature_{i}": float(val) for i, val in enumerate(data)
                     }
-                    row_data["jaqpotRowId"] = "row_0"
+                    row_data["jaqpotRowId"] = "0"
                     processed_input_data = [row_data]
             else:
                 # Multiple rows
@@ -132,14 +136,14 @@ class OfflineModelPredictor:
                     if isinstance(row, dict):
                         # Row is already a dict
                         row_data = row.copy()
-                        row_data["jaqpotRowId"] = f"row_{i}"
+                        row_data["jaqpotRowId"] = str(i)
                         processed_input_data.append(row_data)
                     else:
                         # Row is numeric values
                         row_data = {
                             f"feature_{j}": float(val) for j, val in enumerate(row)
                         }
-                        row_data["jaqpotRowId"] = f"row_{i}"
+                        row_data["jaqpotRowId"] = str(i)
                         processed_input_data.append(row_data)
         else:
             raise ValueError(f"Unsupported data type: {type(data)}")
@@ -151,12 +155,12 @@ class OfflineModelPredictor:
             type=DatasetType.PREDICTION, entryType="ARRAY", input=input_data
         )
 
-        # Prepare downloaded model data for inference service
+        # Prepare offline model data for inference service
         # Pass raw bytes directly - no base64 encoding here
         raw_model_bytes = model_data.onnx_bytes
         raw_preprocessor = model_data.preprocessor
 
-        # Create prediction model with downloaded and properly encoded data
+        # Create prediction model with offline model data
         # Use OfflineModelData properties for clean access to metadata
         independent_features = model_data.independent_features
         dependent_features = model_data.dependent_features
@@ -190,7 +194,7 @@ class OfflineModelPredictor:
             independent_features=independent_features,  # Required field
             dependent_features=dependent_features,  # Required field
             task=task,  # Required field
-            raw_model=raw_model_bytes,  # Raw ONNX bytes from downloaded model
+            raw_model=raw_model_bytes,  # Raw ONNX bytes from offline model
             raw_preprocessor=raw_preprocessor,  # Raw preprocessor object
             doas=getattr(model_data.model_metadata, "doas", None),
             selected_features=selected_features,  # Ensured to be list, not None

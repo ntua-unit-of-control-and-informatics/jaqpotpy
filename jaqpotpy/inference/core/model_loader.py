@@ -1,8 +1,7 @@
 """
 Model loading utilities for ONNX models.
 
-This module contains utilities for loading ONNX models from various sources
-including base64 encoded strings, S3 storage, and local files.
+This module contains utilities for loading ONNX models from Jaqpot
 """
 
 import base64
@@ -71,18 +70,17 @@ def load_onnx_model_from_file(file_obj: Union[BinaryIO, io.BytesIO]) -> onnx.Mod
 
 
 def retrieve_onnx_model_from_request(
-    request: PredictionRequest, s3_client=None, jaqpot_client=None
+    request: PredictionRequest, jaqpot_client=None
 ) -> onnx.ModelProto:
     """
     Retrieve an ONNX model from a prediction request.
 
-    This function handles both inline models (base64 encoded), S3-stored models,
-    and presigned URL downloads for local development.
+    This function handles both inline models (base64 encoded) and
+    presigned URL downloads for offline development.
 
     Args:
         request (PredictionRequest): The prediction request
-        s3_client: Optional S3 client for downloading models from S3 (production mode)
-        jaqpot_client: Optional Jaqpot client for presigned URLs (local mode)
+        jaqpot_client: Optional Jaqpot client for presigned URLs (offline mode)
 
     Returns:
         onnx.ModelProto: The loaded ONNX model
@@ -91,22 +89,16 @@ def retrieve_onnx_model_from_request(
         Exception: If model retrieval or loading fails
     """
     if request.model.raw_model is None:
-        # Model is stored in S3 - use different strategies based on available clients
+        # Model is stored remotely - use presigned URLs for download
         if jaqpot_client is not None:
-            # Local mode: Use presigned URLs
+            # Offline mode: Use presigned URLs
             model_bytes = _download_model_via_presigned_url(
                 request.model, jaqpot_client
             )
             return load_onnx_model_from_bytes(model_bytes)
-        elif s3_client is not None:
-            # Production mode: Direct S3 download
-            file_obj, error = s3_client.download_file(str(request.model.id))
-            if file_obj is None:
-                raise Exception(f"Failed to download model from S3: {error}")
-            return load_onnx_model_from_file(file_obj)
         else:
             raise Exception(
-                "Either S3 client (production) or Jaqpot client (local) required for downloading model from S3"
+                "Jaqpot client required for downloading model from remote storage"
             )
     else:
         # Model is inline (base64 encoded)
@@ -115,7 +107,7 @@ def retrieve_onnx_model_from_request(
 
 def _download_model_via_presigned_url(model, jaqpot_client) -> bytes:
     """
-    Download model bytes using presigned URLs (local development mode).
+    Download model bytes using presigned URLs (offline mode).
 
     Args:
         model: Model object with id attribute
@@ -130,12 +122,12 @@ def _download_model_via_presigned_url(model, jaqpot_client) -> bytes:
     import requests
 
     try:
-        # Get presigned download URL using LocalModelService
+        # Get presigned download URL
         auth_header = jaqpot_client.http_client.default_headers.get("Authorization", "")
         headers = {"Authorization": f"Bearer {auth_header.replace('Bearer ', '')}"}
         api_host = jaqpot_client.http_client.configuration.host
         response = requests.get(
-            f"{api_host}/v1/models/{model.id}/local/download-url",
+            f"{api_host}/v1/models/{model.id}/offline/download-url",
             headers=headers,
             timeout=30,
         )
@@ -160,15 +152,14 @@ def _download_model_via_presigned_url(model, jaqpot_client) -> bytes:
 
 
 def retrieve_raw_model_from_request(
-    request: PredictionRequest, s3_client=None, jaqpot_client=None
+    request: PredictionRequest, jaqpot_client=None
 ) -> bytes:
     """
     Retrieve raw model bytes from a prediction request.
 
     Args:
         request (PredictionRequest): The prediction request
-        s3_client: Optional S3 client for downloading models from S3 (production mode)
-        jaqpot_client: Optional Jaqpot client for presigned URLs (local mode)
+        jaqpot_client: Optional Jaqpot client for presigned URLs (offline mode)
 
     Returns:
         bytes: Raw model bytes
@@ -177,24 +168,13 @@ def retrieve_raw_model_from_request(
         Exception: If model retrieval fails
     """
     if request.model.raw_model is None:
-        # Model is stored in S3 - use different strategies based on available clients
+        # Model is stored remotely - use presigned URLs for download
         if jaqpot_client is not None:
-            # Local mode: Use presigned URLs
+            # Offline mode: Use presigned URLs
             return _download_model_via_presigned_url(request.model, jaqpot_client)
-        elif s3_client is not None:
-            # Production mode: Direct S3 download
-            file_obj, error = s3_client.download_file(str(request.model.id))
-            if file_obj is None:
-                raise Exception(f"Failed to download model from S3: {error}")
-
-            # Read bytes from file object
-            if hasattr(file_obj, "read"):
-                return file_obj.read()
-            else:
-                return file_obj
         else:
             raise Exception(
-                "Either S3 client (production) or Jaqpot client (local) required for downloading model from S3"
+                "Jaqpot client required for downloading model from remote storage"
             )
     else:
         # Model is inline (base64 encoded)

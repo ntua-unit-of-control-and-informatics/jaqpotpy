@@ -1,25 +1,28 @@
 import pickle
-from typing import Union, Dict, Any, List, Optional
+from typing import Union, Dict, Any, List, Optional, TYPE_CHECKING
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.api.model_download_api import ModelDownloadApi
 
 from .offline_model_data import OfflineModelData
 
+if TYPE_CHECKING:
+    from jaqpotpy.jaqpot import Jaqpot
+
 
 class JaqpotModelDownloader:
-    def __init__(self, jaqpot_client):
+    def __init__(self, jaqpot_client: "Jaqpot") -> None:
         self.jaqpot_client = jaqpot_client
-        self._cached_models = {}
+        self._cached_models: Dict[int, OfflineModelData] = {}
 
     def download_onnx_model(
         self, model_id: int, cache: bool = True
     ) -> OfflineModelData:
         """
-        Download a model from Jaqpot platform for local use.
+        Download a model from Jaqpot platform for offline use.
 
         Args:
             model_id (int): The ID of the model to download
-            cache (bool): Whether to cache the downloaded model
+            cache (bool): Whether to cache the offline model
 
         Returns:
             OfflineModelData instance containing model metadata and ONNX bytes
@@ -51,7 +54,7 @@ class JaqpotModelDownloader:
 
         return offline_model_data
 
-    def _download_model_bytes(self, model) -> bytes:
+    def _download_model_bytes(self, model: Any) -> bytes:
         """
         Download ONNX model bytes from S3 presigned URL.
         """
@@ -80,7 +83,7 @@ class JaqpotModelDownloader:
 
         raise ValueError("Model data not available in database or S3 storage")
 
-    def _download_preprocessor_bytes(self, model) -> Optional[Any]:
+    def _download_preprocessor_bytes(self, model: Any) -> Optional[Any]:
         """
         Download and deserialize preprocessor from S3 presigned URL.
         """
@@ -109,7 +112,7 @@ class JaqpotModelDownloader:
         # No database fallback - only S3 downloads supported
         return None
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """
         Clear cached models.
         """

@@ -1,8 +1,8 @@
 """
-Unified prediction service for both local and production inference.
+Unified prediction service for both offline and production inference.
 
 This service provides a single entry point for all model prediction logic,
-ensuring consistent results between local development and production deployment.
+ensuring consistent results between offline development and production deployment.
 """
 
 import logging
@@ -27,24 +27,22 @@ logger = logging.getLogger(__name__)
 
 class PredictionService:
     """
-    Unified prediction service supporting both local and production inference.
+    Unified prediction service supporting both offline and production inference.
 
     This service routes prediction requests to appropriate handlers based on
     model type and provides consistent preprocessing and postprocessing.
     """
 
-    def __init__(self, local_mode: bool = False, jaqpot_client=None, s3_client=None):
+    def __init__(self, offline_mode: bool = False, jaqpot_client=None):
         """
         Initialize the prediction service.
 
         Args:
-            local_mode (bool): If True, enables local development mode features
-            jaqpot_client: Optional Jaqpot client for local model downloads
-            s3_client: Optional S3 client for model downloads (production mode)
+            offline_mode (bool): If True, enables offline development mode features
+            jaqpot_client: Optional Jaqpot client for offline model downloads
         """
-        self.local_mode = local_mode
+        self.offline_mode = offline_mode
         self.jaqpot_client = jaqpot_client
-        self.s3_client = s3_client
 
         # Model type to handler mapping
         self.handlers = {
@@ -114,7 +112,7 @@ class PredictionService:
         """Handle sklearn ONNX model prediction."""
         # Load model and preprocessor
         model = retrieve_onnx_model_from_request(
-            request, s3_client=self.s3_client, jaqpot_client=self.jaqpot_client
+            request, jaqpot_client=self.jaqpot_client
         )
         preprocessor = None
         if (
@@ -127,7 +125,6 @@ class PredictionService:
             )
             preprocessor = retrieve_onnx_model_from_request(
                 type(request)(model=preprocessor_request, dataset=request.dataset),
-                s3_client=self.s3_client,
                 jaqpot_client=self.jaqpot_client,
             )
 
@@ -141,7 +138,7 @@ class PredictionService:
         """Handle PyTorch ONNX model prediction."""
         # Load model and preprocessor
         model = retrieve_onnx_model_from_request(
-            request, s3_client=self.s3_client, jaqpot_client=self.jaqpot_client
+            request, jaqpot_client=self.jaqpot_client
         )
         preprocessor = None
         if (
@@ -154,7 +151,6 @@ class PredictionService:
             )
             preprocessor = retrieve_onnx_model_from_request(
                 type(request)(model=preprocessor_request, dataset=request.dataset),
-                s3_client=self.s3_client,
                 jaqpot_client=self.jaqpot_client,
             )
 
@@ -169,7 +165,7 @@ class PredictionService:
         """Handle PyTorch sequence model prediction."""
         # Load model and preprocessor
         model = retrieve_onnx_model_from_request(
-            request, s3_client=self.s3_client, jaqpot_client=self.jaqpot_client
+            request, jaqpot_client=self.jaqpot_client
         )
         preprocessor = None
         if (
@@ -182,7 +178,6 @@ class PredictionService:
             )
             preprocessor = retrieve_onnx_model_from_request(
                 type(request)(model=preprocessor_request, dataset=request.dataset),
-                s3_client=self.s3_client,
                 jaqpot_client=self.jaqpot_client,
             )
 
@@ -197,7 +192,7 @@ class PredictionService:
         """Handle PyTorch Geometric model prediction."""
         # Load model and preprocessor
         model = retrieve_onnx_model_from_request(
-            request, s3_client=self.s3_client, jaqpot_client=self.jaqpot_client
+            request, jaqpot_client=self.jaqpot_client
         )
         preprocessor = None
         if (
@@ -210,7 +205,6 @@ class PredictionService:
             )
             preprocessor = retrieve_onnx_model_from_request(
                 type(request)(model=preprocessor_request, dataset=request.dataset),
-                s3_client=self.s3_client,
                 jaqpot_client=self.jaqpot_client,
             )
 
@@ -262,28 +256,28 @@ class PredictionService:
 
 
 # Global prediction service instances for different modes
-_local_service = None
+_offline_service = None
 _production_service = None
 
 
-def get_prediction_service(local_mode: bool = False, **kwargs) -> PredictionService:
+def get_prediction_service(offline_mode: bool = False, **kwargs) -> PredictionService:
     """
     Get a prediction service instance.
 
     Args:
-        local_mode (bool): Whether to use local mode
+        offline_mode (bool): Whether to use offline mode
         **kwargs: Additional arguments for service initialization
 
     Returns:
         PredictionService: Service instance
     """
-    global _local_service, _production_service
+    global _offline_service, _production_service
 
-    if local_mode:
-        if _local_service is None:
-            _local_service = PredictionService(local_mode=True, **kwargs)
-        return _local_service
+    if offline_mode:
+        if _offline_service is None:
+            _offline_service = PredictionService(offline_mode=True, **kwargs)
+        return _offline_service
     else:
         if _production_service is None:
-            _production_service = PredictionService(local_mode=False, **kwargs)
+            _production_service = PredictionService(offline_mode=False, **kwargs)
         return _production_service
