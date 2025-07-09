@@ -88,11 +88,22 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
 
         processed_input.append(row_data)
 
-    # Build tensor dataset from processed input (matches original logic)
-    tensor_dataset, jaqpot_row_ids = _build_tensor_dataset_from_processed_input(
-        processed_input,
-        model_data.model_metadata.independent_features,
-        model_data.model_metadata.task,
+    # Build tensor dataset using the same logic as the original build_tensor_dataset_from_request
+    import pandas as pd
+    from jaqpotpy.datasets.jaqpot_tensor_dataset import JaqpotTensorDataset
+
+    # Create DataFrame from processed input (same as original)
+    df = pd.DataFrame(processed_input)
+    jaqpot_row_ids = []
+    for i in range(len(df)):
+        jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
+
+    x_cols = [feature.key for feature in model_data.model_metadata.independent_features]
+
+    tensor_dataset = JaqpotTensorDataset(
+        df=df,
+        x_cols=x_cols,
+        task=model_data.model_metadata.task,
     )
 
     # Run ONNX inference
@@ -210,51 +221,6 @@ def _run_torch_onnx_inference(model, preprocessor, tensor_dataset):
     gc.collect()
 
     return onnx_prediction[0]
-
-
-def _build_tensor_dataset_from_processed_input(
-    processed_input, independent_features, task
-):
-    """
-    Build tensor dataset from processed input (matches original build_tensor_dataset_from_request).
-
-    This follows the exact same logic as build_tensor_dataset_from_request
-    but works with processed input data instead of request objects.
-
-    Args:
-        processed_input: List of processed row dictionaries
-        independent_features: List of feature objects
-        task: Model task
-
-    Returns:
-        tuple: (JaqpotTensorDataset, jaqpot_row_ids)
-    """
-    import pandas as pd
-    from jaqpotpy.datasets.jaqpot_tensor_dataset import JaqpotTensorDataset
-
-    # Add back jaqpotRowId for dataset creation (needed for original logic)
-    for i, row in enumerate(processed_input):
-        row["jaqpotRowId"] = str(i)
-
-    # Create DataFrame from input (matches original logic exactly)
-    df = pd.DataFrame(processed_input)
-    jaqpot_row_ids = []
-
-    # Extract row IDs (matches original logic exactly)
-    for i in range(len(df)):
-        jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
-
-    # Extract feature column names (matches original logic exactly)
-    x_cols = [feature.key for feature in independent_features]
-
-    # Create tensor dataset (matches original logic exactly)
-    dataset = JaqpotTensorDataset(
-        df=df,
-        x_cols=x_cols,
-        task=task,
-    )
-
-    return dataset, jaqpot_row_ids
 
 
 def _squeeze_first_dim(arr: np.ndarray) -> np.ndarray:
