@@ -114,15 +114,8 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
         value = predicted_values[jaqpot_row_id]
 
         for i, feature in enumerate(model_data.model_metadata.dependent_features):
-            # Get the specific value for this feature from the prediction array
-            feature_value = value[i] if i < len(value) else value[0]
-
-            if isinstance(feature_value, (np.ndarray, torch.Tensor)):
-                tensor = (
-                    torch.tensor(feature_value)
-                    if isinstance(feature_value, np.ndarray)
-                    else feature_value
-                )
+            if isinstance(value, (np.ndarray, torch.Tensor)):
+                tensor = torch.tensor(value) if isinstance(value, np.ndarray) else value
 
                 if (
                     dataset.result_types is not None
@@ -132,18 +125,25 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
                     if tensor.ndim == 4:  # remove batch dim if present
                         tensor = tensor.squeeze(0)
 
+                    if tensor.ndim == 2:  # Handle 2D grayscale images
+                        tensor = tensor.unsqueeze(
+                            0
+                        )  # Add channel dimension [H,W] -> [1,H,W]
+
                     if tensor.ndim == 3:
                         results[feature.key] = convert_tensor_to_base64_image(tensor)
                     else:
-                        raise ValueError("Unexpected image tensor shape for output")
+                        raise ValueError(
+                            f"Unexpected image tensor shape: {tensor.shape}"
+                        )
                 else:
                     results[feature.key] = tensor.detach().cpu().numpy().tolist()
-            elif isinstance(feature_value, (np.integer, int)):
-                results[feature.key] = int(feature_value)
-            elif isinstance(feature_value, (np.floating, float)):
-                results[feature.key] = float(feature_value)
+            elif isinstance(value, (np.integer, int)):
+                results[feature.key] = int(value)
+            elif isinstance(value, (np.floating, float)):
+                results[feature.key] = float(value)
             else:
-                results[feature.key] = feature_value
+                results[feature.key] = value
 
         results["jaqpotMetadata"] = {"jaqpotRowId": jaqpot_row_id}
         predictions.append(results)
