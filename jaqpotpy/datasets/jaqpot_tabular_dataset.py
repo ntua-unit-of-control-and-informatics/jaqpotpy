@@ -18,7 +18,7 @@ class JaqpotTabularDataset(BaseDataset):
         y_cols: Iterable[str] = None,
         x_cols: Optional[Iterable[str]] = None,
         smiles_cols: Optional[Iterable[str]] = None,
-        featurizer: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
+        featurizers: Optional[List[MolecularFeaturizer] or MolecularFeaturizer] = None,
         task: ModelTask = None,
         verbose: bool = True,
         remove_inf_cols: bool = False,
@@ -33,7 +33,7 @@ class JaqpotTabularDataset(BaseDataset):
             y_cols (Iterable[str]): The columns representing the target variables.
             x_cols (Optional[Iterable[str]]): The columns representing the features.
             smiles_cols (Optional[Iterable[str]]): The columns containing SMILES strings.
-            featurizer (Optional[List[MolecularFeaturizer] or MolecularFeaturizer]): The featurizer(s) to use.
+            featurizers (Optional[List[MolecularFeaturizer] or MolecularFeaturizer]): The featurizer(s) to use.
             task (ModelTask): The task type (ModelTask.REGRESSION, ModelTask.BINARY_CLASSIFICATION, or ModelTask.MULTICLASS_CLASSIFICATION).
             verbose (bool, optional): If True, enables detailed logging or printing. Default is True.
             remove_inf_cols (bool, optional): If True, drops columns containing infinite values. Default is False.
@@ -54,7 +54,7 @@ class JaqpotTabularDataset(BaseDataset):
                 "a list of strings, or None"
             )
 
-        if (smiles_cols is not None) and (featurizer is None):
+        if (smiles_cols is not None) and (featurizers is None):
             raise TypeError(
                 "Cannot estimate SMILES descriptors without a featurizer."
                 "Please provide a featurizer"
@@ -71,15 +71,15 @@ class JaqpotTabularDataset(BaseDataset):
             self.smiles_cols = []
             self.smiles_cols_len = 0
 
-        if featurizer is not None:
-            if isinstance(featurizer, list):
-                for individual_featurizer in featurizer:
+        if featurizers is not None:
+            if isinstance(featurizers, list):
+                for individual_featurizer in featurizers:
                     if not isinstance(individual_featurizer, MolecularFeaturizer):
                         raise TypeError(
                             "Each featurizer in the featurizer list should be a MolecularFeaturizer instance."
                         )
-            elif isinstance(featurizer, MolecularFeaturizer):
-                featurizer = [featurizer]
+            elif isinstance(featurizers, MolecularFeaturizer):
+                featurizers = [featurizers]
             else:
                 raise TypeError(
                     "featurizer should be a list containing MolecularFeaturizer instances."
@@ -107,7 +107,7 @@ class JaqpotTabularDataset(BaseDataset):
         self._validate_column_space()
 
         self.init_df = self.df
-        self.featurizer = featurizer
+        self.featurizer = featurizers
         # If featurizer is provided and it's for training, we need to copy the attributes
         if self.featurizer:
             self.featurizers_attributes = {}
@@ -397,7 +397,7 @@ class JaqpotTabularDataset(BaseDataset):
             y_cols=self.y_cols,
             x_cols=self.x_cols,
             smiles_cols=self.smiles_cols,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
             task=self.task,
         )
         return copied_instance

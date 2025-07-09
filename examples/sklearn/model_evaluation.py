@@ -49,7 +49,7 @@ train_dataset = JaqpotTabularDataset(
     y_cols=["activity"],
     smiles_cols=["smiles"],
     task=ModelTask.REGRESSION,
-    featurizer=featurizer,
+    featurizers=featurizer,
 )
 
 model = RandomForestRegressor(random_state=42)
@@ -85,7 +85,7 @@ test_dataset = JaqpotTabularDataset(
     x_cols=["cat_col", "temperature"],
     y_cols=["activity"],
     task=ModelTask.REGRESSION,
-    featurizer=featurizer,
+    featurizers=featurizer,
 )
 
 # Evaluate the model on the test dataset

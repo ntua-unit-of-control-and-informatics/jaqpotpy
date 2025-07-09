@@ -50,7 +50,7 @@ train_dataset = JaqpotTabularDataset(
     y_cols=["activity"],  # Target column
     smiles_cols=["smiles"],  # SMILES column for molecular descriptor generation
     task=ModelTask.REGRESSION,  # Type of task: regression
-    featurizer=featurizer,  # Use RDKit featurizer for SMILES-based features
+    featurizers=featurizer,  # Use RDKit featurizer for SMILES-based features
 )
 
 model = RandomForestRegressor(random_state=42)
@@ -97,7 +97,7 @@ test_dataset = JaqpotTabularDataset(
     x_cols=["cat_col", "temperature"],
     y_cols=None,
     task=ModelTask.REGRESSION,
-    featurizer=featurizer,  # Same featurizer for consistency with training
+    featurizers=featurizer,  # Same featurizer for consistency with training
 )
 
 

@@ -119,7 +119,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         jaqpot_model = SklearnModel(
@@ -132,7 +132,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -178,7 +178,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         pre = StandardScaler()
@@ -192,7 +192,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -243,7 +243,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         pre = StandardScaler()
@@ -265,7 +265,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         pre = StandardScaler()
@@ -300,7 +300,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         pre_x = StandardScaler()
@@ -328,7 +328,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         pre_x = StandardScaler()
@@ -359,7 +359,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.MULTICLASS_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         pre = StandardScaler()
@@ -373,7 +373,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -420,7 +420,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.MULTICLASS_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         pre = MinMaxScaler()
@@ -450,7 +450,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.MULTICLASS_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         pre_x = StandardScaler()
@@ -481,7 +481,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestRegressor(random_state=42)
         jaqpot_model = SklearnModel(
@@ -494,7 +494,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -520,7 +520,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         pre = StandardScaler()
         model = RandomForestRegressor(random_state=42)
@@ -534,7 +534,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -560,7 +560,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         pre = MinMaxScaler()
         model = RandomForestRegressor(random_state=42)
@@ -574,7 +574,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -602,7 +602,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         pre_x = StandardScaler()
         pre_y = MinMaxScaler()
@@ -621,7 +621,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -649,7 +649,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         model = RandomForestRegressor(random_state=42)
@@ -663,7 +663,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -706,7 +706,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         pre = StandardScaler()
@@ -722,7 +722,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -765,7 +765,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         pre = MinMaxScaler()
@@ -781,7 +781,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -824,7 +824,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         pre_x = StandardScaler()
@@ -845,7 +845,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=None,
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -943,7 +943,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         pre = [StandardScaler(), MinMaxScaler()]
         model = RandomForestRegressor(random_state=42)
@@ -957,7 +957,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -977,7 +977,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestRegressor(random_state=42)
         with self.assertRaises(ValueError):
@@ -1000,7 +1000,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         pre = StandardScaler()
         model = RandomForestRegressor(random_state=42)
@@ -1034,7 +1034,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.MULTICLASS_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         pre = StandardScaler()
         model = RandomForestClassifier(random_state=42)
@@ -1067,7 +1067,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestRegressor(random_state=42)
         pre = StandardScaler()
@@ -1116,7 +1116,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         pre = StandardScaler()
         model = RandomForestRegressor(random_state=42)
@@ -1131,7 +1131,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=["X1", "X2"],
             task=ModelTask.REGRESSION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         jaqpot_model.randomization_test(
             train_dataset=dataset, test_dataset=prediction_dataset
@@ -1167,7 +1167,7 @@ class TestModels(unittest.TestCase):
             smiles_cols=smiles_cols,
             x_cols=x_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
         model = RandomForestClassifier(random_state=42)
         preprocess_x = ColumnTransformer(
@@ -1190,7 +1190,7 @@ class TestModels(unittest.TestCase):
             x_cols=x_cols,
             y_cols=y_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=featurizer,
+            featurizers=featurizer,
         )
 
         # skl_predictions = jaqpot_model.predict(validation_dataset)
@@ -1239,7 +1239,7 @@ class TestModels(unittest.TestCase):
                 smiles_cols=None,
                 x_cols=["A", "B", "C"],
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=None,
+                featurizers=None,
                 remove_inf_cols=True,
             )
             output = buf.getvalue().strip()
@@ -1260,7 +1260,7 @@ class TestModels(unittest.TestCase):
                 smiles_cols=None,
                 x_cols=["A", "B", "C"],
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=None,
+                featurizers=None,
                 remove_inf_rows=True,
             )
             output = buf.getvalue().strip()
@@ -1280,7 +1280,7 @@ class TestModels(unittest.TestCase):
                 smiles_cols=None,
                 x_cols=["A", "B", "C"],
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=None,
+                featurizers=None,
             )
             output = buf.getvalue().strip()
         expected_output_case3 = (

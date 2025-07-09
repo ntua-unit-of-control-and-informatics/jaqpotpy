@@ -93,7 +93,7 @@ def _build_tabular_dataset(model_data: OfflineModelData, dataset: Dataset):
         smiles_cols=smiles_cols,
         x_cols=x_cols,
         task=model_data.model_metadata.task,
-        featurizer=featurizers,
+        featurizers=featurizers,
     )
     if (
         model_data.model_metadata.selected_features
