@@ -8,10 +8,26 @@ including image preprocessing and tensor output formatting.
 import numpy as np
 import torch
 import onnx
-from typing import List, Dict, Any
+from typing import List, Any
 import onnxruntime
 from jaqpot_api_client.models.dataset import Dataset
 from jaqpot_api_client.models.feature_type import FeatureType
+
+
+def convert_tensor_to_base64_image(image_array: torch.Tensor) -> str:
+    """
+    Converts a tensor of shape [C, H, W] to base64-encoded PNG.
+    Supports grayscale (1 channel) or RGB (3 channels).
+    """
+    from ..utils.image_utils import tensor_to_base64_img
+
+    if isinstance(image_array, np.ndarray):
+        image_array = torch.tensor(image_array)
+
+    if image_array.ndim == 3 and image_array.shape[0] in [1, 3]:
+        return tensor_to_base64_img(image_array)
+
+    raise ValueError("Expected tensor of shape [C, H, W] with 1 or 3 channels")
 
 
 def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
@@ -30,7 +46,7 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
     Returns:
         List: Raw prediction results properly indexed for each row
     """
-    from ..utils.image_utils import validate_and_decode_image, tensor_to_base64_img
+    from ..utils.image_utils import validate_and_decode_image
     from ..core.model_loader import load_onnx_model_from_bytes
 
     # Load ONNX model from raw bytes
@@ -80,10 +96,44 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
     )
 
     # Run ONNX inference
-    predictions = _run_torch_onnx_inference(model, preprocessor, tensor_dataset)
+    predicted_values = _run_torch_onnx_inference(model, preprocessor, tensor_dataset)
 
-    # Return predictions in the format expected by the service formatter
-    # This should be a list where each element can be indexed by row
+    # Format predictions with proper image conversion
+    predictions = []
+    for jaqpot_row_id in jaqpot_row_ids:
+        jaqpot_row_id = int(jaqpot_row_id)
+        results = {}
+
+        value = predicted_values[jaqpot_row_id]
+
+        for i, feature in enumerate(model_data.model_metadata.dependent_features):
+            if isinstance(value, (np.ndarray, torch.Tensor)):
+                tensor = torch.tensor(value) if isinstance(value, np.ndarray) else value
+
+                if (
+                    dataset.result_types is not None
+                    and dataset.result_types.get(feature.key)
+                    and feature.feature_type == FeatureType.IMAGE
+                ):
+                    if tensor.ndim == 4:  # remove batch dim if present
+                        tensor = tensor.squeeze(0)
+
+                    if tensor.ndim == 3:
+                        results[feature.key] = convert_tensor_to_base64_image(tensor)
+                    else:
+                        raise ValueError("Unexpected image tensor shape for output")
+                else:
+                    results[feature.key] = tensor.detach().cpu().numpy().tolist()
+            elif isinstance(value, (np.integer, int)):
+                results[feature.key] = int(value)
+            elif isinstance(value, (np.floating, float)):
+                results[feature.key] = float(value)
+            else:
+                results[feature.key] = value
+
+        results["jaqpotMetadata"] = {"jaqpotRowId": jaqpot_row_id}
+        predictions.append(results)
+
     return predictions
 
 
