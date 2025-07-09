@@ -343,27 +343,3 @@ def predict_torch_sequence(
     # For now, use the same logic as torch_onnx
     # This can be specialized for sequence-specific processing if needed
     return predict_torch_onnx(model_data, dataset)
-
-
-def predict_torch_geometric(
-    model_data,
-    dataset: Union[JaqpotTensorDataset, Any],  # Could be graph dataset
-) -> np.ndarray:
-    """
-    Perform prediction using a PyTorch Geometric ONNX model or TorchScript model.
-
-    NOTE: This function is deprecated in favor of the specialized handler.
-    For torch geometric models, use the torch_geometric_handler directly.
-
-    Parameters:
-        model_data: OfflineModelData containing the ONNX model and metadata.
-        dataset: The dataset containing the input features (could be graph-specific).
-
-    Returns:
-        np.ndarray: The ONNX model predictions.
-    """
-    # This should not be called directly for torch geometric models
-    # The service should route to the specialized handler instead
-    raise NotImplementedError(
-        "Torch geometric predictions should use the specialized handler"
-    )
