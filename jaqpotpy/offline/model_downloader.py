@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional
 
 from jaqpot_api_client import (
-    Model,
     GetModelDownloadUrls200Response,
     PredictionModel,
     PredictionDoa,
@@ -115,7 +114,13 @@ class JaqpotModelDownloader:
             independentFeatures=model_metadata.independent_features,
             type=model_metadata.type,
             task=model_metadata.task,
+            rawModel=getattr(model_metadata, "raw_model", None),
+            rawPreprocessor=getattr(model_metadata, "raw_preprocessor", None),
             doas=doas or [],
+            selectedFeatures=getattr(model_metadata, "selected_features", None),
+            featurizers=getattr(model_metadata, "featurizers", None),
+            preprocessors=getattr(model_metadata, "preprocessors", None),
+            torchConfig=getattr(model_metadata, "torch_config", None),
         )
 
         return OfflineModelData(
