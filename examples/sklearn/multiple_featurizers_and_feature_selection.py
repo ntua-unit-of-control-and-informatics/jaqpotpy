@@ -62,7 +62,7 @@ train_dataset = JaqpotTabularDataset(
     y_cols=["activity"],  # Target column
     smiles_cols=["smiles"],  # Column containing SMILES strings for featurization
     task=ModelTask.REGRESSION,  # Task type is regression
-    featurizer=featurizers,  # List of featurizers to apply to 'smiles'
+    featurizers=featurizers,  # List of featurizers to apply to 'smiles'
 )
 
 # A lot of features are now included in the dataset, so we strongly recommend following a feature selection process.
@@ -107,7 +107,7 @@ test_dataset = JaqpotTabularDataset(
     x_cols=["cat_col", "temperature"],
     y_cols=None,
     task=ModelTask.REGRESSION,
-    featurizer=featurizers,
+    featurizers=featurizers,
 )
 
 predictions = jaqpot_model.predict(test_dataset)

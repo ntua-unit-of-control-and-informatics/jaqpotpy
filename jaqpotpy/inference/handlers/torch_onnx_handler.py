@@ -47,7 +47,6 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
         List: Raw prediction results properly indexed for each row
     """
     from ..utils.image_utils import validate_and_decode_image
-    from ..core.model_loader import load_onnx_model_from_bytes
 
     # Find image features
     image_features = [
