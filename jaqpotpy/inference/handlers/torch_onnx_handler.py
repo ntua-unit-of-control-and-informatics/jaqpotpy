@@ -106,7 +106,7 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
 
         value = predicted_values[jaqpot_row_id]
 
-        for i, feature in enumerate(model_data.model_metadata.dependent_features):
+        for feature in model_data.model_metadata.dependent_features:
             if isinstance(value, (np.ndarray, torch.Tensor)):
                 tensor = torch.tensor(value) if isinstance(value, np.ndarray) else value
 
