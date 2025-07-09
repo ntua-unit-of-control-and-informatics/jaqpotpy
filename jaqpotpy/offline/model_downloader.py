@@ -1,7 +1,11 @@
-import pickle
 from typing import Dict, List, Optional
 
-from jaqpot_api_client import Model, GetModelDownloadUrls200Response
+from jaqpot_api_client import (
+    Model,
+    GetModelDownloadUrls200Response,
+    PredictionModel,
+    PredictionDoa,
+)
 from jaqpot_api_client.api.model_api import ModelApi
 from jaqpot_api_client.api.model_download_api import ModelDownloadApi
 
@@ -85,8 +89,16 @@ class JaqpotModelDownloader:
                             doa_url_info.download_url, timeout=60
                         )
                         doa_response.raise_for_status()
-                        doa_bytes = doa_response.content
-                        doas.append(doa_bytes)
+                        doa_json_bytes = doa_response.content
+
+                        # Parse JSON bytes and create PredictionDoa object
+                        import json
+
+                        doa_data = json.loads(doa_json_bytes.decode("utf-8"))
+                        prediction_doa = PredictionDoa(
+                            method=doa_url_info.method, **doa_data
+                        )
+                        doas.append(prediction_doa)
                     except Exception as e:
                         print(
                             f"Warning: Could not download DOA file for model {model_id}: {e}"
@@ -96,9 +108,19 @@ class JaqpotModelDownloader:
         model_api = ModelApi(self.jaqpot.http_client)
         model_metadata = model_api.get_model_by_id(model_id)
 
+        # Convert Model to PredictionModel for prediction operations
+        prediction_model = PredictionModel(
+            id=model_metadata.id,
+            dependentFeatures=model_metadata.dependent_features,
+            independentFeatures=model_metadata.independent_features,
+            type=model_metadata.type,
+            task=model_metadata.task,
+            doas=doas or [],
+        )
+
         return OfflineModelData(
             model_id=model_id,
-            model_metadata=model_metadata,
+            model_metadata=prediction_model,
             model_bytes=model_bytes,
             preprocessor=preprocessor,
             doas=doas,

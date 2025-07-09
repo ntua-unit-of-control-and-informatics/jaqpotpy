@@ -1,6 +1,6 @@
 from typing import Optional, Any, Dict, List
 
-from jaqpot_api_client import Model
+from jaqpot_api_client import Model, PredictionModel, PredictionDoa
 
 
 class OfflineModelData:
@@ -14,10 +14,10 @@ class OfflineModelData:
     def __init__(
         self,
         model_id: int,
-        model_metadata: Model,
+        model_metadata: PredictionModel,
         model_bytes: bytes,
         preprocessor: Optional[bytes] = None,
-        doas: Optional[List[bytes]] = None,
+        doas: Optional[List[PredictionDoa]] = None,
     ):
         """
         Initialize OfflineModelData.
