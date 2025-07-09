@@ -68,7 +68,7 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
 
     for row in dataset.input:
         jaqpot_row_ids.append(row.get("jaqpotRowId", ""))
-        row_data = {k: v for k, v in row.items() if k != "jaqpotRowId"}
+        row_data = dict(row)  # Keep all data including jaqpotRowId
 
         # Decode images from base64 to numpy arrays
         for f in image_features:
