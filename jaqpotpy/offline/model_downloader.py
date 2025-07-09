@@ -95,7 +95,7 @@ class JaqpotModelDownloader:
 
                         doa_data = json.loads(doa_json_bytes.decode("utf-8"))
                         prediction_doa = PredictionDoa(
-                            method=doa_url_info.method, **doa_data
+                            method=doa_url_info.method, data=doa_data
                         )
                         doas.append(prediction_doa)
                     except Exception as e:
