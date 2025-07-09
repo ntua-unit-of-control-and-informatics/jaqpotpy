@@ -136,8 +136,11 @@ def predict_sklearn_onnx(
     # Load ONNX model from raw bytes
     model = load_onnx_model_from_bytes(model_data.onnx_bytes)
 
-    # Get preprocessor (raw object)
-    preprocessor = model_data.preprocessor
+    preprocessor = (
+        onnx.load_from_string(model_data.preprocessor)
+        if model_data.preprocessor
+        else None
+    )
 
     # Determine which graph to use for input preparation
     onnx_graph = preprocessor if preprocessor else model
@@ -257,7 +260,11 @@ def predict_torch_onnx(
     model = load_onnx_model_from_bytes(model_data.onnx_bytes)
 
     # Get preprocessor (raw object)
-    preprocessor = model_data.preprocessor
+    preprocessor = (
+        onnx.load_from_string(model_data.preprocessor)
+        if model_data.preprocessor
+        else None
+    )
 
     # Determine which graph to use for input preparation
     onnx_graph = preprocessor if preprocessor else model
