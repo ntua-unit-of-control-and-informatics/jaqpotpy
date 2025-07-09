@@ -106,9 +106,16 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
 
         value = predicted_values[jaqpot_row_id]
 
-        for feature in model_data.model_metadata.dependent_features:
-            if isinstance(value, (np.ndarray, torch.Tensor)):
-                tensor = torch.tensor(value) if isinstance(value, np.ndarray) else value
+        for i, feature in enumerate(model_data.model_metadata.dependent_features):
+            # Get the specific value for this feature from the prediction array
+            feature_value = value[i] if i < len(value) else value[0]
+
+            if isinstance(feature_value, (np.ndarray, torch.Tensor)):
+                tensor = (
+                    torch.tensor(feature_value)
+                    if isinstance(feature_value, np.ndarray)
+                    else feature_value
+                )
 
                 if (
                     dataset.result_types is not None
@@ -124,12 +131,12 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
                         raise ValueError("Unexpected image tensor shape for output")
                 else:
                     results[feature.key] = tensor.detach().cpu().numpy().tolist()
-            elif isinstance(value, (np.integer, int)):
-                results[feature.key] = int(value)
-            elif isinstance(value, (np.floating, float)):
-                results[feature.key] = float(value)
+            elif isinstance(feature_value, (np.integer, int)):
+                results[feature.key] = int(feature_value)
+            elif isinstance(feature_value, (np.floating, float)):
+                results[feature.key] = float(feature_value)
             else:
-                results[feature.key] = value
+                results[feature.key] = feature_value
 
         results["jaqpotMetadata"] = {"jaqpotRowId": jaqpot_row_id}
         predictions.append(results)
