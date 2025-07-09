@@ -49,12 +49,6 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
     from ..utils.image_utils import validate_and_decode_image
     from ..core.model_loader import load_onnx_model_from_bytes
 
-    # Load ONNX model from raw bytes
-    model = load_onnx_model_from_bytes(model_data.onnx_bytes)
-
-    # Get preprocessor (raw object)
-    preprocessor = model_data.preprocessor
-
     # Find image features
     image_features = [
         f
@@ -106,8 +100,10 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
         task=model_data.model_metadata.task,
     )
 
-    # Run ONNX inference
-    predicted_values = _run_torch_onnx_inference(model, preprocessor, tensor_dataset)
+    # Run ONNX inference using the original method
+    from ..core.predict_methods import predict_torch_onnx
+
+    predicted_values = predict_torch_onnx(model_data, tensor_dataset)
 
     # Format predictions with proper image conversion
     predictions = []
@@ -153,74 +149,6 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
         predictions.append(results)
 
     return predictions
-
-
-def _run_torch_onnx_inference(model, preprocessor, tensor_dataset):
-    """Run ONNX inference on torch tensor dataset."""
-    # Determine which graph to use for input preparation
-    onnx_graph = preprocessor if preprocessor else model
-
-    # Prepare initial types for preprocessing
-    input_feed = {}
-    for independent_feature in onnx_graph.graph.input:
-        np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
-            independent_feature.type.tensor_type.elem_type
-        )
-        if len(onnx_graph.graph.input) == 1:
-            # Handle object dtype (e.g., arrays inside cells)
-            if tensor_dataset.X.dtypes[0] == "object":
-                input_feed[independent_feature.name] = np.stack(
-                    [
-                        _squeeze_first_dim(x)
-                        for x in tensor_dataset.X.iloc[:, 0].to_list()
-                    ]
-                ).astype(np_dtype)
-            else:
-                input_feed[independent_feature.name] = tensor_dataset.X.values.astype(
-                    np_dtype
-                )
-        else:
-            if tensor_dataset.X[independent_feature.name].dtype == "object":
-                input_feed[independent_feature.name] = np.stack(
-                    [
-                        _squeeze_first_dim(x)
-                        for x in tensor_dataset.X.iloc[:, 0].to_list()
-                    ]
-                ).astype(np_dtype)
-            else:
-                input_feed[independent_feature.name] = (
-                    tensor_dataset.X[independent_feature.name]
-                    .values.astype(np_dtype)
-                    .reshape(-1, 1)
-                )
-
-    # Apply preprocessor if available
-    if preprocessor:
-        preprocessor_session = onnxruntime.InferenceSession(
-            preprocessor.SerializeToString()
-        )
-        input_feed = {"input": preprocessor_session.run(None, input_feed)[0]}
-
-    # Run main model inference
-    model_session = onnxruntime.InferenceSession(model.SerializeToString())
-    for independent_feature in model.graph.input:
-        np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
-            independent_feature.type.tensor_type.elem_type
-        )
-
-    input_feed = {
-        model_session.get_inputs()[0].name: input_feed["input"].astype(np_dtype)
-    }
-    onnx_prediction = model_session.run(None, input_feed)
-
-    # Clean up memory
-    del model
-    del model_session
-    import gc
-
-    gc.collect()
-
-    return onnx_prediction[0]
 
 
 def _squeeze_first_dim(arr: np.ndarray) -> np.ndarray:
