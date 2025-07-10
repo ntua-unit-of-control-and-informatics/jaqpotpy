@@ -40,7 +40,7 @@ def main():
 
     # Make predictions with offline model
     print("Making predictions with offline model...")
-    response = jaqpot.predict_local(model_data, sample_data)
+    response = jaqpot.predict_offline(model_data, sample_data)
 
     # The response is a PredictionResponse object with the same format
     # as you would get from the Jaqpot API
@@ -76,7 +76,7 @@ def batch_predictions_example():
     ]
 
     for i, data in enumerate(test_data):
-        response = jaqpot.predict_local(model_data, [data])
+        response = jaqpot.predict_offline(model_data, [data])
         print(f"Sample {i+1} prediction: {response.predictions}")
 
 

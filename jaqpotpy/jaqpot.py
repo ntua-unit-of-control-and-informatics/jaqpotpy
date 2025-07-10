@@ -519,7 +519,7 @@ class Jaqpot:
         """
         return self.model_downloader.download_onnx_model(model_id, cache)
 
-    def predict_local(self, model_data, input):
+    def predict_offline(self, model_data, input):
         """
         Make predictions using a locally offline model.
 

@@ -391,16 +391,16 @@ jaqpot.login()
 model_data = jaqpot.download_model(model_id)  # Returns OfflineModelData
 
 # 2. Make predictions (no base64, no requests)
-response = jaqpot.predict_local(model_data, input_data)  # Returns PredictionResponse
+response = jaqpot.predict_offline(model_data, input_data)  # Returns PredictionResponse
 
 # 3. OfflineModelData contains raw data only
-model_data.onnx_bytes      # Raw bytes (not base64)
-model_data.preprocessor    # Raw object (not base64)
+model_data.onnx_bytes  # Raw bytes (not base64)
+model_data.preprocessor  # Raw object (not base64)
 model_data.model_metadata  # Complete metadata
 
 # 4. Prediction methods use clean signatures
-predict_sklearn_onnx(model_data, dataset)     # (model_data, dataset) only
-predict_torch_onnx(model_data, dataset)       # (model_data, dataset) only
+predict_sklearn_onnx(model_data, dataset)  # (model_data, dataset) only
+predict_torch_onnx(model_data, dataset)  # (model_data, dataset) only
 
 # 5. Unified service handles all model types
 service = PredictionService()
