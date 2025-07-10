@@ -34,7 +34,7 @@ class JaqpotModelDownloader:
 
         model_download_api = ModelDownloadApi(self.jaqpot.http_client)
         model_download_urls = model_download_api.get_model_download_urls(
-            model_id=model_id, expiration_minutes=30
+            model_id=model_id
         )
         offline_model_data = self._download_model_files(model_download_urls, model_id)
 
