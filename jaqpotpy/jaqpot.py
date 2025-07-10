@@ -1,3 +1,4 @@
+import os
 import webbrowser
 from getpass import getpass
 
@@ -47,6 +48,12 @@ class Jaqpot:
         The Keycloak realm name. Default is "jaqpot".
     keycloak_client_id : str, optional
         The Keycloak client ID. Default is "jaqpot-client".
+    api_key : str, optional
+        API key for authentication. If provided along with api_secret, API key authentication will be used instead of OAuth.
+        Can also be set via JAQPOT_API_KEY environment variable.
+    api_secret : str, optional
+        API secret for authentication. Required when using API key authentication.
+        Can also be set via JAQPOT_API_SECRET environment variable.
     create_logs : bool, optional
         Whether to create logs. Default is False.
     """
@@ -59,6 +66,8 @@ class Jaqpot:
         api_url=None,
         keycloak_realm=None,
         keycloak_client_id=None,
+        api_key=None,
+        api_secret=None,
         create_logs=False,
     ):
         # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -74,10 +83,16 @@ class Jaqpot:
         self.api_url = api_url or add_subdomain(self.base_url, "api")
         self.keycloak_realm = keycloak_realm or "jaqpot"
         self.keycloak_client_id = keycloak_client_id or "jaqpot-client"
+        self.api_key = api_key or os.getenv("JAQPOT_API_KEY")
+        self.api_secret = api_secret or os.getenv("JAQPOT_API_SECRET")
         self.access_token = None
         self.http_client = None
         self._model_downloader = None
         self._offline_model_predictor = None
+
+        # If both API key and secret are provided, authenticate automatically
+        if self.api_key and self.api_secret:
+            self._authenticate_with_api_key()
 
     def _deploy_model(
         self,
@@ -174,6 +189,19 @@ class Jaqpot:
         self.http_client = (
             JaqpotApiHttpClientBuilder(host=self.api_url)
             .build_with_access_token(self.access_token)
+            .build()
+        )
+
+    def _authenticate_with_api_key(self):
+        """
+        Authenticate using API key and secret.
+
+        This method sets up the HTTP client with API key authentication,
+        bypassing the need for OAuth login flow.
+        """
+        self.http_client = (
+            JaqpotApiHttpClientBuilder(host=self.api_url)
+            .build_with_api_keys(self.api_key, self.api_secret)
             .build()
         )
 
