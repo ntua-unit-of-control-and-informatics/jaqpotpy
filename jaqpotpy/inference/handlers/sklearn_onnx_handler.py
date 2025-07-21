@@ -63,6 +63,10 @@ def handle_sklearn_onnx_prediction(model_data: OfflineModelData, dataset: Datase
 
 
 def _build_tabular_dataset(model_data: OfflineModelData, dataset: Dataset):
+    import logging
+
+    logger = logging.getLogger(__name__)
+
     df = pd.DataFrame(dataset.input)
     jaqpot_row_ids = []
     for i in range(len(df)):
@@ -95,10 +99,25 @@ def _build_tabular_dataset(model_data: OfflineModelData, dataset: Dataset):
         task=model_data.model_metadata.task,
         featurizers=featurizers,
     )
+
+    logger.info(f"Dataset features after creation: {list(dataset.X.columns)}")
+    logger.info(f"Dataset shape after creation: {dataset.X.shape}")
+
     if (
         model_data.model_metadata.selected_features
         and len(model_data.model_metadata.selected_features) > 0
     ):
+        logger.info(
+            f"Attempting to select features: {model_data.model_metadata.selected_features}"
+        )
+        logger.info(f"Available features in dataset: {list(dataset.X.columns)}")
+        missing_features = [
+            f
+            for f in model_data.model_metadata.selected_features
+            if f not in dataset.X.columns
+        ]
+        if missing_features:
+            logger.error(f"Missing features: {missing_features}")
         dataset.select_features(
             SelectColumns=model_data.model_metadata.selected_features
         )
