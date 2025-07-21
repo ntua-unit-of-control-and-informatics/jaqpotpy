@@ -72,6 +72,9 @@ def _build_tabular_dataset(model_data: OfflineModelData, dataset: Dataset):
     for i in range(len(df)):
         jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
     independent_features = model_data.model_metadata.independent_features
+    logger.info(
+        f"Independent features from model metadata: {[(f.key, f.feature_type) for f in independent_features]}"
+    )
     smiles_cols = [
         feature.key
         for feature in independent_features
@@ -82,6 +85,9 @@ def _build_tabular_dataset(model_data: OfflineModelData, dataset: Dataset):
         for feature in independent_features
         if feature.feature_type != "SMILES"
     ]
+    logger.info(f"SMILES columns identified: {smiles_cols}")
+    logger.info(f"X columns identified: {x_cols}")
+    logger.info(f"Input DataFrame columns: {list(df.columns)}")
     featurizers = []
     if model_data.model_metadata.featurizers:
         logger.info(
