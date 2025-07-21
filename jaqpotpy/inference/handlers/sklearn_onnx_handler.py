@@ -84,12 +84,22 @@ def _build_tabular_dataset(model_data: OfflineModelData, dataset: Dataset):
     ]
     featurizers = []
     if model_data.model_metadata.featurizers:
-        for featurizer in model_data.model_metadata.featurizers:
+        logger.info(
+            f"Found {len(model_data.model_metadata.featurizers)} featurizers to recreate"
+        )
+        for i, featurizer in enumerate(model_data.model_metadata.featurizers):
             featurizer_name = featurizer.name
             featurizer_config = featurizer.config
-            featurizer = recreate_featurizer(featurizer_name, featurizer_config)
-            featurizers.append(featurizer)
+            logger.info(
+                f"Featurizer {i}: {featurizer_name} with config: {featurizer_config}"
+            )
+            recreated_featurizer = recreate_featurizer(
+                featurizer_name, featurizer_config
+            )
+            logger.info(f"Successfully recreated featurizer {featurizer_name}")
+            featurizers.append(recreated_featurizer)
     else:
+        logger.info("No featurizers found in model metadata")
         featurizers = None
 
     dataset = JaqpotTabularDataset(

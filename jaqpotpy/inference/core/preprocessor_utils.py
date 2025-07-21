@@ -67,6 +67,19 @@ def recreate_featurizer(
         ImportError: If the featurizer class cannot be imported
         AttributeError: If the featurizer class doesn't exist
     """
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    # Log Mordred version if it's a Mordred-based featurizer
+    if "Mordred" in featurizer_name:
+        try:
+            import mordred
+
+            logger.info(f"Mordred version: {mordred.__version__}")
+        except (ImportError, AttributeError):
+            logger.warning("Could not determine Mordred version")
+
     featurizer_class = getattr(
         __import__("jaqpotpy.descriptors.molecular", fromlist=[featurizer_name]),
         featurizer_name,
@@ -74,8 +87,10 @@ def recreate_featurizer(
     featurizer = featurizer_class()
 
     # Set all attributes from config
+    logger.info(f"Setting {len(featurizer_config)} attributes on {featurizer_name}")
     for attr, value in featurizer_config.items():
         if attr != "class":  # skip the class attribute
+            logger.debug(f"Setting {attr} = {value} on {featurizer_name}")
             setattr(featurizer, attr, value)
 
     return featurizer
