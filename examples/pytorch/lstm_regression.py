@@ -58,7 +58,7 @@ onnx_model = onnx_model = lstm_to_onnx(model, tokenizer)
 jaqpot = Jaqpot()
 jaqpot.login()
 # Deploy the model on Jaqpot
-jaqpot.deploy_torch_model(
+jaqpot.deploy_torch_geometric_model(
     onnx_model,
     featurizer=tokenizer,
     name="LSTM",
