@@ -24,7 +24,7 @@ def main():
     jaqpot.login()
 
     # Download a model for offline use
-    model_id = 2184  # Replace with actual model ID
+    model_id = 1858  # Replace with actual model ID
 
     print(f"Downloading model {model_id}...")
     model_data = jaqpot.download_model(model_id, cache=True)
@@ -36,13 +36,11 @@ def main():
     # 2. Python list: [[1.0, 2.0, 3.0]]
     # 3. Dictionary: {"feature1": 1.0, "feature2": 2.0, "feature3": 3.0}
 
-    sample_data = np.array(
-        [{"X1": 1.0, "X2": 2.0, "X3": 3.0, "X4": 4.0}]
-    )  # Example input
+    sample_data = np.array([{"X2": 1, "X1": 2}])  # Example input
 
     # Make predictions with offline model
     print("Making predictions with offline model...")
-    response = jaqpot.predict_local(model_data, sample_data)
+    response = jaqpot.predict_offline(model_data, sample_data)
 
     # The response is a PredictionResponse object with the same format
     # as you would get from the Jaqpot API
@@ -78,7 +76,7 @@ def batch_predictions_example():
     ]
 
     for i, data in enumerate(test_data):
-        response = jaqpot.predict_local(model_data, [data])
+        response = jaqpot.predict_offline(model_data, [data])
         print(f"Sample {i+1} prediction: {response.predictions}")
 
 

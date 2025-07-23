@@ -1,6 +1,6 @@
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, List
 
-from jaqpot_api_client import Model
+from jaqpot_api_client import Model, PredictionModel, PredictionDoa
 
 
 class OfflineModelData:
@@ -14,9 +14,10 @@ class OfflineModelData:
     def __init__(
         self,
         model_id: int,
-        model_metadata: Model,
-        onnx_bytes: bytes,
+        model_metadata: PredictionModel,
+        model_bytes: bytes,
         preprocessor: Optional[bytes] = None,
+        doas: Optional[List[PredictionDoa]] = None,
     ):
         """
         Initialize OfflineModelData.
@@ -24,13 +25,14 @@ class OfflineModelData:
         Args:
             model_id: The model ID from Jaqpot platform
             model_metadata: Model metadata object from Jaqpot API
-            onnx_bytes: Raw ONNX model bytes
+            model_bytes: Raw ONNX model bytes
             preprocessor: Deserialized preprocessor object (optional)
         """
         self.model_id = model_id
         self.model_metadata = model_metadata
-        self.onnx_bytes = onnx_bytes
+        self.onnx_bytes = model_bytes
         self.preprocessor = preprocessor
+        self.doas = doas
 
     @property
     def has_preprocessor(self) -> bool:

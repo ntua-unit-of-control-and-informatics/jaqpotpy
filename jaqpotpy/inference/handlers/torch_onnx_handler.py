@@ -47,13 +47,6 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
         List: Raw prediction results properly indexed for each row
     """
     from ..utils.image_utils import validate_and_decode_image
-    from ..core.model_loader import load_onnx_model_from_bytes
-
-    # Load ONNX model from raw bytes
-    model = load_onnx_model_from_bytes(model_data.onnx_bytes)
-
-    # Get preprocessor (raw object)
-    preprocessor = model_data.preprocessor
 
     # Find image features
     image_features = [
@@ -68,7 +61,7 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
 
     for row in dataset.input:
         jaqpot_row_ids.append(row.get("jaqpotRowId", ""))
-        row_data = {k: v for k, v in row.items() if k != "jaqpotRowId"}
+        row_data = dict(row)  # Keep all data including jaqpotRowId
 
         # Decode images from base64 to numpy arrays
         for f in image_features:
@@ -88,15 +81,28 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
 
         processed_input.append(row_data)
 
-    # Build tensor dataset from processed input (matches original logic)
-    tensor_dataset, jaqpot_row_ids = _build_tensor_dataset_from_processed_input(
-        processed_input,
-        model_data.model_metadata.independent_features,
-        model_data.model_metadata.task,
+    # Build tensor dataset using the same logic as the original build_tensor_dataset_from_request
+    import pandas as pd
+    from jaqpotpy.datasets.jaqpot_tensor_dataset import JaqpotTensorDataset
+
+    # Create DataFrame from processed input (same as original)
+    df = pd.DataFrame(processed_input)
+    jaqpot_row_ids = []
+    for i in range(len(df)):
+        jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
+
+    x_cols = [feature.key for feature in model_data.model_metadata.independent_features]
+
+    tensor_dataset = JaqpotTensorDataset(
+        df=df,
+        x_cols=x_cols,
+        task=model_data.model_metadata.task,
     )
 
-    # Run ONNX inference
-    predicted_values = _run_torch_onnx_inference(model, preprocessor, tensor_dataset)
+    # Run ONNX inference using the original method
+    from ..core.predict_methods import predict_torch_onnx
+
+    predicted_values = predict_torch_onnx(model_data, tensor_dataset)
 
     # Format predictions with proper image conversion
     predictions = []
@@ -118,10 +124,17 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
                     if tensor.ndim == 4:  # remove batch dim if present
                         tensor = tensor.squeeze(0)
 
+                    if tensor.ndim == 2:  # Handle 2D grayscale images
+                        tensor = tensor.unsqueeze(
+                            0
+                        )  # Add channel dimension [H,W] -> [1,H,W]
+
                     if tensor.ndim == 3:
                         results[feature.key] = convert_tensor_to_base64_image(tensor)
                     else:
-                        raise ValueError("Unexpected image tensor shape for output")
+                        raise ValueError(
+                            f"Unexpected image tensor shape: {tensor.shape}"
+                        )
                 else:
                     results[feature.key] = tensor.detach().cpu().numpy().tolist()
             elif isinstance(value, (np.integer, int)):
@@ -135,119 +148,6 @@ def handle_torch_onnx_prediction(model_data, dataset: Dataset) -> List[Any]:
         predictions.append(results)
 
     return predictions
-
-
-def _run_torch_onnx_inference(model, preprocessor, tensor_dataset):
-    """Run ONNX inference on torch tensor dataset."""
-    # Determine which graph to use for input preparation
-    onnx_graph = preprocessor if preprocessor else model
-
-    # Prepare initial types for preprocessing
-    input_feed = {}
-    for independent_feature in onnx_graph.graph.input:
-        np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
-            independent_feature.type.tensor_type.elem_type
-        )
-        if len(onnx_graph.graph.input) == 1:
-            # Handle object dtype (e.g., arrays inside cells)
-            if tensor_dataset.X.dtypes[0] == "object":
-                input_feed[independent_feature.name] = np.stack(
-                    [
-                        _squeeze_first_dim(x)
-                        for x in tensor_dataset.X.iloc[:, 0].to_list()
-                    ]
-                ).astype(np_dtype)
-            else:
-                input_feed[independent_feature.name] = tensor_dataset.X.values.astype(
-                    np_dtype
-                )
-        else:
-            if tensor_dataset.X[independent_feature.name].dtype == "object":
-                input_feed[independent_feature.name] = np.stack(
-                    [
-                        _squeeze_first_dim(x)
-                        for x in tensor_dataset.X.iloc[:, 0].to_list()
-                    ]
-                ).astype(np_dtype)
-            else:
-                input_feed[independent_feature.name] = (
-                    tensor_dataset.X[independent_feature.name]
-                    .values.astype(np_dtype)
-                    .reshape(-1, 1)
-                )
-
-    # Apply preprocessor if available
-    if preprocessor:
-        preprocessor_session = onnxruntime.InferenceSession(
-            preprocessor.SerializeToString()
-        )
-        input_feed = {"input": preprocessor_session.run(None, input_feed)[0]}
-
-    # Run main model inference
-    model_session = onnxruntime.InferenceSession(model.SerializeToString())
-    for independent_feature in model.graph.input:
-        np_dtype = onnx.helper.tensor_dtype_to_np_dtype(
-            independent_feature.type.tensor_type.elem_type
-        )
-
-    input_feed = {
-        model_session.get_inputs()[0].name: input_feed["input"].astype(np_dtype)
-    }
-    onnx_prediction = model_session.run(None, input_feed)
-
-    # Clean up memory
-    del model
-    del model_session
-    import gc
-
-    gc.collect()
-
-    return onnx_prediction[0]
-
-
-def _build_tensor_dataset_from_processed_input(
-    processed_input, independent_features, task
-):
-    """
-    Build tensor dataset from processed input (matches original build_tensor_dataset_from_request).
-
-    This follows the exact same logic as build_tensor_dataset_from_request
-    but works with processed input data instead of request objects.
-
-    Args:
-        processed_input: List of processed row dictionaries
-        independent_features: List of feature objects
-        task: Model task
-
-    Returns:
-        tuple: (JaqpotTensorDataset, jaqpot_row_ids)
-    """
-    import pandas as pd
-    from jaqpotpy.datasets.jaqpot_tensor_dataset import JaqpotTensorDataset
-
-    # Add back jaqpotRowId for dataset creation (needed for original logic)
-    for i, row in enumerate(processed_input):
-        row["jaqpotRowId"] = str(i)
-
-    # Create DataFrame from input (matches original logic exactly)
-    df = pd.DataFrame(processed_input)
-    jaqpot_row_ids = []
-
-    # Extract row IDs (matches original logic exactly)
-    for i in range(len(df)):
-        jaqpot_row_ids.append(df.iloc[i]["jaqpotRowId"])
-
-    # Extract feature column names (matches original logic exactly)
-    x_cols = [feature.key for feature in independent_features]
-
-    # Create tensor dataset (matches original logic exactly)
-    dataset = JaqpotTensorDataset(
-        df=df,
-        x_cols=x_cols,
-        task=task,
-    )
-
-    return dataset, jaqpot_row_ids
 
 
 def _squeeze_first_dim(arr: np.ndarray) -> np.ndarray:

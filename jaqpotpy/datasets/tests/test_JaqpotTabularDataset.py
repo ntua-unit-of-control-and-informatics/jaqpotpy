@@ -63,7 +63,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
         )
         self.assertIsNotNone(dataset.df, "DataFrame should not be None")
         self.assertEqual(
@@ -143,7 +143,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
         )
 
         self.assertEqual(dataset.df.shape[1], 170, "DataFrame should have 170 columns")
@@ -157,7 +157,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=None,
             x_cols=self.x_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
         )
 
         self.assertEqual(dataset.df.shape[1], 3, "DataFrame should have 170 columns")
@@ -172,7 +172,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=None,  # ["SMILES"],
                 x_cols=None,  # self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_dataset_no_x_no_smiles_empty_list(self):
@@ -184,7 +184,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=[],  # ["SMILES"],
                 x_cols=[],  # self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_dataset_only_smiles(self):
@@ -195,7 +195,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=self.single_smiles_cols,
             x_cols=None,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
         )
         self.assertEqual(dataset.df.shape[1], 168, "DataFrame should have 170 columns")
         self.assertEqual(dataset.df.shape[0], 139, "DataFrame should have 139 rows")
@@ -209,7 +209,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=None,
+                featurizers=None,
             )
 
     def test_dataset_smiles_no_task(self):
@@ -221,7 +221,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=None,
                 x_cols=self.x_cols,
                 task=None,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_dataset_smiles_wrong_task(self):
@@ -233,7 +233,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=None,
                 x_cols=self.x_cols,
                 task="laricifato",
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_overlap_smiles_x(self):
@@ -245,7 +245,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=["SMILES", "Χ1"],  # Overlap with x_cols
                 x_cols=self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_overlap_smiles_y(self):
@@ -257,7 +257,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=["SMILES", "ACTIVITY"],  # Overlap with y_cols
                 x_cols=self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_overlap_x_y(self):
@@ -269,7 +269,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_invalid_smiles_cols(self):
@@ -281,7 +281,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=["SMILES2"],  # Non-existent column
                 x_cols=self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_invalid_x_cols(self):
@@ -293,7 +293,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=self.single_smiles_cols,
                 x_cols=["feat3"],  # Non-existent column
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_invalid_y_cols(self):
@@ -305,7 +305,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_no_path_no_df(self):
@@ -316,7 +316,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_path_and_df(self):
@@ -329,7 +329,7 @@ class TestDatasets(unittest.TestCase):
                 smiles_cols=self.single_smiles_cols,
                 x_cols=self.x_cols,
                 task=ModelTask.BINARY_CLASSIFICATION,
-                featurizer=self.featurizer,
+                featurizers=self.featurizer,
             )
 
     def test_dataset_with_multiple_descriptors(self):
@@ -340,7 +340,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=["SMILES"],
             x_cols=None,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizers,
+            featurizers=self.featurizers,
         )
 
         self.assertEqual(dataset.X.shape[1], 4038, "DataFrame should have 4038 columns")
@@ -354,7 +354,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
         )
         feature_selector = skfs.VarianceThreshold(threshold=0.1)
         dataset.select_features(feature_selector)
@@ -374,7 +374,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
         )
         selection_list = ["X1", "X2"]
         dataset.select_features(SelectColumns=selection_list)
@@ -397,7 +397,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
         )
         with self.assertRaises(ValueError):
             dataset.select_features(
@@ -413,7 +413,7 @@ class TestDatasets(unittest.TestCase):
             smiles_cols=self.single_smiles_cols,
             x_cols=self.x_cols,
             task=ModelTask.BINARY_CLASSIFICATION,
-            featurizer=self.featurizer,
+            featurizers=self.featurizer,
         )
         with self.assertRaises(ValueError):
             dataset.select_features()

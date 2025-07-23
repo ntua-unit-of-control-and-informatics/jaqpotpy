@@ -33,13 +33,14 @@ jaqpotpy/
 ## 🔧 **API Changes**
 
 ### **Public API (Clean & Simple):**
+
 ```python
 # Download model (returns OfflineModelData with raw bytes)
 jaqpot = Jaqpot()
 model_data = jaqpot.download_model(model_id)
 
 # Make predictions (no base64, no requests)
-response = jaqpot.predict_local(model_data, input_data)
+response = jaqpot.predict_offline(model_data, input_data)
 ```
 
 ### **Internal API (Unified Service):**

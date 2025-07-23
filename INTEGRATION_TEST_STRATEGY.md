@@ -71,10 +71,10 @@ def test_prediction_consistency(model_id, test_data):
    # Offline prediction using jaqpotpy
    jaqpot = Jaqpot()
    jaqpot.login()
-   
+
    # Download model data using the new API
    model_data = jaqpot.download_model(model_id)
-   offline_response = jaqpot.predict_local(model_data, test_data)
+   offline_response = jaqpot.predict_offline(model_data, test_data)
 
    # Production prediction using jaqpotpy-inference
    production_request = create_prediction_request(model_id, test_data)
@@ -187,7 +187,7 @@ def test_complete_model_lifecycle():
 
    # 2. Download and test offline using jaqpotpy
    model_data = jaqpot.download_model(model_id)
-   offline_predictions = jaqpot.predict_local(model_data, test_data)
+   offline_predictions = jaqpot.predict_offline(model_data, test_data)
 
    # 3. Test production inference using jaqpotpy-inference
    production_request = create_prediction_request(model_id, test_data)
@@ -212,24 +212,24 @@ def test_complete_model_lifecycle():
 # test_performance.py
 
 def test_prediction_performance():
-    """Test that refactoring doesn't degrade performance."""
+   """Test that refactoring doesn't degrade performance."""
 
-    import time
+   import time
 
-    # Measure offline prediction performance
-    start_time = time.time()
-    for _ in range(100):
-        jaqpot.predict_local(model_data, test_data)
-    offline_time = time.time() - start_time
+   # Measure offline prediction performance
+   start_time = time.time()
+   for _ in range(100):
+      jaqpot.predict_offline(model_data, test_data)
+   offline_time = time.time() - start_time
 
-    # Measure production prediction performance
-    start_time = time.time()
-    for _ in range(100):
-        requests.post("http://localhost:8002/predict", json=prediction_request)
-    production_time = time.time() - start_time
+   # Measure production prediction performance
+   start_time = time.time()
+   for _ in range(100):
+      requests.post("http://localhost:8002/predict", json=prediction_request)
+   production_time = time.time() - start_time
 
-    # Performance should be comparable (within 50% difference)
-    assert abs(offline_time - production_time) / min(offline_time, production_time) < 0.5
+   # Performance should be comparable (within 50% difference)
+   assert abs(offline_time - production_time) / min(offline_time, production_time) < 0.5
 ```
 
 ## Test Data Requirements
