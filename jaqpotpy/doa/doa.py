@@ -1,3 +1,4 @@
+import math
 from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
@@ -356,18 +357,24 @@ class BoundingBox(DOA):
             Iterable[Any]: List of dictionaries containing the percentage of features out of DOA and a boolean indicating if the data point is within DOA.
         """
         new_data = self._validate_input(new_data)
-        doaAll = []
+        doa_all = []
         for nd in new_data:
             out_of_doa_count = 0
             for index, feature in enumerate(nd):
                 bounds = self.bounding_box[index]
-                if feature < bounds[0] or feature > bounds[1]:
+                if (
+                    feature < bounds[0]
+                    and not math.isclose(feature, bounds[0], rel_tol=1e-4)
+                ) or (
+                    feature > bounds[1]
+                    and not math.isclose(feature, bounds[1], rel_tol=1e-4)
+                ):
                     out_of_doa_count += 1
             out_of_doa_percentage = (out_of_doa_count / len(nd)) * 100
             in_doa = True if out_of_doa_count == 0 else False
             doa = {"outOfDoaPercentage": out_of_doa_percentage, "inDoa": in_doa}
-            doaAll.append(doa)
-        return doaAll
+            doa_all.append(doa)
+        return doa_all
 
     def get_attributes(self):
         return BoundingBoxDoa(bounding_box=self.bounding_box).to_dict()

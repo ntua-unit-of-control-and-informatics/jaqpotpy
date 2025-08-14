@@ -34,7 +34,6 @@ class PredictionService:
         self.handlers = {
             "SKLEARN_ONNX": handle_sklearn_onnx_prediction,
             "TORCH_ONNX": handle_torch_onnx_prediction,
-            "TORCH_SEQUENCE_ONNX": handle_torch_sequence_prediction,
             "TORCH_GEOMETRIC_ONNX": handle_torch_geometric_prediction,
             "TORCHSCRIPT": handle_torch_geometric_prediction,  # TorchScript uses same handler
         }

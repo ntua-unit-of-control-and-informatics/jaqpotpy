@@ -107,7 +107,7 @@ jaqpot = Jaqpot(
 # Login to Jaqpot
 jaqpot.login()
 # Deploy the model on Jaqpot
-jaqpot.deploy_torch_model(
+jaqpot.deploy_torch_geometric_model(
     onnx_model,
     featurizer=featurizer,  # Featurizer used for the model
     name="Graph Sage Network",
